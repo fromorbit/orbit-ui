@@ -1,0 +1,57 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "root": "../.." },
+  "files": { "includes": ["**", "!**/dist", "!fixtures"] },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "javascript": { "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": { "Bun": "The package runs in a browser or on Node, never on Bun." }
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": { "paths": { "bun": "No Bun APIs in source code; it runs on Node." } }
+        }
+      }
+    }
+  },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "overrides": [
+    {
+      "includes": ["src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "bun": "No Bun APIs in source code; it runs on Node.",
+                  "electron": "The document view is presentation only; the host decides through callbacks.",
+                  "i18next": "Every text comes in as a prop; each consumer keeps its own catalogue.",
+                  "react-i18next": "Every text comes in as a prop; each consumer keeps its own catalogue."
+                },
+                "patterns": [
+                  {
+                    "group": ["@nt/*", "@nt/*/**", "@fromorbit/*", "@fromorbit/*/**"],
+                    "message": "The document view imports no other package of ours: it stands on its own."
+                  },
+                  {
+                    "group": ["node:*"],
+                    "message": "The document view runs in a browser: no node:* modules."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

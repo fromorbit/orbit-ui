@@ -1,0 +1,26 @@
+{
+  "outline": [
+    {
+      "depth": 1,
+      "text": "Cadeaubonnen",
+      "anchor": "cadeaubonnen",
+      "from": 0,
+      "to": 14
+    },
+    {
+      "depth": 2,
+      "text": "Wat niet",
+      "anchor": "wat-niet",
+      "from": 56,
+      "to": 67
+    },
+    {
+      "depth": 2,
+      "text": "Keuzes",
+      "anchor": "keuzes",
+      "from": 156,
+      "to": 165
+    }
+  ],
+  "code": []
+}

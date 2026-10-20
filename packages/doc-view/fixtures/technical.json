@@ -1,0 +1,33 @@
+{
+  "outline": [
+    {
+      "depth": 1,
+      "text": "Cadeaubonnen",
+      "anchor": "cadeaubonnen",
+      "from": 0,
+      "to": 14
+    },
+    {
+      "depth": 2,
+      "text": "Contract",
+      "anchor": "contract",
+      "from": 55,
+      "to": 66
+    },
+    {
+      "depth": 3,
+      "text": "Fouten",
+      "anchor": "fouten",
+      "from": 142,
+      "to": 152
+    },
+    {
+      "depth": 2,
+      "text": "Acceptatiecriteria",
+      "anchor": "acceptatiecriteria",
+      "from": 196,
+      "to": 217
+    }
+  ],
+  "code": []
+}

@@ -1,0 +1,191 @@
+/* The styling the components of @fromorbit/ui depend on, beyond the variables of tokens.css: the
+   Tailwind names of the tokens, the classes a component carries and their animations. Copied from
+   Orbit's own stylesheet; what only the app needs (body, window scrollbars, layout,
+   the rich editor) stays there.
+
+   Load it after Tailwind and the tokens; it does not import them itself, so neither loads twice:
+     @import "tailwindcss";
+     @import "@fromorbit/ui/tokens.css";
+     @import "@fromorbit/ui/theme.css";
+     @source "../node_modules/@fromorbit/ui/dist";
+   `src/theme.test.ts` checks that every class a component names is defined here or in
+   tokens.css. */
+
+@theme inline {
+  --font-sans: var(--nt-font-sans);
+  --font-mono: var(--nt-font-mono);
+  --color-bg: var(--nt-bg);
+  --color-frame: var(--nt-frame);
+  --color-canvas: var(--nt-canvas);
+  --color-row-hover: var(--nt-row-hover);
+  --color-row-active: var(--nt-row-active);
+  --color-border-strong: var(--nt-border-strong);
+  --color-pill: var(--nt-pill);
+  --color-pill-hover: var(--nt-pill-hover);
+  --color-bubble: var(--nt-bubble);
+  --color-mark: var(--nt-mark);
+  --color-composer: var(--nt-composer);
+  --color-surface: var(--nt-surface);
+  --color-surface-hover: var(--nt-surface-hover);
+  --color-surface-active: var(--nt-surface-active);
+  --color-border: var(--nt-border);
+  --color-border-focus: var(--nt-border-focus);
+  --color-diff-bg: var(--nt-diff-bg);
+  --color-fg: var(--nt-text);
+  --color-fg-strong: var(--nt-text-strong);
+  --color-secondary: var(--nt-text-secondary);
+  --color-muted: var(--nt-text-muted);
+  /* Only ever on an icon (`Icon tone="faint"`); `tests/faint-text.test.ts` holds that. */
+  --color-faint: var(--nt-text-faint);
+  --color-kind-spec: var(--nt-kind-spec);
+  --color-kind-plan: var(--nt-kind-plan);
+  --color-kind-decision: var(--nt-kind-decision);
+  --color-kind-audit: var(--nt-kind-audit);
+  --color-avatar-1: var(--nt-avatar-1);
+  --color-avatar-2: var(--nt-avatar-2);
+  --color-avatar-3: var(--nt-avatar-3);
+  --color-avatar-4: var(--nt-avatar-4);
+  --color-avatar-5: var(--nt-avatar-5);
+  --color-avatar-6: var(--nt-avatar-6);
+  --color-accent: var(--nt-accent);
+  --color-accent-fg: var(--nt-accent-fg);
+  --color-accent-text: var(--nt-accent-text);
+  --color-accent-subtle: var(--nt-accent-subtle);
+  --color-accent-key: var(--nt-accent-key);
+  --color-accent-border: var(--nt-accent-border);
+  --color-attention: var(--nt-attention);
+  --color-danger: var(--nt-danger);
+  --color-success: var(--nt-success);
+  --color-attention-subtle: var(--nt-attention-subtle);
+  --color-attention-border: var(--nt-attention-border);
+  --color-danger-subtle: var(--nt-danger-subtle);
+  --color-danger-border: var(--nt-danger-border);
+  --color-overlay: var(--nt-overlay-background);
+  --color-scrim: var(--nt-scrim);
+  --color-focus: var(--nt-focus-ring);
+  --shadow-menu: var(--nt-shadow-menu);
+  --radius-sm: var(--nt-radius-sm);
+  --radius-md: var(--nt-radius-md);
+  --radius-lg: var(--nt-radius-lg);
+}
+
+/* A control inside a drag region stays clickable (Electron's `-webkit-app-region`; a browser
+   ignores it). Nearly every interactive component carries it. */
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Surface that belongs to the window rather than to the content: dragging it moves the window.
+   Interactive children opt out again with `no-drag`. */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+/* The tab strip of `Tabs` with `strip="titlebar"` keeps its end clear of the window controls of
+   Windows (`--nt-window-controls-width`, 0 elsewhere); the counterpart on the left,
+   `data-nt-reserve-traffic-lights`, is in tokens.css. */
+.nt-titlebar-strip[data-nt-reserve-window-controls="true"] {
+  padding-inline-end: var(--nt-window-controls-width);
+}
+
+.nt-spin {
+  animation: nt-spin 0.8s linear infinite;
+}
+/* The open arc of a busy chat in the sidebar (`StatusShape`): a slow turn around its own middle,
+   slower than a spinner, because it stands in a column that is read all day. */
+.nt-shape-spin {
+  animation: nt-spin 1.6s linear infinite;
+  transform-box: view-box;
+  transform-origin: center;
+}
+.nt-shimmer {
+  animation: nt-shimmer 1.5s ease-in-out infinite;
+}
+/* Content that unfolds: it fades in where it stands, and never animates its own height. Growing
+   would push everything below it down for the length of the animation. */
+.nt-fade-in {
+  animation: nt-fade-in 100ms ease-out;
+}
+/* A layer only fades in; closing it has nothing to wait for. Radix keeps a closing layer mounted
+   while it believes an exit animation runs, and it believes so whenever the panel's animation
+   differs from the last one that started. Popper holds `animation: none` until the panel is placed,
+   so a choice made before the fade's first frame left a closed menu mounted for the whole fade —
+   and its outside-click guard dismissed the menu the next press on the trigger opened. With no
+   animation on the closed state Radix unmounts at once. */
+.nt-fade-in[data-state="closed"] {
+  animation: none;
+}
+
+/* The lit band that sweeps across a busy line (`Shimmer.tsx`). `nt-shimmer` above is a different animation
+   (the opacity pulse of `Skeleton`) and keeps its own name on purpose.
+   `.nt-wave` is a second copy of the line's children, laid exactly over the real ones (`inset: 0`,
+   no offset and no width of its own) and masked to a soft window `--nt-wave-width` wide. What
+   travels is that window and not the layer: `nt-wave` slides `mask-position` from fully off the
+   left edge to fully off the right one. Moving the layer instead would carry its letters along and
+   need a counter-slide underneath — over the span's width rather than the layer's, which is a
+   different distance, so the lit letters end up beside the real ones instead of over them. */
+.nt-wave {
+  --nt-wave-width: 72px;
+  position: absolute;
+  inset: 0;
+  mask-image: linear-gradient(90deg, transparent, black, transparent);
+  mask-size: var(--nt-wave-width) 100%;
+  mask-repeat: no-repeat;
+  animation: nt-wave 2.2s linear infinite;
+}
+
+@keyframes nt-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes nt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes nt-shimmer {
+  50% {
+    opacity: 0.4;
+  }
+}
+@keyframes nt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+/* A percentage in `mask-position` counts off the room the window leaves (`100%` rests it against
+   the right edge), so the two `calc`s add exactly one window width past each end: it enters and
+   leaves fully off-screen instead of pausing at the edges. */
+@keyframes nt-wave {
+  from {
+    mask-position: calc(-1 * var(--nt-wave-width)) 0;
+  }
+  to {
+    mask-position: calc(100% + var(--nt-wave-width)) 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* A spinner keeps signalling "busy" without motion: a calm fade instead of a spin. */
+  .nt-spin {
+    animation: nt-pulse 1.6s ease-out infinite;
+  }
+  .nt-shimmer {
+    animation: none;
+  }
+  /* A still arc in the accent still says "busy": the circle is a shape no other state has. */
+  .nt-shape-spin {
+    animation: none;
+  }
+  /* Unfolded content is simply there: no fade to sit through either. */
+  .nt-fade-in {
+    animation: none;
+  }
+  /* The band itself disappears rather than freezing mid-sweep: a still copy in full colour on
+     top of the real line would just look like doubled, slightly offset text. */
+  .nt-wave {
+    animation: none;
+    opacity: 0;
+  }
+}

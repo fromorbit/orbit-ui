@@ -1,0 +1,9 @@
+[install]
+linker = "isolated"
+# Cooldown: a version from outside must be 7 days old. Only our own packages are exempt
+# (Bun knows exact names only); packages/ui/tests/cooldown.test.ts checks the list.
+minimumReleaseAge = 604800
+minimumReleaseAgeExcludes = [
+  "@fromorbit/doc-view",
+  "@fromorbit/ui",
+]

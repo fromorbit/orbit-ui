@@ -1,0 +1,54 @@
+{
+  "outline": [
+    {
+      "depth": 1,
+      "text": "Spec van de betaalpoort",
+      "anchor": "spec-van-de-betaalpoort",
+      "from": 56,
+      "to": 103
+    },
+    {
+      "depth": 2,
+      "text": "Achtergrond",
+      "anchor": "achtergrond",
+      "from": 143,
+      "to": 166
+    },
+    {
+      "depth": 2,
+      "text": "Voorbeeld",
+      "anchor": "voorbeeld",
+      "from": 168,
+      "to": 180
+    },
+    {
+      "depth": 2,
+      "text": "Voorbeeld",
+      "anchor": "voorbeeld-1",
+      "from": 182,
+      "to": 194
+    },
+    {
+      "depth": 2,
+      "text": "Voorbeeld-1",
+      "anchor": "voorbeeld-1-1",
+      "from": 196,
+      "to": 210
+    },
+    {
+      "depth": 2,
+      "text": "Één, twee & drie!",
+      "anchor": "één-twee--drie",
+      "from": 212,
+      "to": 232
+    },
+    {
+      "depth": 2,
+      "text": "Wat is patchBlocks?",
+      "anchor": "wat-is-patchblocks",
+      "from": 234,
+      "to": 258
+    }
+  ],
+  "code": []
+}

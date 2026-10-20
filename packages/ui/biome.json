@@ -1,0 +1,57 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "root": "../.." },
+  "files": { "includes": ["**", "!**/dist"] },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "javascript": { "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": { "Bun": "De library draait in een browser of op Node, nooit op Bun." }
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": { "paths": { "bun": "Geen Bun-API's in broncode; het draait op Node." } }
+        }
+      }
+    }
+  },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "overrides": [
+    {
+      "includes": ["src/**", "!src/**/*.test.ts", "!src/**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "bun": "Geen Bun-API's in broncode; het draait op Node.",
+                  "electron": "De library is alleen presentatie; wat de app levert komt via UiProvider.",
+                  "i18next": "Teksten komen als props; elke afnemer houdt zijn eigen catalogus.",
+                  "react-i18next": "Teksten komen als props; elke afnemer houdt zijn eigen catalogus."
+                },
+                "patterns": [
+                  {
+                    "group": ["@nt/*", "@nt/*/**"],
+                    "message": "De library kent geen @nt/*: eigen typen, en de app via UiProvider."
+                  },
+                  {
+                    "group": ["node:*"],
+                    "message": "De library draait in een browser: geen node:*-modules."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

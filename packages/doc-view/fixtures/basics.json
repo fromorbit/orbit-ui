@@ -1,0 +1,33 @@
+{
+  "outline": [
+    {
+      "depth": 1,
+      "text": "Handboek van de winkel",
+      "anchor": "handboek-van-de-winkel",
+      "from": 0,
+      "to": 24
+    },
+    {
+      "depth": 2,
+      "text": "Lijsten",
+      "anchor": "lijsten",
+      "from": 161,
+      "to": 171
+    },
+    {
+      "depth": 3,
+      "text": "Een kop van niveau drie",
+      "anchor": "een-kop-van-niveau-drie",
+      "from": 328,
+      "to": 355
+    },
+    {
+      "depth": 4,
+      "text": "En van niveau vier",
+      "anchor": "en-van-niveau-vier",
+      "from": 357,
+      "to": 380
+    }
+  ],
+  "code": []
+}

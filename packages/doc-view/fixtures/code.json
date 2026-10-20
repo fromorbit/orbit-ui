@@ -1,0 +1,254 @@
+{
+  "outline": [
+    {
+      "depth": 1,
+      "text": "Code",
+      "anchor": "code",
+      "from": 0,
+      "to": 6
+    }
+  ],
+  "code": [
+    {
+      "language": "ts",
+      "tokens": [
+        [
+          {
+            "content": "export",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "const",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "totaal",
+            "color": "var(--nt-code-token-function)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "=",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " (prijzen",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": ":",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "number",
+            "color": "var(--nt-code-token-constant)"
+          },
+          {
+            "content": "[]) ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "=>",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "prijzen",
+            "color": "var(--nt-code-token-constant)"
+          },
+          {
+            "content": ".reduce",
+            "color": "var(--nt-code-token-function)"
+          },
+          {
+            "content": "((a",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": ",",
+            "color": "var(--nt-code-token-punctuation)"
+          },
+          {
+            "content": " b) ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "=>",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " a ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "+",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " b",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": ",",
+            "color": "var(--nt-code-token-punctuation)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "0",
+            "color": "var(--nt-code-token-constant)"
+          },
+          {
+            "content": ")",
+            "color": "var(--nt-code-foreground)"
+          }
+        ],
+        [],
+        [
+          {
+            "content": "// Een regel commentaar.",
+            "color": "var(--nt-code-token-comment)"
+          }
+        ],
+        [
+          {
+            "content": "export",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "interface",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "Mandje",
+            "color": "var(--nt-code-token-function)"
+          },
+          {
+            "content": " {",
+            "color": "var(--nt-code-foreground)"
+          }
+        ],
+        [
+          {
+            "content": "  artikelen",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": ":",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "readonly",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "string",
+            "color": "var(--nt-code-token-constant)"
+          },
+          {
+            "content": "[]",
+            "color": "var(--nt-code-foreground)"
+          }
+        ],
+        [
+          {
+            "content": "}",
+            "color": "var(--nt-code-foreground)"
+          }
+        ]
+      ]
+    },
+    {
+      "language": "bash",
+      "tokens": [
+        [
+          {
+            "content": "bun",
+            "color": "var(--nt-code-token-function)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "install",
+            "color": "var(--nt-code-token-string)"
+          }
+        ],
+        [
+          {
+            "content": "echo",
+            "color": "var(--nt-code-token-function)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "\"klaar\"",
+            "color": "var(--nt-code-token-string-expression)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": ">",
+            "color": "var(--nt-code-token-keyword)"
+          },
+          {
+            "content": " ",
+            "color": "var(--nt-code-foreground)"
+          },
+          {
+            "content": "/work/winkel/log.txt",
+            "color": "var(--nt-code-token-string)"
+          }
+        ]
+      ]
+    },
+    {
+      "language": "brainfuck",
+      "tokens": null
+    },
+    {
+      "language": null,
+      "tokens": null
+    }
+  ]
+}

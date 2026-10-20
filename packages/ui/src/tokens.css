@@ -1,0 +1,402 @@
+/* Source of truth for the appearance: every colour, size and shadow a component draws with. */
+:root {
+  --nt-font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --nt-font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Two planes and no inset card: the frame is the window
+     and the sidebar, the darkest plane; the canvas carries the conversation and the right panel, a
+     step lighter, because the content comes first. The difference in brightness is the separation;
+     no line runs between the two. `bg` is an alias of the canvas until every use has moved over. */
+  --nt-frame: #0e0e10;
+  --nt-canvas: #141416;
+  --nt-bg: var(--nt-canvas);
+  --nt-surface: rgb(255 255 255 / 0.03);
+  --nt-surface-hover: rgb(255 255 255 / 0.06);
+  /* The row a list's keyboard caret stands on. A step above `surface-hover`, which composited to
+     1.18:1 on a panel — a shade rather than a place, which is why that row used to need an accent
+     outline on top. Neutral by design: an open panel carries no accent. */
+  --nt-surface-active: rgb(255 255 255 / 0.12);
+  /* The quiet items of a list (the chats of the sidebar): a softer
+     hover and a soft card for the chosen one, without border or accent. */
+  --nt-row-hover: rgb(255 255 255 / 0.05);
+  --nt-row-active: rgb(255 255 255 / 0.07);
+  /* A hairline between things that belong together; `strong` for what has to stand as an object
+     of its own: a pill, the round "+", the composer's plane, a key cap. */
+  --nt-border: rgb(255 255 255 / 0.07);
+  --nt-border-strong: rgb(255 255 255 / 0.11);
+  /* The plane inside a pill with a border (the model and the access level in the composer), and
+     that plane lit on hover or while its menu is open. */
+  --nt-pill: rgb(255 255 255 / 0.04);
+  --nt-pill-hover: rgb(255 255 255 / 0.08);
+  /* The plane of your own message in the conversation, the bubble on the right. */
+  --nt-bubble: rgb(255 255 255 / 0.05);
+  /* The plane of a small mark: the letter block of a project, the track of a progress meter. */
+  --nt-mark: rgb(255 255 255 / 0.08);
+  /* The plane of the composer, a step above the canvas it lies on. */
+  --nt-composer: #1a1a1c;
+  /* The border of a large input surface with the focus in it (the composer, a note in a diff): a
+     neutral step up from `border` instead of the accent, the way Linear does it. Strong enough to be
+     the focus indicator on its own: 3.58:1 against the surface and 3.80:1 against the opaque
+     --nt-bg around it (WCAG 2.4.7, 1.4.11). Small fields keep the accent ring; see the guidelines. */
+  --nt-border-focus: rgb(255 255 255 / 0.38);
+  /* The code area of a diff: the opaque dark that the dark theme of @pierre/diffs paints inside its
+     shadow root (measured). `PierreDiff` paints that ground with
+     this token in both themes, so what stands against a diff, such as its footer, is painted the
+     same and reads as part of it.
+     Orbit's end-to-end tests compare the two, so a theme update cannot split them silently. */
+  --nt-diff-bg: rgb(10 10 10);
+  /* Four levels of text, the figures against the canvas:
+     `text` 15.7:1 for content, titles, what is unread or chosen; `secondary` 8.9:1 for navigation
+     at rest, read titles and pills; `muted` 5.8:1 (6.1:1 on the frame) for meta, less blue than it
+     was; `faint` 4.3:1 — below what text owes, so **only icons and decoration**, never a word.
+     `tests/faint-text.test.ts` holds that. */
+  --nt-text: #ededef;
+  --nt-text-secondary: #b4b4b9;
+  --nt-text-muted: #8f9099;
+  --nt-text-faint: #787a82;
+  /* The words of the row a list's keyboard caret stands on, among rows at rest in `muted`: the one
+     place text steps above `text`. With the lighter, less blue `muted`, `text` stands only 2.7:1
+     above it; white keeps the pair at 3.2:1, what WCAG 1.4.11 asks of the indicator (the fill alone
+     does not reach it). */
+  --nt-text-strong: #ffffff;
+
+  /* The orange dot of the Orbit wordmark (brand assets v1.0, "Orbit oranje"). Only the mark carries
+     it, the same in both themes (the light block repeats it unchanged); it is no accent of the
+     interface. See `OrbitWordmark`. */
+  --nt-brand-orbit: #ff7f2a;
+
+  /* Accent: a fill, the text on that fill, and the accent used as text. One mid-tone cannot do
+     both with AA contrast, so the role decides which of the three a use takes. Steel blue:
+     white on the fill 4.67:1, the fill 3.9:1 against the canvas as a fill and a focus ring, the
+     lighter blue as text 7.9:1. `tokens.test.ts` computes every requirement from this file. */
+  --nt-accent: #3d74c4;
+  --nt-accent-fg: #ffffff;
+  --nt-accent-text: #80acef;
+  --nt-accent-subtle: rgb(61 116 196 / 0.16);
+  /* The plane of a key that lies on the accent fill (the Enter of Verstuur, `Kbd` `on-accent`).
+     A dark plane: a white one lightens the fill under the white key (3.51:1 on the steel blue),
+     a black one of 16% deepens it (about 6:1). `tokens.test.ts` computes it. */
+  --nt-accent-key: rgb(0 0 0 / 0.16);
+  /* The edge of a field with the focus in it, and the underline of a link: the lighter blue, since
+     the fill itself sinks into a dark plane at partial strength. */
+  --nt-accent-border: rgb(128 172 239 / 0.6);
+
+  /* The kinds of an SDD document: spec, plan and decision each in a colour of equal
+     brightness, only on their glyph, all at least 3:1 against the canvas and the frame. */
+  --nt-kind-spec: #b59aff;
+  --nt-kind-plan: #e57fb8;
+  --nt-kind-decision: #4cc9b0;
+  /* The audit: ochre, apart from the three above and from the attention of a status. */
+  --nt-kind-audit: #d9a441;
+
+  /* The six quiet tones of an avatar: which one follows from the name. Dark
+     and of low saturation, since the sidebar otherwise carries colour only on its status shapes;
+     `text` on each reaches AA (`tokens.test.ts`). Blue, teal, green, ochre, rose, violet. */
+  --nt-avatar-1: #34507a;
+  --nt-avatar-2: #2c5f58;
+  --nt-avatar-3: #3e5c38;
+  --nt-avatar-4: #6a5126;
+  --nt-avatar-5: #6e3a54;
+  --nt-avatar-6: #4d4280;
+
+  --nt-attention: #e5a445;
+  --nt-danger: #eb5757;
+
+  --nt-success: #4cb782;
+  --nt-attention-subtle: rgb(229 164 69 / 0.08);
+  --nt-attention-border: rgb(229 164 69 / 0.25);
+  --nt-danger-subtle: rgb(235 87 87 / 0.08);
+  --nt-danger-border: rgb(235 87 87 / 0.25);
+  /* The soft underline under a commented passage of a markdown document: the
+     tone of attention, half as strong, so a page full of comments still reads calmly. */
+  --nt-comment-underline: rgb(229 164 69 / 0.6);
+
+  --nt-radius-sm: 4px;
+  --nt-radius-md: 6px;
+  /* Cards, dialogs and menus: a touch rounder than a control. */
+  --nt-radius-lg: 10px;
+
+  /* xs: the quiet button in a footer bar (the diff's moment button), not a control of its own. */
+  --nt-control-xs: 20px;
+  --nt-control-sm: 24px;
+  --nt-control-md: 28px;
+  --nt-control-lg: 32px;
+  /* xs is the affordance of a control (the chevron of a pill), not a glyph that carries content. */
+  --nt-icon-xs: 12px;
+  --nt-icon-sm: 14px;
+  --nt-icon-md: 16px;
+
+  /* Floating layers are opaque: a menu must not be a hole in the window material. */
+  /* A step lighter than the canvas, so a menu reads as lying on top of it. */
+  --nt-overlay-background: #1c1c1e;
+  --nt-scrim: rgb(0 0 0 / 0.5);
+  /* Layered rather than one cloud: a hairline of shadow for the edge, a short one for the lift and
+     a long soft one for the distance, so a menu lies loose without a haze around it. */
+  --nt-shadow-menu:
+    0 0 0 1px rgb(0 0 0 / 0.25), 0 4px 12px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.35);
+  --nt-z-popover: 40;
+  --nt-z-dialog: 50;
+  --nt-z-toast: 60;
+
+  --nt-focus-ring: var(--nt-accent);
+
+  /* One scrollbar for the whole app, the same as the one `ScrollArea` draws itself (`w-2`, a thumb
+     in `border` that turns `muted` under the pointer), so the two shapes cannot be told apart.
+     The host's own stylesheet hangs them on `::-webkit-scrollbar`. */
+  --nt-scrollbar-size: 8px;
+  --nt-scrollbar-thumb: var(--nt-border);
+  --nt-scrollbar-thumb-hover: var(--nt-text-muted);
+
+  --nt-titlebar-height: 40px;
+  --nt-titlebar-inset-start: 16px;
+  --nt-titlebar-inset-end: 16px;
+  /* The window controls that lie over the content at the top right: none, except on Windows. */
+  --nt-window-controls-width: 0px;
+  /* Where the head of the sidebar starts in its strip: the brand at 16px, in line with the text of
+     the rows. See the `darwin` rule. */
+  --nt-sidebar-strip-inset-start: 16px;
+  --nt-sidebar-width: 264px;
+  /* The foot of the sidebar: the account, the archive and the gear, one row of 44px. */
+  --nt-sidebar-foot-height: 44px;
+  /* A toast fits under the sidebar, less 8px on either side: 248px. */
+  --nt-toast-width: calc(var(--nt-sidebar-width) - 16px);
+  /* And stands 8px above its foot: over it, it hid the archive and the gear for as long as it
+     stood. */
+  --nt-toast-bottom: calc(var(--nt-sidebar-foot-height) + 8px);
+  /* The inner edge per container: a panel 12px, a card 16px. */
+  --nt-inset-panel: 12px;
+  --nt-inset-card: 16px;
+
+  /* The sixteen ANSI colours of the terminal, tuned for AA contrast against the
+     panel background (`--nt-bg`) — most reuse a colour the app already vets for that (`--nt-danger`,
+     `--nt-success`, `--nt-attention`, `--nt-accent`), so a program's red or green reads the same
+     shade the rest of the app already uses for the same meaning. The light block below repeats
+     them for a light ground. */
+  --nt-terminal-ansi-0: #1c1c1e; /* black — --nt-overlay-background */
+  --nt-terminal-ansi-1: #eb5757; /* red — --nt-danger */
+  --nt-terminal-ansi-2: #4cb782; /* green — --nt-success */
+  --nt-terminal-ansi-3: #e5a445; /* yellow — --nt-attention */
+  --nt-terminal-ansi-4: #6ab0f3; /* blue */
+  --nt-terminal-ansi-5: #c792ea; /* magenta */
+  /* The accent left cyan for steel blue; a program's cyan stays cyan. */
+  --nt-terminal-ansi-6: #3cc4e6; /* cyan */
+  --nt-terminal-ansi-7: #d1d5db; /* white */
+  --nt-terminal-ansi-8: #6b7280; /* bright black */
+  --nt-terminal-ansi-9: #ff7b7b; /* bright red */
+  --nt-terminal-ansi-10: #6fd7a3; /* bright green */
+  --nt-terminal-ansi-11: #f0c674; /* bright yellow */
+  --nt-terminal-ansi-12: #8cc7f7; /* bright blue */
+  --nt-terminal-ansi-13: #dcb3f5; /* bright magenta */
+  --nt-terminal-ansi-14: #7fdcf0; /* bright cyan */
+  --nt-terminal-ansi-15: #ededef; /* bright white — --nt-text */
+
+  /* The colours of a fenced block in a markdown document (Shiki's css-variables theme). The same AA-vetted shades as the terminal above, so a keyword or a string reads
+     the same in a document as a program's own colour does in a shell. */
+  --nt-code-foreground: var(--nt-text);
+  --nt-code-background: transparent;
+  --nt-code-token-keyword: var(--nt-terminal-ansi-5);
+  --nt-code-token-string: var(--nt-terminal-ansi-2);
+  --nt-code-token-string-expression: var(--nt-terminal-ansi-2);
+  --nt-code-token-comment: var(--nt-text-muted);
+  --nt-code-token-constant: var(--nt-terminal-ansi-3);
+  --nt-code-token-function: var(--nt-terminal-ansi-4);
+  --nt-code-token-parameter: var(--nt-terminal-ansi-7);
+  --nt-code-token-punctuation: var(--nt-terminal-ansi-7);
+  --nt-code-token-link: var(--nt-accent-text);
+  --nt-code-token-inserted: var(--nt-success);
+  --nt-code-token-deleted: var(--nt-danger);
+  --nt-code-token-changed: var(--nt-attention);
+
+  /* The window and the sidebar stand on the frame, the main panel on the canvas: the sidebar is
+     darker than the content, on a translucent window as well. */
+  --nt-app-background: var(--nt-frame);
+  --nt-sidebar-background: var(--nt-frame);
+  --nt-panel-background: var(--nt-canvas);
+}
+
+/* A folded, yielded or replaced sidebar has no foot: the toasts stand 16px above the window edge
+   again (`ToastProvider`, `aboveFoot`). */
+[data-nt-toast-without-foot] {
+  --nt-toast-bottom: 16px;
+}
+
+/* The light palette: the same roles as the dark one above, for a page that sets
+   `data-theme="light"` on itself or on an element. The app's preload sets it on the root when the
+   theme is light (a setting of the app); the website follows the system with it
+   (its `nt:sync` copies this block too), and the gallery story "Licht" shows building blocks on it
+   in either theme. Only a `data-theme` attribute selects it, never `prefers-color-scheme` here: the
+   app's own choice reaches the page through main, and a story can still set it on one element.
+
+   Every token that names a colour is repeated here, the aliases (`bg`, `focus-ring`, the code
+   tokens) as well: a custom property that reads another is resolved where it is declared, so an
+   element in light under a dark root would otherwise inherit the dark value of the alias.
+   `tokens.test.ts` computes the contrast requirements for this block as for the dark one. */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* The frame a step darker than the canvas, as in dark: the sidebar recedes, the content leads. */
+  --nt-frame: #f3f3f5;
+  --nt-canvas: #fbfbfc;
+  --nt-bg: var(--nt-canvas);
+  /* Planes over a light ground darken rather than lighten: black at the strengths of the white
+     above, a touch stronger where a light ground swallows a shade sooner. */
+  --nt-surface: rgb(0 0 0 / 0.03);
+  --nt-surface-hover: rgb(0 0 0 / 0.05);
+  --nt-surface-active: rgb(0 0 0 / 0.09);
+  --nt-row-hover: rgb(0 0 0 / 0.04);
+  --nt-row-active: rgb(0 0 0 / 0.06);
+  --nt-border: rgb(0 0 0 / 0.08);
+  --nt-border-strong: rgb(0 0 0 / 0.13);
+  --nt-pill: rgb(0 0 0 / 0.03);
+  --nt-pill-hover: rgb(0 0 0 / 0.06);
+  --nt-bubble: rgb(0 0 0 / 0.04);
+  --nt-mark: rgb(0 0 0 / 0.07);
+  /* The composer lies a step above the canvas: white. */
+  --nt-composer: #ffffff;
+  /* 3.3:1 against the canvas, the focus indicator on its own as in dark. */
+  --nt-border-focus: rgb(0 0 0 / 0.45);
+  /* The code area of a diff a shade under the canvas, as in dark: white stood out as a block
+     against the near-white canvas. `PierreDiff` paints the library's ground with it. */
+  --nt-diff-bg: #f4f4f6;
+  /* Four levels against the canvas: `text` 16.6:1, `secondary` 9.1:1, `muted` 5.7:1 (5.3:1 on the
+     frame), `faint` 3.2:1 — again only icons and decoration. */
+  --nt-text: #1b1b1f;
+  --nt-text-secondary: #45464d;
+  --nt-text-muted: #62646c;
+  --nt-text-faint: #8b8d95;
+  /* The caret row: black, 3.6:1 above `muted`. */
+  --nt-text-strong: #000000;
+
+  /* The same steel blue fill (white on it 4.67:1, 4.5:1 against the canvas); as text a darker blue,
+     6.2:1, since the light blue of dark would vanish on white. */
+  --nt-brand-orbit: #ff7f2a;
+  --nt-accent: #3d74c4;
+  --nt-accent-fg: #ffffff;
+  --nt-accent-text: #2b5ea8;
+  --nt-accent-subtle: rgb(61 116 196 / 0.12);
+  --nt-accent-key: rgb(255 255 255 / 0.2);
+  --nt-accent-border: rgb(43 94 168 / 0.5);
+
+  /* The kinds of a document, darker for a light ground, all at least 4.2:1 on canvas and frame. */
+  --nt-kind-spec: #7a57d6;
+  --nt-kind-plan: #c2397f;
+  --nt-kind-decision: #0d8270;
+  --nt-kind-audit: #8a5a00;
+
+  /* The six avatar tones as pale tints of the same hues, so the dark initials in `text` read on
+     each (AA, `tokens.test.ts`). */
+  --nt-avatar-1: #d3dff0;
+  --nt-avatar-2: #cfe6e2;
+  --nt-avatar-3: #d6e5d1;
+  --nt-avatar-4: #ecdfc6;
+  --nt-avatar-5: #eed4e0;
+  --nt-avatar-6: #dcd6f0;
+
+  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.8:1 and
+     5.0:1 there). */
+  --nt-attention: #965a00;
+  --nt-danger: #bf3030;
+  --nt-success: #24804f;
+  --nt-attention-subtle: rgb(150 90 0 / 0.08);
+  --nt-attention-border: rgb(150 90 0 / 0.3);
+  --nt-danger-subtle: rgb(191 48 48 / 0.07);
+  --nt-danger-border: rgb(191 48 48 / 0.3);
+  --nt-comment-underline: rgb(150 90 0 / 0.55);
+
+  /* A menu is white on the near-white canvas; its shadow, not its brightness, lifts it. */
+  --nt-overlay-background: #ffffff;
+  --nt-scrim: rgb(0 0 0 / 0.3);
+  --nt-shadow-menu:
+    0 0 0 1px rgb(0 0 0 / 0.08), 0 4px 12px rgb(0 0 0 / 0.08), 0 16px 40px rgb(0 0 0 / 0.12);
+
+  --nt-focus-ring: var(--nt-accent);
+  --nt-scrollbar-thumb: var(--nt-border);
+  --nt-scrollbar-thumb-hover: var(--nt-text-muted);
+
+  /* The sixteen ANSI colours for a light ground, each at least AA against the canvas; the
+     "white" pair is grey and black, as light terminal themes do, so it stays legible. */
+  --nt-terminal-ansi-0: #1b1b1f; /* black — --nt-text */
+  --nt-terminal-ansi-1: #c4302b; /* red */
+  --nt-terminal-ansi-2: #1f7a48; /* green */
+  --nt-terminal-ansi-3: #8a5c00; /* yellow */
+  --nt-terminal-ansi-4: #2b63b8; /* blue */
+  --nt-terminal-ansi-5: #8a3dbd; /* magenta */
+  --nt-terminal-ansi-6: #0b7189; /* cyan */
+  --nt-terminal-ansi-7: #55575e; /* white */
+  --nt-terminal-ansi-8: #6b6e76; /* bright black */
+  --nt-terminal-ansi-9: #a82621; /* bright red */
+  --nt-terminal-ansi-10: #196a3d; /* bright green */
+  --nt-terminal-ansi-11: #7a5100; /* bright yellow */
+  --nt-terminal-ansi-12: #1f55a5; /* bright blue */
+  --nt-terminal-ansi-13: #7433a6; /* bright magenta */
+  --nt-terminal-ansi-14: #095f73; /* bright cyan */
+  --nt-terminal-ansi-15: #000000; /* bright white */
+
+  /* The code of a document reads the light ANSI colours above: Shiki's css-variables theme in
+     `@fromorbit/doc-view` needs no theme of its own for light. */
+  --nt-code-foreground: var(--nt-text);
+  --nt-code-background: transparent;
+  --nt-code-token-keyword: var(--nt-terminal-ansi-5);
+  --nt-code-token-string: var(--nt-terminal-ansi-2);
+  --nt-code-token-string-expression: var(--nt-terminal-ansi-2);
+  --nt-code-token-comment: var(--nt-text-muted);
+  --nt-code-token-constant: var(--nt-terminal-ansi-3);
+  --nt-code-token-function: var(--nt-terminal-ansi-4);
+  --nt-code-token-parameter: var(--nt-terminal-ansi-7);
+  --nt-code-token-punctuation: var(--nt-terminal-ansi-7);
+  --nt-code-token-link: var(--nt-accent-text);
+  --nt-code-token-inserted: var(--nt-success);
+  --nt-code-token-deleted: var(--nt-danger);
+  --nt-code-token-changed: var(--nt-attention);
+
+  --nt-app-background: var(--nt-frame);
+  --nt-sidebar-background: var(--nt-frame);
+  --nt-panel-background: var(--nt-canvas);
+}
+
+/* The window material shimmers through the tint of a translucent window. The sidebar shows the material
+   through the frame's tint, the main panel covers it further with the canvas for legibility. */
+:root[data-translucent="true"] {
+  --nt-app-background: rgb(14 14 16 / 0.6);
+  --nt-sidebar-background: transparent;
+  --nt-panel-background: rgb(20 20 22 / 0.7);
+}
+
+/* The same strengths over the light material: the frame and the canvas of the light block. */
+:root[data-translucent="true"][data-theme="light"] {
+  --nt-app-background: rgb(243 243 245 / 0.6);
+  --nt-panel-background: rgb(251 251 252 / 0.7);
+}
+
+/* Room for the window controls overlay of Windows (`titleBarOverlay` in `main/window/chrome.ts`):
+   three buttons of about 138px at every scale, plus 2px so the last pill never touches the
+   minimise button. Only the strip that stands at the top right of the window takes it
+   (`data-nt-reserve-window-controls`, see `windowControlsOwner` and `index.css`); everywhere else
+   the width is 0 and that rule changes nothing. */
+:root[data-platform="win32"] {
+  --nt-window-controls-width: 140px;
+}
+
+/* Room for the macOS traffic lights, only on the title bar `TitleBar` itself marks as the window's
+   own leftmost column (`data-nt-reserve-traffic-lights`, set from `App.tsx` when the sidebar is
+   folded). `trafficLightPosition` in `main/window/chrome.ts` puts them at x:14; the three 12px
+   lights with 8px gaps between them span about 52px from there, plus the same 16px of breathing
+   room the bar already keeps everywhere else. */
+.titlebar[data-nt-reserve-traffic-lights="true"] {
+  --nt-titlebar-inset-start: 82px;
+}
+
+/* The same room for the tab strip of a panel in full screen beside a folded sidebar (`Tabs`,
+   `reserveTrafficLights`): that strip then starts at the window's left edge. Its first control
+   lands on the same 82px as the folded title bar's: 7px of resize edge before the strip, this
+   padding, and the 8px gutter of the `before` slot. */
+.nt-titlebar-strip[data-nt-reserve-traffic-lights="true"] {
+  padding-inline-start: 67px;
+}
+
+/* The strip above the open sidebar holds the traffic lights at its left end, so what it carries
+   there (the head with the brand) starts where the folded title bar starts its own
+   content: the same 82px. Elsewhere the strip starts at 16px, in line with the text of the rows. */
+:root[data-platform="darwin"] {
+  --nt-sidebar-strip-inset-start: 82px;
+}
