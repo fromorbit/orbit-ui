@@ -1,48 +1,48 @@
 # orbit-ui
 
-De bouwstenen van de interface van Orbit, als Bun-workspace met twee pakketten: `@fromorbit/ui` (`packages/ui`: primitives, overlays, patterns en de ontwerpwaarden `tokens.css` en `theme.css`) en `@fromorbit/doc-view` (`packages/doc-view`: de documentweergave). Beide worden gepubliceerd op GitHub Packages.
+The building blocks of the Orbit interface, as a Bun workspace with two packages: `@fromorbit/ui` (`packages/ui`: primitives, overlays, patterns and the design tokens `tokens.css` and `theme.css`) and `@fromorbit/doc-view` (`packages/doc-view`: the document view). Both are published on GitHub Packages.
 
-## Commando's
+## Commands
 
-Bun is package manager en script-runner; tests en de library zelf draaien op Node (`.node-version`). Op de root draait elk commando over beide pakketten (doc-view eerst); in een pakketmap alleen over dat pakket.
+Bun is the package manager and script runner; the tests and the library itself run on Node (`.node-version`). At the root, every command runs over both packages (doc-view first); in a package folder, only over that package.
 
-| Commando | Bewijst |
+| Command | Proves |
 |---|---|
-| `bun run check` | typecheck, lint (incl. de grenzen) en alle Vitest-tests (componenten in happy-dom), zonder te bouwen |
-| `bun run build` | `dist/`: JavaScript met tsup (één module per bronbestand, niet geminificeerd), `.d.ts` met `tsc`, `scripts/dts-extensions.mjs` zet er `.js` in; ui kopieert `tokens.css` en `theme.css`, doc-view `doc-view.css` |
-| `bun run verify` | na `build`: elke export heeft zijn bestand en laadt in kaal Node, via `import` en `require` (`scripts/verify-dist.mjs`) |
-| `bun run test:consumer` | na `build`: voor ui laadt elke export uit `dist/` (`tests/exports.test.ts`), rendert een `Button` uit `dist/` met en zonder `UiProvider` (`tests/consumer.test.tsx`) en typecheckt een afnemer tegen de gebouwde `.d.ts` (`tests/consumer-types.test.ts`); voor doc-view wordt het pakket ingepakt, in een vers NodeNext-project geïnstalleerd en getypecheckt (`consumer/consumer.test.ts`, vraagt netwerk) |
-| `bun run gallery:build` | de componentenpagina (`packages/ui/docs-site/`) bouwt naar `docs-site/dist`; zijn test (lijst en hash) draait in `check`, `gallery:publish` alleen met de hand |
-| `bun run changeset` | een wijziging aankondigen (patch/minor/major) |
-| `bun run release` | alleen op verzoek: `build`, `verify`, `check`, `test:consumer` en `changeset publish` naar GitHub Packages (token met `write:packages`) |
+| `bun run check` | typecheck, lint (including the boundaries) and every Vitest test (components in happy-dom), without building |
+| `bun run build` | `dist/`: JavaScript with tsup (one module per source file, not minified), `.d.ts` with `tsc`, and `scripts/dts-extensions.mjs` adds `.js` to them; ui copies `tokens.css` and `theme.css`, doc-view copies `doc-view.css` |
+| `bun run verify` | after `build`: every export has its file and loads in plain Node, through both `import` and `require` (`scripts/verify-dist.mjs`) |
+| `bun run test:consumer` | after `build`: for ui, every export loads from `dist/` (`tests/exports.test.ts`), a `Button` from `dist/` renders with and without `UiProvider` (`tests/consumer.test.tsx`), and a consumer typechecks against the built `.d.ts` (`tests/consumer-types.test.ts`); for doc-view, the package is packed, installed into a fresh NodeNext project and typechecked (`consumer/consumer.test.ts`, needs network) |
+| `bun run gallery:build` | the component site (`packages/ui/docs-site/`) builds into `docs-site/dist`; its test (list and hash) runs in `check`, `gallery:publish` only by hand |
+| `bun run changeset` | announce a change (patch/minor/major) |
+| `bun run release` | only on request: `build`, `verify`, `check`, `test:consumer` and `changeset publish` to GitHub Packages (token with `write:packages`) |
 
-## De workspace
+## The workspace
 
-- `@fromorbit/ui` gebruikt `@fromorbit/doc-view` als peer; in de workspace is het een devDependency `workspace:*`, dus de lokale doc-view. De voorwaarde `@fromorbit/source` in de `exports` van doc-view wijst naar zijn `src/`: ui's `tsconfig.json`, `vitest.config.ts` en `docs-site/vite.config.ts` zetten hem, zodat `check` en de galerij geen build van doc-view nodig hebben. `tsconfig.build.json` van ui zet hem uit; de build van ui leest dus de gebouwde doc-view, en `bun run build` bouwt doc-view eerst.
-- `bunfig.toml` op de root geldt voor beide pakketten: een versie van buiten moet zeven dagen oud zijn, alleen eigen pakketten zijn uitgezonderd (`packages/ui/tests/cooldown.test.ts`).
-- `.npmrc` noemt alleen het register van `@fromorbit` en verwijst naar `NODE_AUTH_TOKEN`; er staat nooit een token in een bestand. Installeren in de workspace heeft hem niet nodig, publiceren wel.
+- `@fromorbit/ui` takes `@fromorbit/doc-view` as a peer; in the workspace it is a `workspace:*` devDependency, so the local doc-view. The `@fromorbit/source` condition in doc-view's `exports` points to its `src/`: ui's `tsconfig.json`, `vitest.config.ts` and `docs-site/vite.config.ts` set it, so `check` and the gallery need no build of doc-view. ui's `tsconfig.build.json` turns it off, so the ui build reads the built doc-view, and `bun run build` builds doc-view first.
+- `bunfig.toml` at the root applies to both packages: an outside version must be seven days old; only our own packages are exempt (`packages/ui/tests/cooldown.test.ts`).
+- `.npmrc` names only the `@fromorbit` registry and refers to `NODE_AUTH_TOKEN`; a token is never written to a file. Installing in the workspace does not need it; publishing does.
 
-## Regels die hier gelden
+## Rules
 
-- **Geen i18n.** Geen `i18next` of `react-i18next`, en geen Nederlandse of Engelse tekst in een component: elke tekst komt als prop (`confirmLabel`, `copiedLabel`, `labels`). De afnemer haalt hem uit zijn eigen catalogus.
-- **Geen `@nt/*`.** De pakketten kennen het protocol, de bridge en de sneltoetscatalogus van de app niet. Typen die een component nodig heeft, zijn eigen structurele kopieën (`packages/ui/src/types.ts`). doc-view importeert geen enkel ander eigen pakket (`packages/doc-view/test/boundaries.test.ts`). Geen `node:*` buiten tests.
-- **De app via `UiProvider`.** Sneltoetsen (`ShortcutPort`), platform, thema, `locale` en host (`HostPort`: de gehoste lagen van `HostedSurface`) komen binnen via één `UiProvider`; een bestand of link openen gaat via `onOpen` van `FileLink` en `GitHubLink`. Zonder provider werkt alles met een neutrale standaard: geen sneltoetslabel, platform `mac`. `ShortcutIds` vult de afnemer met declaration merging vanuit de root-module.
-- **Drie lagen in ui.** `primitives/` → `overlays/` → `patterns/`: een laag importeert alleen uit zichzelf of een laag eronder. `tests/boundaries.test.ts` en `biome.json` dwingen de grenzen af: lagen alleen omlaag, geen relatieve import buiten `src/`, een pakket alleen als het in `dependencies` of `peerDependencies` staat, `vitest`, Testing Library en `node:*` alleen in een test (`@testing-library/react` ook in `src/testing/`), geen `i18next` of `@nt/*`, en geen import uit `testing/` of `gallery/` buiten een test, een verhaal of die mappen zelf.
-- **Klassen blijven letterlijk.** De Tailwind van de afnemer scant `dist/` met `@source`, dus de build minificeert en bundelt niet, en een klasse wordt nooit uit stukjes samengesteld.
-- **Peers van ui.** React, `react-dom`, `radix-ui`, `lucide-react`, `@pierre/diffs`, `@pierre/trees`, `react-markdown`, `remark-gfm` en `@fromorbit/doc-view` zijn peer dependencies (de root-export laadt `Prose`, dus doc-view is niet optioneel); `@testing-library/react` (voor `./testing`) is een optionele peer; `class-variance-authority` is een gewone dependency. Elke peer staat ook in `devDependencies` en in `EXTERNAL` van `tsup.config.ts`; de peers van doc-view staan in ui alleen in `devDependencies`, voor de tests.
-- **`radix-ui` op `~1.6.7`.** Onder 1.7.0 en 1.8.1 falen `Tabs.test.tsx` ("reports the tab that was chosen": de keuze komt twee keer binnen) en `DropdownMenu.test.tsx` (de reden van een uitgeschakelde rij). Verruim de range pas als die twee onder de nieuwe versie groen zijn.
-- **De `shiki`-alias.** `vitest.config.ts` van ui laat `shiki` naar `src/patterns/shiki-bundle.ts` wijzen en inlinet `@pierre/diffs`; zo testen `PierreDiff` en `Prose` tegen de bundel die een afnemer uitlevert.
-- **`testing/labels.ts` is een fixture.** De Nederlandse woorden van de eigen verhalen en tests. Publiek alleen als `galleryLabels` van `./gallery`, nooit vanuit `./testing` of `.`: een afnemer geeft zijn componenten de woorden van zijn eigen catalogus.
-- **De styling gaat mee.** `tokens.css` levert de variabelen, `theme.css` de rest waarvan componenten afhangen. `src/theme.test.ts` faalt als een component een `nt-`-klasse draagt zonder regel in `theme.css` of `tokens.css`, en als `theme.css` iets van de app bevat (`body`, scrollbalken van het venster, indeling) of iets importeert.
-- **Bewakingstests in `packages/ui/tests/`** (hulpjes in `tests/guards/`): elk component heeft een test en een galerijverhaal ernaast (`component-siblings`), elke focusring heeft een `outline-offset` (`focus-ring`), `text-faint` alleen in de toon van `Icon` (`faint-text`), geen eigen `<svg>` buiten de genoemde bestanden (`own-svg`), geen kleur uit het Tailwind-palet (`palette-colours`), en geen kale `<button>`/`<input>` in een verhaal of in `testing/` (`bare-controls`).
-- **Gouden voorbeelden van doc-view.** `packages/doc-view/fixtures/` gaat mee in het pakket; `NT_GOLDEN_UPDATE=1 bun run test` in `packages/doc-view` schrijft ze opnieuw. Lees de diff.
-- **Elke component exporteert zijn props-type** en zijn `*Labels`-type; `src/index.ts` van ui exporteert elk module met `export *`, `src/index.test.ts` noemt een module die ontbreekt.
-- **Een nieuwe export** krijgt een regel in `exports`, een entry in `ENTRIES` van `tsup.config.ts` en een plek in de exporttest. Verander geen bestaand subpad: afnemers importeren het.
-- **Verhalen zijn pixelreferenties.** De zichtbare tekst in `*.gallery.tsx` bepaalt schermafbeeldingen bij afnemers; verander hem alleen met een reden.
-- **Commentaar en testnamen in het Engels**, met JSDoc op elke export (samenvatting, dan het waarom); documentatie in het Nederlands, de README van doc-view in het Engels.
-- **De repo is openbaar.** Geen persoonsgegevens, tokens, echte machinepaden of namen van klanten of projecten in code, verhalen, tests of fixtures: verzonnen namen, `/work/…`-paden. Geen verwijzingen naar documenten die hier niet staan.
-- **Werk gaat via een branch en een pull request** naar `main`, nooit met force; `git add` op expliciete paden.
+- **No i18n.** No `i18next` or `react-i18next`, and no Dutch or English text in a component: every text arrives as a prop (`confirmLabel`, `copiedLabel`, `labels`). The consumer takes it from its own catalogue.
+- **No `@nt/*`.** The packages know nothing of the app's protocol, bridge or shortcut catalogue. Types a component needs are its own structural copies (`packages/ui/src/types.ts`). doc-view imports none of our other packages (`packages/doc-view/test/boundaries.test.ts`). No `node:*` outside tests.
+- **The app through `UiProvider`.** Shortcuts (`ShortcutPort`), platform, theme, `locale` and host (`HostPort`: the hosted layers of `HostedSurface`) come in through a single `UiProvider`; opening a file or link goes through `onOpen` on `FileLink` and `GitHubLink`. Without a provider everything works with a neutral default: no shortcut label, platform `mac`. The consumer fills `ShortcutIds` with declaration merging from the root module.
+- **Three layers in ui.** `primitives/` → `overlays/` → `patterns/`: a layer imports only from itself or a layer below. `tests/boundaries.test.ts` and `biome.json` enforce the boundaries: layers only downward, no relative import outside `src/`, a package only if it is in `dependencies` or `peerDependencies`, `vitest`, Testing Library and `node:*` only in a test (`@testing-library/react` also in `src/testing/`), no `i18next` or `@nt/*`, and no import from `testing/` or `gallery/` outside a test, a story or those folders themselves.
+- **Classes stay literal.** The consumer's Tailwind scans `dist/` with `@source`, so the build neither minifies nor bundles, and a class is never assembled from pieces.
+- **Peers of ui.** React, `react-dom`, `radix-ui`, `lucide-react`, `@pierre/diffs`, `@pierre/trees`, `react-markdown`, `remark-gfm` and `@fromorbit/doc-view` are peer dependencies (the root export loads `Prose`, so doc-view is not optional); `@testing-library/react` (for `./testing`) is an optional peer; `class-variance-authority` is a regular dependency. Every peer is also in `devDependencies` and in `EXTERNAL` of `tsup.config.ts`; doc-view's own peers appear in ui only in `devDependencies`, for the tests.
+- **`radix-ui` at `~1.6.7`.** Under 1.7.0 and 1.8.1, `Tabs.test.tsx` ("reports the tab that was chosen": the choice arrives twice) and `DropdownMenu.test.tsx` (the reason of a disabled row) fail. Widen the range only once both pass on the new version.
+- **The `shiki` alias.** ui's `vitest.config.ts` points `shiki` to `src/patterns/shiki-bundle.ts` and inlines `@pierre/diffs`, so `PierreDiff` and `Prose` are tested against the bundle a consumer ships.
+- **`testing/labels.ts` is a fixture.** The Dutch words of our own stories and tests. Public only as `galleryLabels` from `./gallery`, never from `./testing` or `.`: a consumer gives its components the words of its own catalogue.
+- **The styling ships with it.** `tokens.css` provides the variables, `theme.css` everything else the components depend on. `src/theme.test.ts` fails when a component carries an `nt-` class with no rule in `theme.css` or `tokens.css`, and when `theme.css` contains anything belonging to the app (`body`, window scrollbars, layout) or imports anything.
+- **Guard tests in `packages/ui/tests/`** (helpers in `tests/guards/`): every component has a test and a gallery story beside it (`component-siblings`), every focus ring has an `outline-offset` (`focus-ring`), `text-faint` only in the tone of `Icon` (`faint-text`), no `<svg>` of our own outside the listed files (`own-svg`), no colour from the Tailwind palette (`palette-colours`), and no bare `<button>`/`<input>` in a story or in `testing/` (`bare-controls`).
+- **doc-view's golden examples.** `packages/doc-view/fixtures/` ships with the package; `NT_GOLDEN_UPDATE=1 bun run test` in `packages/doc-view` rewrites them. Read the diff.
+- **Every component exports its props type** and its `*Labels` type; ui's `src/index.ts` re-exports every module with `export *`, and `src/index.test.ts` names any module that is missing.
+- **A new export** gets a line in `exports`, an entry in `ENTRIES` of `tsup.config.ts` and a place in the export test. Never change an existing subpath: consumers import it.
+- **Stories are pixel references.** The visible text in `*.gallery.tsx` determines screenshots in consuming apps; change it only for a reason.
+- **Language.** Code comments, test names and the repository documentation (the READMEs and this file) are in English, with JSDoc on every export (summary first, then the why). The exception is deliberate: the visible text of the gallery stories and of the component site (`docs-site`) stays Dutch, because the stories are Orbit's pixel references.
+- **The repository is public.** No personal data, tokens, real machine paths, or names of clients or projects in code, stories, tests or fixtures: use made-up names and `/work/…` paths. No references to documents that do not live here.
+- **Work goes through a branch and a pull request** to `main`, never with force; `git add` with explicit paths.
 
-## Definitie van klaar
+## Definition of done
 
-`bun run check`, `bun run build` en `bun run test:consumer` zijn groen, in deze sessie gedraaid, en de uitvoer is gelezen.
+`bun run check`, `bun run build` and `bun run test:consumer` are green, run in this session, and their output has been read.
