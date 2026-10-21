@@ -1,6 +1,6 @@
 {
   "name": "@fromorbit/ui",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The interface building blocks of Orbit: primitives, overlays, patterns and the design tokens.",
   "type": "module",
   "sideEffects": [
