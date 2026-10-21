@@ -1,58 +1,58 @@
-<img width="2400" height="600" alt="fromorbit-banner-donker-2400x600" src="https://github.com/user-attachments/assets/27ec445d-9198-40ba-921a-3826c02c0b8f" />
+<img width="2400" height="600" alt="Orbit" src="https://github.com/user-attachments/assets/27ec445d-9198-40ba-921a-3826c02c0b8f" />
 
-De bouwstenen van de interface van **Orbit**, als twee npm-pakketten:
+The building blocks of the **Orbit** interface, as two npm packages:
 
-| Pakket | Map | Wat het is |
+| Package | Folder | What it is |
 |---|---|---|
-| [`@fromorbit/ui`](packages/ui/README.md) | `packages/ui` | de componentenbibliotheek: primitives, overlays, patterns, de ontwerpwaarden (`tokens.css`) en het thema (`theme.css`) |
-| [`@fromorbit/doc-view`](packages/doc-view/README.md) | `packages/doc-view` | de documentweergave: Markdown, zijn inhoudsopgave en de soort van een document |
+| [`@fromorbit/ui`](packages/ui/README.md) | `packages/ui` | the component library: primitives, overlays, patterns, the design tokens (`tokens.css`) and the theme (`theme.css`) |
+| [`@fromorbit/doc-view`](packages/doc-view/README.md) | `packages/doc-view` | the document view: Markdown, its outline and the kind of a document |
 
-`@fromorbit/ui` gebruikt `@fromorbit/doc-view` voor `Prose` en de Shiki-bundel (als peer dependency). Alle verhalen van de componenten staan online: <https://fromorbit.github.io/orbit-ui-docs/>.
+`@fromorbit/ui` uses `@fromorbit/doc-view` for `Prose` and the Shiki bundle (as a peer dependency). Every component story is online: <https://fromorbit.github.io/orbit-ui-docs/>.
 
-Installeren als afnemer: zie de README van elk pakket. Beide staan op GitHub Packages (`https://npm.pkg.github.com`), dat ook voor een openbaar pakket een token met `read:packages` vraagt.
+To install either package in your own project, see its README. Both are published on GitHub Packages (`https://npm.pkg.github.com`), which asks for a token with `read:packages` even for a public package.
 
-## Ontwikkelen
+## Development
 
-Vereisten: Node 24 en Bun (zie `.node-version` en `.bun-version`). De repo is een Bun-workspace; `@fromorbit/doc-view` komt in de workspace uit `packages/doc-view`, dus installeren vraagt geen token.
+Requirements: Node 24 and Bun (see `.node-version` and `.bun-version`). The repository is a Bun workspace; inside it, `@fromorbit/doc-view` resolves to `packages/doc-view`, so installing needs no token.
 
 ```sh
 bun install
 bun run check
 ```
 
-| Commando (op de root) | Wat het doet |
+| Command (at the root) | What it does |
 |---|---|
-| `bun run check` | typecheck, lint (incl. de grenzen) en alle Vitest-tests van beide pakketten, zonder te bouwen |
-| `bun run build` | bouwt `dist/` van doc-view en daarna van ui (ESM plus `.d.ts`, één module per bronbestand, niet geminificeerd) |
-| `bun run verify` | na `build`: elke export van beide pakketten heeft zijn bestand en laadt in kaal Node |
-| `bun run test:consumer` | na `build`: doc-view ingepakt en geïnstalleerd in een vers NodeNext-project dat typecheckt (vraagt netwerk), en elke export van ui laadt, rendert en typecheckt vanuit `dist/` |
-| `bun run gallery`, `gallery:build` | de componentenpagina (`packages/ui/docs-site`) lokaal met HMR, of als statische build naar `packages/ui/docs-site/dist` |
-| `bun run gallery:publish` | bouwt de componentenpagina en zet hem op GitHub Pages (`fromorbit/orbit-ui-docs`); vraagt schrijfrechten op die repo |
-| `bun run changeset` | een wijziging aankondigen (patch/minor/major) |
-| `bun run version` | de versies ophogen uit de changesets en de changelogs schrijven |
-| `bun run release` | bouwen, controleren, `check`, de afnemertests en `changeset publish` |
+| `bun run check` | typecheck, lint (including the boundaries) and every Vitest test of both packages, without building |
+| `bun run build` | builds `dist/` for doc-view, then for ui (ESM plus `.d.ts`, one module per source file, not minified) |
+| `bun run verify` | after `build`: every export of both packages has its file and loads in plain Node |
+| `bun run test:consumer` | after `build`: doc-view is packed and installed into a fresh NodeNext project that typechecks (needs network), and every export of ui loads, renders and typechecks from `dist/` |
+| `bun run gallery`, `gallery:build` | the component site (`packages/ui/docs-site`) locally with HMR, or as a static build into `packages/ui/docs-site/dist` |
+| `bun run gallery:publish` | builds the component site and deploys it to GitHub Pages (`fromorbit/orbit-ui-docs`); needs write access to that repository |
+| `bun run changeset` | announce a change (patch/minor/major) |
+| `bun run version` | bump the versions from the changesets and write the changelogs |
+| `bun run release` | build, verify, `check`, the consumer tests and `changeset publish` |
 
-Elk pakket heeft dezelfde scripts in zijn eigen map (`bun run --cwd packages/ui check`, …).
+Each package has the same scripts in its own folder (`bun run --cwd packages/ui check`, …).
 
-De componentenpagina is een gewone afnemer: hij haalt de verhalen uit `src/gallery`, de componenten uit `src` en de styling uit `tokens.css` en `theme.css` (`packages/ui/tests/docs-site.test.ts` bewaakt dat). Hij zit niet in het npm-pakket.
+The component site is an ordinary consumer: it takes the stories from `src/gallery`, the components from `src` and the styling from `tokens.css` and `theme.css` (`packages/ui/tests/docs-site.test.ts` guards this). It is not part of the npm package.
 
-## Uitgeven
+## Releasing
 
-1. Elke wijziging die een afnemer merkt, krijgt een changeset (`bun run changeset`).
-2. `bun run version` hoogt de versies op en schrijft de `CHANGELOG.md` van elk pakket.
-3. `bun run release` bouwt, controleert en publiceert naar GitHub Packages, met een token met `write:packages` in `NODE_AUTH_TOKEN`. `changeset publish` publiceert elk pakket waarvan de versie nog niet in het register staat; doc-view gaat vóór ui, want ui vraagt de nieuwe doc-view als peer.
+1. Every change a consumer will notice gets a changeset (`bun run changeset`).
+2. `bun run version` bumps the versions and writes each package's `CHANGELOG.md`.
+3. `bun run release` builds, checks and publishes to GitHub Packages, with a token that has `write:packages` in `NODE_AUTH_TOKEN`. `changeset publish` publishes every package whose version is not yet in the registry; doc-view goes before ui, because ui asks for the new doc-view as a peer.
 
-## Opbouw
+## Layout
 
-| Map | Rol |
+| Folder | Role |
 |---|---|
-| `packages/ui/` | `@fromorbit/ui`, met zijn tests, bewakingstests (`tests/`) en de componentenpagina (`docs-site/`) |
-| `packages/doc-view/` | `@fromorbit/doc-view`, met zijn tests (`test/`), gouden voorbeelden (`fixtures/`) en de afnemertest (`consumer/`) |
-| `scripts/` | wat beide builds delen: de `.d.ts` bijwerken voor NodeNext (`dts-extensions.mjs`) en de build controleren (`verify-dist.mjs`) |
-| `.changeset/` | de aangekondigde wijzigingen |
+| `packages/ui/` | `@fromorbit/ui`, with its tests, guard tests (`tests/`) and the component site (`docs-site/`) |
+| `packages/doc-view/` | `@fromorbit/doc-view`, with its tests (`test/`), golden examples (`fixtures/`) and the consumer test (`consumer/`) |
+| `scripts/` | what both builds share: rewriting the `.d.ts` for NodeNext (`dts-extensions.mjs`) and checking the build (`verify-dist.mjs`) |
+| `.changeset/` | the announced changes |
 
-## Werkwijze
+## Contributing
 
-Werk gaat via een eigen branch en een pull request naar `main`. De regels voor mensen en agents staan in [`AGENTS.md`](AGENTS.md).
+Work goes through a branch of its own and a pull request to `main`. The rules for people and agents are in [`AGENTS.md`](AGENTS.md).
 
-Er is geen licentiebestand: alle rechten zijn voorbehouden.
+There is no license file: all rights reserved.
