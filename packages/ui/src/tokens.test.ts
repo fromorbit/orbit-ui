@@ -39,18 +39,33 @@ function contrastRatio(hexA: string, hexB: string): number {
 }
 
 /**
- * Resolves a one-level `var(--name)` indirection against the parsed declarations.
+ * Resolves `var(--name)` indirections against the parsed declarations, through every level.
  *
- * `--nt-focus-ring` is defined as `var(--nt-accent)` rather than a literal, so a contrast check on
- * it needs the value it actually resolves to.
+ * A role names a fixed colour of the family (`--nt-text: var(--nt-brand-paper)`) and an alias names
+ * a role (`--nt-code-foreground: var(--nt-text)`), so a contrast check needs the value at the end of
+ * the chain. Stops after a few steps, so a cycle fails the hex check instead of hanging.
  */
 function resolveVar(value: string, declarations: Map<string, string>): string {
-  const match = value.match(/^var\((--[a-z0-9-]+)\)$/i)
-  const name = match?.[1]
-  return name ? (declarations.get(name) ?? value) : value
+  let current = value
+  for (let step = 0; step < 5; step += 1) {
+    const name = current.match(/^var\((--[a-z0-9-]+)\)$/i)?.[1]
+    const next = name ? declarations.get(name) : undefined
+    if (next === undefined) return current
+    current = next
+  }
+  return current
 }
 
 const tokens = parseDeclarations(tokensCss)
+
+/**
+ * The fixed colours of the family and the product's satellite: the same in both themes, so the
+ * light block must not repeat them (a `data-theme` inside a `data-product` would reset the
+ * satellite to Orbit's).
+ */
+function isConstant(name: string): boolean {
+  return name.startsWith('--nt-brand-') || name === '--nt-satellite'
+}
 
 /**
  * The declarations of the light block, `[data-theme="light"] { … }`, alone.
@@ -161,6 +176,15 @@ const requiredTokens = [
   '--nt-pill-hover',
   '--nt-mark',
   '--nt-accent-key',
+  '--nt-satellite',
+  '--nt-brand-midnight',
+  '--nt-brand-paper',
+  '--nt-brand-violet',
+  '--nt-brand-orbit',
+  '--nt-brand-halo',
+  '--nt-brand-fold',
+  '--nt-font-weight-heading',
+  '--nt-sidebar-gradient',
 ]
 
 describe('tokens.css', () => {
@@ -204,33 +228,60 @@ describe('tokens.css', () => {
   })
 })
 
-describe.each(palettes)('the %s palette', (name, palette) => {
+describe.each(palettes)('the %s palette', (_name, palette) => {
   // The contrast requirements of the palette, computed from the file rather than from fixed
   // figures: they hold whatever a value later becomes.
-  test('white text on the accent fill reaches AA (≥ 4.5)', () => {
-    expect(hexIn(palette, '--nt-accent-fg')).toBe('#ffffff')
+  test('the words on the accent fill reach AA (≥ 4.5)', () => {
     expect(
       contrastRatio(hexIn(palette, '--nt-accent-fg'), hexIn(palette, '--nt-accent')),
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  // Dark only: the key plane of the light palette (white at 0.2 over #3d74c4) reaches 3,26, which is
-  // an open point for the design, not something this check may hide.
-  test.runIf(name === 'dark')(
-    'the key plane on the accent fill keeps white text at AA (≥ 4.5)',
-    () => {
-      const plane = palette.get('--nt-accent-key')?.match(/^rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)$/)
-      expect(plane).not.toBeNull()
-      const [, r, g, b, alpha] = (plane ?? []).map(Number)
-      const fill = hexIn(palette, '--nt-accent').replace('#', '')
-      const mixed = [r, g, b].map((over, index) => {
-        const under = Number.parseInt(fill.slice(index * 2, index * 2 + 2), 16)
-        return Math.round((over ?? 0) * (alpha ?? 0) + under * (1 - (alpha ?? 0)))
-      })
-      const composite = `#${mixed.map((value) => value.toString(16).padStart(2, '0')).join('')}`
-      expect(contrastRatio(hexIn(palette, '--nt-accent-fg'), composite)).toBeGreaterThanOrEqual(4.5)
+  test('the main button is monochrome: Paper and Midnight, never the satellite', () => {
+    const fill = hexIn(palette, '--nt-accent')
+    const words = hexIn(palette, '--nt-accent-fg')
+    expect([fill, words].sort()).toEqual(['#111936', '#f5f4f0'])
+  })
+
+  test.each(['--nt-canvas', '--nt-frame', '--nt-overlay-background', '--nt-composer'])(
+    '--nt-text on %s reaches AA (≥ 4.5)',
+    (surface) => {
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text'), hexIn(palette, surface)),
+      ).toBeGreaterThanOrEqual(4.5)
     },
   )
+
+  test('--nt-text-muted on a card or menu reaches AA (≥ 4.5)', () => {
+    expect(
+      contrastRatio(hexIn(palette, '--nt-text-muted'), hexIn(palette, '--nt-overlay-background')),
+    ).toBeGreaterThanOrEqual(4.5)
+  })
+
+  test.each(['--nt-danger', '--nt-success', '--nt-attention'])(
+    '%s as words on the canvas and on a menu reaches AA (≥ 4.5)',
+    (tone) => {
+      for (const surface of ['--nt-canvas', '--nt-overlay-background']) {
+        expect(
+          contrastRatio(hexIn(palette, tone), hexIn(palette, surface)),
+          surface,
+        ).toBeGreaterThanOrEqual(4.5)
+      }
+    },
+  )
+
+  test('the key plane on the accent fill keeps its words at AA (≥ 4.5)', () => {
+    const plane = palette.get('--nt-accent-key')?.match(/^rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)$/)
+    expect(plane).not.toBeNull()
+    const [, r, g, b, alpha] = (plane ?? []).map(Number)
+    const fill = hexIn(palette, '--nt-accent').replace('#', '')
+    const mixed = [r, g, b].map((over, index) => {
+      const under = Number.parseInt(fill.slice(index * 2, index * 2 + 2), 16)
+      return Math.round((over ?? 0) * (alpha ?? 0) + under * (1 - (alpha ?? 0)))
+    })
+    const composite = `#${mixed.map((value) => value.toString(16).padStart(2, '0')).join('')}`
+    expect(contrastRatio(hexIn(palette, '--nt-accent-fg'), composite)).toBeGreaterThanOrEqual(4.5)
+  })
 
   test.each(['--nt-canvas', '--nt-frame', '--nt-overlay-background'])(
     '--nt-accent-text on %s reaches AA (≥ 4.5)',
@@ -350,10 +401,16 @@ describe.each(palettes)('the %s palette', (name, palette) => {
 
 describe('the light block', () => {
   test('repeats every colour token of the dark palette, so no dark value leaks into light', () => {
-    const colours = [...tokens].filter(([, value]) => isColour(value)).map(([name]) => name)
+    const colours = [...tokens]
+      .filter(([name, value]) => isColour(value) && !isConstant(name))
+      .map(([name]) => name)
     expect(colours.length).toBeGreaterThan(50)
     const missing = colours.filter((name) => !lightOnly.has(name))
     expect(missing).toEqual([])
+  })
+
+  test('leaves the fixed colours of the family and the satellite alone', () => {
+    expect([...lightOnly.keys()].filter(isConstant)).toEqual([])
   })
 
   test('names no token the dark palette lacks', () => {
@@ -411,5 +468,36 @@ describe('the tint of a translucent window', () => {
     expect(light.get('--nt-panel-background')).toBe(
       `rgb(${channels(hexIn(lightTokens, '--nt-canvas'))} / 0.7)`,
     )
+  })
+})
+
+describe('the satellite of a product', () => {
+  /** The declarations of the rule for one `data-product`. */
+  function product(name: string): Map<string, string> {
+    const block = tokensCss.match(new RegExp(`\\n\\[data-product="${name}"\\]\\s*\\{([^}]*)\\}`))
+    return parseDeclarations(block?.[1] ?? '')
+  }
+
+  test('is Orbit orange without a product', () => {
+    expect(hexIn(tokens, '--nt-satellite')).toBe('#ff7f2a')
+  })
+
+  test.each([
+    ['orbit', '#ff7f2a'],
+    ['halo', '#2fd3a6'],
+    ['fold', '#9b87ff'],
+  ])('is chosen by data-product="%s"', (name, hex) => {
+    const rule = product(name)
+    expect(hexIn(new Map([...tokens, ...rule]), '--nt-satellite')).toBe(hex)
+  })
+
+  test('is chosen after the light block, so a theme further in cannot take it back', () => {
+    expect(tokensCss.indexOf('[data-product="halo"]')).toBeGreaterThan(
+      tokensCss.indexOf('\n[data-theme="light"]'),
+    )
+  })
+
+  test('is no role: no component draws a word, line or plane with it', () => {
+    expect(themeCss).not.toMatch(/--color-(accent|focus|border)[a-z-]*:\s*var\(--nt-satellite\)/)
   })
 })

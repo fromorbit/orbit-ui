@@ -7,10 +7,17 @@ const site = join(root, 'docs-site', 'src')
 
 /**
  * The parts of the library the docs page may reach: the entry points a host has (`.`,
- * `./gallery`, `./testing`) and the two stylesheets. The page is a host like any other, so a
+ * `./gallery`, `./testing`) and the three stylesheets. The page is a host like any other, so a
  * component it shows is the component a host gets, not an internal module beside it.
  */
-const ENTRIES = new Set(['src', 'src/gallery', 'src/testing', 'src/tokens.css', 'src/theme.css'])
+const ENTRIES = new Set([
+  'src',
+  'src/gallery',
+  'src/testing',
+  'src/tokens.css',
+  'src/theme.css',
+  'src/fonts.css',
+])
 
 /** Every source file of the page. */
 function files(dir: string): string[] {

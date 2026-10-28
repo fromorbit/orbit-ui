@@ -85,7 +85,7 @@ export function ConfirmDialog({
           // Without a body there is no description; Radix is told so rather than pointing at none.
           {...(body === undefined ? { 'aria-describedby': undefined } : {})}
         >
-          <RadixAlertDialog.Title className="m-0 font-medium text-fg">
+          <RadixAlertDialog.Title className="m-0 font-heading text-fg">
             {title}
           </RadixAlertDialog.Title>
           {body === undefined ? null : (

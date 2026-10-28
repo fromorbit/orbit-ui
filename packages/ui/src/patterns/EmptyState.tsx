@@ -38,7 +38,7 @@ export function EmptyState({ icon, title, description, action, titleAs }: EmptyS
       <span className="text-muted">
         <Icon name={icon} />
       </span>
-      <Title className="m-0 text-[13px] font-medium text-fg">{title}</Title>
+      <Title className="m-0 text-[13px] font-heading text-fg">{title}</Title>
       {description ? <p className="m-0 max-w-64 text-[12px] text-muted">{description}</p> : null}
       {action ? <div className="mt-1">{action}</div> : null}
     </div>

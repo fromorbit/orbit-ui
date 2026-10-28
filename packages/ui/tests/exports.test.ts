@@ -21,11 +21,12 @@ const targets = Object.entries(manifest.exports).flatMap(([subpath, conditions])
 )
 
 describe('the exports', () => {
-  test('names the five entry points', () => {
+  test('names the six entry points', () => {
     expect(Object.keys(manifest.exports)).toEqual([
       '.',
       './tokens.css',
       './theme.css',
+      './fonts.css',
       './gallery',
       './testing',
     ])

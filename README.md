@@ -4,7 +4,7 @@ The building blocks of the **Orbit** interface, as two npm packages:
 
 | Package | Folder | What it is |
 |---|---|---|
-| [`@fromorbit/ui`](packages/ui/README.md) | `packages/ui` | the component library: primitives, overlays, patterns, the design tokens (`tokens.css`) and the theme (`theme.css`) |
+| [`@fromorbit/ui`](packages/ui/README.md) | `packages/ui` | the component library: primitives, overlays, patterns, the design tokens (`tokens.css`), the theme (`theme.css`) and the fonts (`fonts.css`), in the style of the Orbit family ([`docs/family-style.md`](docs/family-style.md)) |
 | [`@fromorbit/doc-view`](packages/doc-view/README.md) | `packages/doc-view` | the document view: Markdown, its outline and the kind of a document |
 
 `@fromorbit/ui` uses `@fromorbit/doc-view` for `Prose` and the Shiki bundle (as a peer dependency). Every component story is online: <https://fromorbit.github.io/orbit-ui-docs/>.
@@ -48,6 +48,7 @@ The component site is an ordinary consumer: it takes the stories from `src/galle
 |---|---|
 | `packages/ui/` | `@fromorbit/ui`, with its tests, guard tests (`tests/`) and the component site (`docs-site/`) |
 | `packages/doc-view/` | `@fromorbit/doc-view`, with its tests (`test/`), golden examples (`fixtures/`) and the consumer test (`consumer/`) |
+| `docs/` | the family style, how Halo and the Orbit app move over to it, and its photographs |
 | `scripts/` | what both builds share: rewriting the `.d.ts` for NodeNext (`dts-extensions.mjs`) and checking the build (`verify-dist.mjs`) |
 | `.changeset/` | the announced changes |
 

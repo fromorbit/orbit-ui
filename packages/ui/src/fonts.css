@@ -1,0 +1,22 @@
+/* The type of the Orbit family, shipped with the package: Outfit (variable, every weight) for the
+   interface and DM Mono (400 and 500) for code, paths and keys. Both OFL, from the package's own
+   dependencies, so the font files travel with the host's bundle and no request goes to another
+   origin. `tokens.css` names them as "Outfit Variable" and "DM Mono".
+
+   Optional: a host that loads the same faces itself leaves this file out. Load it first, before
+   Tailwind:
+     @import "@fromorbit/ui/fonts.css";
+     @import "tailwindcss";
+     @import "@fromorbit/ui/tokens.css";
+     @import "@fromorbit/ui/theme.css";
+   `src/fonts.test.ts` checks the imports against `dependencies` and the families against
+   `tokens.css`. */
+@import "@fontsource-variable/outfit/wght.css";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
+
+/* DM Mono has no bold: a bold word of code takes 500 rather than a smeared synthetic bold. Zero
+   specificity, so any rule of the host still wins. */
+:where(code, kbd, samp, pre, .font-mono) {
+  font-synthesis-weight: none;
+}

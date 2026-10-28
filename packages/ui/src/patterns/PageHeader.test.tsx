@@ -12,11 +12,11 @@ test('draws one h1 with the meta line under it', () => {
   expect(header?.querySelector('[data-nt-page-meta]')).toHaveTextContent('3 beslissen · 2 nakijken')
 })
 
-test('draws the title at 20px and weight 500 in a strip of 40px', () => {
+test('draws the title at 20px in the heading weight in a strip of 40px', () => {
   render(<PageHeader title="Gearchiveerd" />)
   const heading = screen.getByRole('heading', { level: 1 })
   expect(heading.className).toContain('text-[20px]')
-  expect(heading.className).toContain('font-medium')
+  expect(heading.className).toContain('font-heading')
   expect(heading.parentElement?.className).toContain('h-10')
 })
 
