@@ -51,7 +51,7 @@
     },
     "packages/ui": {
       "name": "@fromorbit/ui",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@fontsource-variable/outfit": "^5.3.0",
         "@fontsource/dm-mono": "^5.3.0",
