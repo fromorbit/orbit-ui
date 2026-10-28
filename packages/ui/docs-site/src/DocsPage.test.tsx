@@ -15,6 +15,7 @@ function goTo(hash: string): void {
 afterEach(() => {
   history.replaceState(null, '', '#')
   document.documentElement.removeAttribute('data-theme')
+  document.documentElement.removeAttribute('data-product')
 })
 
 describe('the docs page', () => {
@@ -66,5 +67,12 @@ describe('the docs page', () => {
     expect(document.documentElement.dataset.theme).toBe('dark')
     await userEvent.click(screen.getByRole('radio', { name: 'Licht' }))
     expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  test('switches the satellite between the products of the family', async () => {
+    render(<DocsPage stories={stories} />)
+    expect(document.documentElement.dataset.product).toBe('orbit')
+    await userEvent.click(screen.getByRole('radio', { name: 'Halo' }))
+    expect(document.documentElement.dataset.product).toBe('halo')
   })
 })

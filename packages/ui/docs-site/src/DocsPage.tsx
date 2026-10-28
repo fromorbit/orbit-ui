@@ -50,6 +50,15 @@ const THEME_OPTIONS = [
   { value: 'light', label: 'Licht' },
 ] as const
 
+/** The products of the family, whose satellite `tokens.css` picks with `data-product`. */
+type Product = 'orbit' | 'halo' | 'fold'
+
+const PRODUCT_OPTIONS = [
+  { value: 'orbit', label: 'Orbit' },
+  { value: 'halo', label: 'Halo' },
+  { value: 'fold', label: 'Fold' },
+] as const
+
 /** The two halves of the page: one component at a time, or whole screens built from them. */
 type Mode = 'components' | 'demos'
 
@@ -112,7 +121,8 @@ export interface DocsPageProps {
  * A copy of the behaviour of Orbit's gallery (`features/gallery`), without its i18n and bridge: the
  * route is the hash (`#/<story-id>`), so a link to one component works on a static host under any
  * path. The theme goes on `<html>` as `data-theme`, which is what `tokens.css` switches on, and to
- * the `UiProvider`, for what reads the theme in code (the diffs of `@pierre/diffs`). The provider
+ * the `UiProvider`, for what reads the theme in code (the diffs of `@pierre/diffs`); the product goes
+ * there as `data-product`, which picks the satellite (the dot beside "UI"). The provider
  * gets `docsShortcuts`, so the key caps of the stories are drawn as Orbit draws them.
  *
  * The second tab, "Demo's", shows whole screens built from the components (`#/demo/<slug>`) and
@@ -122,12 +132,17 @@ export interface DocsPageProps {
 export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const hash = useHash()
   const [theme, setTheme] = useState<Theme>('dark')
+  const [product, setProduct] = useState<Product>('orbit')
   const [platform, setPlatform] = useState<Platform>('mac')
   const shortcuts = useMemo(() => docsShortcuts(platform), [platform])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    document.documentElement.dataset.product = product
+  }, [product])
 
   const [showInventory, setShowInventory] = useState(true)
   const demoSlug = demoSlugOf(hash)
@@ -167,11 +182,12 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
       <div className="flex h-dvh bg-frame text-fg">
         <nav
           aria-label={mode === 'demos' ? "Demo's" : 'Componenten'}
-          className="flex w-64 shrink-0 flex-col border-border border-r"
+          className="flex w-64 shrink-0 flex-col border-border border-r bg-(image:--nt-sidebar-gradient)"
         >
           <div className="flex h-12 shrink-0 items-center gap-2 px-4">
             <OrbitWordmark className="h-4 text-fg" />
             <span className="text-[13px] text-muted">UI</span>
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
           </div>
           <div className="min-h-0 flex-1">
             <ScrollArea>
@@ -218,6 +234,13 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
               value={platform}
               options={PLATFORM_OPTIONS}
               onValueChange={setPlatform}
+            />
+            <SegmentedControl<Product>
+              label="Product"
+              size="sm"
+              value={product}
+              options={PRODUCT_OPTIONS}
+              onValueChange={setProduct}
             />
             <SegmentedControl<Theme>
               label="Thema"

@@ -19,7 +19,7 @@ test('a caller that fills a whole panel asks for the title to be its heading', (
   render(<EmptyState icon="message-circle" title="Waar wil je aan werken?" titleAs="h1" />)
   const heading = screen.getByRole('heading', { level: 1, name: 'Waar wil je aan werken?' })
   // The same drawing, only another element: the class string may not fork with the tag.
-  expect(heading.className).toBe('m-0 text-[13px] font-medium text-fg')
+  expect(heading.className).toBe('m-0 text-[13px] font-heading text-fg')
 })
 
 test('the explanation stands under the title when there is one', () => {

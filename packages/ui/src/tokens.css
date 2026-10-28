@@ -1,85 +1,115 @@
-/* Source of truth for the appearance: every colour, size and shadow a component draws with. */
+/* Source of truth for the appearance: every colour, size and shadow a component draws with.
+
+   The palette is the brand of the Orbit family (brand assets v1.0): dark is Midnight, light is
+   Paper; planes and lines are Mist on Midnight and Midnight on Paper, so they stay blue; the main
+   button is monochrome; links and the focus ring are violet; the type is Outfit and DM Mono
+   (`fonts.css`). A product's own colour is only ever its satellite (`--nt-satellite`, chosen with
+   `data-product`), never a role. */
 :root {
-  --nt-font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --nt-font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  /* The fixed colours of the family, the same in both themes: the light block below does not
+     repeat them, so a theme can never reset them (`tokens.test.ts`). */
+  --nt-brand-midnight: #111936;
+  /* The Midnight gradient, top to bottom: the brand book's cover and the app icon. */
+  --nt-brand-midnight-top: #23306b;
+  --nt-brand-midnight-bottom: #070b1f;
+  --nt-brand-gradient: linear-gradient(
+    180deg,
+    var(--nt-brand-midnight-top),
+    var(--nt-brand-midnight-bottom)
+  );
+  --nt-brand-paper: #f5f4f0;
+  --nt-brand-mist: #e7e9f2;
+  --nt-brand-slate: #8a91b0;
+  /* Slate reaches only 2.8:1 on Paper; this darker Slate 5.5:1 with the same hue. */
+  --nt-brand-slate-deep: #5a6185;
+  --nt-brand-violet: #5140f2;
+  /* The satellite of each product: the dot in its symbol and wordmark. Orbit orange, Halo mint,
+     Fold lavender. Never a word, a line, a plane or a role of the interface. */
+  --nt-brand-orbit: #ff7f2a;
+  --nt-brand-halo: #2fd3a6;
+  --nt-brand-fold: #9b87ff;
+  /* The satellite of the product on this page: Orbit's unless a `data-product` says otherwise
+     (the rules at the end of this file), or the host sets it itself. Only for a mark that says
+     "this product" or "where you are now", always beside another sign: mint on Paper is 1.7:1. */
+  --nt-satellite: var(--nt-brand-orbit);
+
+  /* Outfit for the interface (variable; headings at 600) and DM Mono (400 and 500) for code,
+     paths and keys. `fonts.css` ships both; "Outfit" second for a host that loads its own copy
+     under that name. */
+  --nt-font-sans: "Outfit Variable", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --nt-font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* The weight of a title (a page, a dialog, an empty state): the brand book sets headings bold,
+     an interface's titles a step lighter. */
+  --nt-font-weight-heading: 600;
 
   /* Two planes and no inset card: the frame is the window
      and the sidebar, the darkest plane; the canvas carries the conversation and the right panel, a
      step lighter, because the content comes first. The difference in brightness is the separation;
      no line runs between the two. `bg` is an alias of the canvas until every use has moved over. */
-  --nt-frame: #0e0e10;
-  --nt-canvas: #141416;
+  --nt-frame: #0c1229;
+  --nt-canvas: var(--nt-brand-midnight);
   --nt-bg: var(--nt-canvas);
-  --nt-surface: rgb(255 255 255 / 0.03);
-  --nt-surface-hover: rgb(255 255 255 / 0.06);
+  /* Planes and lines in Mist, so they stay blue on Midnight. */
+  --nt-surface: rgb(231 233 242 / 0.04);
+  --nt-surface-hover: rgb(231 233 242 / 0.07);
   /* The row a list's keyboard caret stands on. A step above `surface-hover`, which composited to
      1.18:1 on a panel — a shade rather than a place, which is why that row used to need an accent
      outline on top. Neutral by design: an open panel carries no accent. */
-  --nt-surface-active: rgb(255 255 255 / 0.12);
+  --nt-surface-active: rgb(231 233 242 / 0.12);
   /* The quiet items of a list (the chats of the sidebar): a softer
      hover and a soft card for the chosen one, without border or accent. */
-  --nt-row-hover: rgb(255 255 255 / 0.05);
-  --nt-row-active: rgb(255 255 255 / 0.07);
+  --nt-row-hover: rgb(231 233 242 / 0.05);
+  --nt-row-active: rgb(231 233 242 / 0.08);
   /* A hairline between things that belong together; `strong` for what has to stand as an object
      of its own: a pill, the round "+", the composer's plane, a key cap. */
-  --nt-border: rgb(255 255 255 / 0.07);
-  --nt-border-strong: rgb(255 255 255 / 0.11);
+  --nt-border: rgb(231 233 242 / 0.08);
+  --nt-border-strong: rgb(231 233 242 / 0.14);
   /* The plane inside a pill with a border (the model and the access level in the composer), and
      that plane lit on hover or while its menu is open. */
-  --nt-pill: rgb(255 255 255 / 0.04);
-  --nt-pill-hover: rgb(255 255 255 / 0.08);
+  --nt-pill: rgb(231 233 242 / 0.05);
+  --nt-pill-hover: rgb(231 233 242 / 0.09);
   /* The plane of your own message in the conversation, the bubble on the right. */
-  --nt-bubble: rgb(255 255 255 / 0.05);
+  --nt-bubble: rgb(231 233 242 / 0.06);
   /* The plane of a small mark: the letter block of a project, the track of a progress meter. */
-  --nt-mark: rgb(255 255 255 / 0.08);
-  /* The plane of the composer, a step above the canvas it lies on. */
-  --nt-composer: #1a1a1c;
+  --nt-mark: rgb(231 233 242 / 0.09);
+  /* The plane of the composer, a step above the canvas it lies on: the plane of a card. */
+  --nt-composer: #19223f;
   /* The border of a large input surface with the focus in it (the composer, a note in a diff): a
      neutral step up from `border` instead of the accent, the way Linear does it. Strong enough to be
-     the focus indicator on its own: 3.58:1 against the surface and 3.80:1 against the opaque
-     --nt-bg around it (WCAG 2.4.7, 1.4.11). Small fields keep the accent ring; see the guidelines. */
-  --nt-border-focus: rgb(255 255 255 / 0.38);
-  /* The code area of a diff: the opaque dark that the dark theme of @pierre/diffs paints inside its
-     shadow root (measured). `PierreDiff` paints that ground with
+     the focus indicator on its own: 3.5:1 against the opaque --nt-bg around it (WCAG 2.4.7,
+     1.4.11). Small fields keep the violet ring. */
+  --nt-border-focus: rgb(231 233 242 / 0.42);
+  /* The code area of a diff: a step under Midnight. `PierreDiff` paints the library's ground with
      this token in both themes, so what stands against a diff, such as its footer, is painted the
-     same and reads as part of it.
-     Orbit's end-to-end tests compare the two, so a theme update cannot split them silently. */
-  --nt-diff-bg: rgb(10 10 10);
+     same and reads as part of it. */
+  --nt-diff-bg: #0a0f24;
   /* Four levels of text, the figures against the canvas:
-     `text` 15.7:1 for content, titles, what is unread or chosen; `secondary` 8.9:1 for navigation
-     at rest, read titles and pills; `muted` 5.8:1 (6.1:1 on the frame) for meta, less blue than it
-     was; `faint` 4.3:1 — below what text owes, so **only icons and decoration**, never a word.
-     `tests/faint-text.test.ts` holds that. */
-  --nt-text: #ededef;
-  --nt-text-secondary: #b4b4b9;
-  --nt-text-muted: #8f9099;
-  --nt-text-faint: #787a82;
+     `text` Paper 15.7:1 for content, titles, what is unread or chosen; `secondary` (Mist at 82%
+     over Midnight) 9.9:1 for navigation at rest, read titles and pills; `muted` Slate 5.6:1 (6.0:1
+     on the frame, 5.0:1 on a card) for meta; `faint` 3.4:1 — below what text owes, so **only
+     icons and decoration**, never a word. `tests/faint-text.test.ts` holds that. */
+  --nt-text: var(--nt-brand-paper);
+  --nt-text-secondary: #c0c4d0;
+  --nt-text-muted: var(--nt-brand-slate);
+  --nt-text-faint: #666d8b;
   /* The words of the row a list's keyboard caret stands on, among rows at rest in `muted`: the one
-     place text steps above `text`. With the lighter, less blue `muted`, `text` stands only 2.7:1
-     above it; white keeps the pair at 3.2:1, what WCAG 1.4.11 asks of the indicator (the fill alone
-     does not reach it). */
+     place text steps above `text`. White keeps the pair at 3.1:1 above Slate, what WCAG 1.4.11
+     asks of the indicator (the fill alone does not reach it). */
   --nt-text-strong: #ffffff;
 
-  /* The orange dot of the Orbit wordmark (brand assets v1.0, "Orbit oranje"). Only the mark carries
-     it, the same in both themes (the light block repeats it unchanged); it is no accent of the
-     interface. See `OrbitWordmark`. */
-  --nt-brand-orbit: #ff7f2a;
-
-  /* Accent: a fill, the text on that fill, and the accent used as text. One mid-tone cannot do
-     both with AA contrast, so the role decides which of the three a use takes. Steel blue:
-     white on the fill 4.67:1, the fill 3.9:1 against the canvas as a fill and a focus ring, the
-     lighter blue as text 7.9:1. `tokens.test.ts` computes every requirement from this file. */
-  --nt-accent: #3d74c4;
-  --nt-accent-fg: #ffffff;
-  --nt-accent-text: #80acef;
-  --nt-accent-subtle: rgb(61 116 196 / 0.16);
-  /* The plane of a key that lies on the accent fill (the Enter of Verstuur, `Kbd` `on-accent`).
-     A dark plane: a white one lightens the fill under the white key (3.51:1 on the steel blue),
-     a black one of 16% deepens it (about 6:1). `tokens.test.ts` computes it. */
-  --nt-accent-key: rgb(0 0 0 / 0.16);
-  /* The edge of a field with the focus in it, and the underline of a link: the lighter blue, since
-     the fill itself sinks into a dark plane at partial strength. */
-  --nt-accent-border: rgb(128 172 239 / 0.6);
+  /* Accent: a fill, the text on that fill, and the accent used as text. The fill is monochrome,
+     as on Orbit's site: Paper on Midnight, its words Midnight (15.7:1). As text (links, the
+     selected word) violet, lifted to 7.9:1 on Midnight, since the brand's violet reaches 2.8:1
+     there. `tokens.test.ts` computes every requirement from this file. */
+  --nt-accent: var(--nt-brand-paper);
+  --nt-accent-fg: var(--nt-brand-midnight);
+  --nt-accent-text: #a3aaf5;
+  --nt-accent-subtle: rgb(163 170 245 / 0.12);
+  /* The plane of a key that lies on the accent fill (the Enter of Verstuur, `Kbd` `on-accent`):
+     Midnight at 12% over Paper, so the Midnight key keeps 12:1. `tokens.test.ts` computes it. */
+  --nt-accent-key: rgb(17 25 54 / 0.12);
+  /* The edge of a field with the focus in it, and the underline of a link: the lifted violet. */
+  --nt-accent-border: rgb(163 170 245 / 0.55);
 
   /* The kinds of an SDD document: spec, plan and decision each in a colour of equal
      brightness, only on their glyph, all at least 3:1 against the canvas and the frame. */
@@ -99,14 +129,15 @@
   --nt-avatar-5: #6e3a54;
   --nt-avatar-6: #4d4280;
 
+  /* The status colours of Orbit's site; its red lightened to 6.9:1 on Midnight. */
   --nt-attention: #e5a445;
-  --nt-danger: #eb5757;
+  --nt-danger: #ff7b7b;
 
   --nt-success: #4cb782;
   --nt-attention-subtle: rgb(229 164 69 / 0.08);
-  --nt-attention-border: rgb(229 164 69 / 0.25);
-  --nt-danger-subtle: rgb(235 87 87 / 0.08);
-  --nt-danger-border: rgb(235 87 87 / 0.25);
+  --nt-attention-border: rgb(229 164 69 / 0.28);
+  --nt-danger-subtle: rgb(255 123 123 / 0.08);
+  --nt-danger-border: rgb(255 123 123 / 0.28);
   /* The soft underline under a commented passage of a markdown document: the
      tone of attention, half as strong, so a page full of comments still reads calmly. */
   --nt-comment-underline: rgb(229 164 69 / 0.6);
@@ -127,18 +158,20 @@
   --nt-icon-md: 16px;
 
   /* Floating layers are opaque: a menu must not be a hole in the window material. */
-  /* A step lighter than the canvas, so a menu reads as lying on top of it. */
-  --nt-overlay-background: #1c1c1e;
-  --nt-scrim: rgb(0 0 0 / 0.5);
+  /* A step lighter than the canvas, so a menu or a card reads as lying on top of it. */
+  --nt-overlay-background: #19223f;
+  --nt-scrim: rgb(7 11 31 / 0.6);
   /* Layered rather than one cloud: a hairline of shadow for the edge, a short one for the lift and
-     a long soft one for the distance, so a menu lies loose without a haze around it. */
+     a long soft one for the distance, so a menu lies loose without a haze around it. In the
+     deepest Midnight, so the shadow stays blue. */
   --nt-shadow-menu:
-    0 0 0 1px rgb(0 0 0 / 0.25), 0 4px 12px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.35);
+    0 0 0 1px rgb(7 11 31 / 0.4), 0 4px 12px rgb(7 11 31 / 0.35), 0 16px 40px rgb(7 11 31 / 0.45);
   --nt-z-popover: 40;
   --nt-z-dialog: 50;
   --nt-z-toast: 60;
 
-  --nt-focus-ring: var(--nt-accent);
+  /* Violet, lifted for Midnight: 7.9:1 on the canvas, 8.5:1 on the frame. */
+  --nt-focus-ring: #a3aaf5;
 
   /* One scrollbar for the whole app, the same as the one `ScrollArea` draws itself (`w-2`, a thumb
      in `border` that turns `muted` under the pointer), so the two shapes cannot be told apart.
@@ -172,7 +205,7 @@
      `--nt-success`, `--nt-attention`, `--nt-accent`), so a program's red or green reads the same
      shade the rest of the app already uses for the same meaning. The light block below repeats
      them for a light ground. */
-  --nt-terminal-ansi-0: #1c1c1e; /* black — --nt-overlay-background */
+  --nt-terminal-ansi-0: #19223f; /* black — --nt-overlay-background */
   --nt-terminal-ansi-1: #eb5757; /* red — --nt-danger */
   --nt-terminal-ansi-2: #4cb782; /* green — --nt-success */
   --nt-terminal-ansi-3: #e5a445; /* yellow — --nt-attention */
@@ -188,7 +221,7 @@
   --nt-terminal-ansi-12: #8cc7f7; /* bright blue */
   --nt-terminal-ansi-13: #dcb3f5; /* bright magenta */
   --nt-terminal-ansi-14: #7fdcf0; /* bright cyan */
-  --nt-terminal-ansi-15: #ededef; /* bright white — --nt-text */
+  --nt-terminal-ansi-15: #f5f4f0; /* bright white — --nt-text */
 
   /* The colours of a fenced block in a markdown document (Shiki's css-variables theme). The same AA-vetted shades as the terminal above, so a keyword or a string reads
      the same in a document as a program's own colour does in a shell. */
@@ -212,6 +245,10 @@
   --nt-app-background: var(--nt-frame);
   --nt-sidebar-background: var(--nt-frame);
   --nt-panel-background: var(--nt-canvas);
+  /* The sidebar may carry a whisper of the Midnight gradient over its frame, from a step above the
+     frame to the frame (`background: var(--nt-sidebar-gradient), var(--nt-sidebar-background)`);
+     flat in light. An image, not a colour: never as a `background-color`. */
+  --nt-sidebar-gradient: linear-gradient(180deg, #1a2450, #0c1229 55%);
 }
 
 /* A folded, yielded or replaced sidebar has no foot: the toasts stand 16px above the window edge
@@ -227,55 +264,57 @@
    in either theme. Only a `data-theme` attribute selects it, never `prefers-color-scheme` here: the
    app's own choice reaches the page through main, and a story can still set it on one element.
 
-   Every token that names a colour is repeated here, the aliases (`bg`, `focus-ring`, the code
-   tokens) as well: a custom property that reads another is resolved where it is declared, so an
-   element in light under a dark root would otherwise inherit the dark value of the alias.
+   Every token that names a colour is repeated here, the aliases (`bg`, the code tokens) as well: a
+   custom property that reads another is resolved where it is declared, so an element in light
+   under a dark root would otherwise inherit the dark value of the alias. The exceptions are the
+   fixed colours of the family (`--nt-brand-*`) and the satellite, which are the same in both
+   themes and must survive a `data-theme` inside a `data-product`.
    `tokens.test.ts` computes the contrast requirements for this block as for the dark one. */
 [data-theme="light"] {
   color-scheme: light;
 
-  /* The frame a step darker than the canvas, as in dark: the sidebar recedes, the content leads. */
-  --nt-frame: #f3f3f5;
-  --nt-canvas: #fbfbfc;
+  /* Paper, with a frame a step darker than the canvas, as in dark: the sidebar recedes, the content
+     leads. A card, a menu and the composer are white on it. */
+  --nt-frame: #efeee9;
+  --nt-canvas: var(--nt-brand-paper);
   --nt-bg: var(--nt-canvas);
-  /* Planes over a light ground darken rather than lighten: black at the strengths of the white
-     above, a touch stronger where a light ground swallows a shade sooner. */
-  --nt-surface: rgb(0 0 0 / 0.03);
-  --nt-surface-hover: rgb(0 0 0 / 0.05);
-  --nt-surface-active: rgb(0 0 0 / 0.09);
-  --nt-row-hover: rgb(0 0 0 / 0.04);
-  --nt-row-active: rgb(0 0 0 / 0.06);
-  --nt-border: rgb(0 0 0 / 0.08);
-  --nt-border-strong: rgb(0 0 0 / 0.13);
-  --nt-pill: rgb(0 0 0 / 0.03);
-  --nt-pill-hover: rgb(0 0 0 / 0.06);
-  --nt-bubble: rgb(0 0 0 / 0.04);
-  --nt-mark: rgb(0 0 0 / 0.07);
+  /* Planes and lines in Midnight at low strength, so they stay blue on Paper. */
+  --nt-surface: rgb(17 25 54 / 0.03);
+  --nt-surface-hover: rgb(17 25 54 / 0.05);
+  --nt-surface-active: rgb(17 25 54 / 0.09);
+  --nt-row-hover: rgb(17 25 54 / 0.04);
+  --nt-row-active: rgb(17 25 54 / 0.06);
+  --nt-border: rgb(17 25 54 / 0.09);
+  --nt-border-strong: rgb(17 25 54 / 0.14);
+  --nt-pill: rgb(17 25 54 / 0.03);
+  --nt-pill-hover: rgb(17 25 54 / 0.06);
+  --nt-bubble: rgb(17 25 54 / 0.04);
+  --nt-mark: rgb(17 25 54 / 0.07);
   /* The composer lies a step above the canvas: white. */
   --nt-composer: #ffffff;
   /* 3.3:1 against the canvas, the focus indicator on its own as in dark. */
-  --nt-border-focus: rgb(0 0 0 / 0.45);
-  /* The code area of a diff a shade under the canvas, as in dark: white stood out as a block
-     against the near-white canvas. `PierreDiff` paints the library's ground with it. */
-  --nt-diff-bg: #f4f4f6;
-  /* Four levels against the canvas: `text` 16.6:1, `secondary` 9.1:1, `muted` 5.7:1 (5.3:1 on the
-     frame), `faint` 3.2:1 — again only icons and decoration. */
-  --nt-text: #1b1b1f;
-  --nt-text-secondary: #45464d;
-  --nt-text-muted: #62646c;
-  --nt-text-faint: #8b8d95;
-  /* The caret row: black, 3.6:1 above `muted`. */
+  --nt-border-focus: rgb(17 25 54 / 0.5);
+  /* The code area of a diff a shade under the canvas, as in dark. `PierreDiff` paints the
+     library's ground with it. */
+  --nt-diff-bg: #efeee9;
+  /* Four levels against the canvas: `text` Midnight 15.7:1, `secondary` (Midnight at 80% over
+     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (5.2:1 on the frame), `faint` 3.3:1 — again only
+     icons and decoration. */
+  --nt-text: var(--nt-brand-midnight);
+  --nt-text-secondary: #3f455b;
+  --nt-text-muted: var(--nt-brand-slate-deep);
+  --nt-text-faint: #7d84a3;
+  /* The caret row: black, 3.5:1 above `muted`. */
   --nt-text-strong: #000000;
 
-  /* The same steel blue fill (white on it 4.67:1, 4.5:1 against the canvas); as text a darker blue,
-     6.2:1, since the light blue of dark would vanish on white. */
-  --nt-brand-orbit: #ff7f2a;
-  --nt-accent: #3d74c4;
-  --nt-accent-fg: #ffffff;
-  --nt-accent-text: #2b5ea8;
-  --nt-accent-subtle: rgb(61 116 196 / 0.12);
-  --nt-accent-key: rgb(255 255 255 / 0.2);
-  --nt-accent-border: rgb(43 94 168 / 0.5);
+  /* The monochrome fill turned round: Midnight on Paper, its words Paper (15.7:1). As text the
+     brand's violet, 5.7:1 on Paper. */
+  --nt-accent: var(--nt-brand-midnight);
+  --nt-accent-fg: var(--nt-brand-paper);
+  --nt-accent-text: var(--nt-brand-violet);
+  --nt-accent-subtle: rgb(81 64 242 / 0.09);
+  --nt-accent-key: rgb(245 244 240 / 0.18);
+  --nt-accent-border: rgb(81 64 242 / 0.45);
 
   /* The kinds of a document, darker for a light ground, all at least 4.2:1 on canvas and frame. */
   --nt-kind-spec: #7a57d6;
@@ -292,30 +331,32 @@
   --nt-avatar-5: #eed4e0;
   --nt-avatar-6: #dcd6f0;
 
-  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.8:1 and
-     5.0:1 there). */
+  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.6:1 and
+     4.7:1 there). The green of Orbit's site, deepened to 4.8:1 on Paper. */
   --nt-attention: #965a00;
   --nt-danger: #bf3030;
-  --nt-success: #24804f;
+  --nt-success: #1f7a4a;
   --nt-attention-subtle: rgb(150 90 0 / 0.08);
   --nt-attention-border: rgb(150 90 0 / 0.3);
   --nt-danger-subtle: rgb(191 48 48 / 0.07);
   --nt-danger-border: rgb(191 48 48 / 0.3);
   --nt-comment-underline: rgb(150 90 0 / 0.55);
 
-  /* A menu is white on the near-white canvas; its shadow, not its brightness, lifts it. */
+  /* A menu is white on Paper; its shadow, in Midnight, lifts it. */
   --nt-overlay-background: #ffffff;
-  --nt-scrim: rgb(0 0 0 / 0.3);
+  --nt-scrim: rgb(17 25 54 / 0.3);
   --nt-shadow-menu:
-    0 0 0 1px rgb(0 0 0 / 0.08), 0 4px 12px rgb(0 0 0 / 0.08), 0 16px 40px rgb(0 0 0 / 0.12);
+    0 0 0 1px rgb(17 25 54 / 0.08), 0 4px 12px rgb(17 25 54 / 0.08),
+    0 16px 40px rgb(17 25 54 / 0.12);
 
-  --nt-focus-ring: var(--nt-accent);
+  /* Violet: 5.7:1 on the canvas, 5.4:1 on the frame. */
+  --nt-focus-ring: var(--nt-brand-violet);
   --nt-scrollbar-thumb: var(--nt-border);
   --nt-scrollbar-thumb-hover: var(--nt-text-muted);
 
   /* The sixteen ANSI colours for a light ground, each at least AA against the canvas; the
      "white" pair is grey and black, as light terminal themes do, so it stays legible. */
-  --nt-terminal-ansi-0: #1b1b1f; /* black — --nt-text */
+  --nt-terminal-ansi-0: #111936; /* black — --nt-text */
   --nt-terminal-ansi-1: #c4302b; /* red */
   --nt-terminal-ansi-2: #1f7a48; /* green */
   --nt-terminal-ansi-3: #8a5c00; /* yellow */
@@ -352,20 +393,34 @@
   --nt-app-background: var(--nt-frame);
   --nt-sidebar-background: var(--nt-frame);
   --nt-panel-background: var(--nt-canvas);
+  --nt-sidebar-gradient: none;
+}
+
+/* The product a page belongs to chooses its satellite, on any element (the root, as a rule) and
+   for everything inside it. After the light block and never repeated there, so a `data-theme`
+   further in cannot take it back. Without the attribute the satellite is Orbit's. */
+[data-product="orbit"] {
+  --nt-satellite: var(--nt-brand-orbit);
+}
+[data-product="halo"] {
+  --nt-satellite: var(--nt-brand-halo);
+}
+[data-product="fold"] {
+  --nt-satellite: var(--nt-brand-fold);
 }
 
 /* The window material shimmers through the tint of a translucent window. The sidebar shows the material
    through the frame's tint, the main panel covers it further with the canvas for legibility. */
 :root[data-translucent="true"] {
-  --nt-app-background: rgb(14 14 16 / 0.6);
+  --nt-app-background: rgb(12 18 41 / 0.6);
   --nt-sidebar-background: transparent;
-  --nt-panel-background: rgb(20 20 22 / 0.7);
+  --nt-panel-background: rgb(17 25 54 / 0.7);
 }
 
 /* The same strengths over the light material: the frame and the canvas of the light block. */
 :root[data-translucent="true"][data-theme="light"] {
-  --nt-app-background: rgb(243 243 245 / 0.6);
-  --nt-panel-background: rgb(251 251 252 / 0.7);
+  --nt-app-background: rgb(239 238 233 / 0.6);
+  --nt-panel-background: rgb(245 244 240 / 0.7);
 }
 
 /* Room for the window controls overlay of Windows (`titleBarOverlay` in `main/window/chrome.ts`):

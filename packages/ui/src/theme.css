@@ -14,6 +14,8 @@
 @theme inline {
   --font-sans: var(--nt-font-sans);
   --font-mono: var(--nt-font-mono);
+  /* `font-heading`: the weight of a title (`--nt-font-weight-heading`). */
+  --font-weight-heading: var(--nt-font-weight-heading);
   --color-bg: var(--nt-bg);
   --color-frame: var(--nt-frame);
   --color-canvas: var(--nt-canvas);
@@ -63,6 +65,8 @@
   --color-overlay: var(--nt-overlay-background);
   --color-scrim: var(--nt-scrim);
   --color-focus: var(--nt-focus-ring);
+  /* The product's own colour, only for its mark (`fill-satellite`, `bg-satellite` on a dot). */
+  --color-satellite: var(--nt-satellite);
   --shadow-menu: var(--nt-shadow-menu);
   --radius-sm: var(--nt-radius-sm);
   --radius-md: var(--nt-radius-md);

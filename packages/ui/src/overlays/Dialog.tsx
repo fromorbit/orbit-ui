@@ -133,7 +133,7 @@ export function Dialog({
         >
           <div className="flex shrink-0 items-start gap-2 px-4 pt-3.5 pb-2">
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <RadixDialog.Title className="m-0 font-medium text-fg">{title}</RadixDialog.Title>
+              <RadixDialog.Title className="m-0 font-heading text-fg">{title}</RadixDialog.Title>
               {description === undefined ? null : (
                 <RadixDialog.Description className="m-0 text-[12px] text-muted">
                   {description}

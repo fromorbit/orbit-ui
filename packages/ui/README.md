@@ -1,6 +1,6 @@
 # @fromorbit/ui
 
-The component library of Orbit: buttons, fields, dialogs, menus, lists and the design tokens. The library has no i18n: text comes in as props, and what the app provides (shortcuts, platform, theme, host) comes in through a single `UiProvider`.
+The component library of Orbit: buttons, fields, dialogs, menus, lists and the design tokens, in the style of the Orbit family (Midnight and Paper, Outfit and DM Mono; see [`docs/family-style.md`](../../docs/family-style.md)). The library has no i18n: text comes in as props, and what the app provides (shortcuts, platform, theme, host) comes in through a single `UiProvider`.
 
 Every story is online at <https://fromorbit.github.io/orbit-ui-docs/>.
 
@@ -25,28 +25,33 @@ npm install @fromorbit/ui @fromorbit/doc-view react react-dom radix-ui lucide-re
 **The alias.** To import the library under a short name, install it under an alias; the examples below use `@nt/ui`:
 
 ```json
-"@nt/ui": "npm:@fromorbit/ui@^0.1.0"
+"@nt/ui": "npm:@fromorbit/ui@^0.2.0"
 ```
 
 ```ts
 import { Button } from '@nt/ui'
+import '@nt/ui/fonts.css'
 import '@nt/ui/tokens.css'
 import '@nt/ui/theme.css'
 ```
 
-**Tailwind and styling.** The components carry Tailwind classes (Tailwind 4). The consumer's Tailwind scans the built library with `@source`, which is why the build leaves every class literal. Two stylesheets, in this order, after Tailwind:
+**Tailwind and styling.** The components carry Tailwind classes (Tailwind 4). The consumer's Tailwind scans the built library with `@source`, which is why the build leaves every class literal. The fonts, then Tailwind, then two stylesheets, in this order:
 
 ```css
+@import '@nt/ui/fonts.css';
 @import 'tailwindcss';
 @import '@nt/ui/tokens.css';
 @import '@nt/ui/theme.css';
 @source '../node_modules/@nt/ui/dist';
 ```
 
-- `tokens.css`: the design tokens as variables (`--nt-accent`, …), per theme.
+- `fonts.css`: Outfit and DM Mono, from the package's own dependencies (`@fontsource-variable/outfit`, `@fontsource/dm-mono`), so the font files go into the consumer's bundle and nothing is fetched from another origin. Optional for a consumer that loads the same faces itself.
+- `tokens.css`: the design tokens as variables (`--nt-accent`, …), per theme: dark on `:root`, light where an element carries `data-theme="light"`. The fixed colours of the family are `--nt-brand-*`.
 - `theme.css`: everything else the components need: the `@theme inline` block that maps the tokens to Tailwind names (`bg-accent`, `text-attention`, `rounded-md`, `shadow-menu`, …), the classes components carry (`no-drag`, `drag-region`, `nt-titlebar-strip`) and the animations (`nt-spin`, `nt-shape-spin`, `nt-shimmer`, `nt-fade-in`, `nt-wave`, their keyframes and the `prefers-reduced-motion` block). `theme.css` does not import Tailwind or `tokens.css` itself, so nothing loads twice.
 
 The `@source` path is relative to the consumer's CSS file. Whatever concerns only an app (`body`, the window scrollbars, the layout) the consumer writes itself.
+
+**The product.** A product's own colour is only its satellite (`--nt-satellite`, Tailwind `satellite`): Orbit orange by default, Halo mint with `data-product="halo"` on `<html>`, Fold lavender with `data-product="fold"`. It is never a role: the main button is monochrome, links and the focus ring are violet, whatever the product.
 
 **The app through `UiProvider`.** Shortcuts, platform, theme, the locale for numbers and the hosted layers come in through a single provider; without it everything works with a neutral default (no key caps, platform `mac`):
 
@@ -79,10 +84,11 @@ declare module '@nt/ui' {
 | `@fromorbit/ui` | every component and `UiProvider` |
 | `@fromorbit/ui/tokens.css` | the design tokens |
 | `@fromorbit/ui/theme.css` | the Tailwind names of the tokens, and the classes and animations of the components |
+| `@fromorbit/ui/fonts.css` | Outfit and DM Mono, self-hosted through the package's dependencies |
 | `@fromorbit/ui/gallery` | `stories`, `collectStories`, `galleryLabels` and the `Story` type, for the consumer's gallery |
 | `@fromorbit/ui/testing` | `renderWithUi` and the other helpers for a consumer's tests |
 
-Peer dependencies: `react`, `react-dom`, `radix-ui` (`~1.6.7`: two tests fail under 1.7 and 1.8), `lucide-react`, `@pierre/diffs`, `@pierre/trees`, `react-markdown`, `remark-gfm` and `@fromorbit/doc-view` (for `Prose` and the Shiki bundle); optionally `@testing-library/react` (for `./testing`). `class-variance-authority` is a regular dependency.
+Peer dependencies: `react`, `react-dom`, `radix-ui` (`~1.6.7`: two tests fail under 1.7 and 1.8), `lucide-react`, `@pierre/diffs`, `@pierre/trees`, `react-markdown`, `remark-gfm` and `@fromorbit/doc-view` (for `Prose` and the Shiki bundle); optionally `@testing-library/react` (for `./testing`). `class-variance-authority`, `@fontsource-variable/outfit` and `@fontsource/dm-mono` are regular dependencies.
 
 ## Layout
 
@@ -96,6 +102,7 @@ Peer dependencies: `react`, `react-dom`, `radix-ui` (`~1.6.7`: two tests fail un
 | `src/gallery/`, `src/testing/` | the `./gallery` and `./testing` entries |
 | `src/tokens.css` | the design tokens |
 | `src/theme.css` | the Tailwind mapping, the global classes and the animations |
+| `src/fonts.css` | the fonts of the family |
 | `tests/` | the boundaries, the guard tests and the tests against the build (exports, a consumer that renders, a consumer's types) |
 | `docs-site/` | the component site (Vite, React, Tailwind); it builds into `docs-site/dist` and is not part of the npm package |
 | `scripts/` | publishing the component site |
