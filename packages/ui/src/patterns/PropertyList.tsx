@@ -36,7 +36,7 @@ export function PropertyList({ label, groups }: PropertyListProps) {
           // biome-ignore lint/suspicious/noArrayIndexKey: the groups of a document never reorder; their place is their key
           key={index}
           data-nt-property-group
-          className="m-0 border-t border-border py-2 first:border-t-0 first:pt-0"
+          className="m-0 pt-4 first:pt-0"
         >
           {group.map((property) => (
             <div key={property.label} className="flex min-h-8 min-w-0 items-start gap-3 py-1.5">

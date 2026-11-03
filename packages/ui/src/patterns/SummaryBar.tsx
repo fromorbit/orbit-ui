@@ -33,8 +33,8 @@ export interface SummaryBarProps {
 
 /**
  * One row of a summary card: an icon, a label that may shrink and truncate, optional figures, and
- * on the right the action that opens it. 30px high inside the 1px frame, so a card of one row is
- * 32px on the grid, and rows stack without a spacer between them.
+ * on the right the action that opens it. A row is a control high (`--nt-control-md`) on a tinted
+ * plane without a frame (Common Region), and rows stack without a spacer between them.
  */
 export function SummaryRow({
   icon,
@@ -54,7 +54,7 @@ export function SummaryRow({
     <div
       {...rest}
       data-nt-summary-row
-      className="flex h-[30px] min-w-0 items-center gap-2 ps-3 pe-1.5"
+      className="flex h-(--nt-control-md) min-w-0 items-center gap-2 ps-3 pe-1.5"
     >
       {icon}
       <span className="min-w-0 truncate text-[13px] font-medium text-secondary">{label}</span>
@@ -82,7 +82,7 @@ export function SummaryBar({ files, added, removed, labels, onOpen, children }: 
   return (
     <div
       data-nt-summary-bar
-      className="flex min-w-0 flex-col divide-y divide-border rounded-md border border-border"
+      className="flex min-w-0 flex-col divide-y divide-border rounded-md bg-surface"
     >
       <SummaryRow
         icon={<Icon name="file-diff" size="sm" tone="faint" />}

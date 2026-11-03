@@ -49,13 +49,14 @@ test('Bekijk is a named button that opens the changes', async () => {
 })
 
 // The card stands on the 4px grid at 32px, with the radius token.
-test('a 30px row inside the 1px border makes the 32px bar, with the radius token', () => {
+test('a row of a control high on a tinted plane without a frame, with the radius token', () => {
   render(<SummaryBar labels={nl.summary} files={4} added={128} removed={41} onOpen={() => {}} />)
   const bar = document.querySelector('[data-nt-summary-bar]') as HTMLElement
-  expect(bar.className.split(' ')).toEqual(
-    expect.arrayContaining(['border', 'border-border', 'rounded-md']),
+  expect(bar.className.split(' ')).toEqual(expect.arrayContaining(['bg-surface', 'rounded-md']))
+  expect(bar.className.split(' ')).not.toContain('border')
+  expect(bar.querySelector('[data-nt-summary-row]')?.className.split(' ')).toContain(
+    'h-(--nt-control-md)',
   )
-  expect(bar.querySelector('[data-nt-summary-row]')?.className.split(' ')).toContain('h-[30px]')
   expect(bar.querySelector('svg')?.getAttribute('class')).toContain('lucide-file-diff')
 })
 

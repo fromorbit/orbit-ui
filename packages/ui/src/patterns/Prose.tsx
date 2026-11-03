@@ -373,7 +373,7 @@ function MarkdownFence({ code }: { code: () => string }) {
   const labels = useProseLabels()
   return (
     <div data-nt-code-block data-nt-markdown-fence className="group/code relative">
-      <div className="rounded-md border border-border bg-surface p-3">
+      <div className="rounded-md bg-surface p-3">
         <DocumentView markdown={code()} document={FENCE_DOCUMENT} labels={labels} />
       </div>
       <div data-nt-code-copy className={CODE_COPY}>
@@ -433,7 +433,7 @@ function TableRegion({ children }: { children: ReactNode }) {
 // A block that can scroll sideways, focusable so the keyboard reaches its overflow too.
 const SCROLLS =
   'no-drag overflow-x-auto outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
-const CODE_REGION = `${SCROLLS} rounded-md border border-border bg-surface p-3 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)`
+const CODE_REGION = `${SCROLLS} rounded-md bg-surface p-3 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)`
 // Quiet until you go there: 100 ms is the shortest step the guidelines allow, and under reduced
 // motion there is no step at all. Opacity only, so nothing moves when it appears — and no reach
 // while it is invisible, or it would swallow a selection drag that starts at the right end of the
@@ -537,12 +537,12 @@ const components: Options['components'] = {
   hr: () => <Separator />,
   table: ({ children }) => <TableRegion>{children}</TableRegion>,
   th: ({ children }) => (
-    <th className="border border-border px-2 py-1 text-left font-medium">
+    <th className="border-b border-border px-3 py-1.5 text-left font-medium text-muted first:ps-0">
       <Linked>{children}</Linked>
     </th>
   ),
   td: ({ children }) => (
-    <td className="border border-border px-2 py-1">
+    <td className="border-b border-border px-3 py-1.5 first:ps-0">
       <Linked>{children}</Linked>
     </td>
   ),
