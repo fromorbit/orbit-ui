@@ -51,6 +51,8 @@ import avatarStory from '../primitives/Avatar.gallery'
 import brandIconStory from '../primitives/BrandIcon.gallery'
 import buttonStory from '../primitives/Button.gallery'
 import checkboxStory from '../primitives/Checkbox.gallery'
+import checkboxFieldStory from '../primitives/CheckboxField.gallery'
+import checkboxGroupStory from '../primitives/CheckboxGroup.gallery'
 import choiceRowStory from '../primitives/ChoiceRow.gallery'
 import citeRowStory from '../primitives/CiteRow.gallery'
 import collapsibleStory from '../primitives/Collapsible.gallery'
@@ -199,4 +201,6 @@ export const stories: Story[] = collectStories([
   thumbnailStory,
   toggleStory,
   formFieldStory,
+  checkboxFieldStory,
+  checkboxGroupStory,
 ])
