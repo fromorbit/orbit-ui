@@ -100,7 +100,7 @@ export function CiteRow({
       aria-labelledby={tag ? `${labelId} ${tagId}` : labelId}
       aria-describedby={description ? descriptionId : undefined}
       onClick={onJump}
-      className={`group no-drag flex w-full items-start gap-2 text-left text-[13px] text-fg outline-focus transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${shape}`}
+      className={`group no-drag flex w-full items-start gap-2 text-left text-[13px] text-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${shape}`}
     >
       {body}
     </button>

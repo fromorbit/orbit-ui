@@ -54,7 +54,7 @@ export function GitHubLink({
       title={pull ? `${title} · ${pull.title}` : title}
       {...(pull ? { 'data-nt-pr-state': pull.state } : {})}
       onClick={() => onOpen()}
-      className="inline cursor-pointer whitespace-nowrap rounded-sm bg-surface px-1 py-0.5 font-mono text-[12px] text-fg outline-focus transition-colors duration-100 hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
+      className="inline cursor-pointer whitespace-nowrap rounded-sm bg-surface px-1 py-0.5 font-mono text-[12px] text-fg outline-focus transition-colors duration-(--nt-duration-fast) hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
     >
       <span className="mr-1 inline-flex translate-y-[2px]">
         <BrandIcon brand="github" />

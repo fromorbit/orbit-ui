@@ -78,8 +78,8 @@ export function SettingFoldRow({
               data-nt-fold-chevron
               className={
                 open
-                  ? 'flex rotate-90 transition-transform duration-100 motion-reduce:transition-none'
-                  : 'flex transition-transform duration-100 motion-reduce:transition-none'
+                  ? 'flex rotate-90 transition-transform duration-(--nt-duration-fast) motion-reduce:transition-none'
+                  : 'flex transition-transform duration-(--nt-duration-fast) motion-reduce:transition-none'
               }
             >
               <Icon name="chevron-right" size="sm" />

@@ -154,16 +154,24 @@
      it on an element to calm the marks inside it. */
   --nt-status-glow: 1;
 
+  /* One family of radii, nested by one rule: the inner radius is the outer one less the inset
+     between them (Prägnanz: concentric corners read as one shape). A menu or a card (`lg`, 12px)
+     with a 4px inset holds rows and controls of `md` (8px); a tag, a key cap or a mark inside a
+     row takes `sm` (4px). `rounded-full` only for what is round by meaning: a pill, an avatar, a
+     dot. */
   --nt-radius-sm: 4px;
-  --nt-radius-md: 6px;
-  /* Cards, dialogs and menus: a touch rounder than a control. */
-  --nt-radius-lg: 10px;
+  --nt-radius-md: 8px;
+  /* Cards, dialogs and menus: a step rounder than a control. */
+  --nt-radius-lg: 12px;
 
-  /* xs: the quiet button in a footer bar (the diff's moment button), not a control of its own. */
-  --nt-control-xs: 20px;
-  --nt-control-sm: 24px;
-  --nt-control-md: 28px;
-  --nt-control-lg: 32px;
+  /* Four control heights on the 4px grid (Fitts: the default control is 32px, a hit area a
+     pointer reaches without aiming). xs: the quiet button in a footer bar (the diff's moment
+     button), not a control of its own; sm for a dense toolbar; md the default control and the row
+     of a list or a menu; lg a prominent action and a banner. */
+  --nt-control-xs: 24px;
+  --nt-control-sm: 28px;
+  --nt-control-md: 32px;
+  --nt-control-lg: 40px;
   /* xs is the affordance of a control (the chevron of a pill), not a glyph that carries content. */
   --nt-icon-xs: 12px;
   --nt-icon-sm: 14px;
@@ -211,6 +219,22 @@
   /* The inner edge per container: a panel 12px, a card 16px. */
   --nt-inset-panel: 12px;
   --nt-inset-card: 16px;
+
+  /* The rhythm: one 4px scale (Tailwind's spacing steps are 4px), and three distances that carry
+     meaning (the Law of Proximity: what is near belongs together). Items of one group stand
+     `item` apart, groups `group` apart, sections `section` apart: the space between groups is at
+     least three times the space inside one, so a group reads as a group without a line or a box
+     around it. A divider is only for rows of one region that the eye must follow across. */
+  --nt-space-item: 8px;
+  --nt-space-group: 24px;
+  --nt-space-section: 40px;
+
+  /* Motion (the Doherty threshold: feedback at once, never a wait). `fast` for hover and press, the
+     default for what opens, fades or turns; one calm curve that starts quick and settles. The
+     reduced-motion block of `theme.css` turns every animation off. */
+  --nt-duration-fast: 120ms;
+  --nt-duration: 180ms;
+  --nt-ease: cubic-bezier(0.2, 0, 0, 1);
 
   /* The sixteen ANSI colours of the terminal, tuned for AA contrast against the
      panel background (`--nt-bg`) — most reuse a colour the app already vets for that (`--nt-danger`,

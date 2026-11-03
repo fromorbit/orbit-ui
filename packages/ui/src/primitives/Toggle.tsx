@@ -13,7 +13,7 @@ import { Icon, type IconName } from './Icon'
  * by shade alone.
  */
 const toggle = cva(
-  'no-drag inline-flex shrink-0 items-center justify-center rounded-md text-muted outline-focus transition-colors duration-100 hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-40 data-[state=on]:bg-surface-hover data-[state=on]:text-fg',
+  'no-drag inline-flex shrink-0 items-center justify-center rounded-md text-muted outline-focus transition-colors duration-(--nt-duration-fast) hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-40 data-[state=on]:bg-surface-hover data-[state=on]:text-fg',
   {
     variants: {
       size: {

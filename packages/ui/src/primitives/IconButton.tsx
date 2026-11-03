@@ -12,7 +12,7 @@ import { Spinner } from './Spinner'
  * `text-[…px]` class `controlSize` carries alongside its height for a text-bearing control.
  */
 const iconButton = cva(
-  'no-drag inline-flex shrink-0 items-center justify-center outline-focus transition-[filter,background-color] duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-40 aria-disabled:hover:filter-none',
+  'no-drag inline-flex shrink-0 items-center justify-center outline-focus transition-[filter,background-color] duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-40 aria-disabled:hover:filter-none',
   {
     variants: {
       // The dimming of `aria-disabled` sits in each variant rather than in the base: `idle` must

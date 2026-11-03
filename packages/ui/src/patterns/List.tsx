@@ -325,7 +325,7 @@ export function ListRow({
             className="pointer-events-auto flex h-4 w-3 shrink-0 items-center justify-center rounded-sm text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-1"
           >
             <span
-              className={`flex transition-transform duration-100 ease-out motion-reduce:transition-none ${
+              className={`flex transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
                 fold.open ? '' : '-rotate-90'
               }`}
             >
@@ -479,7 +479,7 @@ export function ListGroup({
               </span>
             )}
             <span
-              className={`flex shrink-0 transition-transform duration-100 ease-out motion-reduce:transition-none ${
+              className={`flex shrink-0 transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
                 open
                   ? 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
                   : '-rotate-90'

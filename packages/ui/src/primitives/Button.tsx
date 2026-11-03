@@ -84,7 +84,7 @@ const button = cva(
   // button taller — it spills out of it, over whatever stands below.
   // The dimming of `aria-disabled` sits in each variant rather than here: `idle` must stay at full
   // strength, and a base class cannot be taken back by a variant without a class-merging tool.
-  'no-drag relative inline-flex items-center whitespace-nowrap rounded-md font-medium outline-focus transition-[filter,background-color] duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none aria-disabled:hover:filter-none',
+  'no-drag relative inline-flex items-center whitespace-nowrap rounded-md font-medium outline-focus transition-[filter,background-color] duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none aria-disabled:hover:filter-none',
   {
     variants: {
       variant: {

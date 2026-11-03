@@ -71,7 +71,7 @@ function RadioGroupOptionRow({ option }: { option: RadioGroupOption }) {
       value={option.id}
       aria-labelledby={labelId}
       aria-describedby={option.description === undefined ? undefined : descriptionId}
-      className="no-drag flex items-start gap-2 rounded-md p-2 text-left outline-focus transition-colors duration-100 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=checked]:bg-surface-hover"
+      className="no-drag flex items-start gap-2 rounded-md p-2 text-left outline-focus transition-colors duration-(--nt-duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=checked]:bg-surface-hover"
     >
       <span
         aria-hidden="true"

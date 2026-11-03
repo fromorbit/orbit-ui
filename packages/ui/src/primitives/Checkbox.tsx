@@ -42,7 +42,7 @@ export function Checkbox({
       checked={checked}
       disabled={disabled}
       onCheckedChange={(next) => onCheckedChange(next === true)}
-      className="no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-accent-fg outline-focus transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+      className="no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
     >
       <RadixCheckbox.Indicator>
         <Icon name="check" size="xs" />

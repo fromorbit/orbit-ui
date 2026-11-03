@@ -100,7 +100,7 @@ export function Collapsible({
           {chevron ? (
             <span
               data-nt-collapsible-chevron
-              className="flex size-(--nt-icon-sm) shrink-0 items-center justify-center text-muted transition-transform duration-100 group-data-[state=open]:rotate-90 motion-reduce:transition-none"
+              className="flex size-(--nt-icon-sm) shrink-0 items-center justify-center text-muted transition-transform duration-(--nt-duration-fast) group-data-[state=open]:rotate-90 motion-reduce:transition-none"
             >
               <Icon name="chevron-right" size="sm" />
             </span>

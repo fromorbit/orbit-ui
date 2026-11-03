@@ -61,7 +61,7 @@ export function ChoiceRow({
     onFocus: onActive,
     onMouseEnter: onActive,
     className:
-      'no-drag flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left outline-focus transition-colors duration-100 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] aria-checked:bg-surface-hover',
+      'no-drag flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left outline-focus transition-colors duration-(--nt-duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] aria-checked:bg-surface-hover',
   }
   return (
     <button {...shared}>

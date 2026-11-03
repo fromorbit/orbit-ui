@@ -440,7 +440,7 @@ const CODE_REGION = `${SCROLLS} rounded-md border border-border bg-surface p-3 [
 // first line. Focus is unaffected: `pointer-events` says nothing about the keyboard, and landing
 // on the button is itself what makes the block show it.
 const CODE_COPY =
-  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-100 ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto motion-reduce:transition-none'
+  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto motion-reduce:transition-none'
 // The thumb of a code block stays visible at rest, so a line that runs on past the edge says so;
 // the rest of the app shows its scrollbars only while they are pointed at (index.css).
 const CODE_REGION_WRAPPED =

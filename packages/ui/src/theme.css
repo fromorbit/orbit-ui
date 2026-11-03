@@ -108,7 +108,7 @@
 /* Content that unfolds: it fades in where it stands, and never animates its own height. Growing
    would push everything below it down for the length of the animation. */
 .nt-fade-in {
-  animation: nt-fade-in 100ms ease-out;
+  animation: nt-fade-in var(--nt-duration) var(--nt-ease);
 }
 /* A layer only fades in; closing it has nothing to wait for. Radix keeps a closing layer mounted
    while it believes an exit animation runs, and it believes so whenever the panel's animation
