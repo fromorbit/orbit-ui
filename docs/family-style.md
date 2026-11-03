@@ -47,7 +47,7 @@ What runs on its own (a service, an app, a space) shows its state with `StatusMa
 | Stopped (`--nt-status-stop`) | muted (Slate) | deep Slate |
 | Glow (`--nt-status-glow`) | 1 | 0.22 |
 
-The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners that sits 1.5px above the middle of its box, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
+The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners whose ink is as high as the circle's, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
 
 ## Breaking changes of 0.2.0
 

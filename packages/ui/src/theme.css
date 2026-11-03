@@ -193,11 +193,11 @@
   border-radius: 2px;
   rotate: 45deg;
 }
-/* A softer triangle: rounded corners and a little flatter, so it weighs the same as the circle;
-   its middle stands 1.5px above the box's, so it sits on the line of the others. */
+/* A softer triangle: rounded corners, its ink as high as the circle's (0 to 14, the apex of its
+   rounded tip at 0), so it weighs the same and sits on the same line. */
 .nt-status-mark[data-kind="fault"] .nt-status-mark-body {
   clip-path: path(
-    "M 5.7 3.1 Q 7 1.1 8.3 3.1 L 12.5 9.8 Q 13.5 11.5 11.5 11.5 L 2.5 11.5 Q 0.5 11.5 1.5 9.8 Z"
+    "M 5.6 0.97 Q 7 -0.97 8.4 0.97 L 13.4 11.83 Q 14.2 14 12.2 14 L 1.8 14 Q -0.2 14 0.6 11.83 Z"
   );
 }
 

@@ -22,6 +22,40 @@ function rule(selector: string): string {
   return themeCss.match(new RegExp(`(?:^|\\n)\\s*${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? ''
 }
 
+/** The clip path of the fault triangle, on the 14px box of the mark. */
+const TRIANGLE =
+  'M 5.6 0.97 Q 7 -0.97 8.4 0.97 L 13.4 11.83 Q 14.2 14 12.2 14 L 1.8 14 Q -0.2 14 0.6 11.83 Z'
+
+/**
+ * The top and bottom of the ink of a path made of `M`, `L`, `Q` and `Z` with absolute points: the
+ * end points, and for each quadratic curve the point where it turns, if it turns between them.
+ */
+function verticalInk(path: string): [number, number] {
+  const parts = path.trim().split(/\s+/)
+  const ys: number[] = []
+  let current = 0
+  for (let index = 0; index < parts.length; ) {
+    const command = parts[index++]
+    const read = () => Number(parts[index++])
+    if (command === 'M' || command === 'L') {
+      read()
+      current = read()
+      ys.push(current)
+    } else if (command === 'Q') {
+      read()
+      const control = read()
+      read()
+      const end = read()
+      const bend = current - 2 * control + end
+      const t = bend === 0 ? -1 : (current - control) / bend
+      if (t > 0 && t < 1) ys.push((1 - t) ** 2 * current + 2 * (1 - t) * t * control + t ** 2 * end)
+      ys.push(end)
+      current = end
+    }
+  }
+  return [Math.min(...ys), Math.max(...ys)]
+}
+
 test('each state draws its own shape, never colour alone', () => {
   const shapes = Object.fromEntries(
     kinds.map((kind) => [
@@ -75,13 +109,21 @@ describe('the drawing in theme.css', () => {
     expect(themeCss).not.toMatch(/nt-status-mark[^{]*\{[^}]*(gradient|inset)/)
   })
 
-  test('the triangle is clipped higher in its box, so its glow is a drop-shadow on the slot', () => {
+  test('the triangle is clipped, so its glow is a drop-shadow on the slot', () => {
     expect(rule('.nt-status-mark[data-kind="fault"] .nt-status-mark-body')).toContain(
-      '"M 5.7 3.1 Q 7 1.1 8.3 3.1 L 12.5 9.8 Q 13.5 11.5 11.5 11.5 L 2.5 11.5 Q 0.5 11.5 1.5 9.8 Z"',
+      `"${TRIANGLE}"`,
     )
     expect(rule('.nt-status-mark[data-kind="fault"]')).toMatch(
       /filter: drop-shadow\(\s*0 0 calc\(4px \* var\(--nt-status-glow\)\) color-mix\(in srgb, var\(--c\) 60%, transparent\)/,
     )
+  })
+
+  test("the triangle's ink is as high as the circle's, within half a pixel", () => {
+    // The circle fills the 14px body; a triangle that stops short of it looked small and high.
+    expect(rule('.nt-status-mark-body')).toContain('block-size: 14px;')
+    const [top, bottom] = verticalInk(TRIANGLE)
+    expect(Math.abs(bottom - top - 14)).toBeLessThanOrEqual(0.5)
+    expect(Math.abs((top + bottom) / 2 - 7)).toBeLessThanOrEqual(0.5)
   })
 
   test('the diamond is a turned square, so its glow is not clipped', () => {
