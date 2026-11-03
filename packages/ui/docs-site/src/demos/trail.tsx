@@ -1,6 +1,8 @@
 import { type ReactNode, useState } from 'react'
 import {
   Button,
+  DataTable,
+  type DataTableColumn,
   Icon,
   IconButton,
   type IconName,
@@ -13,7 +15,6 @@ import {
   Tabs,
   Tag,
 } from '../../../src'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
 import { Panel } from './parts/Panel'
@@ -24,6 +25,7 @@ import {
   DURATION,
   EVENTS,
   NETWORK,
+  type NetworkRequest,
   POSITION,
   RECORDINGS,
   stamp,
@@ -115,76 +117,91 @@ function Console(): ReactNode {
   )
 }
 
+/** Whether a request failed: its path and status turn red. */
+const failed = (request: NetworkRequest) => request.status >= 400
+
+/** The columns of the requests; the waterfall runs over the whole recording. */
+function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
+  return [
+    {
+      id: 'method',
+      header: 'Methode',
+      sortValue: (request) => request.method,
+      cell: (request) => (
+        <span className="font-mono text-[11.5px] text-secondary">{request.method}</span>
+      ),
+    },
+    {
+      id: 'path',
+      header: 'Pad',
+      sortValue: (request) => request.path,
+      cell: (request) => (
+        <span className={`font-mono text-[11.5px] ${failed(request) ? 'text-danger' : 'text-fg'}`}>
+          {request.path}
+        </span>
+      ),
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      align: 'end',
+      sortValue: (request) => request.status,
+      cell: (request) => (
+        <span className={failed(request) ? 'font-medium text-danger' : 'text-secondary'}>
+          {request.status}
+        </span>
+      ),
+    },
+    {
+      id: 'time',
+      header: 'Tijd',
+      align: 'end',
+      hideBelow: 'md',
+      sortValue: (request) => request.ms,
+      cell: (request) => (
+        <span className={request.ms > 1000 ? 'text-attention' : 'text-secondary'}>
+          {`${request.ms.toLocaleString('nl-NL')} ms`}
+        </span>
+      ),
+    },
+    {
+      id: 'size',
+      header: 'Grootte',
+      align: 'end',
+      hideBelow: 'md',
+      cell: (request) => <span className="text-muted">{request.size}</span>,
+    },
+    {
+      id: 'waterfall',
+      header: 'Verloop',
+      hideBelow: 'lg',
+      cell: (request) => (
+        <span className="relative block h-1.5 w-40 rounded-full bg-mark">
+          <span
+            className={`absolute inset-y-0 min-w-1 rounded-full ${failed(request) ? 'bg-danger' : request.ms > 1000 ? 'bg-attention' : 'bg-secondary'}`}
+            style={{
+              left: `${((request.at * 1000) / longest) * 100}%`,
+              width: `${(request.ms / longest) * 100}%`,
+            }}
+          />
+        </span>
+      ),
+    },
+  ]
+}
+
 /** The requests of the page as a table with a waterfall, the failed ones in red. */
 function Network(): ReactNode {
   const longest = Math.max(...NETWORK.map((request) => request.at * 1000 + request.ms))
   return (
-    <div className="p-2">
-      <Missing
-        name="DataTable"
-        note="Kolommen die sorteren, een rij die opent en een watervalkolom"
-      >
-        <table className="w-full table-fixed border-collapse text-[12.5px]">
-          <thead>
-            <tr className="text-left text-[11.5px] text-muted">
-              <th className="w-16 px-2.5 py-1.5 font-normal">Methode</th>
-              <th className="px-2.5 py-1.5 font-normal">Pad</th>
-              <th className="w-16 px-2.5 py-1.5 text-right font-normal">Status</th>
-              <th className="hidden w-24 px-2.5 py-1.5 text-right font-normal @xl:table-cell">
-                Tijd
-              </th>
-              <th className="hidden w-20 px-2.5 py-1.5 text-right font-normal @3xl:table-cell">
-                Grootte
-              </th>
-              <th className="hidden w-40 px-2.5 py-1.5 font-normal @4xl:table-cell">Verloop</th>
-            </tr>
-          </thead>
-          <tbody>
-            {NETWORK.map((request) => {
-              const failed = request.status >= 400
-              return (
-                <tr
-                  key={`${request.method}-${request.at}`}
-                  className={`border-border border-t ${failed ? 'bg-danger-subtle' : ''}`}
-                >
-                  <td className="px-2.5 py-1.5 font-mono text-[11.5px] text-secondary">
-                    {request.method}
-                  </td>
-                  <td
-                    className={`truncate px-2.5 py-1.5 font-mono text-[11.5px] ${failed ? 'text-danger' : 'text-fg'}`}
-                  >
-                    {request.path}
-                  </td>
-                  <td
-                    className={`px-2.5 py-1.5 text-right tabular-nums ${failed ? 'font-medium text-danger' : 'text-secondary'}`}
-                  >
-                    {request.status}
-                  </td>
-                  <td
-                    className={`hidden px-2.5 py-1.5 text-right tabular-nums @xl:table-cell ${request.ms > 1000 ? 'text-attention' : 'text-secondary'}`}
-                  >
-                    {`${request.ms.toLocaleString('nl-NL')} ms`}
-                  </td>
-                  <td className="hidden px-2.5 py-1.5 text-right text-muted tabular-nums @3xl:table-cell">
-                    {request.size}
-                  </td>
-                  <td className="hidden px-2.5 py-1.5 @4xl:table-cell">
-                    <span className="relative block h-1.5 rounded-full bg-mark">
-                      <span
-                        className={`absolute inset-y-0 min-w-1 rounded-full ${failed ? 'bg-danger' : request.ms > 1000 ? 'bg-attention' : 'bg-secondary'}`}
-                        style={{
-                          left: `${((request.at * 1000) / longest) * 100}%`,
-                          width: `${(request.ms / longest) * 100}%`,
-                        }}
-                      />
-                    </span>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </Missing>
+    <div className="p-2 text-[12.5px]">
+      <DataTable
+        label="Netwerk"
+        columns={networkColumns(longest)}
+        rows={NETWORK}
+        rowKey={(request) => `${request.method}-${request.at}`}
+        labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
+      />
     </div>
   )
 }

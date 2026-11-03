@@ -3,6 +3,8 @@ import {
   Banner,
   Button,
   CopyButton,
+  DataTable,
+  type DataTableColumn,
   Icon,
   IconButton,
   type IconName,
@@ -10,14 +12,15 @@ import {
   PropertyList,
   ScrollArea,
   Tag,
+  Timeline,
+  TimelineItem,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
 import { type Bar, ChartSketch } from './parts/ChartSketch'
+import { type Figure, KpiTile } from './parts/KpiTile'
 import { Panel } from './parts/Panel'
-import { type Figure, StatTileSketch } from './parts/StatTileSketch'
 import { UsagePlanCard } from './parts/UsagePlanCard'
 
 /** What the workspace used this month, against September. */
@@ -198,7 +201,64 @@ function gross(invoice: Invoice): number {
   return Math.round(invoice.net * 1.21)
 }
 
-/** The invoices as a table, drawn as the missing `DataTable`; narrow, every row is a line. */
+/** The columns of the invoices; the amount aligns to the end, narrow the date steps aside. */
+function invoiceColumns(onSelect: (number: string) => void): DataTableColumn<Invoice>[] {
+  return [
+    {
+      id: 'invoice',
+      header: 'Factuur',
+      sortValue: (invoice) => invoice.number,
+      cell: (invoice) => (
+        <button
+          type="button"
+          onClick={() => onSelect(invoice.number)}
+          className="flex min-w-0 flex-col rounded-sm text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          <span className="truncate font-mono text-[12px] text-fg">{invoice.number}</span>
+          <span className="truncate text-[12px] text-muted">{invoice.period}</span>
+        </button>
+      ),
+    },
+    {
+      id: 'date',
+      header: 'Datum',
+      hideBelow: 'md',
+      sortValue: (invoice) => invoice.number,
+      cell: (invoice) => <span className="text-secondary">{invoice.date}</span>,
+    },
+    {
+      id: 'amount',
+      header: 'Bedrag',
+      align: 'end',
+      sortValue: (invoice) => gross(invoice),
+      cell: (invoice) => euro(gross(invoice)),
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      cell: (invoice) => (
+        <Tag tone={STATUS[invoice.status].tone}>{STATUS[invoice.status].label}</Tag>
+      ),
+    },
+    {
+      id: 'download',
+      header: 'Downloaden',
+      headerHidden: true,
+      align: 'end',
+      cell: (invoice) => (
+        <IconButton
+          icon="arrow-down"
+          size="sm"
+          label={`Download ${invoice.number} als pdf`}
+          disabled={invoice.status === 'open'}
+          onClick={(event) => event.stopPropagation()}
+        />
+      ),
+    },
+  ]
+}
+
+/** The invoices as a table, the newest first; a row opens beside it. */
 function InvoiceTable({
   selected,
   onSelect,
@@ -207,105 +267,42 @@ function InvoiceTable({
   onSelect(number: string): void
 }): ReactNode {
   return (
-    <Missing name="DataTable" note="Kolommen sorteren, bedragen rechts uitgelijnd, rij kiezen">
-      <table className="w-full table-fixed border-collapse text-left text-[13px]">
-        <thead>
-          <tr className="border-border border-t border-b text-[12px] text-muted">
-            <th className="py-2 pl-4 font-normal">Factuur</th>
-            <th className="hidden w-32 px-3 py-2 font-normal @2xl:table-cell">
-              <span className="inline-flex items-center gap-1 text-fg">
-                Datum
-                <Icon name="arrow-down" size="sm" />
-              </span>
-            </th>
-            <th className="w-28 px-3 py-2 text-right font-normal">Bedrag</th>
-            <th className="w-24 px-3 py-2 font-normal">Status</th>
-            <th className="w-12 py-2 pr-3">
-              <span className="sr-only">Downloaden</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {INVOICES.map((invoice) => {
-            const current = invoice.number === selected
-            return (
-              <tr
-                key={invoice.number}
-                aria-selected={current}
-                onClick={() => onSelect(invoice.number)}
-                className={`cursor-default border-border border-b last:border-b-0 hover:bg-row-hover ${current ? 'bg-row-active' : ''}`}
-              >
-                <td className="py-2.5 pl-4">
-                  <div className="flex min-w-0 flex-col">
-                    <span className="truncate font-mono text-[12px] text-fg">{invoice.number}</span>
-                    <span className="truncate text-[12px] text-muted">{invoice.period}</span>
-                  </div>
-                </td>
-                <td className="hidden px-3 py-2.5 text-secondary @2xl:table-cell">
-                  {invoice.date}
-                </td>
-                <td className="px-3 py-2.5 text-right text-fg tabular-nums">
-                  {euro(gross(invoice))}
-                </td>
-                <td className="px-3 py-2.5">
-                  <Tag tone={STATUS[invoice.status].tone}>{STATUS[invoice.status].label}</Tag>
-                </td>
-                <td className="py-2.5 pr-3 text-right">
-                  <IconButton
-                    icon="arrow-down"
-                    size="sm"
-                    label={`Download ${invoice.number} als pdf`}
-                    disabled={invoice.status === 'open'}
-                    onClick={(event) => event.stopPropagation()}
-                  />
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </Missing>
+    <div className="border-border border-t">
+      <DataTable
+        label="Facturen"
+        columns={invoiceColumns(onSelect)}
+        rows={INVOICES}
+        rowKey={(invoice) => invoice.number}
+        labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
+        defaultSort={{ column: 'date', direction: 'descending' }}
+        current={selected}
+        onRowClick={(invoice) => onSelect(invoice.number)}
+      />
+    </div>
   )
 }
 
-/** What happened to an invoice, drawn as the missing `Timeline`. */
-function TimelineSketch({ steps }: { steps: readonly Step[] }): ReactNode {
+/** What happened to an invoice, step by step. */
+function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
   return (
-    <Missing name="Timeline" note="Het verloop van de factuur">
-      <ol className="m-0 flex list-none flex-col p-0">
-        {steps.map((step, index) => (
-          <li key={`${step.label}-${step.at}`} className="relative flex gap-3 pb-4 last:pb-0">
-            {index < steps.length - 1 ? (
-              <span
-                aria-hidden="true"
-                className="absolute top-6 bottom-0 left-[11px] w-px bg-border-strong"
-              />
-            ) : null}
-            <span
-              className={`relative flex size-6 shrink-0 items-center justify-center rounded-full border ${
-                step.tone === 'danger'
-                  ? 'border-danger-border bg-danger-subtle text-danger'
-                  : step.tone === 'muted'
-                    ? 'border-border border-dashed bg-overlay text-muted'
-                    : 'border-border bg-surface text-secondary'
-              }`}
-            >
-              <Icon name={step.icon} size="sm" />
+    <Timeline label="Verloop">
+      {steps.map((step) => (
+        <TimelineItem
+          key={`${step.label}-${step.at}`}
+          marker={<Icon name={step.icon} size="sm" />}
+          tone={step.tone === 'danger' ? 'danger' : step.tone === 'muted' ? 'pending' : 'default'}
+        >
+          <span className="flex min-w-0 flex-col">
+            <span className={`text-[13px] ${step.tone === 'muted' ? 'text-secondary' : 'text-fg'}`}>
+              {step.label}
             </span>
-            <div className="flex min-w-0 flex-col pt-0.5">
-              <span
-                className={`text-[13px] ${step.tone === 'muted' ? 'text-secondary' : 'text-fg'}`}
-              >
-                {step.label}
-              </span>
-              <span className="text-[12px] text-muted">
-                {step.note === undefined ? step.at : `${step.at} · ${step.note}`}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </Missing>
+            <span className="text-[12px] text-muted">
+              {step.note === undefined ? step.at : `${step.at} · ${step.note}`}
+            </span>
+          </span>
+        </TimelineItem>
+      ))}
+    </Timeline>
   )
 }
 
@@ -354,7 +351,7 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
             ],
           ]}
         />
-        <TimelineSketch steps={invoice.steps} />
+        <InvoiceTimeline steps={invoice.steps} />
         {invoice.status === 'failed' ? (
           <div className="flex flex-wrap gap-2">
             <Button variant="primary" size="sm">
@@ -399,7 +396,7 @@ function Usage(): ReactNode {
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS.map((kpi) => (
-              <StatTileSketch key={kpi.label} figure={kpi} />
+              <KpiTile key={kpi.label} figure={kpi} />
             ))}
           </div>
           <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">

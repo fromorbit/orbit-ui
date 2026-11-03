@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useId, useRef, useState } from 'react'
 import type { ControlSize } from './control-size'
 import { controlSize } from './control-size'
 import { Icon, type IconName } from './Icon'
@@ -24,6 +24,10 @@ const wrapper = cva('no-drag inline-flex shrink-0 items-center gap-1.5 px-2 text
     variant: {
       default:
         'rounded-md border border-border bg-surface outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2',
+      // `default` with the border of a field that failed its check (`aria-invalid`): the danger
+      // colour stays while the field has the focus, so the reader keeps seeing what to fix.
+      invalid:
+        'rounded-md border border-danger bg-surface outline-focus focus-within:outline-2 focus-within:outline-offset-2',
       bare: '',
     },
   },
@@ -35,7 +39,7 @@ export type InputVariant = 'default' | 'bare'
 
 /** The props of `Input`. */
 export interface InputProps
-  extends Omit<ComponentPropsWithRef<'input'>, 'className' | 'style' | 'size'> {
+  extends Omit<ComponentPropsWithRef<'input'>, 'className' | 'style' | 'size' | 'prefix'> {
   /** Accessible name; every field has one. */
   label: string
   size?: ControlSize
@@ -64,6 +68,19 @@ export interface InputProps
    * is there but never sent back to the interface, and must read as filled rather than as a hint.
    */
   placeholderFilled?: boolean
+  /**
+   * Text inside the frame before the value, such as `https://` or `€`: part of what the field
+   * means, so it is read as the field's description too (`aria-describedby`), after any the
+   * caller wires itself.
+   */
+  prefix?: string
+  /** Text inside the frame after the value, such as `.halo.dev` or `MB`; read like `prefix`. */
+  suffix?: string
+}
+
+/** Whether an `aria-invalid` value means the field failed its check. */
+function isInvalid(value: unknown): boolean {
+  return value === true || value === 'true' || value === 'grammar' || value === 'spelling'
 }
 
 /** Whether a value React would render as text is non-empty. */
@@ -101,6 +118,8 @@ export function Input({
   onClear,
   trailing,
   placeholderFilled,
+  prefix,
+  suffix,
   ...props
 }: InputProps) {
   // `className` and `style` are not part of `InputProps`, but a caller working around the type
@@ -114,6 +133,18 @@ export function Input({
     ...rest
   } = props as ComponentPropsWithRef<'input'>
   const own = useRef<HTMLInputElement | null>(null)
+  const prefixId = useId()
+  const suffixId = useId()
+  const describedBy =
+    [
+      rest['aria-describedby'],
+      prefix === undefined ? undefined : prefixId,
+      suffix === undefined ? undefined : suffixId,
+    ]
+      .filter((id) => id !== undefined && id !== '')
+      .join(' ') || undefined
+  const frame =
+    variant === 'bare' ? 'bare' : isInvalid(rest['aria-invalid']) ? 'invalid' : 'default'
   // Only read for an uncontrolled field: a controlled one says what it holds through `value`.
   const [typed, setTyped] = useState(() => hasText(rest.defaultValue))
   const filled = rest.value !== undefined ? hasText(rest.value) : typed
@@ -137,8 +168,13 @@ export function Input({
   return (
     // The wrapper span, not the input element, dims on disabled: only the input carries the
     // native `disabled` attribute, so Tailwind's `disabled:` variant cannot reach the wrapper.
-    <span className={`${wrapper({ size, variant })} ${disabled ? 'opacity-40' : ''}`.trim()}>
+    <span className={`${wrapper({ size, variant: frame })} ${disabled ? 'opacity-40' : ''}`.trim()}>
       {icon ? <Icon name={icon} size={size === 'sm' ? 'sm' : 'md'} /> : null}
+      {prefix === undefined ? null : (
+        <span id={prefixId} className="shrink-0 select-none text-muted">
+          {prefix}
+        </span>
+      )}
       <input
         type="text"
         aria-label={label}
@@ -154,7 +190,13 @@ export function Input({
           onChange?.(event)
         }}
         {...rest}
+        aria-describedby={describedBy}
       />
+      {suffix === undefined ? null : (
+        <span id={suffixId} className="shrink-0 select-none text-muted">
+          {suffix}
+        </span>
+      )}
       {clearLabel !== undefined && filled && !disabled ? (
         // Pulled into the wrapper's padding, so the cross sits as close to the edge as the icon
         // at the start does, and the text keeps its room.

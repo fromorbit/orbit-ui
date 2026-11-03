@@ -1,5 +1,7 @@
+import type { ComboboxLabels } from '../overlays/Combobox'
 import type { ChipListFieldLabels } from '../patterns/ChipListField'
 import type { CopyButtonLabels } from '../patterns/CopyButton'
+import type { CreditCardFieldLabels } from '../patterns/CreditCardField'
 import type { EditableTableLabels } from '../patterns/EditableTable'
 import type { PierreTreeMarkLabels } from '../patterns/PierreTree'
 import type { ProseLabels } from '../patterns/Prose'
@@ -99,4 +101,29 @@ export const nl = {
     },
     copy: { label: 'Kopiëren', copiedLabel: 'Gekopieerd', failedLabel: 'Kopiëren mislukt' },
   } satisfies ProseLabels,
+  combobox: {
+    search: 'Zoeken…',
+    noResults: (query) => `Geen treffers voor ‘${query}’`,
+  } satisfies ComboboxLabels,
+  creditCard: {
+    number: 'Kaartnummer',
+    expiry: 'Vervaldatum',
+    expiryPlaceholder: 'MM/JJ',
+    cvc: 'Beveiligingscode',
+    cvcHint: (length) => `${length} cijfers, ${length === 4 ? 'voorop' : 'achterop'}`,
+    name: 'Naam op de kaart',
+    namePlaceholder: 'Noor de Vries',
+    cardNamePlaceholder: 'NAAM OP DE KAART',
+    cardExpiry: 'Geldig tot',
+    genericBrand: 'Kaart',
+    errors: {
+      numberIncomplete: 'Vul het hele kaartnummer in.',
+      numberInvalid: 'Dit kaartnummer klopt niet.',
+      expiryIncomplete: 'Vul maand en jaar in.',
+      expiryInvalid: 'Deze maand bestaat niet.',
+      expiryExpired: 'Deze kaart is verlopen.',
+      cvcIncomplete: (length) => `Vul de ${length} cijfers in.`,
+      nameMissing: 'Vul de naam op de kaart in.',
+    },
+  } satisfies CreditCardFieldLabels,
 }

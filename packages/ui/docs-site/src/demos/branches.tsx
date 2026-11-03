@@ -2,8 +2,9 @@ import { type ReactNode, useEffect, useState } from 'react'
 import {
   Avatar,
   Button,
-  Checkbox,
   ConfirmDialog,
+  DataTable,
+  type DataTableColumn,
   DropdownMenu,
   IconButton,
   PageHeader,
@@ -14,7 +15,6 @@ import {
   Tag,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame, DAY, HOUR, MINUTE, NOW, REPO } from './parts/AppFrame'
 import { Panel } from './parts/Panel'
@@ -150,26 +150,30 @@ function shown(branch: Branch, filter: Filter): boolean {
 /** The merged branches, selected when the screen opens: what a clean-up starts with. */
 const MERGED = BRANCHES.filter((branch) => branch.fate === 'merged').map((branch) => branch.name)
 
-/** One row: the box, the branch with its last commit, how far it is from main, and its fate. */
-function Row({
-  branch,
-  selected,
-  onSelect,
-}: {
-  branch: Branch
-  selected: boolean
-  onSelect(selected: boolean): void
-}): ReactNode {
-  const fate = FATES[branch.fate]
+/** The menu of a branch; the default branch has none. */
+function BranchMenu({ branch }: { branch: Branch }): ReactNode {
+  if (branch.fate === 'base') return null
   return (
-    <li
-      className={`grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-x-3 border-border border-t px-4 py-3 @3xl:grid-cols-[20px_minmax(0,1fr)_96px_140px_32px] ${selected ? 'bg-surface' : ''}`}
-    >
-      {branch.fate === 'base' ? (
-        <span />
-      ) : (
-        <Checkbox label={`Kies ${branch.name}`} checked={selected} onCheckedChange={onSelect} />
-      )}
+    <DropdownMenu
+      trigger={<IconButton icon="more-horizontal" size="sm" label={`Meer over ${branch.name}`} />}
+      label={branch.name}
+      align="end"
+      items={[
+        { id: 'open', label: 'Openen in een gesprek', icon: 'messages-square' },
+        { id: 'adopt', label: 'Overnemen in main', icon: 'git-branch' },
+        { id: 'drop', label: 'Weggooien…', icon: 'trash-2', tone: 'danger', separated: true },
+      ]}
+    />
+  )
+}
+
+/** The columns: the branch with its last commit, how far it is from main, its fate, its menu. */
+const COLUMNS: DataTableColumn<Branch>[] = [
+  {
+    id: 'branch',
+    header: 'Branch en laatste commit',
+    sortValue: (branch) => branch.name,
+    cell: (branch) => (
       <div className="flex min-w-0 flex-col gap-1">
         <span className="flex min-w-0 items-center gap-2 font-mono text-[13px] text-fg">
           <StackedRowBranch name={branch.name} worktree={branch.worktree} />
@@ -186,31 +190,37 @@ function Row({
           </span>
         </span>
       </div>
-      <span className="hidden font-mono text-[12px] text-muted tabular-nums @3xl:block">
+    ),
+  },
+  {
+    id: 'distance',
+    header: 't.o.v. main',
+    hideBelow: 'md',
+    sortValue: (branch) => branch.ahead,
+    cell: (branch) => (
+      <span className="font-mono text-[12px] text-muted tabular-nums">
         {branch.fate === 'base' ? '' : `↑${branch.ahead} ↓${branch.behind}`}
       </span>
-      <span className="flex justify-end @3xl:justify-start">
-        <Tag {...(fate.tone === undefined ? {} : { tone: fate.tone })}>{fate.label}</Tag>
-      </span>
-      <span className="hidden justify-end @3xl:flex">
-        {branch.fate === 'base' ? null : (
-          <DropdownMenu
-            trigger={
-              <IconButton icon="more-horizontal" size="sm" label={`Meer over ${branch.name}`} />
-            }
-            label={branch.name}
-            align="end"
-            items={[
-              { id: 'open', label: 'Openen in een gesprek', icon: 'messages-square' },
-              { id: 'adopt', label: 'Overnemen in main', icon: 'git-branch' },
-              { id: 'drop', label: 'Weggooien…', icon: 'trash-2', tone: 'danger', separated: true },
-            ]}
-          />
-        )}
-      </span>
-    </li>
-  )
-}
+    ),
+  },
+  {
+    id: 'fate',
+    header: 'Staat',
+    sortValue: (branch) => FATES[branch.fate].label,
+    cell: (branch) => {
+      const fate = FATES[branch.fate]
+      return <Tag {...(fate.tone === undefined ? {} : { tone: fate.tone })}>{fate.label}</Tag>
+    },
+  },
+  {
+    id: 'menu',
+    header: 'Acties',
+    headerHidden: true,
+    align: 'end',
+    hideBelow: 'md',
+    cell: (branch) => <BranchMenu branch={branch} />,
+  },
+]
 
 /**
  * Orbit's branches of a repository: what agents and people left behind, with the merged ones
@@ -222,8 +232,6 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
   const [asking, setAsking] = useState(variant === 'bevestigen')
   useEffect(() => setAsking(variant === 'bevestigen'), [variant])
   const rows = BRANCHES.filter((branch) => shown(branch, filter))
-  const choosable = rows.filter((branch) => branch.fate !== 'base')
-  const all = choosable.length > 0 && choosable.every((branch) => selected.includes(branch.name))
   const worktrees = BRANCHES.filter(
     (branch) => selected.includes(branch.name) && branch.worktree,
   ).length
@@ -286,37 +294,17 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
             }
             flush
           >
-            <Missing name="DataTable" note="Rijselectie, sorteren op kolom en een lege toestand">
-              <div className="flex flex-col">
-                <div className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-x-3 px-4 pt-1 pb-2 text-[11.5px] text-muted @3xl:grid-cols-[20px_minmax(0,1fr)_96px_140px_32px]">
-                  <Checkbox
-                    label="Kies alles"
-                    checked={all}
-                    onCheckedChange={(on) =>
-                      setSelected(on ? choosable.map((branch) => branch.name) : [])
-                    }
-                  />
-                  <span>Branch en laatste commit</span>
-                  <span className="hidden @3xl:block">t.o.v. main</span>
-                  <span className="text-right @3xl:text-left">Staat</span>
-                  <span className="hidden @3xl:block" />
-                </div>
-                <ul className="m-0 list-none p-0">
-                  {rows.map((branch) => (
-                    <Row
-                      key={branch.name}
-                      branch={branch}
-                      selected={selected.includes(branch.name)}
-                      onSelect={(on) =>
-                        setSelected((now) =>
-                          on ? [...now, branch.name] : now.filter((name) => name !== branch.name),
-                        )
-                      }
-                    />
-                  ))}
-                </ul>
-              </div>
-            </Missing>
+            <DataTable
+              label="Branches"
+              columns={COLUMNS}
+              rows={rows}
+              rowKey={(branch) => branch.name}
+              rowName={(branch) => branch.name}
+              labels={{ selectAll: 'Kies alles', selectRow: (name) => `Kies ${name}` }}
+              selected={selected}
+              onSelectedChange={setSelected}
+              canSelect={(branch) => branch.fate !== 'base'}
+            />
           </Panel>
         </div>
       </ScrollArea>

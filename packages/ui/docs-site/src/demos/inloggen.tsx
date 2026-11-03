@@ -3,26 +3,26 @@ import {
   Banner,
   BrandIcon,
   Button,
-  Checkbox,
+  CheckboxField,
+  FormField,
   Icon,
   Input,
   OrbitSymbol,
   OrbitWordmark,
+  OtpInput,
   ProjectMark,
   ScrollArea,
   StatusMark,
   Tag,
 } from '../../../src'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { WORKSPACE } from './parts/AppFrame'
-import { FormFieldSketch } from './parts/FormFieldSketch'
 
 /** The address the made-up person signs in with. */
 const EMAIL = 'iris@zilverberg.example'
 
 /** The code that was sent, as far as it has been typed. */
-const CODE = ['4', '8', '1', '', '', ''] as const
+const CODE = '481'
 
 /** The workspaces the made-up person belongs to, to pick one after signing in. */
 const WORKSPACES = [
@@ -91,26 +91,26 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
       </div>
       <Divider>of met e-mail</Divider>
       <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
-        <FormFieldSketch label="E-mailadres">
-          {(id) => (
+        <FormField label="E-mailadres">
+          {(field) => (
             <Input
               label="E-mailadres"
-              aria-labelledby={id}
+              {...field}
               type="email"
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
           )}
-        </FormFieldSketch>
-        <FormFieldSketch
+        </FormField>
+        <FormField
           label="Wachtwoord"
           {...(failed ? { error: 'Vul je wachtwoord opnieuw in.' } : {})}
         >
-          {(id) => (
+          {(field) => (
             <Input
               label="Wachtwoord"
-              aria-labelledby={id}
+              {...field}
               type="password"
               autoComplete="current-password"
               placeholder="Je wachtwoord"
@@ -118,14 +118,13 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
               onChange={(event) => setPassword(event.target.value)}
             />
           )}
-        </FormFieldSketch>
+        </FormField>
         <div className="flex items-center justify-between gap-3">
-          <Missing name="CheckboxField" inline>
-            <span className="flex items-center gap-2 py-0.5 pr-1 text-[13px] text-fg">
-              <Checkbox label="Ingelogd blijven" checked={remember} onCheckedChange={setRemember} />
-              <span aria-hidden="true">Ingelogd blijven</span>
-            </span>
-          </Missing>
+          <CheckboxField
+            label="Ingelogd blijven"
+            checked={remember}
+            onCheckedChange={setRemember}
+          />
           <a href="#/demo/inloggen" className={`text-[12.5px] ${LINK}`}>
             Wachtwoord vergeten?
           </a>
@@ -140,6 +139,24 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
   )
 }
 
+/** The code field, three digits typed. */
+function CodeField(): ReactNode {
+  const [code, setCode] = useState(CODE)
+  return (
+    <FormField label="Verificatiecode">
+      {(field) => (
+        <OtpInput
+          label="Verificatiecode"
+          value={code}
+          onValueChange={setCode}
+          groupAfter={3}
+          {...field}
+        />
+      )}
+    </FormField>
+  )
+}
+
 /** The second step: the code of six digits that was mailed, three of them typed. */
 function Code(): ReactNode {
   return (
@@ -148,28 +165,7 @@ function Code(): ReactNode {
         We stuurden een code van zes cijfers naar{' '}
         <span className="font-medium text-fg">{EMAIL}</span>. Hij blijft tien minuten geldig.
       </Heading>
-      <Missing name="OtpInput" note="Zes vakjes; plakken vult ze allemaal">
-        <div className="flex flex-col gap-2">
-          <span className="font-medium text-[12.5px] text-fg">Verificatiecode</span>
-          <div className="flex items-center gap-2">
-            {CODE.map((digit, index) => (
-              <span
-                // biome-ignore lint/suspicious/noArrayIndexKey: six fixed boxes, never reordered.
-                key={index}
-                className={`flex h-12 min-w-0 flex-1 items-center justify-center rounded-lg border bg-overlay font-mono text-[20px] text-fg tabular-nums ${
-                  index === 3 ? 'border-focus' : 'border-border-strong'
-                } ${index === 2 ? 'mr-2' : ''}`}
-              >
-                {digit === '' && index === 3 ? (
-                  <span aria-hidden="true" className="h-5 w-px bg-fg" />
-                ) : (
-                  digit
-                )}
-              </span>
-            ))}
-          </div>
-        </div>
-      </Missing>
+      <CodeField />
       <Wide>
         <Button variant="idle" size="lg" aria-disabled="true">
           Verifiëren

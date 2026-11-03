@@ -1,13 +1,15 @@
 import { type ReactNode, useState } from 'react'
 import {
   Button,
-  Checkbox,
+  DataTable,
+  type DataTableColumn,
   DropdownMenu,
   EmptyState,
   Icon,
   IconButton,
   Input,
   PageHeader,
+  Pagination,
   RelativeTime,
   ScrollArea,
   SegmentedControl,
@@ -16,7 +18,6 @@ import {
   Tag,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame, DAY, HOUR, MINUTE, NOW } from './parts/AppFrame'
 
@@ -153,13 +154,6 @@ function RowMenu({ space }: { space: Space }): ReactNode {
 }
 
 /** The columns of the table; the narrower the frame, the fewer of them. */
-const COLUMNS = [
-  { id: 'space', label: 'Space', className: '' },
-  { id: 'status', label: 'Status', className: 'w-40' },
-  { id: 'stack', label: 'Stack', className: 'hidden w-60 @6xl:table-cell' },
-  { id: 'deployed', label: 'Laatste deploy', className: 'hidden w-36 @4xl:table-cell' },
-] as const
-
 /** The name of a space as app / branch. */
 function SpaceName({ space }: { space: Space }): ReactNode {
   return (
@@ -171,136 +165,115 @@ function SpaceName({ space }: { space: Space }): ReactNode {
   )
 }
 
-/** The spaces as a table, drawn as the missing `DataTable`; narrow, every row is a card. */
+/** The columns of the table of spaces; narrow, the stack and the deploy step aside. */
+const COLUMNS: DataTableColumn<Space>[] = [
+  {
+    id: 'space',
+    header: 'Space',
+    sortValue: (space) => `${space.app}/${space.branch}`,
+    cell: (space) => (
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <SpaceName space={space} />
+        <span className="truncate font-mono text-[11.5px] text-muted">{space.host}</span>
+      </div>
+    ),
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    sortValue: (space) => space.status,
+    cell: (space) => (
+      <span className="flex items-center gap-2 whitespace-nowrap text-secondary">
+        <StatusMark kind={space.kind} />
+        {space.status}
+      </span>
+    ),
+  },
+  {
+    id: 'stack',
+    header: 'Stack',
+    hideBelow: 'xl',
+    cell: (space) => (
+      <span className="flex flex-wrap gap-1">
+        {space.stack.map((part) => (
+          <Tag key={part}>{part}</Tag>
+        ))}
+      </span>
+    ),
+  },
+  {
+    id: 'deployed',
+    header: 'Laatste deploy',
+    hideBelow: 'lg',
+    sortValue: (space) => -space.deployed,
+    cell: (space) => (
+      <span className="text-muted">
+        <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
+      </span>
+    ),
+  },
+  {
+    id: 'menu',
+    header: 'Acties',
+    headerHidden: true,
+    align: 'end',
+    cell: (space) => <RowMenu space={space} />,
+  },
+]
+
+/** The spaces as a table: sortable, rows to select, and narrow every row a card. */
 function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
   const [picked, setPicked] = useState<readonly string[]>(['s2'])
-  const toggle = (id: string, on: boolean) =>
-    setPicked((now) => (on ? [...now, id] : now.filter((entry) => entry !== id)))
   return (
-    <Missing name="DataTable" note="Sorteren op kolom, rijen selecteren, kaarten op smal scherm">
-      <div className="overflow-hidden rounded-xl border border-border bg-overlay">
-        <table className="hidden w-full table-fixed border-collapse text-left text-[13px] @3xl:table">
-          <thead>
-            <tr className="border-border border-b text-[12px] text-muted">
-              <th className="w-11 py-2.5 pl-4 font-normal">
-                <Checkbox
-                  label="Alles selecteren"
-                  checked={picked.length === spaces.length && spaces.length > 0}
-                  onCheckedChange={(on) => setPicked(on ? spaces.map((space) => space.id) : [])}
-                />
-              </th>
-              {COLUMNS.map((column) => (
-                <th key={column.id} className={`px-3 py-2.5 font-normal ${column.className}`}>
-                  <span
-                    className={`inline-flex items-center gap-1 ${column.id === 'deployed' ? 'text-fg' : ''}`}
-                  >
-                    {column.label}
-                    {column.id === 'deployed' ? <Icon name="arrow-down" size="sm" /> : null}
-                  </span>
-                </th>
-              ))}
-              <th className="w-12 py-2.5 pr-3">
-                <span className="sr-only">Acties</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {spaces.map((space) => {
-              const on = picked.includes(space.id)
-              return (
-                <tr
-                  key={space.id}
-                  className={`border-border border-b last:border-b-0 hover:bg-row-hover ${on ? 'bg-row-active' : ''}`}
-                >
-                  <td className="py-3 pl-4">
-                    <Checkbox
-                      label={`Selecteer ${space.app} ${space.branch}`}
-                      checked={on}
-                      onCheckedChange={(next) => toggle(space.id, next)}
-                    />
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                      <SpaceName space={space} />
-                      <span className="truncate font-mono text-[11.5px] text-muted">
-                        {space.host}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className="flex items-center gap-2 whitespace-nowrap text-secondary">
-                      <StatusMark kind={space.kind} />
-                      {space.status}
-                    </span>
-                  </td>
-                  <td className="hidden px-3 py-3 @6xl:table-cell">
-                    <span className="flex flex-wrap gap-1">
-                      {space.stack.map((part) => (
-                        <Tag key={part}>{part}</Tag>
-                      ))}
-                    </span>
-                  </td>
-                  <td className="hidden px-3 py-3 text-muted @4xl:table-cell">
-                    <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
-                  </td>
-                  <td className="py-3 pr-3 text-right">
-                    <RowMenu space={space} />
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        <ul className="m-0 flex list-none flex-col p-0 @3xl:hidden">
-          {spaces.map((space) => (
-            <li
-              key={space.id}
-              className="flex items-start gap-3 border-border border-b px-3.5 py-3 last:border-b-0"
-            >
-              <span className="flex h-5 items-center">
-                <StatusMark kind={space.kind} />
+    <div className="overflow-hidden rounded-xl border border-border bg-overlay">
+      <DataTable
+        label="Spaces"
+        columns={COLUMNS}
+        rows={spaces}
+        rowKey={(space) => space.id}
+        rowName={(space) => `${space.app} ${space.branch}`}
+        labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
+        selected={picked}
+        onSelectedChange={setPicked}
+        defaultSort={{ column: 'deployed', direction: 'descending' }}
+        card={(space) => (
+          <div className="flex items-start gap-3 px-3.5 py-3">
+            <span className="flex h-5 items-center">
+              <StatusMark kind={space.kind} />
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13.5px]">
+              <SpaceName space={space} />
+              <span className="truncate font-mono text-[11.5px] text-muted">{space.host}</span>
+              <span className="text-[12px] text-secondary">
+                {space.status} ·{' '}
+                <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
               </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13.5px]">
-                <SpaceName space={space} />
-                <span className="truncate font-mono text-[11.5px] text-muted">{space.host}</span>
-                <span className="text-[12px] text-secondary">
-                  {space.status} ·{' '}
-                  <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
-                </span>
-              </div>
-              <RowMenu space={space} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Missing>
+            </div>
+            <RowMenu space={space} />
+          </div>
+        )}
+      />
+    </div>
   )
 }
 
-/** Paging under the table, drawn as the missing `Pagination`. */
-function PaginationSketch({ shown, total }: { shown: number; total: number }): ReactNode {
+/** Paging under the table. */
+function SpacePages({ total }: { total: number }): ReactNode {
+  const [page, setPage] = useState(1)
   return (
-    <Missing name="Pagination">
-      <nav
-        aria-label="Pagina's"
-        className="flex items-center justify-between gap-3 px-1 py-0.5 text-[12px] text-muted"
-      >
-        <span className="tabular-nums">{`1–${shown} van ${total}`}</span>
-        <span className="flex items-center gap-1">
-          <IconButton icon="chevron-left" size="sm" label="Vorige pagina" disabled />
-          {['1', '2'].map((page) => (
-            <span
-              key={page}
-              aria-current={page === '1' ? 'page' : undefined}
-              className="flex size-7 items-center justify-center rounded-md tabular-nums aria-[current=page]:bg-surface-active aria-[current=page]:text-fg"
-            >
-              {page}
-            </span>
-          ))}
-          <IconButton icon="chevron-right" size="sm" label="Volgende pagina" />
-        </span>
-      </nav>
-    </Missing>
+    <Pagination
+      page={page}
+      total={total}
+      pageSize={10}
+      onPageChange={setPage}
+      labels={{
+        label: "Pagina's",
+        previous: 'Vorige pagina',
+        next: 'Volgende pagina',
+        page: (n) => `Pagina ${n}`,
+        range: (from, to, all) => `${from}–${to} van ${all}`,
+      }}
+    />
   )
 }
 
@@ -368,7 +341,7 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
               ) : (
                 <SpaceTable spaces={shown} />
               )}
-              <PaginationSketch shown={shown.length} total={12} />
+              <SpacePages total={12} />
             </>
           )}
         </div>

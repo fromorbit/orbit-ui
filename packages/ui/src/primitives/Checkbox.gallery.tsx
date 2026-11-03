@@ -63,5 +63,8 @@ export default {
       <Checkbox label="Netwerktoegang" checked={false} disabled onCheckedChange={() => {}} />
     ),
     'In a list of options': () => <OptionList />,
+    Indeterminate: () => (
+      <Checkbox label="Alle rijen" checked="indeterminate" onCheckedChange={() => {}} />
+    ),
   },
 } satisfies Story

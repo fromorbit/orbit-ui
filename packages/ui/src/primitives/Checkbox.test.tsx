@@ -45,3 +45,12 @@ test('checked sets the aria state', () => {
   render(<Checkbox label="Netwerktoegang" checked={true} onCheckedChange={vi.fn()} />)
   expect(screen.getByRole('checkbox', { name: 'Netwerktoegang' })).toBeChecked()
 })
+
+test('indeterminate reads as mixed, and a press turns it on', async () => {
+  const onCheckedChange = vi.fn()
+  render(<Checkbox label="Alle rijen" checked="indeterminate" onCheckedChange={onCheckedChange} />)
+  const control = screen.getByRole('checkbox', { name: 'Alle rijen' })
+  expect(control).toHaveAttribute('aria-checked', 'mixed')
+  await userEvent.click(control)
+  expect(onCheckedChange).toHaveBeenCalledWith(true)
+})

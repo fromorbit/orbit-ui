@@ -6,10 +6,14 @@ import { handBackOnlyLostFocus } from './hand-back'
 import { Icon } from './Icon'
 
 const trigger = cva(
-  'no-drag inline-flex max-w-56 items-center gap-1.5 rounded-md border border-border bg-surface px-2 text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
+  'no-drag inline-flex max-w-56 items-center gap-1.5 rounded-md border bg-surface px-2 text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
   {
-    variants: { size: controlSize },
-    defaultVariants: { size: 'md' },
+    variants: {
+      size: controlSize,
+      // The border of a choice that failed its check, as on `Input`.
+      invalid: { true: 'border-danger', false: 'border-border' },
+    },
+    defaultVariants: { size: 'md', invalid: false },
   },
 )
 
@@ -40,6 +44,12 @@ export interface SelectProps<T extends string> {
   'aria-labelledby'?: string | undefined
   /** Set by `Field`, pointing at its description or error text. */
   'aria-describedby'?: string | undefined
+  /** Set by `FormField` when the choice failed its check: a danger border and `aria-invalid`. */
+  'aria-invalid'?: boolean | undefined
+  /** Set by `FormField` when a choice is required. */
+  'aria-required'?: boolean | undefined
+  /** The trigger's id, so a `<label for>` of `FormField` focuses it. */
+  id?: string | undefined
 }
 
 /**
@@ -61,6 +71,9 @@ export function Select<T extends string>({
   onValueChange,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
+  'aria-required': ariaRequired,
+  id,
 }: SelectProps<T>) {
   return (
     <RadixSelect.Root
@@ -72,7 +85,10 @@ export function Select<T extends string>({
         aria-label={label}
         aria-labelledby={ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
-        className={trigger({ size })}
+        aria-invalid={ariaInvalid}
+        aria-required={ariaRequired}
+        id={id}
+        className={trigger({ size, invalid: ariaInvalid === true })}
       >
         <span className="truncate">
           <RadixSelect.Value />

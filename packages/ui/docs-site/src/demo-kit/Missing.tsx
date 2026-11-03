@@ -8,36 +8,17 @@ import { createContext, type ReactNode, useContext } from 'react'
  * not explain; which demos use a name is read from their sources (`registry.ts`), never kept here.
  */
 export const MISSING = {
-  StatTile:
-    'Een KPI-kaart: label, groot getal, vergelijking met de vorige periode. Elk dashboard begint ermee.',
-  TrendBadge:
-    'Een klein label met stijging of daling (pijl, procent, groen of rood), los te gebruiken in kaarten en tabellen.',
   Chart:
     'Een lijn-, vlak- of staafgrafiek met assen, tooltip en legenda op de tokens; nu is er geen enkele grafiek.',
-  DataTable:
-    'Een tabel met kolomkoppen die sorteren, rijselectie, rechts uitgelijnde bedragen en een lege en laadtoestand; EditableTable is alleen een invoerveld.',
-  Pagination:
-    'Bladeren door een lange lijst: vorige, volgende, paginanummers en aantal per pagina.',
-  DatePicker: 'Eén datum kiezen met een kalender, voor een deadline of een publicatiedatum.',
-  Timeline:
-    'Het verloop van gebeurtenissen onder elkaar, met tijd, icoon en lijn: betaling, activiteit, reacties.',
   ChatMessage:
     'Een bericht in een gesprek: afzender, tijd, bubbel voor de gebruiker, platte tekst voor de assistent en acties eronder.',
   Composer:
     'Het invoerkader van een chat: een groeiend tekstvak met werkbalk (model, bijlage, versturen) als één geheel.',
-  AvatarGroup: 'Een rij overlappende avatars met “+3”, voor wie er in een team of op een taak zit.',
   PermissionMatrix: 'Rollen tegen rechten in een raster van vinkjes, met kop per rol.',
   PlanCard:
     'Een abonnementskaart: naam, prijs per maand, wat erin zit en een knop; de huidige gemarkeerd.',
-  OtpInput: 'Zes losse vakjes voor een verificatiecode, met plakken en automatisch doorschuiven.',
-  FormField:
-    'Een formulierveld: label boven het invoerveld, hulptekst en foutmelding eronder. Field is een instellingenrij met het label links.',
-  CheckboxField:
-    'Een vinkje met zichtbaar label ernaast, als geheel aan te klikken; Checkbox draagt zijn label alleen voor de schermlezer.',
   FindingCard:
     'Een bevinding van een review: gewicht als rand en woord, titel, uitleg, pagina en schermafbeelding ernaast.',
-  SeverityBar:
-    'Hoeveel bevindingen er per gewicht zijn, in woorden en als één gedeelde balk boven de lijst.',
   Scrubber:
     'De tijdlijn van een opname: afspeelpositie, slepen en markeringen per gebeurtenis (klik, navigatie, fout).',
 } as const

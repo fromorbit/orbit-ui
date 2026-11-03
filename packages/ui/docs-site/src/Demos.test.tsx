@@ -187,10 +187,10 @@ describe('every demo', () => {
   })
 
   test.each(DEMOS.map((demo) => [demo.slug, demo] as const))(
-    '%s says what it is and misses something',
+    '%s says what it is',
     (_slug, demo) => {
+      // A demo need not miss anything any more: once the library has every piece, it has none.
       expect(demo.description.length).toBeGreaterThan(20)
-      expect(inventoryOf(demo.slug).missing.length).toBeGreaterThan(0)
     },
   )
 })

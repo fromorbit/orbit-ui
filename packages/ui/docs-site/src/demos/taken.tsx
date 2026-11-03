@@ -2,6 +2,7 @@ import { type ReactNode, useState } from 'react'
 import {
   Avatar,
   Button,
+  DatePicker,
   Icon,
   IconButton,
   Input,
@@ -19,9 +20,10 @@ import {
   StatusMark,
   Tag,
   Textarea,
+  Timeline,
+  TimelineItem,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame, ME } from './parts/AppFrame'
 
@@ -181,6 +183,7 @@ function rowStatus(spec: Spec) {
 
 /** The detail of one spec beside the list: the gate, what it says, and what happened on it. */
 function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
+  const [deadline, setDeadline] = useState<string | null>('2026-10-31')
   const state = STATES[spec.state]
   const [met, all] = spec.criteria
   return (
@@ -261,14 +264,15 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 {
                   label: 'Deadline',
                   value: (
-                    <div className="flex">
-                      <Missing name="DatePicker" inline>
-                        <span className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12.5px] text-fg">
-                          <Icon name="clock" size="sm" tone="faint" />
-                          vr 31 okt
-                        </span>
-                      </Missing>
-                    </div>
+                    <DatePicker
+                      label="Deadline"
+                      placeholder="Kies een datum"
+                      labels={{ previousMonth: 'Vorige maand', nextMonth: 'Volgende maand' }}
+                      today="2026-10-28"
+                      value={deadline}
+                      onValueChange={setDeadline}
+                      size="sm"
+                    />
                   ),
                 },
               ],
@@ -286,30 +290,25 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
           )}
           <section className="flex flex-col gap-3">
             <h3 className="m-0 font-medium text-[12px] text-muted">Activiteit</h3>
-            <Missing name="Timeline" note="Activiteit en reacties op de spec">
-              <ol className="relative m-0 flex list-none flex-col gap-4 p-0 text-[12.5px] before:absolute before:top-2 before:bottom-2 before:left-[11px] before:w-px before:bg-border">
-                {ACTIVITY.map((entry) => (
-                  <li key={entry.text} className="relative flex items-center gap-3">
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-bg">
-                      <Icon name={entry.icon} size="sm" tone="faint" />
-                    </span>
-                    <span className="min-w-0 flex-1 text-secondary">{entry.text}</span>
-                    <span className="text-muted">{entry.when}</span>
-                  </li>
-                ))}
-                <li className="relative flex items-start gap-3">
-                  <Avatar name="Sem Oudeweg" size="sm" />
-                  <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-border bg-overlay px-3 py-2">
-                    <span className="flex justify-between text-muted">
-                      <span className="font-medium text-fg">Sem Oudeweg</span>2 u
-                    </span>
-                    <span className="text-fg leading-relaxed">
-                      Moet het restant ook in het account van de klant zichtbaar zijn?
-                    </span>
+            <Timeline label="Activiteit">
+              {ACTIVITY.map((entry) => (
+                <TimelineItem
+                  key={entry.text}
+                  marker={<Icon name={entry.icon} size="sm" tone="faint" />}
+                  time={entry.when}
+                >
+                  {entry.text}
+                </TimelineItem>
+              ))}
+              <TimelineItem marker={<Avatar name="Sem Oudeweg" size="sm" />} time="2 u">
+                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-border bg-overlay px-3 py-2">
+                  <span className="font-medium text-fg">Sem Oudeweg</span>
+                  <span className="text-fg leading-relaxed">
+                    Moet het restant ook in het account van de klant zichtbaar zijn?
                   </span>
-                </li>
-              </ol>
-            </Missing>
+                </span>
+              </TimelineItem>
+            </Timeline>
           </section>
           <div className="flex flex-col gap-2">
             <Textarea label="Reactie" placeholder="Schrijf een reactie…" minRows={2} />

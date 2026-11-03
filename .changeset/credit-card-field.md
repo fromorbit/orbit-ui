@@ -1,0 +1,5 @@
+---
+"@fromorbit/ui": minor
+---
+
+`CreditCardField` and `CreditCardVisual`: the fields of a payment card (number, expiry, code, name) with a picture of the card that fills in as one types. The number groups itself per brand (4-4-4-4, 4-6-5 for Amex) and names its brand (Visa, Mastercard, American Express, Maestro, or a generic card) from its first digits; the expiry writes its own slash; the caret stays behind the digit typed. Every field carries its `autocomplete` (`cc-number`, `cc-exp`, `cc-csc`, `cc-name`) and a number keyboard. Problems (length, Luhn, an expired or impossible month, the code's length per brand, a missing name) show through `FormField` once a field is left, or all at once with `showErrors`. The picture is decorative, shows at most the last four digits, wears the night gradient and Orbit's symbol, uses word marks rather than the networks' logos, and turns to its back while the code has the focus (a cut under `prefers-reduced-motion`). The rules are pure functions in `credit-card` (`cardBrandOf`, `formatCardNumber`, `luhnValid`, `formatExpiry`, `cardProblems`, `maskedCardNumber`). Presentation only: nothing is sent anywhere. Additive.
