@@ -1,11 +1,13 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   Avatar,
+  AvatarGroup,
   Button,
   Checkbox,
   Chip,
   Dialog,
   DropdownMenu,
+  FormField,
   IconButton,
   Input,
   PageHeader,
@@ -19,7 +21,6 @@ import { galleryLabels } from '../../../src/gallery'
 import { Missing } from '../demo-kit/Missing'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame, DAY, HOUR, NOW } from './parts/AppFrame'
-import { FormFieldSketch } from './parts/FormFieldSketch'
 import { Panel } from './parts/Panel'
 
 type Role = 'owner' | 'admin' | 'member' | 'guest'
@@ -169,55 +170,36 @@ function InviteDialog({
       }
     >
       <div className="flex flex-col gap-4">
-        <FormFieldSketch label="E-mailadressen" hint="Enter na elk adres">
-          {(labelId) => <AddressField labelId={labelId} emails={emails} onChange={setEmails} />}
-        </FormFieldSketch>
-        <FormFieldSketch label="Rol" hint="Een lid mag agents laten werken, maar niet uitnodigen">
-          {(labelId) => (
+        <FormField label="E-mailadressen" description="Enter na elk adres">
+          {(field) => (
+            <AddressField labelId={field['aria-labelledby']} emails={emails} onChange={setEmails} />
+          )}
+        </FormField>
+        <FormField label="Rol" description="Een lid mag agents laten werken, maar niet uitnodigen">
+          {(field) => (
             <div className="*:w-full">
               <Select<Assignable>
                 label="Rol"
-                aria-labelledby={labelId}
+                {...field}
                 value={role}
                 options={ROLES}
                 onValueChange={setRole}
               />
             </div>
           )}
-        </FormFieldSketch>
-        <FormFieldSketch label="Persoonlijk bericht">
-          {(labelId) => (
+        </FormField>
+        <FormField label="Persoonlijk bericht">
+          {(field) => (
             <Textarea
               label="Persoonlijk bericht"
-              aria-labelledby={labelId}
+              {...field}
               defaultValue="Welkom! We werken in Orbit aan de nieuwe kassa van de webwinkel."
               minRows={2}
             />
           )}
-        </FormFieldSketch>
+        </FormField>
       </div>
     </Dialog>
-  )
-}
-
-/** The faces of the team, overlapping, drawn as the missing `AvatarGroup`. */
-function AvatarGroupSketch({ members }: { members: readonly Member[] }): ReactNode {
-  const shown = members.slice(0, 4)
-  return (
-    <Missing name="AvatarGroup" inline>
-      <span
-        role="img"
-        aria-label={`${members.length} leden`}
-        className="flex items-center pr-1 *:-ml-2 *:rounded-full *:ring-2 *:ring-canvas *:first:ml-0"
-      >
-        {shown.map((member) => (
-          <Avatar key={member.email} name={member.name} size="md" />
-        ))}
-        <span className="flex size-7 items-center justify-center bg-mark font-medium text-[11px] text-secondary tabular-nums">
-          {`+${members.length - shown.length}`}
-        </span>
-      </span>
-    </Missing>
   )
 }
 
@@ -359,7 +341,10 @@ function Team({ variant }: DemoScreenProps): ReactNode {
             actions={
               <>
                 <span className="hidden @xl:inline-flex">
-                  <AvatarGroupSketch members={members} />
+                  <AvatarGroup
+                    names={members.map((member) => member.name)}
+                    label={`${members.length} leden`}
+                  />
                 </span>
                 <Button variant="primary" size="sm" onClick={() => setInviting(true)}>
                   Uitnodigen

@@ -98,22 +98,24 @@ function Inventory({
           })}
         </ul>
       </div>
-      <div className="flex items-baseline gap-3">
-        <span className="w-20 shrink-0 text-muted">{`Ontbreekt ${inventory.missing.length}`}</span>
-        <ul aria-label="Ontbreekt" className="m-0 flex list-none flex-wrap gap-x-2.5 gap-y-1 p-0">
-          {inventory.missing.map((name) => (
-            <li key={name}>
-              <a
-                href={`${DEMO_PREFIX}${OVERVIEW_SLUG}`}
-                title={MISSING[name]}
-                className="rounded-sm font-mono text-[11.5px] text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                {name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {inventory.missing.length === 0 ? null : (
+        <div className="flex items-baseline gap-3">
+          <span className="w-20 shrink-0 text-muted">{`Ontbreekt ${inventory.missing.length}`}</span>
+          <ul aria-label="Ontbreekt" className="m-0 flex list-none flex-wrap gap-x-2.5 gap-y-1 p-0">
+            {inventory.missing.map((name) => (
+              <li key={name}>
+                <a
+                  href={`${DEMO_PREFIX}${OVERVIEW_SLUG}`}
+                  title={MISSING[name]}
+                  className="rounded-sm font-mono text-[11.5px] text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                  {name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

@@ -16,8 +16,8 @@ import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame, HOUR, MINUTE, NOW } from './parts/AppFrame'
 import { type Bar, ChartSketch } from './parts/ChartSketch'
+import { type Figure, KpiTile } from './parts/KpiTile'
 import { Panel } from './parts/Panel'
-import { type Figure, StatTileSketch } from './parts/StatTileSketch'
 
 type Period = '1' | '7' | '30'
 
@@ -239,7 +239,7 @@ function Overview(): ReactNode {
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS[period].map((kpi) => (
-              <StatTileSketch key={kpi.label} figure={kpi} />
+              <KpiTile key={kpi.label} figure={kpi} />
             ))}
           </div>
           <Panel

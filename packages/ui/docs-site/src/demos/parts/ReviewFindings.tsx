@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Icon, type IconName } from '../../../../src'
+import { Icon, type IconName, ShareBar, type ShareTone } from '../../../../src'
 import { Missing } from '../../demo-kit/Missing'
 
 /** How much a finding of the review agent weighs. */
@@ -19,14 +19,21 @@ export interface Finding {
 /** The word, colours and glyph of each weight; a finding is never told apart by colour alone. */
 const WEIGHT: Record<
   Severity,
-  { one: string; many: string; edge: string; text: string; bar: string; icon: IconName }
+  {
+    one: string
+    many: string
+    edge: string
+    text: string
+    tone: ShareTone
+    icon: IconName
+  }
 > = {
   blocking: {
     one: 'blokkerend',
     many: 'blokkerend',
     edge: 'border-l-danger',
     text: 'text-danger',
-    bar: 'bg-danger',
+    tone: 'danger',
     icon: 'octagon-alert',
   },
   problem: {
@@ -34,7 +41,7 @@ const WEIGHT: Record<
     many: 'problemen',
     edge: 'border-l-attention',
     text: 'text-attention',
-    bar: 'bg-attention',
+    tone: 'attention',
     icon: 'alert-triangle',
   },
   note: {
@@ -42,47 +49,31 @@ const WEIGHT: Record<
     many: 'opmerkingen',
     edge: 'border-l-border-strong',
     text: 'text-muted',
-    bar: 'bg-border-strong',
+    tone: 'neutral',
     icon: 'message-square',
   },
 }
 
 const ORDER: Severity[] = ['blocking', 'problem', 'note']
 
-/**
- * The band above the findings: how many there are per weight, as words and as one bar, drawn as
- * the missing `SeverityBar`.
- */
+/** The band above the findings: how many there are per weight, as words and as one bar. */
 export function SeverityBand({ findings }: { findings: readonly Finding[] }): ReactNode {
-  const counts = ORDER.map((severity) => ({
-    severity,
-    count: findings.filter((finding) => finding.severity === severity).length,
-  })).filter((entry) => entry.count > 0)
+  const segments = ORDER.map((severity) => {
+    const count = findings.filter((finding) => finding.severity === severity).length
+    const weight = WEIGHT[severity]
+    return {
+      id: severity,
+      label: `${count} ${count === 1 ? weight.one : weight.many}`,
+      value: count,
+      tone: weight.tone,
+      icon: weight.icon,
+    }
+  })
   return (
-    <Missing name="SeverityBar">
-      <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-overlay px-4 py-3.5">
-        <div className="flex items-baseline justify-between gap-3">
-          <h3 className="m-0 font-medium text-[13px] text-fg">Bevindingen</h3>
-          <p className="m-0 flex flex-wrap justify-end gap-x-3 text-[12.5px]">
-            {counts.map(({ severity, count }) => (
-              <span key={severity} className="flex items-center gap-1.5">
-                <span className={WEIGHT[severity].text}>
-                  <Icon name={WEIGHT[severity].icon} size="sm" />
-                </span>
-                <span className="text-secondary">
-                  {`${count} ${count === 1 ? WEIGHT[severity].one : WEIGHT[severity].many}`}
-                </span>
-              </span>
-            ))}
-          </p>
-        </div>
-        <div aria-hidden="true" className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
-          {counts.map(({ severity, count }) => (
-            <span key={severity} className={WEIGHT[severity].bar} style={{ flexGrow: count }} />
-          ))}
-        </div>
-      </div>
-    </Missing>
+    <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-overlay px-4 py-3.5">
+      <h3 className="m-0 font-medium text-[13px] text-fg">Bevindingen</h3>
+      <ShareBar label="Bevindingen per gewicht" segments={segments} />
+    </div>
   )
 }
 
