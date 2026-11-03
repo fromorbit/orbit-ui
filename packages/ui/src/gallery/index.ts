@@ -218,6 +218,7 @@ export const stories: Story[] = collectStories([
   thumbnailStory,
   toggleStory,
   formFieldStory,
+  formStory,
   checkboxFieldStory,
   checkboxGroupStory,
   comboboxStory,
