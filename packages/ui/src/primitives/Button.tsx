@@ -128,13 +128,13 @@ const button = cva(
     },
     compoundVariants: [
       { size: 'xs', rowInset: false, class: 'px-1.5' },
-      { size: 'sm', rowInset: false, class: 'px-2' },
+      { size: 'sm', rowInset: false, class: 'px-2.5' },
       { size: 'md', rowInset: false, class: 'px-3' },
-      { size: 'lg', rowInset: false, class: 'px-3.5' },
+      { size: 'lg', rowInset: false, class: 'px-4' },
       { size: 'xs', rowInset: true, class: 'ps-2 pe-1.5' },
-      { size: 'sm', rowInset: true, class: 'ps-2 pe-2' },
+      { size: 'sm', rowInset: true, class: 'ps-2 pe-2.5' },
       { size: 'md', rowInset: true, class: 'ps-2 pe-3' },
-      { size: 'lg', rowInset: true, class: 'ps-2 pe-3.5' },
+      { size: 'lg', rowInset: true, class: 'ps-2 pe-4' },
     ],
     defaultVariants: {
       variant: 'secondary',

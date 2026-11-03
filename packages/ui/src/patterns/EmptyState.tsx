@@ -34,13 +34,13 @@ export function EmptyState({ icon, title, description, action, titleAs }: EmptyS
   // same class string so the two forms are the same drawing.
   const Title = titleAs === 'h1' ? 'h1' : 'p'
   return (
-    <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-      <span className="text-muted">
+    <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+      <span className="mb-1 text-muted">
         <Icon name={icon} />
       </span>
-      <Title className="m-0 text-[13px] font-heading text-fg">{title}</Title>
+      <Title className="m-0 text-[15px] font-heading text-fg">{title}</Title>
       {description ? <p className="m-0 max-w-64 text-[12px] text-muted">{description}</p> : null}
-      {action ? <div className="mt-1">{action}</div> : null}
+      {action ? <div className="mt-3">{action}</div> : null}
     </div>
   )
 }
