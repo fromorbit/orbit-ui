@@ -117,13 +117,13 @@ export default {
           ] as const
         ).map(([platform, settings, reload]) => (
           <div key={platform} className="contents">
-            <div className="flex h-[30px] items-center gap-2 rounded-md px-2 text-[13px] text-fg">
+            <div className="flex h-(--nt-control-md) items-center gap-2 rounded-md px-2 text-[13px] text-fg">
               <span className="flex-1">Instellingen</span>
               <KbdKeys tone="menu" platform={platform}>
                 {settings}
               </KbdKeys>
             </div>
-            <div className="flex h-[30px] items-center gap-2 rounded-md px-2 text-[13px] text-fg">
+            <div className="flex h-(--nt-control-md) items-center gap-2 rounded-md px-2 text-[13px] text-fg">
               <span className="flex-1">Hard herladen</span>
               <KbdKeys tone="menu" platform={platform}>
                 {reload}

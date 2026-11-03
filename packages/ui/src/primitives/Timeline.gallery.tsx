@@ -20,7 +20,7 @@ export default {
             Alle criteria slagen
           </TimelineItem>
           <TimelineItem marker={<Avatar name="Sem Jansen" size="sm" />} time="2 u">
-            <span className="flex w-full flex-col gap-1 rounded-lg border border-border bg-overlay px-3 py-2">
+            <span className="flex w-full flex-col gap-1 rounded-lg bg-surface px-3 py-2">
               <span className="font-medium text-fg">Sem Jansen</span>
               <span className="text-fg">
                 Moet het restant ook in het account van de klant staan?

@@ -114,9 +114,9 @@ export function FileDrop({
           setDepth(0)
           if (!disabled) take(Array.from(event.dataTransfer.files))
         }}
-        className={`no-drag flex w-full flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-8 text-center outline-focus transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 ${frame}`}
+        className={`no-drag flex w-full flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-8 text-center outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 ${frame}`}
       >
-        <span className="flex size-9 items-center justify-center rounded-full bg-surface-hover text-muted">
+        <span className="flex size-8 items-center justify-center rounded-full bg-surface-hover text-muted">
           <Icon name="upload" size="md" />
         </span>
         <span className="text-[13px] text-fg">

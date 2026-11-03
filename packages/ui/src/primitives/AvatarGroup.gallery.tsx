@@ -18,7 +18,7 @@ export default {
     'All fit': () => <AvatarGroup names={TEAM.slice(0, 3)} label="3 leden" />,
     Small: () => <AvatarGroup names={TEAM} label="6 leden" size="sm" max={3} />,
     'On a card': () => (
-      <div className="rounded-lg border border-border bg-overlay p-3">
+      <div className="rounded-lg bg-overlay p-3">
         <AvatarGroup names={TEAM} label="6 leden" on="overlay" />
       </div>
     ),

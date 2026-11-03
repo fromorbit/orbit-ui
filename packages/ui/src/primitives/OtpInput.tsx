@@ -87,10 +87,10 @@ export function OtpInput({
         const sign = code[index]
         const active = focused && index === current
         const box = ariaInvalid
-          ? 'flex h-12 w-10 items-center justify-center rounded-lg border border-danger bg-surface font-mono text-[20px] text-fg tabular-nums'
+          ? 'flex h-(--nt-control-lg) w-(--nt-control-lg) items-center justify-center rounded-md border border-danger bg-surface font-mono text-[20px] text-fg tabular-nums'
           : active
-            ? 'flex h-12 w-10 items-center justify-center rounded-lg border border-accent-border bg-surface font-mono text-[20px] text-fg tabular-nums outline-2 outline-focus outline-offset-2'
-            : 'flex h-12 w-10 items-center justify-center rounded-lg border border-border bg-surface font-mono text-[20px] text-fg tabular-nums'
+            ? 'flex h-(--nt-control-lg) w-(--nt-control-lg) items-center justify-center rounded-md border border-accent-border bg-surface font-mono text-[20px] text-fg tabular-nums outline-2 outline-focus outline-offset-2'
+            : 'flex h-(--nt-control-lg) w-(--nt-control-lg) items-center justify-center rounded-md border border-border bg-surface font-mono text-[20px] text-fg tabular-nums'
         return (
           // biome-ignore lint/suspicious/noArrayIndexKey: a fixed row of boxes, never reordered.
           <Fragment key={index}>

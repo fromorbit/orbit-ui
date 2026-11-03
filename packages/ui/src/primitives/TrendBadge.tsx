@@ -43,7 +43,7 @@ export function TrendBadge({ value, direction, tone, description }: TrendBadgePr
   return (
     <span
       data-nt-trend={tone}
-      className={`inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full px-1.5 py-px font-medium text-[11px] tabular-nums ${TONE[tone]}`}
+      className={`inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-sm px-1.5 py-px font-medium text-[11px] tabular-nums ${TONE[tone]}`}
     >
       <Icon name={ARROW[direction]} size="xs" />
       <span aria-hidden="true">{value}</span>

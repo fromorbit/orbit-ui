@@ -33,7 +33,7 @@ export function StatTile({ label, value, trend, comparison, aside, children }: S
       role="group"
       aria-labelledby={labelId}
       data-nt-stat-tile
-      className="flex h-full min-w-0 flex-col gap-1.5 rounded-lg border border-border bg-overlay p-4"
+      className="flex h-full min-w-0 flex-col gap-2 rounded-lg bg-overlay p-4"
     >
       <div className="flex items-start justify-between gap-2">
         <p id={labelId} className="m-0 text-[12px] text-muted">
@@ -41,7 +41,7 @@ export function StatTile({ label, value, trend, comparison, aside, children }: S
         </p>
         {aside}
       </div>
-      <p className="m-0 whitespace-nowrap font-heading text-[26px] text-fg tabular-nums leading-8">
+      <p className="m-0 whitespace-nowrap font-heading text-[20px] text-fg tabular-nums leading-7">
         {value}
       </p>
       {trend !== undefined || comparison !== undefined ? (

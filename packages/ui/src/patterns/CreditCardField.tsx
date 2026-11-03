@@ -95,15 +95,15 @@ function useCaret() {
 function BrandMark({ brand, generic }: { brand: CardBrand; generic: string }) {
   switch (brand) {
     case 'visa':
-      return <span className="font-bold text-[18px] italic tracking-wide">VISA</span>
+      return <span className="font-heading text-[20px] italic">VISA</span>
     case 'mastercard':
-      return <span className="font-semibold text-[13px] tracking-tight">mastercard</span>
+      return <span className="font-heading text-[13px] tracking-tight">mastercard</span>
     case 'amex':
-      return <span className="font-bold text-[12px] tracking-[0.2em]">AMEX</span>
+      return <span className="font-heading text-[12px] tracking-[0.2em]">AMEX</span>
     case 'maestro':
-      return <span className="font-semibold text-[13px] italic">maestro</span>
+      return <span className="font-heading text-[13px] italic">maestro</span>
     default:
-      return <span className="font-medium text-[12px] uppercase tracking-widest">{generic}</span>
+      return <span className="font-medium text-[12px]">{generic}</span>
   }
 }
 
@@ -130,7 +130,7 @@ export function CreditCardVisual({ value, flipped, labels }: CreditCardVisualPro
   const expiry = formatExpiry(value.expiry)
   const cvc = digitsOf(value.cvc)
   const face =
-    'absolute inset-0 flex flex-col overflow-hidden rounded-xl bg-(image:--nt-brand-gradient) text-(--nt-brand-paper) shadow-menu backface-hidden'
+    'absolute inset-0 flex flex-col overflow-hidden rounded-lg bg-(image:--nt-brand-gradient) text-(--nt-brand-paper) shadow-menu backface-hidden'
   return (
     <div
       aria-hidden="true"
@@ -139,7 +139,7 @@ export function CreditCardVisual({ value, flipped, labels }: CreditCardVisualPro
       className="aspect-[1.586] w-full max-w-80 perspective-[1000px]"
     >
       <div
-        className={`relative size-full transform-3d transition-transform duration-500 ease-out motion-reduce:transition-none ${flipped ? 'rotate-y-180' : ''}`}
+        className={`relative size-full transform-3d transition-transform duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${flipped ? 'rotate-y-180' : ''}`}
       >
         <div data-nt-card-front className={`${face} justify-between p-5`}>
           <div className="flex items-start justify-between">
@@ -147,17 +147,15 @@ export function CreditCardVisual({ value, flipped, labels }: CreditCardVisualPro
             <BrandMark brand={rule.brand} generic={labels.genericBrand} />
           </div>
           <div className="h-7 w-10 rounded-md bg-(--nt-brand-mist) opacity-70" />
-          <p data-nt-card-number className="m-0 font-mono text-[17px] tracking-wider">
+          <p data-nt-card-number className="m-0 font-mono text-[20px] tracking-wide">
             {maskedCardNumber(value.number)}
           </p>
           <div className="flex items-end justify-between gap-4">
-            <span className="min-w-0 truncate font-medium text-[12px] uppercase tracking-wider">
+            <span className="min-w-0 truncate font-medium text-[13px]">
               {value.name.trim() === '' ? labels.cardNamePlaceholder : value.name}
             </span>
             <span className="flex shrink-0 flex-col items-end">
-              <span className="text-[9px] uppercase tracking-wider opacity-70">
-                {labels.cardExpiry}
-              </span>
+              <span className="text-[11px] opacity-70">{labels.cardExpiry}</span>
               <span className="font-mono text-[13px]">{expiry === '' ? '••/••' : expiry}</span>
             </span>
           </div>
@@ -168,7 +166,7 @@ export function CreditCardVisual({ value, flipped, labels }: CreditCardVisualPro
             <div className="h-8 flex-1 rounded-sm bg-(--nt-brand-mist) opacity-80" />
             <span
               data-nt-card-cvc
-              className="flex h-8 w-14 items-center justify-center rounded-sm bg-(--nt-brand-paper) font-mono text-(--nt-brand-midnight) text-[14px]"
+              className="flex h-8 w-14 items-center justify-center rounded-sm bg-(--nt-brand-paper) font-mono text-(--nt-brand-midnight) text-[13px]"
             >
               {'•'.repeat(cvc.length).padEnd(rule.cvcLength, '·')}
             </span>
@@ -251,7 +249,7 @@ export function CreditCardField({
   }
 
   return (
-    <div data-nt-credit-card-field className="flex w-full max-w-80 flex-col gap-5">
+    <div data-nt-credit-card-field className="flex w-full max-w-80 flex-col gap-6">
       {hideCard ? null : <CreditCardVisual value={value} flipped={flipped} labels={labels} />}
       <div className="flex flex-col gap-4">
         <FormField label={labels.number} required {...errorProps('number')}>
@@ -272,7 +270,7 @@ export function CreditCardField({
             />
           )}
         </FormField>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <FormField label={labels.expiry} required {...errorProps('expiry')}>
             {(field) => (
               <Input

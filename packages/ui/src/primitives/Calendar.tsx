@@ -210,7 +210,7 @@ export function Calendar({
                 const cell = chosen
                   ? 'bg-accent text-accent-fg'
                   : day === today
-                    ? 'text-accent-text font-semibold hover:bg-surface-hover'
+                    ? 'bg-mark font-medium text-fg hover:bg-surface-hover'
                     : inMonth
                       ? 'text-fg hover:bg-surface-hover'
                       : 'text-muted hover:bg-surface-hover'
@@ -230,7 +230,7 @@ export function Calendar({
                         setFocused(day)
                         if (!off) onValueChange(day)
                       }}
-                      className={`no-drag flex size-8 items-center justify-center rounded-md text-[12px] tabular-nums outline-focus focus-visible:outline-2 focus-visible:outline-offset-1 aria-disabled:cursor-default aria-disabled:opacity-30 aria-disabled:hover:bg-transparent ${cell}`}
+                      className={`no-drag flex size-8 items-center justify-center rounded-md text-[13px] tabular-nums outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-1 aria-disabled:cursor-default aria-disabled:opacity-30 aria-disabled:hover:bg-transparent ${cell}`}
                     >
                       {Number(day.slice(8))}
                     </button>

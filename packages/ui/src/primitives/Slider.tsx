@@ -69,7 +69,7 @@ export function Slider({
               },
             }
           : {})}
-        className="no-drag relative flex h-5 min-w-0 flex-1 touch-none items-center select-none data-disabled:opacity-40"
+        className="no-drag relative flex h-(--nt-control-md) min-w-0 flex-1 touch-none items-center select-none data-disabled:opacity-40"
       >
         <RadixSlider.Track className="relative h-1 grow overflow-hidden rounded-full bg-border-focus">
           <RadixSlider.Range className="absolute h-full rounded-full bg-accent" />
@@ -81,13 +81,13 @@ export function Slider({
           aria-invalid={ariaInvalid}
           aria-valuetext={valueText(value)}
           id={id}
-          className="block size-4 rounded-full bg-accent-fg shadow-menu ring-1 ring-border-strong outline-focus transition-transform duration-100 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
+          className="block size-4 rounded-full bg-accent-fg shadow-menu ring-1 ring-border-strong outline-focus transition-transform duration-(--nt-duration-fast) hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
         />
       </RadixSlider.Root>
       {showValue ? (
         <span
           aria-hidden="true"
-          className="min-w-14 shrink-0 text-right font-mono text-[12px] text-muted tabular-nums"
+          className="min-w-14 shrink-0 text-right text-[12px] text-muted tabular-nums"
         >
           {valueText(value)}
         </span>

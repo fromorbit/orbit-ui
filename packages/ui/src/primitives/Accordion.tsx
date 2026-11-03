@@ -45,8 +45,8 @@ function Row({ item }: { item: AccordionItem }) {
       className="border-border border-b last:border-b-0"
     >
       <RadixAccordion.Header className="m-0">
-        <RadixAccordion.Trigger className="no-drag group flex min-h-10 w-full items-center gap-2 rounded-sm px-1 text-left text-[13px] text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:-outline-offset-2 disabled:opacity-40">
-          <span className="flex size-(--nt-icon-sm) shrink-0 items-center justify-center text-muted transition-transform duration-100 group-data-[state=open]:rotate-90 motion-reduce:transition-none">
+        <RadixAccordion.Trigger className="no-drag group flex min-h-10 w-full items-center gap-2 rounded-md px-1 text-left text-[13px] text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:-outline-offset-2 disabled:opacity-40">
+          <span className="flex size-(--nt-icon-sm) shrink-0 items-center justify-center text-muted transition-transform duration-(--nt-duration-fast) group-data-[state=open]:rotate-90 motion-reduce:transition-none">
             <Icon name="chevron-right" size="sm" />
           </span>
           <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>

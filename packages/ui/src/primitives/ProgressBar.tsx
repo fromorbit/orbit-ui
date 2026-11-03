@@ -33,7 +33,7 @@ export function ProgressBar({ label, value, max = 100, valueText }: ProgressBarP
       {known ? (
         <div
           data-nt-progress-fill
-          className="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-200 motion-reduce:transition-none"
+          className="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none"
           // The one value no class can hold: the share itself.
           style={{ width: `${Math.round(share * 100)}%` }}
         />
