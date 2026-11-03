@@ -8,74 +8,208 @@ import {
   ProgressMeter,
   RelativeTime,
   ScrollArea,
-  SectionHeading,
   SegmentedControl,
+  StatusMark,
+  type StatusMarkKind,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame, HOUR, MINUTE, NOW } from './parts/AppFrame'
+import { type Bar, ChartSketch } from './parts/ChartSketch'
+import { Panel } from './parts/Panel'
 import { type Figure, StatTileSketch } from './parts/StatTileSketch'
 
-type Period = '7' | '30' | '90'
+type Period = '1' | '7' | '30'
 
 const PERIODS = [
+  { value: '1', label: '24 uur' },
   { value: '7', label: '7 dagen' },
   { value: '30', label: '30 dagen' },
-  { value: '90', label: '90 dagen' },
 ] as const
 
 /** Made-up figures per period: label, value and change against the period before. */
 const KPIS: Record<Period, Figure[]> = {
+  '1': [
+    {
+      label: 'Draaiende spaces',
+      value: '9 van 12',
+      delta: '2',
+      good: true,
+      rising: true,
+      against: 't.o.v. gisteren',
+    },
+    {
+      label: 'Builds',
+      value: '23',
+      delta: '8%',
+      good: true,
+      rising: true,
+      against: 't.o.v. gisteren',
+    },
+    {
+      label: 'Gem. bouwtijd',
+      value: '1 m 42 s',
+      delta: '11 s',
+      good: true,
+      rising: false,
+      against: 't.o.v. gisteren',
+    },
+    {
+      label: 'Mislukte starts',
+      value: '2',
+      delta: '1',
+      good: false,
+      rising: true,
+      against: 't.o.v. gisteren',
+    },
+  ],
   '7': [
-    { label: 'Omzet', value: '€ 12.480', delta: '8,1%', up: true },
-    { label: 'Bestellingen', value: '312', delta: '3,4%', up: true },
-    { label: 'Nieuwe klanten', value: '48', delta: '2,0%', up: false },
-    { label: 'Conversie', value: '3,2%', delta: '0,4%', up: true },
+    {
+      label: 'Draaiende spaces',
+      value: '9 van 12',
+      delta: '3',
+      good: true,
+      rising: true,
+      against: 't.o.v. vorige week',
+    },
+    {
+      label: 'Builds',
+      value: '148',
+      delta: '12%',
+      good: true,
+      rising: true,
+      against: 't.o.v. vorige week',
+    },
+    {
+      label: 'Gem. bouwtijd',
+      value: '1 m 51 s',
+      delta: '6 s',
+      good: true,
+      rising: false,
+      against: 't.o.v. vorige week',
+    },
+    {
+      label: 'Mislukte starts',
+      value: '7',
+      delta: '3',
+      good: true,
+      rising: false,
+      against: 't.o.v. vorige week',
+    },
   ],
   '30': [
-    { label: 'Omzet', value: '€ 48.210', delta: '12,4%', up: true },
-    { label: 'Bestellingen', value: '1.204', delta: '6,8%', up: true },
-    { label: 'Nieuwe klanten', value: '196', delta: '4,1%', up: true },
-    { label: 'Conversie', value: '3,0%', delta: '0,2%', up: false },
-  ],
-  '90': [
-    { label: 'Omzet', value: '€ 139.950', delta: '18,9%', up: true },
-    { label: 'Bestellingen', value: '3.517', delta: '9,3%', up: true },
-    { label: 'Nieuwe klanten', value: '601', delta: '1,2%', up: false },
-    { label: 'Conversie', value: '2,9%', delta: '0,1%', up: true },
+    {
+      label: 'Draaiende spaces',
+      value: '9 van 12',
+      delta: '4',
+      good: true,
+      rising: true,
+      against: 't.o.v. september',
+    },
+    {
+      label: 'Builds',
+      value: '612',
+      delta: '21%',
+      good: true,
+      rising: true,
+      against: 't.o.v. september',
+    },
+    {
+      label: 'Gem. bouwtijd',
+      value: '1 m 58 s',
+      delta: '14 s',
+      good: false,
+      rising: true,
+      against: 't.o.v. september',
+    },
+    {
+      label: 'Mislukte starts',
+      value: '31',
+      delta: '9',
+      good: true,
+      rising: false,
+      against: 't.o.v. september',
+    },
   ],
 }
 
-/** A made-up series of daily revenue, as a share of the best day. */
-function series(period: Period): number[] {
-  const count = period === '7' ? 7 : period === '30' ? 30 : 45
-  return Array.from({ length: count }, (_, day) => {
-    const wave = Math.sin(day / 2.3) * 18 + Math.cos(day / 5.1) * 12
-    return Math.round(55 + wave + (day % 7 === 5 ? -20 : 0) + day * 0.4)
+const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'] as const
+
+/** A made-up series of builds, per hour, day or day of the month, with the failed ones on top. */
+function builds(period: Period): Bar[] {
+  const count = period === '1' ? 24 : period === '7' ? 7 : 30
+  return Array.from({ length: count }, (_, index) => {
+    const label =
+      period === '1'
+        ? `${String(index).padStart(2, '0')}:00`
+        : period === '7'
+          ? (WEEKDAYS[index] ?? '')
+          : `${index + 1} okt`
+    const quiet = period === '1' ? index < 7 || index > 20 : period === '30' && index % 7 >= 5
+    const wave = Math.sin(index / 1.7) * 5 + Math.cos(index / 3.1) * 4
+    const base = period === '1' ? 2 : period === '7' ? 22 : 20
+    const value = Math.max(0, Math.round((quiet ? base * 0.25 : base) + wave))
+    const failed = index % 5 === 3 ? Math.max(1, Math.round(value / 8)) : 0
+    return { label, value, failed }
   })
 }
 
-const PAGES = [
-  { title: '/winkel/zomercollectie', views: 8420 },
-  { title: '/blog/tien-tips-voor-de-tuin', views: 6115 },
-  { title: '/winkel/cadeaubonnen', views: 4380 },
-  { title: '/over-ons', views: 2210 },
-  { title: '/contact', views: 1480 },
+/** One space of the made-up web shop: a branch of the app running on its own address. */
+interface Space {
+  name: string
+  branch: string
+  kind: StatusMarkKind
+  status: string
+  since: number
+}
+
+const SPACES: Space[] = [
+  { name: 'webwinkel', branch: 'main', kind: 'running', status: 'Draait', since: 3 * HOUR },
+  {
+    name: 'webwinkel',
+    branch: 'betaling-ideal',
+    kind: 'fault',
+    status: 'Start niet',
+    since: 12 * MINUTE,
+  },
+  { name: 'webwinkel', branch: 'zoeken-v2', kind: 'running', status: 'Draait', since: 47 * MINUTE },
+  { name: 'beheer', branch: 'main', kind: 'running', status: 'Draait', since: 26 * HOUR },
+  {
+    name: 'nieuwsbrief',
+    branch: 'sjablonen',
+    kind: 'blocked',
+    status: 'Wacht op geheim',
+    since: 2 * HOUR,
+  },
+  {
+    name: 'webwinkel',
+    branch: 'cadeaubon',
+    kind: 'stopped',
+    status: 'Gestopt',
+    since: 3 * 24 * HOUR,
+  },
 ]
 
-/** The usual first screen: figures, one chart, what happened lately and what is read most. */
-function Dashboard(): ReactNode {
-  const [period, setPeriod] = useState<Period>('30')
-  const bars = series(period)
-  const top = PAGES[0]?.views ?? 1
+/** The machine every space runs on, and how full it is. */
+const HOST = [
+  { label: 'Processor', value: 38, max: 100, text: '38%' },
+  { label: 'Geheugen', value: 11.2, max: 32, text: '11,2 van 32 GB' },
+  { label: 'Schijf', value: 184, max: 512, text: '184 van 512 GB' },
+] as const
+
+/**
+ * Halo's first screen: how the spaces of the workspace are doing, how many builds ran and how
+ * full the host is, with the one space that needs attention on top.
+ */
+function Overview(): ReactNode {
+  const [period, setPeriod] = useState<Period>('7')
   return (
-    <AppFrame current="dashboard">
+    <AppFrame product="halo" current="dashboard">
       <ScrollArea>
-        <div className="flex flex-col gap-6 px-8 py-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <PageHeader
             title="Overzicht"
-            meta="Bijgewerkt om 14:00"
+            meta="Zilverberg · 4 apps · 12 spaces"
             actions={
               <>
                 <SegmentedControl<Period>
@@ -85,109 +219,92 @@ function Dashboard(): ReactNode {
                   options={PERIODS}
                   onValueChange={setPeriod}
                 />
-                <Button variant="secondary" size="sm">
-                  Exporteren
-                </Button>
+                <div className="hidden @xl:block">
+                  <Button variant="primary" size="sm">
+                    Nieuwe space
+                  </Button>
+                </div>
               </>
             }
           />
           <Banner
             tone="attention"
             action={
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => (location.hash = '#/demo/betalingen')}
-              >
-                Bekijk
+              <Button variant="secondary" size="sm">
+                Logboek
               </Button>
             }
           >
-            Twee betalingen zijn sinds gisteren mislukt.
+            De space betaling-ideal start niet: poort 5173 is al bezet.
           </Banner>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS[period].map((kpi) => (
               <StatTileSketch key={kpi.label} figure={kpi} />
             ))}
           </div>
-          <section className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
-            <SectionHeading level={2}>Omzet per dag</SectionHeading>
-            <Missing name="Chart" note="Vlakgrafiek met as, raster en tooltip per dag">
-              <div aria-hidden="true" className="flex h-44 items-end gap-1">
-                {bars.map((height, index) => (
-                  <div
-                    // biome-ignore lint/suspicious/noArrayIndexKey: a sketch of fixed bars, never reordered
-                    key={index}
-                    className="min-w-0 flex-1 rounded-t-sm bg-accent/50"
-                    style={{ height: `${height}%` }}
-                  />
-                ))}
+          <Panel
+            title="Builds"
+            meta={period === '1' ? 'per uur' : 'per dag'}
+            actions={
+              <Button variant="ghost" size="sm">
+                Alle builds
+              </Button>
+            }
+          >
+            <ChartSketch
+              bars={builds(period)}
+              legend={{ value: 'Geslaagd', failed: 'Mislukt' }}
+              unit="builds"
+              note="Gestapelde staafgrafiek met as, raster en tooltip per staaf"
+            />
+          </Panel>
+          <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+            <Panel title="Spaces" meta="6 van 12" flush>
+              <div className="px-2 pb-2">
+                <List label="Spaces">
+                  {SPACES.map((space) => (
+                    <ListRow
+                      key={`${space.name}/${space.branch}`}
+                      title={`${space.name} · ${space.branch}`}
+                      marker={<StatusMark kind={space.kind} />}
+                      status={space.status}
+                      meta={
+                        <RelativeTime
+                          labels={galleryLabels.time}
+                          at={NOW - space.since}
+                          now={NOW}
+                        />
+                      }
+                    />
+                  ))}
+                </List>
               </div>
-            </Missing>
-          </section>
-          <div className="grid grid-cols-2 gap-6">
-            <section className="flex flex-col gap-2">
-              <SectionHeading level={2}>Recente activiteit</SectionHeading>
-              <List label="Recente activiteit">
-                <ListRow
-                  title="Bestelling #4821 betaald"
-                  kind="done"
-                  status="Betaald"
-                  meta={
-                    <RelativeTime labels={galleryLabels.time} at={NOW - 4 * MINUTE} now={NOW} />
-                  }
-                />
-                <ListRow
-                  title="Betaling van Fenna Brouwsma mislukt"
-                  kind="failed"
-                  status="Mislukt"
-                  meta={
-                    <RelativeTime labels={galleryLabels.time} at={NOW - 38 * MINUTE} now={NOW} />
-                  }
-                />
-                <ListRow
-                  title="Artikel ‘Tien tips voor de tuin’ gepland"
-                  kind="queued"
-                  status="Gepland"
-                  meta={<RelativeTime labels={galleryLabels.time} at={NOW - 2 * HOUR} now={NOW} />}
-                />
-                <ListRow
-                  title="Voorraad cadeaubonnen bijna op"
-                  kind="attention"
-                  status="Let op"
-                  meta={<RelativeTime labels={galleryLabels.time} at={NOW - 5 * HOUR} now={NOW} />}
-                />
-                <ListRow
-                  title="Import van productfoto’s loopt"
-                  kind="running"
-                  status="Bezig"
-                  meta={<RelativeTime labels={galleryLabels.time} at={NOW - 9 * HOUR} now={NOW} />}
-                />
-              </List>
-            </section>
-            <section className="flex flex-col gap-2">
-              <SectionHeading level={2}>Meest bekeken</SectionHeading>
-              <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
-                {PAGES.map((page) => (
-                  <li key={page.title} className="flex items-center gap-3">
-                    <span className="w-52 shrink-0 truncate font-mono text-[12px] text-secondary">
-                      {page.title}
+            </Panel>
+            <Panel title="Host" meta="halo-01 · 6 kernen">
+              <ul className="m-0 flex list-none flex-col gap-4 p-0">
+                {HOST.map((part) => (
+                  <li key={part.label} className="flex flex-col gap-1.5">
+                    <span className="flex items-baseline justify-between gap-2 text-[12.5px]">
+                      <span className="text-secondary">{part.label}</span>
+                      <span className="text-muted tabular-nums">{part.text}</span>
                     </span>
                     <ProgressMeter
-                      value={page.views}
-                      max={top}
-                      label={`Weergaven van ${page.title}`}
-                      valueText={(value) => `${value.toLocaleString('nl-NL')} weergaven`}
+                      value={part.value}
+                      max={part.max}
+                      label={part.label}
+                      valueText={() => part.text}
                       width="fill"
                       count={false}
                     />
-                    <span className="w-14 text-right text-[12px] text-muted tabular-nums">
-                      {page.views.toLocaleString('nl-NL')}
-                    </span>
                   </li>
                 ))}
               </ul>
-            </section>
+              <p className="m-0 mt-5 border-border border-t pt-3 text-[12px] text-muted">
+                Laatste opruimronde{' '}
+                <RelativeTime labels={galleryLabels.time} at={NOW - 5 * HOUR} now={NOW} />: 3 oude
+                images en 2 volumes weg.
+              </p>
+            </Panel>
           </div>
         </div>
       </ScrollArea>
@@ -195,4 +312,11 @@ function Dashboard(): ReactNode {
   )
 }
 
-export default { title: 'Dashboard', icon: 'columns', Screen: Dashboard } satisfies DemoModule
+export default {
+  title: 'Overzicht',
+  description:
+    'Het eerste scherm van Halo: hoe de spaces erbij staan, hoeveel builds er liepen en hoe vol de host is. De ene space die aandacht vraagt staat bovenaan.',
+  icon: 'columns',
+  product: 'halo',
+  Screen: Overview,
+} satisfies DemoModule

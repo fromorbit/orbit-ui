@@ -2,222 +2,260 @@ import { type ReactNode, useState } from 'react'
 import {
   Avatar,
   Button,
-  DropdownMenu,
   Icon,
   IconButton,
-  LevelBars,
+  Input,
   List,
   ListGroup,
   ListRow,
   PanelTabHeader,
+  ProgressMeter,
   PropertyList,
   Prose,
   type RunStatusKind,
   ScrollArea,
   SegmentedControl,
-  StatusShape,
+  StackedRowBranch,
+  StatusMark,
   Tag,
   Textarea,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import { Missing } from '../demo-kit/Missing'
 import type { DemoModule } from '../demo-kit/types'
-import { AppFrame } from './parts/AppFrame'
+import { AppFrame, ME } from './parts/AppFrame'
 
-type State = 'doing' | 'review' | 'todo' | 'done'
+/** Where a spec is in its life; `building` only while an agent works on it. */
+type State = 'review' | 'building' | 'approved' | 'draft' | 'done'
 
-/** The groups in their order, with the status shape each draws. */
-const STATES: { id: State; label: string; kind: RunStatusKind }[] = [
-  { id: 'doing', label: 'Bezig', kind: 'running' },
-  { id: 'review', label: 'Wacht op review', kind: 'attention' },
-  { id: 'todo', label: 'Te doen', kind: 'queued' },
-  { id: 'done', label: 'Klaar', kind: 'done' },
-]
+/** The words and the status shape of every state. */
+const STATES: Record<State, { label: string; kind: RunStatusKind }> = {
+  review: { label: 'Wacht op review', kind: 'attention' },
+  building: { label: 'In uitvoering', kind: 'running' },
+  approved: { label: 'Goedgekeurd', kind: 'queued' },
+  draft: { label: 'Concept', kind: 'queued' },
+  done: { label: 'Klaar', kind: 'done' },
+}
 
-const PRIORITY = ['Geen', 'Laag', 'Middel', 'Hoog'] as const
-
-interface Task {
+/** One spec of the made-up web shop. */
+interface Spec {
   id: string
   title: string
   state: State
-  priority: 0 | 1 | 2 | 3
   owner: string
-  label: string
-  body: string
+  /** The reviewer it waits for, when that is someone. */
+  reviewer?: string
+  branch: string
+  /** Criteria of "Klaar als" met and in all. */
+  criteria: [number, number]
+  summary: string
+  done: string
 }
 
-const TASKS: Task[] = [
+const SPECS: Spec[] = [
   {
-    id: 'ZIL-142',
-    title: 'Betaalpagina toont verkeerde btw bij 9%',
-    state: 'doing',
-    priority: 3,
-    owner: 'Daan Velthuis',
-    label: 'Bug',
-    body: 'Bij producten met het lage tarief rekent de betaalpagina 21% btw. Zie `/work/winkel/src/btw.ts`.\n\n- [x] Fout nagespeeld\n- [ ] Test toegevoegd\n- [ ] Fix uitgerold',
-  },
-  {
-    id: 'ZIL-139',
-    title: 'Zomercollectie: nieuwe productfoto’s',
-    state: 'doing',
-    priority: 2,
-    owner: 'Mila Terhorst',
-    label: 'Inhoud',
-    body: 'Twaalf producten krijgen nieuwe foto’s; de oude gaan naar het archief.',
-  },
-  {
-    id: 'ZIL-137',
-    title: 'Nieuwsbrief oktober schrijven',
+    id: 'SPEC-21',
+    title: 'Afrekenen met een cadeaubon',
     state: 'review',
-    priority: 2,
-    owner: 'Fenna Brouwsma',
-    label: 'Marketing',
-    body: 'Concept staat klaar, graag een blik op de onderwerpregel.',
-  },
-  {
-    id: 'ZIL-145',
-    title: 'Retourformulier vereenvoudigen',
-    state: 'todo',
-    priority: 1,
-    owner: 'Sem Oudeweg',
-    label: 'Verbetering',
-    body: 'Van vijf stappen naar twee.',
-  },
-  {
-    id: 'ZIL-146',
-    title: 'Cadeaubon ook als pdf versturen',
-    state: 'todo',
-    priority: 2,
     owner: 'Daan Velthuis',
-    label: 'Verbetering',
-    body: 'Klanten vragen om een printbare versie.',
+    reviewer: ME,
+    branch: 'nt/cadeaubon-afrekenen',
+    criteria: [0, 4],
+    summary:
+      'Klanten van de webwinkel kunnen bij het afrekenen een cadeaubon inwisselen. Is de bon minder waard dan de mand, dan betalen ze de rest met iDEAL; het restant van een bon blijft een jaar geldig.',
+    done: [
+      '- [ ] Een bon van € 25 op een mand van € 40 laat € 15 te betalen',
+      '- [ ] Een verlopen bon geeft een melding in gewone taal',
+      '- [ ] Het restant staat op de bon na de bestelling',
+      '- [ ] De betaling staat in `/work/webwinkel/src/kassa/bon.ts` met tests',
+    ].join('\n'),
   },
   {
-    id: 'ZIL-147',
-    title: 'Openingstijden feestdagen op de site',
-    state: 'todo',
-    priority: 0,
-    owner: 'Iris Kamphorst',
-    label: 'Inhoud',
-    body: 'Voor 1 december online.',
+    id: 'SPEC-19',
+    title: 'iDEAL als betaalmethode',
+    state: 'building',
+    owner: 'Mila Terhorst',
+    branch: 'nt/ideal',
+    criteria: [3, 5],
+    summary: 'iDEAL naast creditcard en achteraf betalen.',
+    done: '- [x] Bankkeuze\n- [x] Terugkeer na betalen\n- [x] Mislukte betaling\n- [ ] Webhook\n- [ ] Tests',
   },
   {
-    id: 'ZIL-131',
+    id: 'SPEC-22',
+    title: 'Zoekfilter op de server',
+    state: 'building',
+    owner: 'Sem Oudeweg',
+    branch: 'nt/zoekfilter-server',
+    criteria: [1, 3],
+    summary: 'Filteren op maat en kleur zonder de hele catalogus te laden.',
+    done: '- [x] Index\n- [ ] Filters\n- [ ] Tests',
+  },
+  {
+    id: 'SPEC-18',
+    title: 'Retourformulier in twee stappen',
+    state: 'review',
+    owner: 'Fenna Brouwsma',
+    reviewer: 'Joris Lindeboom',
+    branch: 'nt/retour-kort',
+    criteria: [0, 3],
+    summary: 'Van vijf stappen naar twee.',
+    done: '- [ ] Stap 1\n- [ ] Stap 2\n- [ ] Tests',
+  },
+  {
+    id: 'SPEC-25',
+    title: 'Productfoto’s als WebP',
+    state: 'review',
+    owner: 'Sem Oudeweg',
+    reviewer: ME,
+    branch: 'nt/webp',
+    criteria: [0, 3],
+    summary: 'Kleinere foto’s, dezelfde kwaliteit; oude browsers krijgen JPEG.',
+    done: '- [ ] Omzetten bij upload\n- [ ] Terugval\n- [ ] Tests',
+  },
+  {
+    id: 'SPEC-20',
+    title: 'Verzendkosten per land',
+    state: 'building',
+    owner: ME,
+    branch: 'nt/verzendkosten',
+    criteria: [2, 4],
+    summary: 'België en Duitsland krijgen hun eigen tarief.',
+    done: '- [x] Tabel\n- [x] Kassa\n- [ ] Factuur\n- [ ] Tests',
+  },
+  {
+    id: 'SPEC-23',
+    title: 'Openingstijden feestdagen',
+    state: 'approved',
+    owner: ME,
+    branch: 'nt/feestdagen',
+    criteria: [0, 2],
+    summary: 'Afwijkende tijden per dag, vooraf in te plannen.',
+    done: '- [ ] Beheer\n- [ ] Weergave',
+  },
+  {
+    id: 'SPEC-24',
+    title: 'Nieuwsbrief na de eerste bestelling',
+    state: 'draft',
+    owner: 'Fenna Brouwsma',
+    branch: 'main',
+    criteria: [0, 0],
+    summary: 'Nog uit te werken.',
+    done: '',
+  },
+  {
+    id: 'SPEC-16',
     title: 'Koppeling met de boekhouding',
     state: 'done',
-    priority: 3,
     owner: 'Joris Lindeboom',
-    label: 'Koppeling',
-    body: 'Facturen gaan nu elke nacht mee.',
-  },
-  {
-    id: 'ZIL-128',
-    title: 'Zoekfunctie in de winkel',
-    state: 'done',
-    priority: 1,
-    owner: 'Sem Oudeweg',
-    label: 'Verbetering',
-    body: 'Live sinds 12 oktober.',
+    branch: 'nt/boekhouding',
+    criteria: [4, 4],
+    summary: 'Facturen gaan elke nacht mee.',
+    done: '- [x] Export\n- [x] Planning\n- [x] Fouten\n- [x] Tests',
   },
 ]
 
-/** The detail of one task beside the list: what, its properties and what happened on it. */
-function Detail({
-  task,
-  onChange,
-  onClose,
-}: {
-  task: Task
-  onChange(next: Task): void
-  onClose(): void
-}) {
-  const state = STATES.find((entry) => entry.id === task.state) ?? STATES[0]
+/** The groups of the list per view: "Voor jou" holds what waits for you and what you own. */
+type View = 'mine' | 'open'
+
+const GROUPS: { heading: string; states: State[] }[] = [
+  { heading: 'Wacht op review', states: ['review'] },
+  { heading: 'In uitvoering', states: ['building'] },
+  { heading: 'Gepland', states: ['approved', 'draft'] },
+  { heading: 'Klaar', states: ['done'] },
+]
+
+/** What happened on the chosen spec, oldest first. */
+const ACTIVITY = [
+  { icon: 'plus', text: 'Daan Velthuis schreef de spec', when: '3 d' },
+  { icon: 'sparkles', text: 'De agent vulde Keuzes en Risico’s aan', when: '2 d' },
+  { icon: 'user', text: `Review gevraagd aan ${ME}`, when: '5 u' },
+] as const
+
+/** The status mark of a row: the glowing circle only while an agent works, the shape otherwise. */
+function rowStatus(spec: Spec) {
+  const state = STATES[spec.state]
+  return spec.state === 'building'
+    ? { marker: <StatusMark kind="running" />, status: state.label }
+    : { kind: state.kind, status: state.label }
+}
+
+/** The detail of one spec beside the list: the gate, what it says, and what happened on it. */
+function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
+  const state = STATES[spec.state]
+  const [met, all] = spec.criteria
   return (
-    <div className="flex w-[400px] shrink-0 flex-col border-border border-l bg-bg">
+    <div className="hidden w-[420px] shrink-0 flex-col border-border border-l bg-bg @5xl:flex">
       <PanelTabHeader
-        title={<span className="font-mono text-[12px] text-muted">{task.id}</span>}
+        title={<span className="font-mono text-[12px] text-muted">{spec.id}</span>}
         actions={
           <>
             <IconButton icon="copy" size="sm" label="Kopieer link" />
-            <IconButton icon="x" size="sm" label="Sluit taak" onClick={onClose} />
+            <IconButton icon="x" size="sm" label="Sluit spec" onClick={onClose} />
           </>
         }
       />
       <ScrollArea>
-        <div className="flex flex-col gap-5 p-4">
-          <h2 className="m-0 text-[16px] font-medium text-fg">{task.title}</h2>
+        <div className="flex flex-col gap-5 px-5 pt-4 pb-6">
+          <div className="flex flex-col gap-2">
+            <h2 className="m-0 font-heading text-[20px] text-fg leading-snug tracking-[-0.01em]">
+              {spec.title}
+            </h2>
+            <div className="flex flex-wrap gap-1.5">
+              <Tag {...(spec.state === 'review' ? { tone: 'attention' as const } : {})}>
+                {state.label}
+              </Tag>
+              <Tag>Betalen</Tag>
+            </div>
+          </div>
+          {spec.reviewer === ME ? (
+            <div className="flex flex-col gap-3 rounded-xl border border-attention-border bg-attention-subtle p-4">
+              <p className="m-0 text-[13px] text-fg leading-relaxed">
+                Deze spec wacht op jouw akkoord. Na goedkeuren kan een agent hem uitvoeren op een
+                eigen branch.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="primary" size="sm">
+                  Goedkeuren en uitvoeren
+                </Button>
+                <Button variant="secondary" size="sm">
+                  Goedkeuren
+                </Button>
+                <Button variant="ghost" size="sm">
+                  Opmerking
+                </Button>
+              </div>
+            </div>
+          ) : null}
           <PropertyList
             label="Eigenschappen"
             groups={[
               [
                 {
-                  label: 'Status',
-                  value: (
-                    <div className="flex">
-                      <DropdownMenu
-                        trigger={
-                          <Button variant="ghost" size="xs">
-                            <span className="flex items-center gap-1.5 text-fg">
-                              <StatusShape kind={state?.kind ?? 'queued'} />
-                              {state?.label}
-                            </span>
-                          </Button>
-                        }
-                        label="Status"
-                        items={STATES.map((entry) => ({
-                          id: entry.id,
-                          label: entry.label,
-                          kind: 'radio' as const,
-                          checked: entry.id === task.state,
-                          onSelect: () => onChange({ ...task, state: entry.id }),
-                        }))}
-                      />
-                    </div>
-                  ),
-                },
-                {
-                  label: 'Prioriteit',
-                  value: (
-                    <div className="flex">
-                      <DropdownMenu
-                        trigger={
-                          <Button variant="ghost" size="xs">
-                            <span className="flex items-center gap-1.5 text-fg">
-                              <LevelBars level={task.priority} of={3} />
-                              {PRIORITY[task.priority]}
-                            </span>
-                          </Button>
-                        }
-                        label="Prioriteit"
-                        items={PRIORITY.map((label, level) => ({
-                          id: label,
-                          label,
-                          kind: 'radio' as const,
-                          checked: level === task.priority,
-                          onSelect: () =>
-                            onChange({ ...task, priority: level as Task['priority'] }),
-                        }))}
-                      />
-                    </div>
-                  ),
-                },
-                {
-                  label: 'Toegewezen',
+                  label: 'Eigenaar',
                   value: (
                     <span className="flex items-center gap-2">
-                      <Avatar name={task.owner} size="sm" />
-                      {task.owner}
+                      <Avatar name={spec.owner} size="sm" />
+                      {spec.owner}
                     </span>
                   ),
                 },
-              ],
-              [
                 {
-                  label: 'Label',
+                  label: 'Branch',
                   value: (
-                    <div className="flex">
-                      <Tag>{task.label}</Tag>
-                    </div>
+                    <span className="flex min-w-0">
+                      <StackedRowBranch name={spec.branch} worktree />
+                    </span>
+                  ),
+                },
+                {
+                  label: 'Klaar als',
+                  value: (
+                    <ProgressMeter
+                      value={met}
+                      max={Math.max(all, 1)}
+                      label="Criteria gehaald"
+                      valueText={galleryLabels.progress}
+                    />
                   ),
                 },
                 {
@@ -225,7 +263,10 @@ function Detail({
                   value: (
                     <div className="flex">
                       <Missing name="DatePicker" inline>
-                        <span className="text-[12px] text-fg">31 okt 2026</span>
+                        <span className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12.5px] text-fg">
+                          <Icon name="clock" size="sm" tone="faint" />
+                          vr 31 okt
+                        </span>
                       </Missing>
                     </div>
                   ),
@@ -233,24 +274,43 @@ function Detail({
               ],
             ]}
           />
-          <Prose labels={galleryLabels.prose} markdown={task.body} />
-          <Missing name="Timeline" note="Activiteit en reacties op de taak">
-            <ol className="m-0 flex list-none flex-col gap-3 p-0 text-[12px]">
-              <li className="flex items-center gap-2 text-muted">
-                <Icon name="plus" size="xs" tone="faint" /> Iris Kamphorst maakte de taak aan · 3 d
-              </li>
-              <li className="flex items-center gap-2 text-muted">
-                <Icon name="user" size="xs" tone="faint" /> Toegewezen aan {task.owner} · 2 d
-              </li>
-              <li className="flex items-start gap-2">
-                <Avatar name="Sem Oudeweg" size="sm" />
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-muted">Sem Oudeweg · 5 u</span>
-                  <span className="text-fg">Kan dit nog mee in de release van vrijdag?</span>
-                </span>
-              </li>
-            </ol>
-          </Missing>
+          <section className="flex flex-col gap-1.5">
+            <h3 className="m-0 font-medium text-[12px] text-muted">In het kort</h3>
+            <p className="m-0 text-[13.5px] text-fg leading-relaxed">{spec.summary}</p>
+          </section>
+          {spec.done === '' ? null : (
+            <section className="flex flex-col gap-1.5">
+              <h3 className="m-0 font-medium text-[12px] text-muted">{`Klaar als · ${all} criteria`}</h3>
+              <Prose labels={galleryLabels.prose} markdown={spec.done} />
+            </section>
+          )}
+          <section className="flex flex-col gap-3">
+            <h3 className="m-0 font-medium text-[12px] text-muted">Activiteit</h3>
+            <Missing name="Timeline" note="Activiteit en reacties op de spec">
+              <ol className="relative m-0 flex list-none flex-col gap-4 p-0 text-[12.5px] before:absolute before:top-2 before:bottom-2 before:left-[11px] before:w-px before:bg-border">
+                {ACTIVITY.map((entry) => (
+                  <li key={entry.text} className="relative flex items-center gap-3">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-bg">
+                      <Icon name={entry.icon} size="sm" tone="faint" />
+                    </span>
+                    <span className="min-w-0 flex-1 text-secondary">{entry.text}</span>
+                    <span className="text-muted">{entry.when}</span>
+                  </li>
+                ))}
+                <li className="relative flex items-start gap-3">
+                  <Avatar name="Sem Oudeweg" size="sm" />
+                  <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-border bg-overlay px-3 py-2">
+                    <span className="flex justify-between text-muted">
+                      <span className="font-medium text-fg">Sem Oudeweg</span>2 u
+                    </span>
+                    <span className="text-fg leading-relaxed">
+                      Moet het restant ook in het account van de klant zichtbaar zijn?
+                    </span>
+                  </span>
+                </li>
+              </ol>
+            </Missing>
+          </section>
           <div className="flex flex-col gap-2">
             <Textarea label="Reactie" placeholder="Schrijf een reactie…" minRows={2} />
             <div className="flex justify-end">
@@ -265,70 +325,83 @@ function Detail({
   )
 }
 
-type View = 'active' | 'all'
-
-/** Tasks as Linear lists them: grouped by status, priority and owner on the row, a detail beside. */
-function Tasks(): ReactNode {
-  const [tasks, setTasks] = useState(TASKS)
-  const [chosen, setChosen] = useState<string | null>('ZIL-142')
-  const [view, setView] = useState<View>('active')
-  const [open, setOpen] = useState<Record<State, boolean>>({
-    doing: true,
-    review: true,
-    todo: true,
-    done: false,
-  })
-  const task = tasks.find((entry) => entry.id === chosen)
-  const groups = STATES.filter((state) => view === 'all' || state.id !== 'done')
+/**
+ * Orbit's specs: what waits for your review on top, what an agent is building now, and what is
+ * planned; the chosen spec beside the list with its gate, criteria and activity.
+ */
+function Specs(): ReactNode {
+  const [chosen, setChosen] = useState<string | null>('SPEC-21')
+  const [view, setView] = useState<View>('mine')
+  const [open, setOpen] = useState<Record<string, boolean>>({})
+  const shown = SPECS.filter((spec) =>
+    view === 'open'
+      ? spec.state !== 'done'
+      : spec.owner === ME ||
+        spec.reviewer === ME ||
+        spec.state === 'building' ||
+        spec.state === 'done',
+  )
+  const spec = SPECS.find((entry) => entry.id === chosen)
   return (
-    <AppFrame current="taken">
+    <AppFrame product="orbit" current="taken">
       <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
-        <h1 className="m-0 text-[14px] font-medium text-fg">Taken</h1>
+        <h1 className="m-0 font-medium text-[14px] text-fg">Specs</h1>
         <SegmentedControl<View>
           label="Weergave"
           size="sm"
           value={view}
           options={[
-            { value: 'active', label: 'Actief' },
-            { value: 'all', label: 'Alles' },
+            { value: 'mine', label: 'Voor jou' },
+            { value: 'open', label: 'Open' },
           ]}
           onValueChange={setView}
         />
         <div className="flex-1" />
+        <div className="hidden w-52 @3xl:block">
+          <Input label="Zoek specs" placeholder="Zoek…" icon="search" size="sm" />
+        </div>
         <Button variant="primary" size="sm">
-          Nieuwe taak
+          Nieuwe spec
         </Button>
       </div>
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1">
           <ScrollArea>
-            <div className="px-3 py-2">
-              <List label="Taken">
-                {groups.map((state) => {
-                  const rows = tasks.filter((entry) => entry.state === state.id)
+            <div className="mx-auto max-w-5xl px-3 py-3 @3xl:px-5">
+              <List label="Specs">
+                {GROUPS.map((group) => {
+                  const rows = shown.filter((entry) => group.states.includes(entry.state))
+                  if (rows.length === 0) return null
                   return (
                     <ListGroup
-                      key={state.id}
-                      heading={state.label}
+                      key={group.heading}
+                      heading={group.heading}
                       count={rows.length}
-                      label={`${state.label}, ${rows.length} taken`}
-                      open={open[state.id]}
-                      onOpenChange={(next) => setOpen((now) => ({ ...now, [state.id]: next }))}
+                      label={`${group.heading}, ${rows.length} specs`}
+                      open={open[group.heading] ?? true}
+                      onOpenChange={(next) => setOpen((now) => ({ ...now, [group.heading]: next }))}
                     >
                       {rows.map((entry) => (
                         <ListRow
                           key={entry.id}
                           title={entry.title}
-                          kind={state.kind}
-                          status={state.label}
+                          {...rowStatus(entry)}
                           current={entry.id === chosen}
                           emphasis="strong"
                           onClick={() => setChosen(entry.id)}
                           meta={
                             <span className="flex items-center gap-3">
-                              <Tag>{entry.label}</Tag>
-                              <LevelBars level={entry.priority} of={3} />
-                              <span className="w-16 font-mono text-[11px] text-muted">
+                              {entry.criteria[1] > 0 ? (
+                                <span className="hidden @2xl:inline-flex">
+                                  <ProgressMeter
+                                    value={entry.criteria[0]}
+                                    max={entry.criteria[1]}
+                                    label={`Criteria van ${entry.id}`}
+                                    valueText={galleryLabels.progress}
+                                  />
+                                </span>
+                              ) : null}
+                              <span className="hidden w-16 font-mono text-[11px] text-muted @xl:inline">
                                 {entry.id}
                               </span>
                               <Avatar name={entry.owner} size="sm" />
@@ -343,19 +416,17 @@ function Tasks(): ReactNode {
             </div>
           </ScrollArea>
         </div>
-        {task ? (
-          <Detail
-            key={task.id}
-            task={task}
-            onClose={() => setChosen(null)}
-            onChange={(next) =>
-              setTasks((now) => now.map((entry) => (entry.id === next.id ? next : entry)))
-            }
-          />
-        ) : null}
+        {spec ? <Detail key={spec.id} spec={spec} onClose={() => setChosen(null)} /> : null}
       </div>
     </AppFrame>
   )
 }
 
-export default { title: 'Taken', icon: 'list-checks', Screen: Tasks } satisfies DemoModule
+export default {
+  title: 'Specs',
+  description:
+    'De specs van Orbit: bovenaan wat op jouw review wacht, dan wat een agent nu bouwt en wat gepland is. Naast de lijst de gekozen spec met zijn akkoord, criteria en activiteit.',
+  icon: 'clipboard-list',
+  product: 'orbit',
+  Screen: Specs,
+} satisfies DemoModule

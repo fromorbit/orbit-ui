@@ -75,4 +75,14 @@ describe('the docs page', () => {
     await userEvent.click(screen.getByRole('radio', { name: 'Halo' }))
     expect(document.documentElement.dataset.product).toBe('halo')
   })
+
+  test('folds the list behind a button of the header for a narrow screen', async () => {
+    render(<DocsPage stories={stories} />)
+    const button = screen.getByRole('button', { name: 'Componenten' })
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(button)
+    expect(button).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(screen.getByRole('option', { name: 'Switch' }))
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+  })
 })

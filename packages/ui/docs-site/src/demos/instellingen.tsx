@@ -1,30 +1,65 @@
 import { type ReactNode, useState } from 'react'
 import {
   Avatar,
+  Banner,
   Button,
   ConfirmDialog,
   Input,
   List,
   ListRow,
   PageHeader,
-  ProgressMeter,
   RadioGroup,
   ScrollArea,
+  SearchList,
+  type SearchListItem,
+  type SearchListLabels,
   SecretField,
   Select,
   SettingFoldRow,
   SettingRow,
   SettingsGroup,
   Switch,
-  Tabs,
   Tag,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
-import type { DemoModule } from '../demo-kit/types'
-import { AppFrame, ME } from './parts/AppFrame'
+import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
+import { AppFrame, ME, REPO } from './parts/AppFrame'
+import { UsagePlanCard } from './parts/UsagePlanCard'
 
 const labels = galleryLabels.settingRow
+
+const LIST_LABELS: SearchListLabels = {
+  empty: 'Niets',
+  noResults: (query) => `Geen treffers voor ‘${query}’`,
+  loading: 'Laden…',
+  error: 'Kon de lijst niet laden',
+}
+
+type Section = 'repository' | 'account' | 'meldingen' | 'abonnement'
+
+/** The sections of the page, as the list at the side and the select on a narrow frame name them. */
+const SECTIONS: readonly (SearchListItem & { id: Section })[] = [
+  { id: 'repository', label: 'Repository', icon: 'folder-git-2' },
+  { id: 'account', label: 'Account', icon: 'user' },
+  { id: 'meldingen', label: 'Meldingen', icon: 'bell' },
+  { id: 'abonnement', label: 'Abonnement', icon: 'sliders-horizontal' },
+]
+
+/** The intro under the title of every section. */
+const INTRO: Record<Section, string> = {
+  repository: `Hoe Orbit Review ${REPO} installeert, start en beoordeelt.`,
+  account: 'Je profiel, je taal en hoe je inlogt.',
+  meldingen: 'Wat je hoort, en wanneer niet.',
+  abonnement: 'Het plan van Zilverberg en wie het betaalt.',
+}
+
+/**
+ * A control at the one width every field of the page shares, so the column lines up: the widest a
+ * `Select` grows (`max-w-56`).
+ */
+function Wide({ children }: { children: ReactNode }): ReactNode {
+  return <div className="w-56 max-w-full *:w-full *:*:w-full *:text-left">{children}</div>
+}
 
 /** A setting row around a switch that really switches. */
 function SwitchSetting({
@@ -35,7 +70,7 @@ function SwitchSetting({
   label: string
   description?: string
   initial: boolean
-}) {
+}): ReactNode {
   const [on, setOn] = useState(initial)
   return (
     <SettingRow labels={labels} label={label} {...(description ? { description } : {})}>
@@ -52,83 +87,192 @@ function SwitchSetting({
   )
 }
 
+/** A setting row around a text field of the shared width. */
+function TextSetting({
+  label,
+  description,
+  initial,
+  mono = false,
+}: {
+  label: string
+  description?: string
+  initial: string
+  mono?: boolean
+}): ReactNode {
+  const [value, setValue] = useState(initial)
+  return (
+    <SettingRow labels={labels} label={label} {...(description ? { description } : {})}>
+      {({ labelId, describedById }) => (
+        <Wide>
+          <span className={mono ? 'font-mono *:w-full' : '*:w-full'}>
+            <Input
+              label={label}
+              aria-labelledby={labelId}
+              aria-describedby={describedById}
+              size="sm"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+            />
+          </span>
+        </Wide>
+      )}
+    </SettingRow>
+  )
+}
+
+/** What Orbit Review finds on this machine before it can start the app. */
+const TOOLS = [
+  { name: 'Bun 1.4.4', kind: 'done', status: 'Gevonden' },
+  { name: 'Node 24.11', kind: 'done', status: 'Gevonden' },
+  { name: 'Docker', kind: 'failed', status: 'Draait niet' },
+] as const
+
+/** Orbit Review's settings for one repository, with the check of the machine on top. */
+function Repository(): ReactNode {
+  const [verdict, setVerdict] = useState('changes')
+  return (
+    <>
+      <Banner
+        tone="danger"
+        action={
+          <Button variant="secondary" size="sm">
+            Opnieuw controleren
+          </Button>
+        }
+      >
+        Docker draait niet: start Docker Desktop, OrbStack of Colima.
+      </Banner>
+      <SettingsGroup title="Koppeling">
+        <SettingRow labels={labels} label="Repository" description="Gekoppeld via GitHub">
+          {() => (
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[12px] text-secondary">{REPO}</span>
+              <Tag tone="success">Gekoppeld</Tag>
+            </div>
+          )}
+        </SettingRow>
+        <SettingFoldRow
+          label="Omgeving"
+          description="Wat Review op deze machine nodig heeft"
+          status={{ tone: 'attention', label: 'Docker ontbreekt' }}
+        >
+          <List label="Omgeving">
+            {TOOLS.map((tool) => (
+              <ListRow key={tool.name} title={tool.name} kind={tool.kind} status={tool.status} />
+            ))}
+          </List>
+        </SettingFoldRow>
+      </SettingsGroup>
+      <SettingsGroup title="De app starten">
+        <TextSetting
+          label="Installatiecommando"
+          description="Eén keer per review, in een schone map"
+          initial="bun install"
+          mono
+        />
+        <TextSetting label="Startcommando" initial="bun run dev" mono />
+        <TextSetting
+          label="URL"
+          description="Waar de app opent zodra hij draait"
+          initial="http://localhost:5173"
+          mono
+        />
+        <SwitchSetting
+          label="Vertrouwd"
+          description="Start zonder te vragen; alleen voor repositories van je eigen team"
+          initial
+        />
+      </SettingsGroup>
+      <SettingsGroup title="Verslag">
+        <SwitchSetting
+          label="Verslag automatisch op GitHub plaatsen"
+          description="Met de schermafbeeldingen van de bevindingen"
+          initial={false}
+        />
+        <SettingRow
+          labels={labels}
+          label="Bij een blokkerende bevinding"
+          description="Een goedkeuring plaatst Review nooit"
+        >
+          {({ labelId }) => (
+            <Wide>
+              <Select
+                label="Bij een blokkerende bevinding"
+                aria-labelledby={labelId}
+                size="sm"
+                value={verdict}
+                options={[
+                  { value: 'changes', label: 'Vraag om wijzigingen' },
+                  { value: 'comment', label: 'Alleen een comment' },
+                ]}
+                onValueChange={setVerdict}
+              />
+            </Wide>
+          )}
+        </SettingRow>
+      </SettingsGroup>
+    </>
+  )
+}
+
 /** Name, address, language and the security of the account. */
-function Account() {
-  const [name, setName] = useState(ME)
+function Account(): ReactNode {
   const [language, setLanguage] = useState('nl')
   const [zone, setZone] = useState('ams')
   const [keySet, setKeySet] = useState(true)
   const [remove, setRemove] = useState(false)
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <SettingsGroup title="Profiel">
         <SettingRow labels={labels} label="Foto" description="Zichtbaar voor je team">
           {() => (
             <div className="flex items-center gap-3">
-              <Avatar name={name} size="lg" />
+              <Avatar name={ME} size="md" />
               <Button variant="secondary" size="sm">
                 Wijzigen
               </Button>
             </div>
           )}
         </SettingRow>
-        <SettingRow labels={labels} label="Naam">
-          {({ labelId }) => (
-            <div className="w-64">
-              <Input
-                label="Naam"
-                aria-labelledby={labelId}
-                size="sm"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </div>
-          )}
-        </SettingRow>
-        <SettingRow labels={labels} label="E-mailadres" description="Voor inloggen en facturen">
-          {({ labelId, describedById }) => (
-            <div className="w-64">
-              <Input
-                label="E-mailadres"
-                aria-labelledby={labelId}
-                aria-describedby={describedById}
-                size="sm"
-                type="email"
-                defaultValue="iris@zilverberg.example"
-              />
-            </div>
-          )}
-        </SettingRow>
+        <TextSetting label="Naam" initial={ME} />
+        <TextSetting
+          label="E-mailadres"
+          description="Voor inloggen en facturen"
+          initial="iris@zilverberg.example"
+        />
         <SettingRow labels={labels} label="Taal">
           {({ labelId }) => (
-            <Select
-              label="Taal"
-              aria-labelledby={labelId}
-              size="sm"
-              value={language}
-              options={[
-                { value: 'nl', label: 'Nederlands' },
-                { value: 'en', label: 'English' },
-                { value: 'de', label: 'Deutsch' },
-              ]}
-              onValueChange={setLanguage}
-            />
+            <Wide>
+              <Select
+                label="Taal"
+                aria-labelledby={labelId}
+                size="sm"
+                value={language}
+                options={[
+                  { value: 'nl', label: 'Nederlands' },
+                  { value: 'en', label: 'English' },
+                ]}
+                onValueChange={setLanguage}
+              />
+            </Wide>
           )}
         </SettingRow>
         <SettingRow labels={labels} label="Tijdzone">
           {({ labelId }) => (
-            <Select
-              label="Tijdzone"
-              aria-labelledby={labelId}
-              size="sm"
-              value={zone}
-              options={[
-                { value: 'ams', label: 'Amsterdam (CEST)' },
-                { value: 'lon', label: 'Londen (BST)' },
-                { value: 'utc', label: 'UTC' },
-              ]}
-              onValueChange={setZone}
-            />
+            <Wide>
+              <Select
+                label="Tijdzone"
+                aria-labelledby={labelId}
+                size="sm"
+                value={zone}
+                options={[
+                  { value: 'ams', label: 'Amsterdam (CET)' },
+                  { value: 'lon', label: 'Londen (GMT)' },
+                  { value: 'utc', label: 'UTC' },
+                ]}
+                onValueChange={setZone}
+              />
+            </Wide>
           )}
         </SettingRow>
       </SettingsGroup>
@@ -138,22 +282,20 @@ function Account() {
           description="Een code uit je app bij elke nieuwe inlog"
           initial
         />
-        <SettingRow
-          labels={labels}
-          label="API-sleutel"
-          description="Voor koppelingen met je webwinkel"
-        >
+        <SettingRow labels={labels} label="API-sleutel" description="Voor de Orbit-CLI en je CI">
           {({ labelId, describedById }) => (
-            <SecretField
-              label="API-sleutel"
-              aria-labelledby={labelId}
-              {...(describedById ? { 'aria-describedby': describedById } : {})}
-              labels={galleryLabels.secret}
-              isSet={keySet}
-              size="sm"
-              onSave={() => setKeySet(true)}
-              onClear={() => setKeySet(false)}
-            />
+            <Wide>
+              <SecretField
+                label="API-sleutel"
+                aria-labelledby={labelId}
+                {...(describedById ? { 'aria-describedby': describedById } : {})}
+                labels={galleryLabels.secret}
+                isSet={keySet}
+                size="sm"
+                onSave={() => setKeySet(true)}
+                onClear={() => setKeySet(false)}
+              />
+            </Wide>
           )}
         </SettingRow>
         <SettingFoldRow
@@ -162,8 +304,8 @@ function Account() {
           status={{ tone: 'success', label: '2 apparaten' }}
         >
           <List label="Sessies">
-            <ListRow title="Laptop · Firefox · Utrecht" meta="Nu" />
-            <ListRow title="Telefoon · App · Utrecht" meta="2 u" />
+            <ListRow title="MacBook · Orbit 0.9 · Utrecht" meta="Nu" />
+            <ListRow title="Telefoon · Safari · Utrecht" meta="2 u" />
           </List>
         </SettingFoldRow>
       </SettingsGroup>
@@ -171,7 +313,7 @@ function Account() {
         <SettingRow
           labels={labels}
           label="Account verwijderen"
-          description="Verwijdert je profiel; de werkruimte blijft bestaan"
+          description="Je profiel verdwijnt; de werkruimte blijft bestaan"
         >
           {() => (
             <Button variant="secondary" size="sm" onClick={() => setRemove(true)}>
@@ -190,23 +332,27 @@ function Account() {
         tone="danger"
         onConfirm={() => setRemove(false)}
       />
-    </div>
+    </>
   )
 }
 
 /** Which messages arrive, and how often. */
-function Notifications() {
+function Notifications(): ReactNode {
   const [rhythm, setRhythm] = useState('daily')
   return (
-    <div className="flex flex-col gap-8">
-      <SettingsGroup title="E-mail">
-        <SwitchSetting label="Nieuwe bestelling" initial />
+    <>
+      <SettingsGroup title="Direct">
         <SwitchSetting
-          label="Mislukte betaling"
-          description="Altijd direct, ook in stille uren"
+          label="Een agent wacht op jou"
+          description="Een vraag, een keuze of een goedkeuring"
           initial
         />
-        <SwitchSetting label="Reacties op je taken" initial={false} />
+        <SwitchSetting label="Review klaar" initial />
+        <SwitchSetting
+          label="Opname met een fout"
+          description="Uit Halo, als een pagina van een space faalt"
+          initial
+        />
         <SwitchSetting label="Productnieuws" initial={false} />
       </SettingsGroup>
       <SettingsGroup title="Samenvatting">
@@ -216,7 +362,7 @@ function Notifications() {
             value={rhythm}
             onValueChange={setRhythm}
             options={[
-              { id: 'direct', label: 'Direct', description: 'Een melding per gebeurtenis' },
+              { id: 'never', label: 'Nooit', description: 'Alleen de directe meldingen' },
               { id: 'daily', label: 'Dagelijks', description: 'Elke ochtend om 8:00' },
               { id: 'weekly', label: 'Wekelijks', description: 'Op maandagochtend' },
             ]}
@@ -224,134 +370,124 @@ function Notifications() {
         </div>
       </SettingsGroup>
       <SettingsGroup title="Stille uren">
-        <SwitchSetting label="Niet storen tussen 22:00 en 7:00" initial />
+        <SwitchSetting
+          label="Niet storen tussen 22:00 en 7:00"
+          description="Een agent die wacht, wacht tot de ochtend"
+          initial
+        />
       </SettingsGroup>
-    </div>
+    </>
   )
 }
 
-const PLANS = [
-  {
-    id: 'start',
-    name: 'Start',
-    price: '€ 0',
-    lines: ['1 webwinkel', '2 teamleden', '1 GB opslag'],
-  },
-  {
-    id: 'groei',
-    name: 'Groei',
-    price: '€ 29',
-    lines: ['3 webwinkels', '10 teamleden', '10 GB opslag'],
-  },
-  {
-    id: 'zakelijk',
-    name: 'Zakelijk',
-    price: '€ 79',
-    lines: ['Onbeperkt winkels', '50 teamleden', '100 GB opslag'],
-  },
-]
-
-/** The plan, what of it is used, and the invoices. */
-function Subscription() {
-  const [plan, setPlan] = useState('groei')
+/** The plan in short; the whole of it lives on the page of usage and invoices. */
+function Subscription(): ReactNode {
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-2">
-        <div className="grid grid-cols-3 gap-3">
-          {PLANS.map((entry) => (
-            <Missing key={entry.id} name="PlanCard">
-              <div className="flex items-center gap-2">
-                <span className="text-[14px] font-medium text-fg">{entry.name}</span>
-                {entry.id === plan ? <Tag tone="success">Huidig</Tag> : null}
-              </div>
-              <p className="m-0 text-[20px] font-medium text-fg tabular-nums">
-                {entry.price}
-                <span className="text-[12px] font-normal text-muted"> per maand</span>
-              </p>
-              <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[12px] text-secondary">
-                {entry.lines.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-              <Button
-                variant={entry.id === plan ? 'secondary' : 'primary'}
-                size="sm"
-                disabled={entry.id === plan}
-                onClick={() => setPlan(entry.id)}
-              >
-                {entry.id === plan ? 'Je huidige plan' : `Kies ${entry.name}`}
-              </Button>
-            </Missing>
-          ))}
-        </div>
-      </section>
-      <SettingsGroup title="Gebruik deze maand">
-        {[
-          { label: 'Opslag', value: 6.2, max: 10, text: '6,2 van 10 GB' },
-          { label: 'Teamleden', value: 8, max: 10, text: '8 van 10' },
-          { label: 'AI-tegoed', value: 7400, max: 10000, text: '7.400 van 10.000' },
-        ].map((use) => (
-          <SettingRow key={use.label} labels={labels} label={use.label}>
-            {() => (
-              <div className="flex w-64 items-center gap-3">
-                <ProgressMeter
-                  value={use.value}
-                  max={use.max}
-                  label={use.label}
-                  valueText={() => use.text}
-                  width="fill"
-                  count={false}
-                />
-                <span className="w-32 shrink-0 whitespace-nowrap text-right text-[12px] text-muted tabular-nums">
-                  {use.text}
-                </span>
-              </div>
-            )}
-          </SettingRow>
-        ))}
+    <>
+      <div className="max-w-sm">
+        <UsagePlanCard />
+      </div>
+      <SettingsGroup title="Plan">
+        <SettingRow labels={labels} label="Team" description="€ 24 per lid per maand, excl. btw">
+          {() => <Tag tone="success">6 leden</Tag>}
+        </SettingRow>
+        <SettingRow labels={labels} label="Betaalwijze" description="SEPA-incasso, NL·· ···· 4021">
+          {() => (
+            <Button variant="secondary" size="sm">
+              Wijzigen
+            </Button>
+          )}
+        </SettingRow>
+        <SettingRow labels={labels} label="Gebruik en facturen">
+          {() => (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                location.hash = '#/demo/gebruik'
+              }}
+            >
+              Bekijken
+            </Button>
+          )}
+        </SettingRow>
       </SettingsGroup>
-      <SettingsGroup title="Facturen">
-        <div className="p-2">
-          <List label="Facturen">
-            {['oktober', 'september', 'augustus', 'juli'].map((month) => (
-              <ListRow
-                key={month}
-                title={`Factuur ${month} 2026`}
-                kind="done"
-                status="Betaald"
-                meta="€ 29,00"
-              />
-            ))}
-          </List>
-        </div>
-      </SettingsGroup>
-    </div>
+    </>
   )
 }
 
-/** Settings: account, notifications and subscription, as tabs down the side. */
-function Settings(): ReactNode {
-  const page = (content: ReactNode) => <div className="max-w-2xl px-8 pb-8">{content}</div>
+const CONTENT: Record<Section, () => ReactNode> = {
+  repository: Repository,
+  account: Account,
+  meldingen: Notifications,
+  abonnement: Subscription,
+}
+
+/** The page with a section open; the block's variant picks the first one. */
+function SettingsPage({ initial }: { initial: Section }): ReactNode {
+  const [section, setSection] = useState<Section>(initial)
+  const Content = CONTENT[section]
+  const current = SECTIONS.find((entry) => entry.id === section)
   return (
-    <AppFrame current="instellingen">
-      <ScrollArea>
-        <div className="px-8 pt-6 pb-4">
-          <PageHeader title="Instellingen" />
-        </div>
-        <div className="px-6">
-          <Tabs
-            label="Instellingen"
-            orientation="vertical"
-            tabs={[
-              { id: 'account', label: 'Account', content: page(<Account />) },
-              { id: 'notifications', label: 'Meldingen', content: page(<Notifications />) },
-              { id: 'subscription', label: 'Abonnement', content: page(<Subscription />) },
-            ]}
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5 text-[13px] @3xl:px-8 @3xl:py-7">
+      <PageHeader title="Instellingen" meta={`Zilverberg · ${REPO}`} />
+      <div className="@4xl:hidden">
+        <Wide>
+          <Select<Section>
+            label="Onderdeel"
+            size="sm"
+            value={section}
+            options={SECTIONS.map(({ id, label }) => ({ value: id, label }))}
+            onValueChange={setSection}
           />
+        </Wide>
+      </div>
+      <div className="flex gap-8">
+        <div className="hidden w-48 shrink-0 @4xl:block">
+          <div className="sticky top-0">
+            <SearchList
+              items={SECTIONS}
+              selectedId={section}
+              onSelect={(id) => setSection(id as Section)}
+              label="Onderdelen"
+              labels={LIST_LABELS}
+              searchable={false}
+            />
+          </div>
         </div>
+        <div className="flex min-w-0 max-w-3xl flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="m-0 font-heading text-[16px] text-fg">{current?.label}</h2>
+            <p className="m-0 text-[12.5px] text-muted">{INTRO[section]}</p>
+          </div>
+          <Content />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Settings of Orbit: the repository Review works on, the account, messages and the plan. */
+function Settings({ variant }: DemoScreenProps): ReactNode {
+  const initial = (SECTIONS.find((entry) => entry.id === variant)?.id ?? 'repository') as Section
+  return (
+    <AppFrame product="orbit" current="instellingen">
+      <ScrollArea>
+        <SettingsPage key={initial} initial={initial} />
       </ScrollArea>
     </AppFrame>
   )
 }
 
-export default { title: 'Instellingen', icon: 'settings', Screen: Settings } satisfies DemoModule
+export default {
+  title: 'Instellingen',
+  description:
+    'De instellingen van Orbit, met die van Orbit Review voor één repository: hoe de app installeert en start, wat er met het verslag gebeurt, en wat er op deze machine ontbreekt.',
+  icon: 'settings',
+  product: 'orbit',
+  variants: [
+    { value: 'repository', label: 'Repository' },
+    { value: 'account', label: 'Account' },
+  ],
+  Screen: Settings,
+} satisfies DemoModule

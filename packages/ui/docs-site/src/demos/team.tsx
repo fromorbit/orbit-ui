@@ -1,73 +1,130 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
   Avatar,
   Button,
   Checkbox,
-  ChipListField,
+  Chip,
   Dialog,
   DropdownMenu,
   IconButton,
   Input,
   PageHeader,
+  RelativeTime,
   ScrollArea,
   Select,
-  SettingsGroup,
   Tag,
   Textarea,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import { Missing } from '../demo-kit/Missing'
-import type { DemoModule } from '../demo-kit/types'
-import { AppFrame } from './parts/AppFrame'
+import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
+import { AppFrame, DAY, HOUR, NOW } from './parts/AppFrame'
 import { FormFieldSketch } from './parts/FormFieldSketch'
+import { Panel } from './parts/Panel'
 
-type Role = 'owner' | 'admin' | 'editor' | 'viewer'
+type Role = 'owner' | 'admin' | 'member' | 'guest'
+type Assignable = Exclude<Role, 'owner'>
 
 const ROLES = [
   { value: 'admin', label: 'Beheerder' },
-  { value: 'editor', label: 'Bewerker' },
-  { value: 'viewer', label: 'Lezer' },
+  { value: 'member', label: 'Lid' },
+  { value: 'guest', label: 'Gast' },
 ] as const
 
 const ROLE_LABEL: Record<Role, string> = {
   owner: 'Eigenaar',
   admin: 'Beheerder',
-  editor: 'Bewerker',
-  viewer: 'Lezer',
+  member: 'Lid',
+  guest: 'Gast',
 }
 
 interface Member {
   name: string
   email: string
   role: Role
+  /** When the member was last active, before {@link NOW}. */
+  seen: number
 }
 
 const MEMBERS: Member[] = [
-  { name: 'Iris Kamphorst', email: 'iris@zilverberg.example', role: 'owner' },
-  { name: 'Daan Velthuis', email: 'daan@zilverberg.example', role: 'admin' },
-  { name: 'Mila Terhorst', email: 'mila@zilverberg.example', role: 'editor' },
-  { name: 'Sem Oudeweg', email: 'sem@zilverberg.example', role: 'editor' },
-  { name: 'Fenna Brouwsma', email: 'fenna@zilverberg.example', role: 'editor' },
-  { name: 'Joris Lindeboom', email: 'joris@zilverberg.example', role: 'viewer' },
+  { name: 'Iris Kamphorst', email: 'iris@zilverberg.example', role: 'owner', seen: 0 },
+  { name: 'Daan Velthuis', email: 'daan@zilverberg.example', role: 'admin', seen: 20 * 60_000 },
+  { name: 'Mila Terhorst', email: 'mila@zilverberg.example', role: 'member', seen: 2 * HOUR },
+  { name: 'Sem Oudeweg', email: 'sem@zilverberg.example', role: 'member', seen: 5 * HOUR },
+  { name: 'Fenna Brouwsma', email: 'fenna@zilverberg.example', role: 'member', seen: DAY },
+  { name: 'Joris Lindeboom', email: 'joris@zilverberg.example', role: 'guest', seen: 4 * DAY },
 ]
 
+/** What a role may do in the workspace; the owner may do everything. */
 const RIGHTS = [
-  'Bestellingen bekijken',
-  'Inhoud bewerken',
-  'Inhoud publiceren',
-  'Betalingen terugboeken',
-  'Teamleden beheren',
+  'Agents laten werken',
+  'Specs goedkeuren',
+  'Overnemen in main',
+  'Reviews plaatsen',
+  'Leden uitnodigen',
   'Abonnement wijzigen',
-]
+] as const
 
-/** Who may do what by default: a made-up matrix, rows are rights, columns roles. */
-const MATRIX: Record<Exclude<Role, 'owner'>, boolean[]> = {
+/** Who may do what by default: rows are rights, columns roles. */
+const MATRIX: Record<Assignable, boolean[]> = {
   admin: [true, true, true, true, true, false],
-  editor: [true, true, true, false, false, false],
-  viewer: [true, false, false, false, false, false],
+  member: [true, true, true, false, false, false],
+  guest: [true, false, false, false, false, false],
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/**
+ * The addresses to invite as chips in one field, left to right as a form reads; `ChipListField`
+ * is laid out for the right edge of a settings row.
+ */
+function AddressField({
+  labelId,
+  emails,
+  onChange,
+}: {
+  labelId: string
+  emails: readonly string[]
+  onChange(next: readonly string[]): void
+}): ReactNode {
+  const [draft, setDraft] = useState('')
+  const wrong = draft.trim() !== '' && !EMAIL.test(draft.trim())
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex min-h-9 flex-wrap items-center gap-1 rounded-md border border-border bg-surface p-1 focus-within:border-accent-border">
+        {emails.map((email) => (
+          <Chip
+            key={email}
+            size="sm"
+            label={email}
+            remove={{
+              label: `${email} weghalen`,
+              onRemove: () => onChange(emails.filter((entry) => entry !== email)),
+            }}
+          />
+        ))}
+        <div className="min-w-40 flex-1 *:w-full">
+          <Input
+            label="E-mailadres toevoegen"
+            aria-labelledby={labelId}
+            variant="bare"
+            size="sm"
+            placeholder="naam@zilverberg.example"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter' || wrong || draft.trim() === '') return
+              event.preventDefault()
+              onChange([...emails, draft.trim()])
+              setDraft('')
+            }}
+          />
+        </div>
+      </div>
+      {wrong ? <span className="text-[12px] text-danger">Geen geldig e-mailadres</span> : null}
+    </div>
+  )
+}
 
 /** The dialog to invite people: addresses, a role and a note. */
 function InviteDialog({
@@ -77,17 +134,21 @@ function InviteDialog({
 }: {
   open: boolean
   onOpenChange(open: boolean): void
-  onInvite(emails: readonly string[], role: Role): void
-}) {
-  const [emails, setEmails] = useState<readonly string[]>(['noa@zilverberg.example'])
-  const [role, setRole] = useState<Exclude<Role, 'owner'>>('editor')
+  onInvite(emails: readonly string[], role: Assignable): void
+}): ReactNode {
+  const [emails, setEmails] = useState<readonly string[]>([
+    'noa@zilverberg.example',
+    'ruben@zilverberg.example',
+  ])
+  const [role, setRole] = useState<Assignable>('member')
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
       title="Mensen uitnodigen"
       description="Ze krijgen een e-mail met een link die zeven dagen geldig is."
-      closeLabel="Annuleren"
+      closeLabel="Sluiten"
+      initialFocus="panel"
       footer={
         <>
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
@@ -102,35 +163,26 @@ function InviteDialog({
               onOpenChange(false)
             }}
           >
-            Uitnodigen
+            {emails.length > 1 ? `${emails.length} mensen uitnodigen` : 'Uitnodigen'}
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-4">
         <FormFieldSketch label="E-mailadressen" hint="Enter na elk adres">
-          {(labelId) => (
-            <ChipListField
-              label="E-mailadressen"
-              aria-labelledby={labelId}
-              labels={galleryLabels.chipList}
-              value={emails}
-              onChange={setEmails}
-              maxItems={20}
-              maxLength={80}
-              check={(item) => (EMAIL.test(item) ? undefined : 'Geen geldig e-mailadres')}
-            />
-          )}
+          {(labelId) => <AddressField labelId={labelId} emails={emails} onChange={setEmails} />}
         </FormFieldSketch>
-        <FormFieldSketch label="Rol">
+        <FormFieldSketch label="Rol" hint="Een lid mag agents laten werken, maar niet uitnodigen">
           {(labelId) => (
-            <Select<Exclude<Role, 'owner'>>
-              label="Rol"
-              aria-labelledby={labelId}
-              value={role}
-              options={ROLES}
-              onValueChange={setRole}
-            />
+            <div className="*:w-full">
+              <Select<Assignable>
+                label="Rol"
+                aria-labelledby={labelId}
+                value={role}
+                options={ROLES}
+                onValueChange={setRole}
+              />
+            </div>
           )}
         </FormFieldSketch>
         <FormFieldSketch label="Persoonlijk bericht">
@@ -138,7 +190,7 @@ function InviteDialog({
             <Textarea
               label="Persoonlijk bericht"
               aria-labelledby={labelId}
-              placeholder="Optioneel"
+              defaultValue="Welkom! We werken in Orbit aan de nieuwe kassa van de webwinkel."
               minRows={2}
             />
           )}
@@ -148,178 +200,284 @@ function InviteDialog({
   )
 }
 
+/** The faces of the team, overlapping, drawn as the missing `AvatarGroup`. */
+function AvatarGroupSketch({ members }: { members: readonly Member[] }): ReactNode {
+  const shown = members.slice(0, 4)
+  return (
+    <Missing name="AvatarGroup" inline>
+      <span
+        role="img"
+        aria-label={`${members.length} leden`}
+        className="flex items-center pr-1 *:-ml-2 *:rounded-full *:ring-2 *:ring-canvas *:first:ml-0"
+      >
+        {shown.map((member) => (
+          <Avatar key={member.email} name={member.name} size="md" />
+        ))}
+        <span className="flex size-7 items-center justify-center bg-mark font-medium text-[11px] text-secondary tabular-nums">
+          {`+${members.length - shown.length}`}
+        </span>
+      </span>
+    </Missing>
+  )
+}
+
+/** Roles against rights in a grid, drawn as the missing `PermissionMatrix`. */
+function PermissionMatrixSketch({
+  matrix,
+  onChange,
+}: {
+  matrix: Record<Assignable, boolean[]>
+  onChange(role: Assignable, index: number, on: boolean): void
+}): ReactNode {
+  const roles: Role[] = ['owner', 'admin', 'member', 'guest']
+  return (
+    <Missing name="PermissionMatrix" note="Rechten tegen rollen; de eigenaar mag alles">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[24rem] border-collapse text-[13px]">
+          <thead>
+            <tr className="border-border border-b text-[12px] text-muted">
+              <th className="py-2.5 pr-3 pl-4 text-left font-normal">Recht</th>
+              {roles.map((role) => (
+                <th key={role} className="w-[4.5rem] px-1 py-2.5 text-center font-normal">
+                  {ROLE_LABEL[role]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {RIGHTS.map((right, index) => (
+              <tr key={right} className="border-border border-b last:border-b-0">
+                <td className="whitespace-nowrap py-2.5 pr-3 pl-4 text-secondary">{right}</td>
+                {roles.map((role) => (
+                  <td key={role} className="px-1 py-2.5">
+                    <span className="flex justify-center">
+                      <Checkbox
+                        label={`${ROLE_LABEL[role]}: ${right}`}
+                        checked={role === 'owner' ? true : (matrix[role][index] ?? false)}
+                        disabled={role === 'owner'}
+                        onCheckedChange={(on) => {
+                          if (role !== 'owner') onChange(role, index, on)
+                        }}
+                      />
+                    </span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Missing>
+  )
+}
+
+/** One member: face, name and address, when last seen, the role and a menu. */
+function MemberRow({
+  member,
+  onRole,
+}: {
+  member: Member
+  onRole(role: Assignable): void
+}): ReactNode {
+  return (
+    <li className="flex items-center gap-3 border-border border-t px-4 py-2.5 first:border-t-0">
+      <Avatar name={member.name} size="md" />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-[13px] text-fg">{member.name}</span>
+        <span className="truncate text-[12px] text-muted">{member.email}</span>
+      </div>
+      <span className="hidden w-24 shrink-0 text-[12px] text-muted @2xl:block">
+        {member.seen === 0 ? (
+          'Nu actief'
+        ) : (
+          <RelativeTime labels={galleryLabels.time} at={NOW - member.seen} now={NOW} />
+        )}
+      </span>
+      <div className="flex shrink-0 justify-end @2xl:w-28">
+        {member.role === 'owner' ? (
+          <Tag>Eigenaar</Tag>
+        ) : (
+          <Select<Assignable>
+            label={`Rol van ${member.name}`}
+            size="sm"
+            value={member.role}
+            options={ROLES}
+            onValueChange={onRole}
+          />
+        )}
+      </div>
+      <span className="hidden @lg:contents">
+        <DropdownMenu
+          trigger={
+            <IconButton icon="more-horizontal" size="sm" label={`Acties voor ${member.name}`} />
+          }
+          label={`Acties voor ${member.name}`}
+          align="end"
+          items={[
+            { id: 'profile', label: 'Profiel bekijken', icon: 'user' },
+            { id: 'mail', label: 'E-mail sturen', icon: 'at-sign' },
+            {
+              id: 'remove',
+              label: 'Uit het team halen',
+              icon: 'trash-2',
+              tone: 'danger',
+              separated: true,
+              disabled: member.role === 'owner',
+            },
+          ]}
+        />
+      </span>
+    </li>
+  )
+}
+
 /** Team and rights: the members with their role, open invitations, and what each role may do. */
-function Team(): ReactNode {
+function Team({ variant }: DemoScreenProps): ReactNode {
   const [members, setMembers] = useState(MEMBERS)
-  const [invited, setInvited] = useState<{ email: string; role: Role }[]>([
-    { email: 'lotte@zilverberg.example', role: 'viewer' },
+  const [invited, setInvited] = useState<{ email: string; role: Assignable; sent: number }[]>([
+    { email: 'lotte@zilverberg.example', role: 'guest', sent: 2 * DAY },
   ])
-  const [inviting, setInviting] = useState(false)
+  const [inviting, setInviting] = useState(variant === 'uitnodigen')
+  // The block's switch opens and closes the dialog, as a click on "Uitnodigen" would.
+  useEffect(() => setInviting(variant === 'uitnodigen'), [variant])
   const [query, setQuery] = useState('')
   const [matrix, setMatrix] = useState(MATRIX)
   const shown = members.filter((member) =>
     `${member.name} ${member.email}`.toLowerCase().includes(query.trim().toLowerCase()),
   )
-  const setRole = (email: string, role: Role) =>
+  const setRole = (email: string, role: Assignable) =>
     setMembers((now) =>
       now.map((member) => (member.email === email ? { ...member, role } : member)),
     )
-
   return (
-    <AppFrame current="team">
+    <AppFrame product="orbit" current="team">
       <ScrollArea>
-        <div className="flex max-w-4xl flex-col gap-8 px-8 py-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <PageHeader
             title="Team"
-            meta={`${members.length} leden · ${invited.length} uitnodiging open`}
+            meta={`${members.length} leden · ${invited.length === 1 ? '1 uitnodiging' : `${invited.length} uitnodigingen`} open`}
             actions={
               <>
-                <Missing name="AvatarGroup" inline>
-                  <span className="flex items-center">
-                    {members.slice(0, 4).map((member) => (
-                      <Avatar key={member.email} name={member.name} size="sm" />
-                    ))}
-                    <span className="ps-1 text-[11px] text-muted">+{members.length - 4}</span>
-                  </span>
-                </Missing>
+                <span className="hidden @xl:inline-flex">
+                  <AvatarGroupSketch members={members} />
+                </span>
                 <Button variant="primary" size="sm" onClick={() => setInviting(true)}>
                   Uitnodigen
                 </Button>
               </>
             }
           />
-          <SettingsGroup
-            title="Leden"
-            action={
-              <div className="w-56">
-                <Input
-                  label="Zoek leden"
-                  placeholder="Zoek op naam of e-mail…"
-                  icon="search"
-                  size="sm"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  clearLabel="Wissen"
-                  onClear={() => setQuery('')}
-                />
-              </div>
-            }
-          >
-            {shown.map((member) => (
-              <div key={member.email} className="flex items-center gap-3 px-4 py-2.5">
-                <Avatar name={member.name} size="md" />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-[13px] text-fg">{member.name}</span>
-                  <span className="truncate text-[12px] text-muted">{member.email}</span>
-                </div>
-                {member.role === 'owner' ? (
-                  <Tag>Eigenaar</Tag>
-                ) : (
-                  <Select<Exclude<Role, 'owner'>>
-                    label={`Rol van ${member.name}`}
-                    size="sm"
-                    value={member.role}
-                    options={ROLES}
-                    onValueChange={(role) => setRole(member.email, role)}
-                  />
-                )}
-                <DropdownMenu
-                  trigger={
-                    <IconButton
-                      icon="more-horizontal"
+          <div className="grid grid-cols-1 items-start gap-5 @6xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+            <div className="flex min-w-0 flex-col gap-5">
+              <Panel
+                title="Leden"
+                meta={String(members.length)}
+                flush
+                actions={
+                  <div className="hidden w-56 *:w-full @xl:block">
+                    <Input
+                      label="Zoek een lid"
+                      icon="search"
                       size="sm"
-                      label={`Acties voor ${member.name}`}
+                      placeholder="Naam of e-mail…"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
                     />
+                  </div>
+                }
+              >
+                <ul className="m-0 list-none border-border border-t p-0">
+                  {shown.map((member) => (
+                    <MemberRow
+                      key={member.email}
+                      member={member}
+                      onRole={(role) => setRole(member.email, role)}
+                    />
+                  ))}
+                  {shown.length === 0 ? (
+                    <li className="px-4 py-6 text-center text-[13px] text-muted">
+                      {`Niemand gevonden voor ‘${query}’`}
+                    </li>
+                  ) : null}
+                </ul>
+              </Panel>
+              <Panel title="Openstaande uitnodigingen" meta={String(invited.length)} flush>
+                <ul className="m-0 list-none border-border border-t p-0">
+                  {invited.map((invite) => (
+                    <li
+                      key={invite.email}
+                      className="flex items-center gap-3 border-border border-t px-4 py-2.5 first:border-t-0"
+                    >
+                      <Avatar name={null} size="md" />
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-[13px] text-fg">{invite.email}</span>
+                        <span className="truncate text-[12px] text-muted">
+                          {`${ROLE_LABEL[invite.role]} · verstuurd `}
+                          <RelativeTime
+                            labels={galleryLabels.time}
+                            at={NOW - invite.sent}
+                            now={NOW}
+                          />
+                        </span>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        Opnieuw sturen
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setInvited((now) => now.filter((entry) => entry.email !== invite.email))
+                        }
+                      >
+                        Intrekken
+                      </Button>
+                    </li>
+                  ))}
+                  {invited.length === 0 ? (
+                    <li className="px-4 py-6 text-center text-[13px] text-muted">
+                      Geen uitnodigingen open
+                    </li>
+                  ) : null}
+                </ul>
+              </Panel>
+            </div>
+            <Panel title="Rechten per rol" meta="voor de hele werkruimte" flush>
+              <div className="border-border border-t">
+                <PermissionMatrixSketch
+                  matrix={matrix}
+                  onChange={(role, index, on) =>
+                    setMatrix((now) => ({
+                      ...now,
+                      [role]: now[role].map((value, at) => (at === index ? on : value)),
+                    }))
                   }
-                  label={`Acties voor ${member.name}`}
-                  align="end"
-                  items={[
-                    { id: 'mail', label: 'E-mail sturen', icon: 'message-square' },
-                    {
-                      id: 'remove',
-                      label: 'Uit team verwijderen',
-                      tone: 'danger',
-                      separated: true,
-                      disabled: member.role === 'owner',
-                      onSelect: () =>
-                        setMembers((now) => now.filter((other) => other.email !== member.email)),
-                    },
-                  ]}
                 />
               </div>
-            ))}
-          </SettingsGroup>
-          {invited.length > 0 ? (
-            <SettingsGroup title="Openstaande uitnodigingen">
-              {invited.map((invite) => (
-                <div key={invite.email} className="flex items-center gap-3 px-4 py-2.5">
-                  <Avatar name={null} size="md" />
-                  <span className="min-w-0 flex-1 truncate text-[13px] text-secondary">
-                    {invite.email}
-                  </span>
-                  <Tag tone="attention">{ROLE_LABEL[invite.role]}</Tag>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setInvited((now) => now.filter((other) => other !== invite))}
-                  >
-                    Intrekken
-                  </Button>
-                </div>
-              ))}
-            </SettingsGroup>
-          ) : null}
-          <section className="flex flex-col gap-2">
-            <PageHeader title="Rechten per rol" />
-            <Missing name="PermissionMatrix" note="Rechten tegen rollen; de eigenaar mag alles">
-              <div className="grid grid-cols-[minmax(0,1fr)_96px_96px_96px_96px] items-center gap-y-1 text-[12px]">
-                <span />
-                {(['owner', 'admin', 'editor', 'viewer'] as const).map((role) => (
-                  <span key={role} className="text-center text-muted">
-                    {ROLE_LABEL[role]}
-                  </span>
-                ))}
-                {RIGHTS.map((right, index) => (
-                  <div key={right} className="contents">
-                    <span className="py-1 text-secondary">{right}</span>
-                    <span className="flex justify-center">
-                      <Checkbox
-                        label={`${right}: Eigenaar`}
-                        checked
-                        disabled
-                        onCheckedChange={() => {}}
-                      />
-                    </span>
-                    {(['admin', 'editor', 'viewer'] as const).map((role) => (
-                      <span key={role} className="flex justify-center">
-                        <Checkbox
-                          label={`${right}: ${ROLE_LABEL[role]}`}
-                          checked={matrix[role][index] ?? false}
-                          onCheckedChange={(on) =>
-                            setMatrix((now) => ({
-                              ...now,
-                              [role]: now[role].map((value, at) => (at === index ? on : value)),
-                            }))
-                          }
-                        />
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </Missing>
-          </section>
+            </Panel>
+          </div>
         </div>
       </ScrollArea>
       <InviteDialog
         open={inviting}
         onOpenChange={setInviting}
         onInvite={(emails, role) =>
-          setInvited((now) => [...now, ...emails.map((email) => ({ email, role }))])
+          setInvited((now) => [...now, ...emails.map((email) => ({ email, role, sent: 0 }))])
         }
       />
     </AppFrame>
   )
 }
 
-export default { title: 'Team en rechten', icon: 'users', Screen: Team } satisfies DemoModule
+export default {
+  title: 'Team en rechten',
+  description:
+    'Wie er in de werkruimte zit, met welke rol, en wat elke rol mag. Uitnodigen gaat via een dialoog die binnen het venster blijft.',
+  icon: 'users',
+  product: 'orbit',
+  variants: [
+    { value: 'leden', label: 'Leden' },
+    { value: 'uitnodigen', label: 'Uitnodigen' },
+  ],
+  Screen: Team,
+} satisfies DemoModule
