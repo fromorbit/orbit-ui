@@ -60,3 +60,11 @@ export const WIDE_DIALOG_PANEL =
  */
 export const SPOTLIGHT_PANEL =
   'no-drag nt-fade-in fixed top-[12vh] left-1/2 z-(--nt-z-dialog) flex w-[560px] max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col overflow-hidden rounded-lg border border-border bg-overlay p-1 shadow-menu outline-none'
+
+/**
+ * The frame of a `Combobox`: the material of `PANEL`, as wide as its trigger (at least 14rem), with
+ * a search field that stays on top and a list that scrolls below it, so no padding or scroll of
+ * its own.
+ */
+export const COMBOBOX_PANEL =
+  'no-drag nt-fade-in z-(--nt-z-popover) flex max-h-80 w-(--radix-popover-trigger-width) min-w-56 flex-col overflow-hidden rounded-lg border border-border bg-overlay shadow-menu outline-none'

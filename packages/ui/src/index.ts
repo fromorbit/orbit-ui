@@ -8,6 +8,7 @@
  * component stay internal, listed with their reason in that test.
  */
 
+export * from './overlays/Combobox'
 export * from './overlays/ConfirmDialog'
 export * from './overlays/Dialog'
 export * from './overlays/DropdownMenu'
