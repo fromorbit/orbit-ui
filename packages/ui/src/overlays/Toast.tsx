@@ -177,7 +177,7 @@ export function Toast({
       className="no-drag nt-fade-in pointer-events-auto flex items-start justify-between gap-3 rounded-lg border border-border bg-overlay p-3 shadow-menu"
     >
       <div className="flex min-w-0 flex-col gap-0.5">
-        <RadixToast.Title className="text-fg">{title}</RadixToast.Title>
+        <RadixToast.Title className="text-[13px] text-fg">{title}</RadixToast.Title>
         {description === undefined ? null : (
           <RadixToast.Description className="text-[12px] text-muted">
             {description}

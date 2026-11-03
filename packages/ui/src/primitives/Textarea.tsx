@@ -36,7 +36,7 @@ export interface TextareaProps
 function chromeFor(variant: 'field' | 'bare', disabled: boolean | undefined): string {
   if (variant === 'bare') return 'no-drag block text-fg'
   const box =
-    'no-drag block rounded-md border border-border bg-surface px-2 py-[3.25px] text-fg outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2'
+    'no-drag block rounded-md border border-border bg-surface px-2 py-[5.25px] text-fg outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2'
   return disabled ? `${box} opacity-40` : box
 }
 
@@ -52,7 +52,7 @@ function rowsFor(text: string, minRows: number, maxRows: number): number {
  * this primitive existed, so a controlled caller sees the field react to a programmatic change of
  * `value` too, not only to typing. There is no `size` prop: unlike a single-line control this has
  * no fixed `h-(--nt-control-*)`, since its height must be free to grow; instead its border and
- * padding are sized so a single row lines up with a size `md` `Input` (28px) sitting next to it.
+ * padding are sized so a single row lines up with a size `md` `Input` (32px) sitting next to it.
  */
 export function Textarea({
   label,

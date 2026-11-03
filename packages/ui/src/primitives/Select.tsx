@@ -17,7 +17,7 @@ const trigger = cva(
  * One option in the popup: a row you click, so it is as tall as the `md` trigger that opened it.
  *
  * The height comes from `controlHeight.md` rather than from a hand-written `h-7`, which happened to
- * be the same 28px: move `--nt-control-md` and the popup would silently stay behind. No focus ring
+ * be the same height: move `--nt-control-md` and the popup would silently stay behind. No focus ring
  * here — Radix moves a `data-highlighted` state through the list, and the browser's own outline on
  * top of that would draw a second selection.
  */
