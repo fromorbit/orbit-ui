@@ -68,3 +68,14 @@ export const SPOTLIGHT_PANEL =
  */
 export const COMBOBOX_PANEL =
   'no-drag nt-fade-in z-(--nt-z-popover) flex max-h-80 w-(--radix-popover-trigger-width) min-w-56 flex-col overflow-hidden rounded-lg border border-border bg-overlay shadow-menu outline-none'
+
+/**
+ * The frame of a `Sheet` against the right edge: the material of `DIALOG_PANEL`, the full height
+ * of the window and 26rem wide (or the window minus 2rem), with only the inner corners rounded.
+ */
+export const SHEET_PANEL_END =
+  'no-drag nt-fade-in fixed inset-y-0 right-0 z-(--nt-z-dialog) flex w-[26rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-l-lg border-border border-l bg-overlay shadow-menu outline-none'
+
+/** The frame of a `Sheet` against the left edge: `SHEET_PANEL_END`, mirrored. */
+export const SHEET_PANEL_START =
+  'no-drag nt-fade-in fixed inset-y-0 left-0 z-(--nt-z-dialog) flex w-[26rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-r-lg border-border border-r bg-overlay shadow-menu outline-none'

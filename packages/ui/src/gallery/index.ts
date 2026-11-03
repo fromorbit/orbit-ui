@@ -6,6 +6,7 @@ import dropdownMenuCountsStory from '../overlays/DropdownMenu.counts.gallery'
 import dropdownMenuStory from '../overlays/DropdownMenu.gallery'
 import dropdownMenuNestedStory from '../overlays/DropdownMenu.nested.gallery'
 import popoverStory from '../overlays/Popover.gallery'
+import sheetStory from '../overlays/Sheet.gallery'
 import spotlightStory from '../overlays/Spotlight.gallery'
 import toastStory from '../overlays/Toast.gallery'
 import tooltipStory from '../overlays/Tooltip.gallery'
@@ -229,4 +230,5 @@ export const stories: Story[] = collectStories([
   avatarGroupStory,
   trendBadgeStory,
   statTileStory,
+  sheetStory,
 ])
