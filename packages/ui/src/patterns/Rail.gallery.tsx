@@ -6,7 +6,7 @@ import { Rail, RailInset } from './Rail'
 
 /** The column an answer stands in, so the rails are seen where they really are: at its left edge. */
 function Answer({ children }: { children: ReactNode }) {
-  return <div className="flex w-[520px] flex-col gap-2 text-[13px]">{children}</div>
+  return <div className="flex w-full max-w-[520px] flex-col gap-2 text-[13px]">{children}</div>
 }
 
 /** The thinking step: no chevron and no glyph, so both of those columns stand open. */

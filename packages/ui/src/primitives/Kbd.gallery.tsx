@@ -29,7 +29,7 @@ export default {
     // here. Each row is the size it has in a menu, so the height of the keys can be judged
     // against the 28px row they stand in.
     Shortcuts: () => (
-      <div className="grid w-96 grid-cols-[1fr_auto_auto] items-center gap-x-6 gap-y-1 text-[12px]">
+      <div className="grid w-full max-w-96 grid-cols-[1fr_auto_auto] items-center gap-x-6 gap-y-1 text-[12px]">
         <span className="text-muted">Text</span>
         <span className="text-muted">macOS</span>
         <span className="text-muted">Windows, Linux</span>
@@ -61,7 +61,7 @@ export default {
     // The four forms side by side. Enter is always the icon, never
     // the glyph: the stories here spell it as a word, and a test holds that no story shows one.
     'Four forms': () => (
-      <div className="flex w-[28rem] flex-col gap-3 text-[12px] text-muted">
+      <div className="flex w-full max-w-[28rem] flex-col gap-3 text-[12px] text-muted">
         <div className="flex h-7 items-center gap-2">
           <span className="w-20">quiet</span>
           <span className="flex-1 text-[13px] text-fg">Nieuwe chat</span>

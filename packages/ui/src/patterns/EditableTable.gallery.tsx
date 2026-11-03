@@ -37,7 +37,7 @@ function Statuses({ initial, maxRows }: { initial: Status[]; maxRows?: number })
     setRows((all) => all.map((row, at) => (at === index ? { ...row, ...change } : row)))
   return (
     <TooltipProvider>
-      <div className="w-[480px]">
+      <div className="w-full max-w-[480px]">
         <EditableTable<Status>
           label="Statuses of a spec"
           labels={nl.editableTable}

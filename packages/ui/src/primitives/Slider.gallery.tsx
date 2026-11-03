@@ -6,7 +6,7 @@ import { Slider } from './Slider'
 function Memory() {
   const [value, setValue] = useState(1024)
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <FormField label="Geheugen" description="Per container; boven de limiet stopt hij.">
         {(field) => (
           <Slider

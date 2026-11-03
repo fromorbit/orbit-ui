@@ -11,7 +11,7 @@ import { Prose, type ProseDocument, type ProseReferences } from './Prose'
  */
 function Column({ markdown }: { markdown: string }) {
   return (
-    <div className="w-96">
+    <div className="w-full max-w-96">
       <Prose labels={nl.prose} markdown={markdown} />
     </div>
   )
@@ -156,13 +156,13 @@ export default {
     'Raw HTML stays text': () => <Column markdown={raw} />,
     // Last, so it moves no reference above it: paths the agent named become links.
     'Paths as file links': () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <Prose labels={nl.prose} markdown={paths} references={references} />
       </div>
     ),
     // After the others, so it moves none of their references: the reading mode.
     'A document': () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <Prose labels={nl.prose} markdown={handbook} document={documentOptions} />
       </div>
     ),

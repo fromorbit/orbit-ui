@@ -12,7 +12,7 @@ const OPTIONS = [
 function Notifications({ error }: { error?: string }) {
   const [value, setValue] = useState<string[]>(error ? [] : ['build', 'invite'])
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <CheckboxGroup
         label="Meldingen"
         description="Per e-mail, hooguit één per uur."

@@ -6,7 +6,7 @@ import { Textarea } from './Textarea'
 
 /** A column as wide as a sign-in form, so the stories show the field at the width it lives at. */
 function Column({ children }: { children: React.ReactNode }) {
-  return <div className="flex w-80 flex-col gap-4">{children}</div>
+  return <div className="flex w-full max-w-80 flex-col gap-4">{children}</div>
 }
 
 export default {

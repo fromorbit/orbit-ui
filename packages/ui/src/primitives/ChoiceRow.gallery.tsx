@@ -6,7 +6,7 @@ export default {
   title: 'ChoiceRow',
   states: {
     'One of several': () => (
-      <div className="flex w-[360px] flex-col gap-0.5">
+      <div className="flex w-full max-w-[360px] flex-col gap-0.5">
         <ChoiceRow
           kind="radio"
           number={1}
@@ -29,7 +29,7 @@ export default {
       </div>
     ),
     'Any number': () => (
-      <div className="flex w-[360px] flex-col gap-0.5">
+      <div className="flex w-full max-w-[360px] flex-col gap-0.5">
         <ChoiceRow
           kind="checkbox"
           number={1}

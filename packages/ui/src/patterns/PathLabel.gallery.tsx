@@ -17,7 +17,7 @@ function Column({ width, children }: { width: 'narrow' | 'wide'; children: React
       className={
         width === 'narrow'
           ? 'flex min-w-0 rounded-md border border-border p-2 text-muted'
-          : 'flex w-96 min-w-0 rounded-md border border-border p-2 text-muted'
+          : 'flex w-full max-w-96 min-w-0 rounded-md border border-border p-2 text-muted'
       }
     >
       {children}

@@ -6,7 +6,7 @@ export default {
   title: 'ShareBar',
   states: {
     'Findings per weight': () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <ShareBar
           label="Bevindingen"
           segments={[
@@ -30,7 +30,7 @@ export default {
       </div>
     ),
     'Tests per outcome': () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <ShareBar
           label="Tests"
           segments={[

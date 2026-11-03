@@ -31,7 +31,7 @@ export default {
   states: {
     'Heading and rows': () => (
       <TooltipProvider>
-        <div className="w-[560px]">
+        <div className="w-full max-w-[560px]">
           <SettingsGroup title="New chats">
             <Row label="Network access" description="The default for a new chat" />
             <Row label="Worktree per chat" />
@@ -41,7 +41,7 @@ export default {
     ),
     'An action in the heading': () => (
       <TooltipProvider>
-        <div className="w-[560px]">
+        <div className="w-full max-w-[560px]">
           <SettingsGroup
             title="Extensions"
             action={
@@ -56,7 +56,7 @@ export default {
       </TooltipProvider>
     ),
     'Empty: only the heading and its action': () => (
-      <div className="w-[560px]">
+      <div className="w-full max-w-[560px]">
         <SettingsGroup
           title="Extensions"
           action={
@@ -71,7 +71,7 @@ export default {
     ),
     'Two groups, stacked': () => (
       <TooltipProvider>
-        <div className="flex w-[560px] flex-col gap-6">
+        <div className="flex w-full max-w-[560px] flex-col gap-6">
           <SettingsGroup title="New chats">
             <Row label="Network access" />
           </SettingsGroup>

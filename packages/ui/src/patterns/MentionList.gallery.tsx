@@ -24,7 +24,7 @@ function state(items: readonly MentionListItem[], truncated = false) {
   return function State() {
     const [active, setActive] = useState(0)
     return (
-      <div className="w-[36rem]">
+      <div className="w-full max-w-[36rem]">
         <MentionList
           id="mention-galerij"
           label="Bestanden"

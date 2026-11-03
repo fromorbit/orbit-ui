@@ -49,7 +49,7 @@ export default {
     // The toolbar of the composer: the round "+", the pills, and on the
     // right the send button with its key. A composition of three primitives, to judge them together.
     'In the toolbar of the composer': () => (
-      <div className="flex w-[560px] items-center gap-2 rounded-lg border border-border-strong bg-composer p-3">
+      <div className="flex w-full max-w-[560px] items-center gap-2 rounded-lg border border-border-strong bg-composer p-3">
         <IconButton icon="plus" label="Add" shape="round" outlined />
         <Pill label="Model">Claude Sonnet</Pill>
         <Pill label="Access" icon="shield">

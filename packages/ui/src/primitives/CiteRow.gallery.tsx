@@ -8,7 +8,7 @@ export default {
   title: 'CiteRow',
   states: {
     Rows: () => (
-      <div className="flex w-[400px] flex-col">
+      <div className="flex w-full max-w-[400px] flex-col">
         <CiteRow icon="check" tone="success" label="Gift cards sit beside cash" onJump={jump} />
         <CiteRow
           icon="alert-triangle"
@@ -25,7 +25,7 @@ export default {
       </div>
     ),
     Framed: () => (
-      <div className="flex w-[400px] flex-col gap-1.5">
+      <div className="flex w-full max-w-[400px] flex-col gap-1.5">
         <CiteRow
           framed
           label="A card is valid for a year"

@@ -5,7 +5,7 @@ import { Icon } from './Icon'
 
 /** The width of the column a summary stands in, so a long one has an edge to be cut off at. */
 function Pane({ children }: { children: ReactNode }) {
-  return <div className="w-96">{children}</div>
+  return <div className="w-full max-w-96">{children}</div>
 }
 
 /** The muted tick a finished row carries, inline before the sentence it belongs to. */

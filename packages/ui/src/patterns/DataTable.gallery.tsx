@@ -97,7 +97,7 @@ function Spaces() {
   const [selected, setSelected] = useState<string[]>(['s2'])
   const [page, setPage] = useState(1)
   return (
-    <div className="flex w-[48rem] flex-col gap-3">
+    <div className="flex w-full max-w-[48rem] flex-col gap-3">
       <div className="overflow-hidden rounded-lg bg-surface">
         <DataTable
           label="Spaces"
@@ -134,7 +134,7 @@ export default {
   states: {
     'Sorted, one row selected, with pages': () => <Spaces />,
     Loading: () => (
-      <div className="w-[48rem] overflow-hidden rounded-lg bg-surface">
+      <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-surface">
         <DataTable
           label="Spaces"
           columns={COLUMNS}
@@ -146,7 +146,7 @@ export default {
       </div>
     ),
     Empty: () => (
-      <div className="w-[48rem] overflow-hidden rounded-lg bg-surface">
+      <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-surface">
         <DataTable
           label="Spaces"
           columns={COLUMNS}

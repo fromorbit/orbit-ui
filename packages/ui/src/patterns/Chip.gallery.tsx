@@ -73,7 +73,7 @@ function Long() {
 function Numbered() {
   return (
     // As narrow as the row story, so this state does not widen the column of all the others.
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <ChipRow label="Attachments">
         <Chip
           key="a"
@@ -121,7 +121,7 @@ function Marked() {
 /** Five chips in a column narrower than they are together, so the row has to wrap. */
 function Row() {
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <ChipRow label="Attachments">
         <Chip key="a" label="button ‘Save’ on shop.test" image={CROP} />
         <Chip key="b" label="Screenshot of shop.test" image={PAGE} />

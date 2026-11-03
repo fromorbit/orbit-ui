@@ -4,7 +4,7 @@ import { ChoiceCard } from './ChoiceCard'
 
 function Plain() {
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <ChoiceCard icon="file-diff" title="Changes" />
     </div>
   )
@@ -12,7 +12,7 @@ function Plain() {
 
 function WithKey() {
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <ChoiceCard icon="globe" title="Browser" shortcut="panel.start.browser" />
     </div>
   )
@@ -21,7 +21,7 @@ function WithKey() {
 function Dimmed() {
   return (
     <TooltipProvider>
-      <div className="w-80">
+      <div className="w-full max-w-80">
         <ChoiceCard
           icon="terminal"
           title="Terminal"

@@ -25,7 +25,7 @@ const ITEMS = [
 function Faq() {
   const [value, setValue] = useState<string | null>('kosten')
   return (
-    <div className="w-[28rem]">
+    <div className="w-full max-w-[28rem]">
       <Accordion type="single" items={ITEMS} value={value} onValueChange={setValue} />
     </div>
   )
@@ -34,7 +34,7 @@ function Faq() {
 function Several() {
   const [value, setValue] = useState<string[]>(['kosten', 'export'])
   return (
-    <div className="w-[28rem]">
+    <div className="w-full max-w-[28rem]">
       <Accordion type="multiple" items={ITEMS} value={value} onValueChange={setValue} />
     </div>
   )

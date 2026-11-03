@@ -15,7 +15,7 @@ function Pages({ initial, total }: { initial: number; total: number }) {
   const [page, setPage] = useState(initial)
   const [size, setSize] = useState(25)
   return (
-    <div className="w-[40rem]">
+    <div className="w-full max-w-[40rem]">
       <Pagination
         page={page}
         total={total}

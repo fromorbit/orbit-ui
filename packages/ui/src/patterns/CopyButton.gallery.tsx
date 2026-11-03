@@ -66,7 +66,7 @@ export default {
     // whoever changes the look there has to come past here too, or these images stop telling the
     // truth about the app.
     'Inside a code block': () => (
-      <div className="relative w-80">
+      <div className="relative w-full max-w-80">
         <div className="rounded-md border border-border bg-surface p-3">
           <pre className="m-0 font-mono text-[12px] leading-normal">const x = 1</pre>
         </div>
@@ -76,7 +76,7 @@ export default {
       </div>
     ),
     'Under a message': () => (
-      <div className="flex w-80 flex-col gap-1">
+      <div className="flex w-full max-w-80 flex-col gap-1">
         <p className="m-0 text-[13px] leading-normal">Yes, that is what the log says.</p>
         <div className="flex h-6 items-center gap-2 text-[11px] text-muted">
           <time className="tabular-nums">14:32</time>

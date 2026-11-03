@@ -10,7 +10,7 @@ function Remember() {
 function Described() {
   const [checked, setChecked] = useState(false)
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <CheckboxField
         label="Openbare preview"
         description="Iedereen met de link kan de app bekijken, zonder in te loggen."
@@ -28,7 +28,7 @@ export default {
     Checked: () => <Remember />,
     'With a description': () => <Described />,
     'With an error': () => (
-      <div className="w-80">
+      <div className="w-full max-w-80">
         <CheckboxField
           label="Ik ga akkoord met de voorwaarden"
           error="Ga akkoord om door te gaan."

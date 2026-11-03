@@ -36,7 +36,7 @@ function Rows({ names }: { names: readonly string[] }) {
  * would hang over the state below this one and show up in that state's image instead of this one's.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-56 w-72">{children}</div>
+  return <div className="h-56 w-full max-w-72">{children}</div>
 }
 
 /** The plain case: a control, and a panel that is not up yet. */
@@ -119,7 +119,7 @@ function BesideAField() {
   return (
     // A column, not a row: the counters stand under the control rather than beside it, so this
     // state stays as wide as the others and does not stretch every screenshot in the story.
-    <div className="flex w-72 flex-col items-start gap-2">
+    <div className="flex w-full max-w-72 flex-col items-start gap-2">
       <Popover trigger={<Button>Model</Button>} label="Model">
         <Rows names={MODELS} />
       </Popover>

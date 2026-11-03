@@ -8,7 +8,7 @@ export default {
   title: 'StatTile',
   states: {
     'A row of tiles': () => (
-      <div className="grid w-[48rem] grid-cols-3 gap-3">
+      <div className="grid w-full max-w-[48rem] grid-cols-3 gap-3">
         <StatTile
           label="Actieve spaces"
           value="1.284"

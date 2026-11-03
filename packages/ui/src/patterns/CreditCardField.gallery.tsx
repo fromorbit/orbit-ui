@@ -43,7 +43,7 @@ export default {
       />
     ),
     'The cards': () => (
-      <div className="grid w-[40rem] grid-cols-2 gap-4">
+      <div className="grid w-full max-w-[40rem] grid-cols-1 gap-4 sm:grid-cols-2">
         <CreditCardVisual value={MASTERCARD} flipped={false} labels={nl.creditCard} />
         <CreditCardVisual value={AMEX} flipped={false} labels={nl.creditCard} />
         <CreditCardVisual value={EMPTY_CARD} flipped={false} labels={nl.creditCard} />

@@ -18,7 +18,7 @@ const LABELS = { search: 'Zoeken…', noResults: (q: string) => `Geen treffers v
 function Region({ initial }: { initial: string | null }) {
   const [value, setValue] = useState<string | null>(initial)
   return (
-    <div className="w-72">
+    <div className="w-full max-w-72">
       <FormField label="Regio" description="Waar de app draait.">
         {(field) => (
           <Combobox
@@ -40,7 +40,7 @@ function Region({ initial }: { initial: string | null }) {
 function Labels() {
   const [value, setValue] = useState<string[]>(['ams', 'fra', 'sfo'])
   return (
-    <div className="w-72">
+    <div className="w-full max-w-72">
       <FormField label="Regio's voor de replica's">
         {(field) => (
           <MultiCombobox
@@ -68,7 +68,7 @@ export default {
     Chosen: () => <Region initial="zrh" />,
     'Several chosen': () => <Labels />,
     Invalid: () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <FormField label="Regio" error="Kies een regio.">
           {(field) => (
             <Combobox

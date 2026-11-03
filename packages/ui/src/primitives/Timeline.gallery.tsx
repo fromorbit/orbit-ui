@@ -8,7 +8,7 @@ export default {
   title: 'Timeline',
   states: {
     Activity: () => (
-      <div className="w-[28rem]">
+      <div className="w-full max-w-[28rem]">
         <Timeline label="Activiteit">
           <TimelineItem marker={<Icon name="plus" size="sm" />} time="3 d">
             Noor de Vries maakte de spec

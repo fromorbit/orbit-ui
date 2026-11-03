@@ -18,7 +18,7 @@ function Uploads() {
   ])
   const [error, setError] = useState<string | undefined>()
   return (
-    <div className="flex w-96 flex-col gap-3">
+    <div className="flex w-full max-w-96 flex-col gap-3">
       <FileDrop
         labels={LABELS}
         accept="image/*,.pdf"
@@ -53,13 +53,13 @@ export default {
   title: 'FileDrop',
   states: {
     Empty: () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <FileDrop labels={LABELS} onFiles={() => {}} />
       </div>
     ),
     'With uploads': () => <Uploads />,
     'With an error': () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <FileDrop
           labels={LABELS}
           onFiles={() => {}}
@@ -68,7 +68,7 @@ export default {
       </div>
     ),
     Disabled: () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <FileDrop labels={LABELS} onFiles={() => {}} disabled />
       </div>
     ),

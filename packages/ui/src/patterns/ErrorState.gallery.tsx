@@ -21,12 +21,12 @@ export default {
       />
     ),
     'Compact (inside a list or a popover)': () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ErrorState size="sm" title="Could not load the runs" code="core_unreachable" />
       </div>
     ),
     'Compact with an action': () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ErrorState
           size="sm"
           title="Could not load the runs"
@@ -43,7 +43,7 @@ export default {
     // wrapping sentence ends on half a pixel, which rounds the top of whatever stands under it a
     // pixel differently and would make that state's reference go stale for nothing.
     "With the provider's own words": () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ErrorState
           title="Something went wrong in the backend."
           code="authentication_failed"
@@ -52,7 +52,7 @@ export default {
       </div>
     ),
     "Compact with the provider's own words": () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ErrorState
           size="sm"
           title="Something went wrong in the backend."

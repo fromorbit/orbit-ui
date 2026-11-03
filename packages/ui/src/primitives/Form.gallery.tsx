@@ -17,7 +17,7 @@ function Invite({ initialErrors = false }: { initialErrors?: boolean }) {
       ? 'Vul een geldig e-mailadres in.'
       : undefined
   return (
-    <div className="w-80">
+    <div className="w-full max-w-80">
       <Form
         label="Iemand uitnodigen"
         onSubmit={() => {

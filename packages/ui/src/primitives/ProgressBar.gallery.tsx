@@ -6,17 +6,17 @@ export default {
   title: 'ProgressBar',
   states: {
     'Under way': () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ProgressBar label="Uploaden" value={64} />
       </div>
     ),
     Indeterminate: () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ProgressBar label="Image bouwen" />
       </div>
     ),
     Done: () => (
-      <div className="w-72">
+      <div className="w-full max-w-72">
         <ProgressBar label="Kopiëren" value={100} />
       </div>
     ),
