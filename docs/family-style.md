@@ -66,6 +66,8 @@ The same handful of distances, sizes and emphases in every component, so a scree
 | **Motion: at once, and calm.** Hover and press answer in 120ms (`--nt-duration-fast`), a layer fades in 180ms (`--nt-duration`) on one curve (`--nt-ease`); nothing moves its own height; `prefers-reduced-motion` turns every animation off. | every `transition`, `.nt-fade-in` | Doherty threshold |
 | **Progress that shows, and a good end.** What runs shows its state (`StatusMark`, `StepChips`, `ProgressMeter`); an empty or finished state is a calm title, a sentence and one action. | `EmptyState`, `StepChips` | Goal-Gradient, Zeigarnik, Peak–End |
 
+`packages/ui/tests/rhythm.test.ts` holds three of these rules for every component and story: text only in the five sizes (the initials of a mark excepted), no duration that is not a token, and no spaced capitals.
+
 Contrast stays as before: every pair in `tokens.test.ts` still reaches AA, and the tints that replaced borders were chosen so that the words on them do too.
 
 ## Breaking changes of 0.2.0
