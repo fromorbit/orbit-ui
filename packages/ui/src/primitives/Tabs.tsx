@@ -46,11 +46,12 @@ const stripRow = cva('@container/tabs flex items-center', {
  * pill brought into view — what still does not fit, so nothing ever runs under the window
  * controls and no pill is cut to an icon and two letters.
  */
-const pillList = cva('flex flex-row gap-1 px-2 py-1.5', {
+// In the title bar the strip is 40px (`--nt-titlebar-height`): 4px above and below a 32px pill.
+const pillList = cva('flex flex-row gap-1 px-2', {
   variants: {
     strip: {
-      plain: 'shrink-0',
-      titlebar: 'min-w-0 overflow-x-auto [scrollbar-width:none]',
+      plain: 'shrink-0 py-1.5',
+      titlebar: 'min-w-0 overflow-x-auto py-1 [scrollbar-width:none]',
     },
   },
   defaultVariants: { strip: 'plain' },
@@ -302,7 +303,7 @@ export interface TabsProps {
   /**
    * Places the list and the panels apart, for a vertical list only: the settings screen puts its
    * categories in the column of the chat sidebar and the panel beside it, both inside one Radix root so the tabs still control their panels. The list then has
-   * the 32px rows of a column (`--nt-control-lg`), and the panel owns no padding: the caller's
+   * the 36px rows of a column (as a `List` row), and the panel owns no padding: the caller's
    * column sets its width. `before` stays above the list. The root is `display: contents`, so the
    * two parts can be cells of the caller's own grid.
    */
@@ -531,7 +532,7 @@ export function Tabs({
                       `no-drag peer flex h-(--nt-control-md) items-center gap-1.5 rounded-md ${closable ? 'pr-6 pl-2.5' : 'px-2.5'} text-[13px] text-muted outline-focus hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=active]:bg-surface-hover data-[state=active]:text-fg${titlebar ? ' min-w-18 max-w-36' : ''}${foldWidth ? ` ${foldWidth}` : ''}${closable && foldPad ? ` ${foldPad}` : ''}`
                     : horizontal
                       ? `no-drag flex${horizontalWrap ? ' shrink-0' : ''} h-(--nt-control-md) items-center border-b-2 border-transparent px-3 text-[13px] text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=active]:border-accent data-[state=active]:text-fg`
-                      : `no-drag flex ${arranged ? 'h-(--nt-control-lg) gap-2 [&>svg]:shrink-0' : 'h-(--nt-control-md)'} items-center rounded-md px-2 text-left text-[13px] text-muted outline-focus hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[state=active]:bg-surface-hover data-[state=active]:text-fg`
+                      : `no-drag flex ${arranged ? 'h-9 gap-2 [&>svg]:shrink-0' : 'h-(--nt-control-md)'} items-center rounded-md px-2 text-left text-[13px] text-muted outline-focus hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[state=active]:bg-surface-hover data-[state=active]:text-fg`
                 }
               >
                 {/* Stays put whether the pill can close or not: the cross has its own
