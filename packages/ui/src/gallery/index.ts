@@ -70,6 +70,7 @@ import levelBarsStory from '../primitives/LevelBars.gallery'
 import numberFieldStory from '../primitives/NumberField.gallery'
 import orbitSymbolStory from '../primitives/OrbitSymbol.gallery'
 import orbitWordmarkStory from '../primitives/OrbitWordmark.gallery'
+import otpInputStory from '../primitives/OtpInput.gallery'
 import pillStory from '../primitives/Pill.gallery'
 import progressMeterStory from '../primitives/ProgressMeter.gallery'
 import projectMarkStory from '../primitives/ProjectMark.gallery'
@@ -207,4 +208,5 @@ export const stories: Story[] = collectStories([
   checkboxGroupStory,
   comboboxStory,
   sliderStory,
+  otpInputStory,
 ])
