@@ -31,3 +31,14 @@ test('the marker is decorative', () => {
   )
   expect(container.querySelector('li > span')).toHaveAttribute('aria-hidden', 'true')
 })
+
+test('tone danger marks the marker in the danger colour', () => {
+  const { container } = render(
+    <Timeline label="Verloop">
+      <TimelineItem marker={<Icon name="x" size="sm" />} tone="danger">
+        Incasso mislukt
+      </TimelineItem>
+    </Timeline>,
+  )
+  expect(container.querySelector('li > span')?.className).toContain('text-danger')
+})

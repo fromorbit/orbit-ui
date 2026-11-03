@@ -201,3 +201,42 @@ test('with card a list stands beside the table for a narrow width', () => {
   expect(screen.getByRole('list', { name: 'Spaces' })).toBeInTheDocument()
   expect(screen.getByText('winkel kaart')).toBeInTheDocument()
 })
+
+test('a row that cannot be selected has no box and stays out of select-all', async () => {
+  const onSelectedChange = vi.fn()
+  render(
+    <DataTable
+      label="Spaces"
+      columns={COLUMNS}
+      rows={SPACES}
+      rowKey={(s) => s.id}
+      rowName={(s) => s.name}
+      labels={LABELS}
+      selected={[]}
+      onSelectedChange={onSelectedChange}
+      canSelect={(s) => s.id !== 's1'}
+    />,
+  )
+  expect(screen.queryByRole('checkbox', { name: 'Selecteer winkel' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('checkbox', { name: 'Alle rijen selecteren' }))
+  expect(onSelectedChange).toHaveBeenLastCalledWith(['s2', 's3'])
+})
+
+test('the current row is marked, and a click on a row opens it', async () => {
+  const onRowClick = vi.fn()
+  render(
+    <DataTable
+      label="Spaces"
+      columns={COLUMNS}
+      rows={SPACES}
+      rowKey={(s) => s.id}
+      labels={LABELS}
+      current="s2"
+      onRowClick={onRowClick}
+    />,
+  )
+  const row = screen.getByText('api-gateway').closest('tr')
+  expect(row).toHaveAttribute('aria-current', 'true')
+  await userEvent.click(screen.getByText('Blog'))
+  expect(onRowClick).toHaveBeenCalledWith(SPACES[2])
+})

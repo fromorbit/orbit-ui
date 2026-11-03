@@ -15,6 +15,11 @@ export interface TimelineItemProps {
    * 24px on the line; decorative, since the text says what happened.
    */
   marker: ReactNode
+  /**
+   * The look of the marker: `danger` for something that went wrong, `pending` (a dashed round)
+   * for what has not happened yet; `default` otherwise.
+   */
+  tone?: 'default' | 'danger' | 'pending'
   /** When, as the reader reads it: a `RelativeTime`, "2 u". */
   time?: ReactNode
   /** What happened: a sentence, or a card for a comment. */
@@ -41,14 +46,21 @@ export function Timeline({ label, children }: TimelineProps) {
   )
 }
 
+// Written out per tone: Tailwind finds a class only as a literal in the source.
+const MARKER = {
+  default:
+    'flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-muted',
+  danger:
+    'flex size-6 shrink-0 items-center justify-center rounded-full border border-danger-border bg-danger-subtle text-danger',
+  pending:
+    'flex size-6 shrink-0 items-center justify-center rounded-full border border-border border-dashed bg-bg text-muted',
+} as const
+
 /** One event of a `Timeline`. */
-export function TimelineItem({ marker, time, children }: TimelineItemProps) {
+export function TimelineItem({ marker, tone = 'default', time, children }: TimelineItemProps) {
   return (
-    <li className="relative flex items-start gap-3">
-      <span
-        aria-hidden="true"
-        className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-muted"
-      >
+    <li className="relative flex items-start gap-3" data-tone={tone}>
+      <span aria-hidden="true" className={MARKER[tone]}>
         {marker}
       </span>
       <div className="flex min-h-6 min-w-0 flex-1 items-center text-secondary">{children}</div>

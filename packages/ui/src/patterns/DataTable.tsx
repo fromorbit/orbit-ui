@@ -54,6 +54,15 @@ export interface DataTableProps<Row> {
   /** The keys of the rows that are selected; giving it adds a column of boxes. */
   selected?: readonly string[]
   onSelectedChange?(keys: string[]): void
+  /** The key of the row that is open beside the table: the active fill and `aria-current`. */
+  current?: string
+  /**
+   * A click anywhere on a row, to open it. A pointer convenience only: give the row a control of
+   * its own too (a button on its name), so the keyboard reaches it.
+   */
+  onRowClick?(row: Row): void
+  /** Whether a row may be selected at all, such as every branch but the default one; yes by default. */
+  canSelect?(row: Row): boolean
   /** The sort to start with; the table keeps it from there unless `sort` is given. */
   defaultSort?: DataTableSort
   /** The sort, held by the caller (for a server that sorts); the rows then come sorted. */
@@ -128,6 +137,9 @@ export function DataTable<Row>({
   rowName,
   selected,
   onSelectedChange,
+  canSelect,
+  current,
+  onRowClick,
   defaultSort,
   sort: heldSort,
   onSortChange,
@@ -141,7 +153,7 @@ export function DataTable<Row>({
   const shown = held ? [...rows] : sortRows(rows, columns, sort)
   const selectable = selected !== undefined
   const chosen = new Set(selected ?? [])
-  const keys = rows.map(rowKey)
+  const keys = rows.filter((row) => canSelect?.(row) ?? true).map(rowKey)
   const chosenCount = keys.filter((key) => chosen.has(key)).length
   const all = keys.length > 0 && chosenCount === keys.length
   const headBox: boolean | 'indeterminate' = all ? true : chosenCount > 0 ? 'indeterminate' : false
@@ -235,13 +247,17 @@ export function DataTable<Row>({
         ) : (
           shown.map((row) => {
             const key = rowKey(row)
-            const on = chosen.has(key)
+            const on = chosen.has(key) || key === current
             return (
               <tr
                 key={key}
+                aria-current={key === current ? 'true' : undefined}
+                {...(onRowClick ? { onClick: () => onRowClick(row) } : {})}
                 className={`border-border border-b last:border-b-0 hover:bg-row-hover ${on ? 'bg-row-active' : ''}`}
               >
-                {selectable ? (
+                {selectable && !(canSelect?.(row) ?? true) ? (
+                  <td className="py-3 ps-4 pe-0" />
+                ) : selectable ? (
                   <td className="py-3 ps-4 pe-0">
                     <span className="flex items-center">
                       <Checkbox
