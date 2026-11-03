@@ -16,6 +16,7 @@ import choiceCardStory from '../patterns/ChoiceCard.gallery'
 import choiceCardsStory from '../patterns/ChoiceCards.gallery'
 import copyButtonStory from '../patterns/CopyButton.gallery'
 import creditCardFieldStory from '../patterns/CreditCardField.gallery'
+import dataTableStory from '../patterns/DataTable.gallery'
 import editableTableStory from '../patterns/EditableTable.gallery'
 import emptyStateStory from '../patterns/EmptyState.gallery'
 import errorStateStory from '../patterns/ErrorState.gallery'
@@ -26,6 +27,7 @@ import hostedSurfaceStory from '../patterns/HostedSurface.gallery'
 import listStory from '../patterns/List.gallery'
 import mentionListStory from '../patterns/MentionList.gallery'
 import pageHeaderStory from '../patterns/PageHeader.gallery'
+import paginationStory from '../patterns/Pagination.gallery'
 import panelTabHeaderStory from '../patterns/PanelTabHeader.gallery'
 import pathFieldStory from '../patterns/PathField.gallery'
 import pathLabelStory from '../patterns/PathLabel.gallery'
@@ -219,4 +221,6 @@ export const stories: Story[] = collectStories([
   datePickerStory,
   progressBarStory,
   fileDropStory,
+  dataTableStory,
+  paginationStory,
 ])
