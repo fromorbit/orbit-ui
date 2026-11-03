@@ -82,6 +82,7 @@ import segmentedControlStory from '../primitives/SegmentedControl.gallery'
 import selectStory from '../primitives/Select.gallery'
 import separatorStory from '../primitives/Separator.gallery'
 import skeletonStory from '../primitives/Skeleton.gallery'
+import sliderStory from '../primitives/Slider.gallery'
 import spinnerStory from '../primitives/Spinner.gallery'
 import statusMarkStory from '../primitives/StatusMark.gallery'
 import stepChipsStory from '../primitives/StepChips.gallery'
@@ -205,4 +206,5 @@ export const stories: Story[] = collectStories([
   checkboxFieldStory,
   checkboxGroupStory,
   comboboxStory,
+  sliderStory,
 ])
