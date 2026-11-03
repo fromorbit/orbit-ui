@@ -1,0 +1,5 @@
+---
+"@fromorbit/ui": minor
+---
+
+`ChatMessage` and `Composer`, the two pieces of a chat. `ChatMessage` is one turn as a named `<article>`: your own message a 12px bubble on the `bubble` plane against the right edge (its corner towards you squared), its actions beside it on hover or focus; an answer plain text across the column with its actions and an 11px meta under it. `streaming` makes it `aria-busy` and holds the actions back; `error` adds a line with a warning sign in the danger colour. `Composer` is a growing field and its toolbar as one plane on the `composer` tint: tools on the left (a slot for the "+", the model and the access level), the round send button on the right, on the accent only when a press sends something (`idle` and `aria-disabled` otherwise), Stop (a square on the accent) in its place while `running`. Enter sends, Shift+Enter makes a line, an Enter that confirms an input method does neither; `disabledReason` turns the field off and describes it; `attachments` and `footer` are slots above and below. New `ComposerLabels`. Additive.

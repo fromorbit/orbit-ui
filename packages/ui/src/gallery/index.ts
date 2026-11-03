@@ -11,10 +11,12 @@ import spotlightStory from '../overlays/Spotlight.gallery'
 import toastStory from '../overlays/Toast.gallery'
 import tooltipStory from '../overlays/Tooltip.gallery'
 import bannerStory from '../patterns/Banner.gallery'
+import chatMessageStory from '../patterns/ChatMessage.gallery'
 import chipStory from '../patterns/Chip.gallery'
 import chipListFieldStory from '../patterns/ChipListField.gallery'
 import choiceCardStory from '../patterns/ChoiceCard.gallery'
 import choiceCardsStory from '../patterns/ChoiceCards.gallery'
+import composerStory from '../patterns/Composer.gallery'
 import copyButtonStory from '../patterns/CopyButton.gallery'
 import creditCardFieldStory from '../patterns/CreditCardField.gallery'
 import dataTableStory from '../patterns/DataTable.gallery'
@@ -139,10 +141,12 @@ export const stories: Story[] = collectStories([
   toastStory,
   tooltipStory,
   bannerStory,
+  chatMessageStory,
   chipStory,
   chipListFieldStory,
   choiceCardStory,
   choiceCardsStory,
+  composerStory,
   copyButtonStory,
   editableTableStory,
   emptyStateStory,

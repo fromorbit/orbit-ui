@@ -10,10 +10,6 @@ import { createContext, type ReactNode, useContext } from 'react'
 export const MISSING = {
   Chart:
     'Een lijn-, vlak- of staafgrafiek met assen, tooltip en legenda op de tokens; nu is er geen enkele grafiek.',
-  ChatMessage:
-    'Een bericht in een gesprek: afzender, tijd, bubbel voor de gebruiker, platte tekst voor de assistent en acties eronder.',
-  Composer:
-    'Het invoerkader van een chat: een groeiend tekstvak met werkbalk (model, bijlage, versturen) als één geheel.',
   PlanCard:
     'Een abonnementskaart: naam, prijs per maand, wat erin zit en een knop; de huidige gemarkeerd.',
   FindingCard:

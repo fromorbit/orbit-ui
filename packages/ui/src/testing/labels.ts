@@ -1,5 +1,6 @@
 import type { ComboboxLabels } from '../overlays/Combobox'
 import type { ChipListFieldLabels } from '../patterns/ChipListField'
+import type { ComposerLabels } from '../patterns/Composer'
 import type { CopyButtonLabels } from '../patterns/CopyButton'
 import type { CreditCardFieldLabels } from '../patterns/CreditCardField'
 import type { EditableTableLabels } from '../patterns/EditableTable'
@@ -30,6 +31,11 @@ export const nl = {
     copiedLabel: 'Gekopieerd',
     failedLabel: 'Kopiëren mislukt',
   } satisfies CopyButtonLabels,
+  composer: {
+    field: 'Bericht',
+    send: 'Verstuur',
+    stop: 'Stop',
+  } satisfies ComposerLabels,
   secret: {
     set: 'Ingesteld',
     unset: 'Niet ingesteld',

@@ -1,5 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import {
+  ChatMessage,
+  Composer,
   CopyButton,
   DropdownMenu,
   Icon,
@@ -18,10 +20,8 @@ import {
   StackedRowBranch,
   StatusLine,
   StatusShape,
-  Textarea,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
 
@@ -120,6 +120,9 @@ interface Message {
   id: number
   role: 'user' | 'assistant'
   text: string
+  /** The hour of a question, the model and the time an answer took. */
+  time?: string
+  meta?: string
 }
 
 const ANSWER = [
@@ -149,30 +152,39 @@ const START: Message[] = [
     id: 1,
     role: 'user',
     text: 'Kun je een functie schrijven die de btw uit een bedrag inclusief btw haalt?',
+    time: '14:02',
   },
-  { id: 2, role: 'assistant', text: ANSWER },
+  { id: 2, role: 'assistant', text: ANSWER, meta: 'Opus 5.5 · 12 s' },
 ]
 
 /** One message: the user's in a bubble at the right, the assistant's as plain text with actions. */
 function Message({ message }: { message: Message }): ReactNode {
   if (message.role === 'user') {
     return (
-      <Missing name="ChatMessage" note="Bericht van de gebruiker" className="flex justify-end">
-        <p className="m-0 max-w-[80%] rounded-lg rounded-br-sm bg-bubble px-4 py-2.5 text-[13px] text-fg leading-relaxed">
-          {message.text}
-        </p>
-      </Missing>
+      <ChatMessage
+        from="user"
+        label="Jij"
+        meta={message.time}
+        actions={<CopyButton text={message.text} {...galleryLabels.copy} />}
+      >
+        {message.text}
+      </ChatMessage>
     )
   }
   return (
-    <Missing name="ChatMessage" note="Antwoord met acties" className="flex flex-col gap-2 pt-2">
+    <ChatMessage
+      from="assistant"
+      label="Opus 5.5"
+      meta={message.meta}
+      actions={
+        <>
+          <CopyButton text={message.text} {...galleryLabels.copy} />
+          <IconButton icon="rotate-ccw" size="sm" label="Opnieuw" />
+        </>
+      }
+    >
       <Prose labels={galleryLabels.prose} markdown={message.text} settled />
-      <div className="-ml-1.5 flex items-center gap-0.5">
-        <CopyButton text={message.text} {...galleryLabels.copy} />
-        <IconButton icon="rotate-ccw" size="sm" label="Opnieuw" />
-        <span className="ml-2 text-[11px] text-muted">Opus 5.5 · 12 s</span>
-      </div>
-    </Missing>
+    </ChatMessage>
   )
 }
 
@@ -250,10 +262,25 @@ function Chat(): ReactNode {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
 
+  // A new turn scrolls the conversation to its end, as a chat does; only the conversation's own
+  // viewport moves, never the page around the demo.
+  const column = useRef<HTMLDivElement>(null)
+  const turns = messages.length
+  useEffect(() => {
+    if (turns === START.length && !thinking) return
+    const viewport = column.current?.closest('[data-radix-scroll-area-viewport]')
+    viewport?.scrollTo({ top: viewport.scrollHeight })
+  }, [turns, thinking])
+
+  const stop = () => {
+    clearTimeout(timer.current)
+    setThinking(false)
+  }
+
   const send = () => {
     const text = draft.trim()
     if (text === '' || thinking) return
-    setMessages((now) => [...now, { id: now.length + 1, role: 'user', text }])
+    setMessages((now) => [...now, { id: now.length + 1, role: 'user', text, time: '14:06' }])
     setDraft('')
     setThinking(true)
     timer.current = setTimeout(() => {
@@ -264,6 +291,7 @@ function Chat(): ReactNode {
           id: now.length + 1,
           role: 'assistant',
           text: 'Dit is een demo zonder netwerk, dus hier komt altijd hetzelfde antwoord. In Orbit stroomt de tekst hier binnen.',
+          meta: 'Opus 5.5 · 1 s',
         },
       ])
     }, 1200)
@@ -274,7 +302,7 @@ function Chat(): ReactNode {
       <div className="flex min-h-0 flex-1">
         <Conversations />
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
+          <div className="flex h-12 shrink-0 items-center gap-3 px-4 @3xl:px-6">
             <h1 className="m-0 min-w-0 truncate font-medium text-[13px] text-fg">
               Btw uit een bedrag halen
             </h1>
@@ -298,7 +326,10 @@ function Chat(): ReactNode {
           </div>
           <div className="min-h-0 flex-1">
             <ScrollArea>
-              <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6 px-4 py-6 @3xl:px-8">
+              <div
+                ref={column}
+                className="mx-auto flex w-full max-w-[720px] flex-col gap-6 px-4 py-6 @3xl:px-8"
+              >
                 {messages.slice(0, 1).map((message) => (
                   <Message key={message.id} message={message} />
                 ))}
@@ -309,32 +340,27 @@ function Chat(): ReactNode {
                   <Message key={message.id} message={message} />
                 ))}
                 {thinking ? (
-                  <p className="m-0 flex items-center gap-2 text-[13px] text-muted">
-                    <Icon name="sparkles" size="sm" tone="faint" />
-                    <Shimmer active>Aan het nadenken…</Shimmer>
-                  </p>
+                  <ChatMessage from="assistant" label="Opus 5.5" streaming>
+                    <p className="m-0 flex items-center gap-2 text-muted">
+                      <Icon name="sparkles" size="sm" tone="faint" />
+                      <Shimmer active>Aan het nadenken…</Shimmer>
+                    </p>
+                  </ChatMessage>
                 ) : null}
               </div>
             </ScrollArea>
           </div>
           <div className="mx-auto w-full max-w-[720px] px-4 pb-4 @3xl:px-8 @3xl:pb-6">
-            <Missing name="Composer" note="Tekstvak en werkbalk als één kader">
-              <div className="flex flex-col gap-1 rounded-lg border border-border bg-composer px-3 pt-2.5 pb-2 shadow-menu">
-                <Textarea
-                  label="Bericht"
-                  variant="bare"
-                  placeholder="Vraag iets of geef een opdracht…"
-                  maxRows={8}
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault()
-                      send()
-                    }
-                  }}
-                />
-                <div className="flex items-center gap-1.5">
+            <Composer
+              labels={galleryLabels.composer}
+              placeholder="Vraag iets of geef een opdracht…"
+              value={draft}
+              onValueChange={setDraft}
+              onSend={send}
+              running={thinking}
+              onStop={stop}
+              tools={
+                <>
                   <IconButton icon="plus" shape="round" outlined size="sm" label="Bijlage" />
                   <PickerPill
                     listLabels={galleryLabels.list}
@@ -349,18 +375,9 @@ function Chat(): ReactNode {
                   <span className="hidden @xl:inline-flex">
                     <Pill icon="shield">Bewerkingen</Pill>
                   </span>
-                  <div className="flex-1" />
-                  <IconButton
-                    icon="arrow-up"
-                    label="Verstuur"
-                    variant={draft.trim() === '' ? 'idle' : 'primary'}
-                    shape="round"
-                    size="sm"
-                    onClick={send}
-                  />
-                </div>
-              </div>
-            </Missing>
+                </>
+              }
+            />
           </div>
         </div>
       </div>
