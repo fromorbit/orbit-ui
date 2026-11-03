@@ -55,6 +55,7 @@ import statTileStory from '../patterns/StatTile.gallery'
 import statusLineStory from '../patterns/StatusLine.gallery'
 import statusShapeStory from '../patterns/StatusShape.gallery'
 import summaryBarStory from '../patterns/SummaryBar.gallery'
+import accordionStory from '../primitives/Accordion.gallery'
 import avatarStory from '../primitives/Avatar.gallery'
 import avatarGroupStory from '../primitives/AvatarGroup.gallery'
 import brandIconStory from '../primitives/BrandIcon.gallery'
@@ -92,6 +93,7 @@ import sectionHeadingStory from '../primitives/SectionHeading.gallery'
 import segmentedControlStory from '../primitives/SegmentedControl.gallery'
 import selectStory from '../primitives/Select.gallery'
 import separatorStory from '../primitives/Separator.gallery'
+import shareBarStory from '../primitives/ShareBar.gallery'
 import skeletonStory from '../primitives/Skeleton.gallery'
 import sliderStory from '../primitives/Slider.gallery'
 import spinnerStory from '../primitives/Spinner.gallery'
@@ -102,6 +104,7 @@ import tabsStory from '../primitives/Tabs.gallery'
 import tagStory from '../primitives/Tag.gallery'
 import textareaStory from '../primitives/Textarea.gallery'
 import thumbnailStory from '../primitives/Thumbnail.gallery'
+import timelineStory from '../primitives/Timeline.gallery'
 import toggleStory from '../primitives/Toggle.gallery'
 import trendBadgeStory from '../primitives/TrendBadge.gallery'
 import { collectStories, type Story } from './story'
@@ -231,4 +234,7 @@ export const stories: Story[] = collectStories([
   trendBadgeStory,
   statTileStory,
   sheetStory,
+  accordionStory,
+  timelineStory,
+  shareBarStory,
 ])
