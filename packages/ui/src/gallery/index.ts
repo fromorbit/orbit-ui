@@ -63,6 +63,7 @@ import inputStory from '../primitives/Input.gallery'
 import kbdStory from '../primitives/Kbd.gallery'
 import levelBarsStory from '../primitives/LevelBars.gallery'
 import numberFieldStory from '../primitives/NumberField.gallery'
+import orbitSymbolStory from '../primitives/OrbitSymbol.gallery'
 import orbitWordmarkStory from '../primitives/OrbitWordmark.gallery'
 import pillStory from '../primitives/Pill.gallery'
 import progressMeterStory from '../primitives/ProgressMeter.gallery'
@@ -172,6 +173,7 @@ export const stories: Story[] = collectStories([
   kbdStory,
   levelBarsStory,
   numberFieldStory,
+  orbitSymbolStory,
   orbitWordmarkStory,
   pillStory,
   progressMeterStory,
