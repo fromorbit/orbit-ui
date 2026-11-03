@@ -131,11 +131,11 @@ export function AppFrame({
   const here = places.find((place) => place.id === current)
   return (
     <div className="flex h-full min-h-0 w-full flex-col @3xl:flex-row">
-      <div className="hidden w-56 shrink-0 flex-col border-border border-r bg-frame bg-(image:--nt-sidebar-gradient) @3xl:flex">
+      <div className="hidden w-60 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) @3xl:flex">
         <div className="flex h-12 shrink-0 items-center px-4">
           <AppName product={product} />
         </div>
-        <div className="mx-2 mb-2 flex h-9 items-center gap-2 rounded-md border border-border bg-surface px-2.5">
+        <div className="mx-2 mb-4 flex h-(--nt-control-md) items-center gap-2 rounded-md px-2 hover:bg-row-hover">
           <ProjectMark name={WORKSPACE} />
           <span className="min-w-0 flex-1 truncate text-[13px] text-fg">{WORKSPACE}</span>
           <Icon name="chevrons-up-down" size="sm" tone="faint" />
@@ -148,10 +148,11 @@ export function AppFrame({
             label="Navigatie"
             labels={LABELS}
             searchable={false}
+            checkSlot={false}
           />
           {aside}
         </div>
-        <div className="flex h-12 shrink-0 items-center gap-2 border-border border-t px-3">
+        <div className="flex h-14 shrink-0 items-center gap-2 px-4">
           <Avatar name={ME} size="sm" />
           <span className="min-w-0 flex-1 truncate text-[12px] text-secondary">{ME}</span>
           <DropdownMenu

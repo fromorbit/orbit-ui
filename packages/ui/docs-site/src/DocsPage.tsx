@@ -84,7 +84,8 @@ function useHash(): string {
 }
 
 /**
- * The framed box one state of a story stands in, which is also the container of its floating
+ * The box one state of a story stands in (no frame: its caption and the space between states
+ * group it, the Law of Proximity), which is also the container of its floating
  * layers.
  *
  * One container per state rather than one for the stage, as Orbit's gallery has: a layer without
@@ -94,7 +95,7 @@ function useHash(): string {
 function StateFrame({ state }: { state: ComponentType }): ReactNode {
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   return (
-    <div ref={setFrame} className="relative rounded-lg border border-border bg-bg p-6">
+    <div ref={setFrame} className="relative py-3">
       <PortalContainerProvider container={frame}>{createElement(state)}</PortalContainerProvider>
     </div>
   )
@@ -189,7 +190,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
         {mode === 'components' ? (
           <nav
             aria-label="Componenten"
-            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col border-border border-r bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-none`}
+            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-none`}
           >
             <div className="flex h-12 shrink-0 items-center gap-2 px-4">
               <OrbitWordmark className="h-4 text-fg" />
@@ -208,6 +209,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                     }}
                     label="Zoek een component"
                     labels={LIST_LABELS}
+                    checkSlot={false}
                   />
                 </div>
               </ScrollArea>
@@ -302,7 +304,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                       key={caption}
                       data-docs-state={stateId(caption)}
                       aria-label={caption}
-                      className="mb-8"
+                      className="mb-10"
                     >
                       <p className="m-0 mb-2 text-[12px] text-muted">{caption}</p>
                       <StateFrame state={state} />
