@@ -9,12 +9,12 @@ test('without a tone the tone is neutral: a tint, no frame', () => {
   expect(className).not.toContain('border')
 })
 
-test('tone="success" says it with its words on the neutral tint', () => {
+test('tone="success" has only its words in a hairline: no plane, which would cost it AA in light', () => {
   render(<Tag tone="success">Ready</Tag>)
   const className = screen.getByText('Ready').className
   expect(className).toContain('text-success')
-  expect(className).toContain('bg-surface-hover')
-  expect(className).not.toContain('border')
+  expect(className).toContain('border-border')
+  expect(className).not.toContain('bg-')
 })
 
 test('tone="attention" uses the subtle background, without a frame', () => {
