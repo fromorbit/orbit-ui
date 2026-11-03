@@ -49,6 +49,25 @@ What runs on its own (a service, an app, a space) shows its state with `StatusMa
 
 The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners whose ink is as high as the circle's, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
 
+## Rhythm (the minor after the status marks)
+
+The same handful of distances, sizes and emphases in every component, so a screen built from them reads as one thing. Each rule comes from one of the [Laws of UX](https://lawsofux.com); the tokens hold the numbers (`tokens.css`, tested in `tokens.test.ts`). A new component takes these tokens and classes rather than numbers of its own.
+
+| Rule | In the kit | Law |
+|---|---|---|
+| **Spacing: one 4px scale, three distances that mean something.** Items of a group 8px apart (`--nt-space-item`), groups 24px (`--nt-space-group`), sections 40px (`--nt-space-section`). The space between groups is at least three times the space inside one. | `List` groups `mt-6`, `SearchList` groups `mt-3`, `PropertyList` groups `pt-4` | Proximity, Chunking |
+| **Separate by space and tint, not by lines and boxes.** A group of rows is one tinted plane (`bg-surface`, `rounded-lg`) without an outer border; never a box inside a box. A divider only runs between rows of one plane that the eye follows across (settings rows, table rows). No line between the frame and the canvas: their brightness is the edge. | `SettingsGroup`, `SummaryBar`, `Banner`, `Tag`, code blocks, the foot of `Dialog` | Common Region, Uniform Connectedness, Prägnanz |
+| **Type: five sizes, three weights.** 11px (meta, a timestamp, a count), 12px (secondary text, labels of groups, descriptions), 13px (the body of the interface: rows, menus, fields), 15px (the title of a dialog, a card or an empty state), 20px (the title of a page). 400 for text, 500 for a label or a chosen row, 600 (`font-heading`) for titles. Group labels are sentence case, never spaced capitals. The initials of a mark (`Avatar`, `ProjectMark`) are a glyph, not a step of the scale. | `SectionHeading`, `Dialog`, `EmptyState`, `PageHeader` | Similarity, Aesthetic–Usability |
+| **Radius: one family, nested.** 4px (`sm`: a tag, a key, a mark), 8px (`md`: a control, a row), 12px (`lg`: a card, a menu, a dialog). Inner radius = outer radius − the inset between them: a 12px menu with a 4px inset holds 8px rows. `rounded-full` only for what is round by meaning. | `--nt-radius-*`, every component | Prägnanz |
+| **Density: controls on four heights.** 24px (`xs`, a quiet footer button), 28px (`sm`, a dense toolbar), 32px (`md`, the default control and the row of a menu or picker), 40px (`lg`, a prominent action, a banner, the title bar). A row of a navigation list is 36px. A pointer target is at least 28px, 32px by default. Padding grows with the height (10/12/16px). | `--nt-control-*`, `Button`, `List`, `SearchList`, `DropdownMenu` | Fitts |
+| **Emphasis: one per view.** One filled main button per view; the place you are is shown once (the row's fill and full-strength text, no check beside it); a count, a time or a path is muted; the accent violet is for links and focus only. Status speaks through its shape and colour, not through a frame. | `SearchList` (`checkSlot={false}` in navigation), `Tag`, `Banner` | Von Restorff, Serial Position |
+| **Fewer choices in sight.** Actions of a row appear on hover or focus; long groups fold; settings come in named groups of a handful of rows. | `List` groups, `RoomyListRow`, `SettingRow`, `SettingsGroup` | Hick, Miller, Tesler |
+| **Familiar shapes.** A field is a framed plane, a button looks pressable, a menu opens at its trigger, the sidebar is a column of places with the current one filled. | `Input`, `Select`, `Button`, `DropdownMenu` | Jakob |
+| **Motion: at once, and calm.** Hover and press answer in 120ms (`--nt-duration-fast`), a layer fades in 180ms (`--nt-duration`) on one curve (`--nt-ease`); nothing moves its own height; `prefers-reduced-motion` turns every animation off. | every `transition`, `.nt-fade-in` | Doherty threshold |
+| **Progress that shows, and a good end.** What runs shows its state (`StatusMark`, `StepChips`, `ProgressMeter`); an empty or finished state is a calm title, a sentence and one action. | `EmptyState`, `StepChips` | Goal-Gradient, Zeigarnik, Peak–End |
+
+Contrast stays as before: every pair in `tokens.test.ts` still reaches AA, and the tints that replaced borders were chosen so that the words on them do too.
+
 ## Breaking changes of 0.2.0
 
 - **Every colour value changed**, in both themes. The names (`--nt-*` and the Tailwind names of `theme.css`) are the same; pixel references of a host (screenshots, end-to-end colour checks) change.
