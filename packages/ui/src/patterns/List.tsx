@@ -142,7 +142,7 @@ export type ListRowProps = Omit<
    */
   compact?: boolean
   /**
-   * A row of 28px (`controlHeight.md`) in the 13px of the base, for a column whose rows a reader
+   * A row of 28px (`controlHeight.sm`) in the 12px of the small step, for a column whose rows a reader
    * scans as a map rather than works through one by one — only the documents of the Specs column.
    * `compact` wins when both are set.
    */
@@ -314,7 +314,7 @@ export function ListRow({
         // padding, where a click belongs to the row.
         <span
           data-nt-list-fold
-          className="no-drag pointer-events-none absolute top-0 -left-2 flex h-8 w-4 items-center justify-center"
+          className="no-drag pointer-events-none absolute top-0 -left-2 flex h-9 w-4 items-center justify-center"
         >
           <button
             type="button"
@@ -345,7 +345,7 @@ export function ListRow({
           subline
             ? `${surface} flex h-12 flex-col justify-center py-1.5 ${restingTone[emphasis]}`
             : `${surface} flex ${
-                compact ? controlHeight.sm : dense ? controlHeight.md : controlHeight.lg
+                compact ? controlHeight.sm : dense ? controlHeight.md : 'h-9'
               } items-center gap-2 ${restingTone[emphasis]}`
         }
         {...rest}
@@ -444,7 +444,7 @@ export function ListGroup({
 }: ListGroupProps) {
   const nameId = useId()
   return (
-    <li className="mt-4 first:mt-0">
+    <li className="mt-6 first:mt-0">
       {/* biome-ignore lint/a11y/useSemanticElements: a fieldset is for forms; this is a named group in a list, and a named section would be a landmark. */}
       <section role="group" aria-labelledby={nameId}>
         <h2 className="m-0">
@@ -454,9 +454,9 @@ export function ListGroup({
             aria-expanded={open}
             aria-label={label}
             onClick={() => onOpenChange(!open)}
-            className={`group/heading no-drag flex h-7 w-full items-center gap-1.5 rounded-md px-2 text-left text-[11px] ${
+            className={`group/heading no-drag flex h-8 w-full items-center gap-1.5 rounded-md px-2 text-left text-[12px] ${
               quiet ? 'font-normal' : 'font-medium'
-            } tracking-[0.04em] text-muted uppercase outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
+            } text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
           >
             {icon ? (
               <span data-nt-list-group-icon className="flex shrink-0">
@@ -469,7 +469,7 @@ export function ListGroup({
             {count === undefined ? null : (
               <span
                 data-nt-list-group-count
-                className={`shrink-0 font-mono tracking-normal ${
+                className={`shrink-0 font-normal tabular-nums ${
                   quiet && open
                     ? 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
                     : ''

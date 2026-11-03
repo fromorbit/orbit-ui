@@ -236,8 +236,8 @@ export interface SearchListProps {
    */
   checkSlot?: boolean
   /**
-   * Draws the group headings as `SectionHeading` (11px capitals, 28px), the heading of every column,
-   * instead of the quiet 24px line of a small picker. For a list that stands in a
+   * Draws the group headings as `SectionHeading` (12px/500 `muted`, 32px), the heading of every
+   * column, instead of the plain line of a small picker, which now looks the same (Similarity). For a list that stands in a
    * large layer — the command palette.
    */
   sectionHeadings?: boolean
@@ -397,9 +397,10 @@ export function highlightPieces(
 /**
  * One row of the list, at the `md` control height.
  *
- * 28px, not the 32px of a `List` row: a `List` is a column of chats in the sidebar, where a row is
- * a destination and the eye travels slowly; this is a panel of 230–280px where the reader is
- * picking one of a handful of names and wants to see them all at once. Every class sits in a
+ * 32px (Fitts: a target the pointer reaches without aiming), a step under the 36px of a `List`
+ * row: a `List` is a column of chats in the sidebar, where a row is a destination and the eye
+ * travels slowly; this is a panel of 230–280px where the reader is picking one of a handful of
+ * names and wants to see them all at once. 13px, the size of a menu row (Similarity). Every class sits in a
  * variant rather than in the base, so exactly one background and one text colour is ever emitted —
  * this project has no class-merging tool (see the note in `ErrorState.tsx`).
  *
@@ -423,8 +424,8 @@ export const searchListMark = 'rounded-sm bg-accent-subtle text-fg'
 const row = cva('flex cursor-default gap-2 rounded-md px-2', {
   variants: {
     active: {
-      true: 'bg-surface-active text-[12px] text-fg-strong',
-      false: 'text-[12px] text-muted hover:bg-surface hover:text-fg',
+      true: 'bg-surface-active text-[13px] text-fg-strong',
+      false: 'text-[13px] text-muted hover:bg-surface hover:text-fg',
     },
     off: { true: 'pointer-events-none opacity-40', false: '' },
     // The fixed height belongs to the one-line row; a stacked row is as tall as its explanation
@@ -461,7 +462,7 @@ export const searchListRow = row
 function listbox(searchable: boolean, activeId: string | null, scroll: boolean): string {
   if (searchable) {
     // A capped list is a plain block, not a flex column: a column that runs out of height shrinks
-    // its rows below 28px (they have a height, not a floor) instead of letting them scroll.
+    // its rows below 32px (they have a height, not a floor) instead of letting them scroll.
     return scroll ? 'max-h-90 overflow-y-auto overscroll-contain' : 'flex flex-col'
   }
   return activeId === null
@@ -751,7 +752,12 @@ export function SearchList({
           if (!group.name) return <Fragment key="ungrouped">{body}</Fragment>
           return (
             // biome-ignore lint/a11y/useSemanticElements: a fieldset is for forms; this is a named run of options inside a listbox, and a named section would be a landmark.
-            <div key={group.name} role="group" aria-labelledby={`${base}-g${group.index}`}>
+            <div
+              key={group.name}
+              role="group"
+              aria-labelledby={`${base}-g${group.index}`}
+              className="mt-3 first:mt-0"
+            >
               {sectionHeadings ? (
                 <SectionHeading level="label" id={`${base}-g${group.index}`}>
                   {group.name}
@@ -759,7 +765,7 @@ export function SearchList({
               ) : (
                 <p
                   id={`${base}-g${group.index}`}
-                  className="m-0 flex h-6 items-center px-2 text-[11px] font-medium text-muted"
+                  className="m-0 flex h-8 items-center px-2 text-[12px] font-medium text-muted"
                 >
                   {group.name}
                 </p>

@@ -168,15 +168,13 @@ test('the current row is the current page, the rest is not', () => {
   expect(screen.getByRole('button', { name: 'Tweede chat' })).not.toHaveAttribute('aria-current')
 })
 
-test('a row is 32px high, from the size token', () => {
+test('a row is 36px high, a step above the 32px of a control', () => {
   render(
     <List label="Chats">
       <ListRow title="Eerste chat" />
     </List>,
   )
-  expect(screen.getByRole('button', { name: 'Eerste chat' }).className).toContain(
-    'h-(--nt-control-lg)',
-  )
+  expect(screen.getByRole('button', { name: 'Eerste chat' }).className).toContain('h-9')
 })
 
 test('a long title is truncated instead of widening the row', () => {
@@ -405,7 +403,7 @@ test('a second line stands under the title, hidden from the ear, its words in th
   expect(line?.className).toContain('ps-[22px]')
 })
 
-test('a row without a second line keeps its single 32px line', () => {
+test('a row without a second line keeps its single 36px line', () => {
   render(
     <List label="Chats">
       <ListRow title="Eerste chat" kind="running" status="Bezig" marker="shape" />
@@ -413,7 +411,7 @@ test('a row without a second line keeps its single 32px line', () => {
   )
   const row = screen.getByRole('button', { name: /Eerste chat/ })
   expect(row.querySelector('[data-nt-list-subline]')).toBeNull()
-  expect(row.className).toContain('h-(--nt-control-lg)')
+  expect(row.className).toContain('h-9')
 })
 
 test('a strong row draws its title in the foreground colour, a default one muted', () => {
@@ -490,11 +488,11 @@ test('a folded group renders no rows, so the arrows skip straight to the next gr
   expect(screen.getByRole('button', { name: /Eerste chat/ })).toBeInTheDocument()
 })
 
-test('the heading of a group is a small label in capitals, 11px and muted', () => {
+test('the heading of a group is a quiet label in sentence case, 12px and muted', () => {
   render(<FoldableGroup />)
   const toggle = screen.getByRole('button', { name: 'webshop, 2 chats' })
-  expect(toggle.className).toContain('text-[11px]')
-  expect(toggle.className).toContain('uppercase')
+  expect(toggle.className).toContain('text-[12px]')
+  expect(toggle.className).not.toContain('uppercase')
   expect(toggle.className).toContain('text-muted')
 })
 

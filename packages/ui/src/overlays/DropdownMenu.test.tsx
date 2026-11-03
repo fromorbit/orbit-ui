@@ -766,7 +766,7 @@ test('a head without a detail is one line, named by its title alone', async () =
   expect(menu.querySelector('[data-nt-menu-head]')?.textContent).toBe('Niet aangemeld')
 })
 
-test('comfortable rows are 30px with their icon in muted, quiet rows dimmed', async () => {
+test('comfortable rows are 36px with their icon in muted, quiet rows dimmed', async () => {
   render(
     <DropdownMenu
       trigger={<Button>Account</Button>}
@@ -780,7 +780,7 @@ test('comfortable rows are 30px with their icon in muted, quiet rows dimmed', as
   )
   await userEvent.click(screen.getByRole('button', { name: 'Account' }))
   const row = await screen.findByRole('menuitem', { name: 'Profiel' })
-  expect(row.className).toContain('h-[30px]')
+  expect(row.className).toContain('h-9')
   expect(row.querySelector('[data-nt-menu-icon]')?.className).toContain('text-muted')
   const quiet = screen.getByRole('menuitem', { name: 'Afmelden' })
   expect(quiet.className).toContain('text-secondary')
