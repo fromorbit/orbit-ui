@@ -14,6 +14,7 @@ import chipListFieldStory from '../patterns/ChipListField.gallery'
 import choiceCardStory from '../patterns/ChoiceCard.gallery'
 import choiceCardsStory from '../patterns/ChoiceCards.gallery'
 import copyButtonStory from '../patterns/CopyButton.gallery'
+import creditCardFieldStory from '../patterns/CreditCardField.gallery'
 import editableTableStory from '../patterns/EditableTable.gallery'
 import emptyStateStory from '../patterns/EmptyState.gallery'
 import errorStateStory from '../patterns/ErrorState.gallery'
@@ -209,4 +210,5 @@ export const stories: Story[] = collectStories([
   comboboxStory,
   sliderStory,
   otpInputStory,
+  creditCardFieldStory,
 ])
