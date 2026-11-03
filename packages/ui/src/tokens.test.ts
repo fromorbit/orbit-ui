@@ -223,8 +223,26 @@ describe('tokens.css', () => {
     expect(parseDeclarations(rule?.[1] ?? '').get('--nt-toast-bottom')).toBe('16px')
   })
 
-  test('large cards and dialogs round at 10px', () => {
-    expect(tokens.get('--nt-radius-lg')).toBe('10px')
+  test('the radii nest: a card of 12px holds rows of 8px at a 4px inset, marks of 4px', () => {
+    expect(tokens.get('--nt-radius-lg')).toBe('12px')
+    expect(tokens.get('--nt-radius-md')).toBe('8px')
+    expect(tokens.get('--nt-radius-sm')).toBe('4px')
+  })
+
+  test('the control heights stand on the 4px grid, the default one a 32px target', () => {
+    const heights = ['xs', 'sm', 'md', 'lg'].map((size) => tokens.get(`--nt-control-${size}`))
+    expect(heights).toEqual(['24px', '28px', '32px', '40px'])
+  })
+
+  test('motion stays under the Doherty threshold: fast for hover, calm for what opens', () => {
+    expect(tokens.get('--nt-duration-fast')).toBe('120ms')
+    expect(tokens.get('--nt-duration')).toBe('180ms')
+  })
+
+  test('the space between groups is three times the space inside one (Proximity)', () => {
+    const px = (name: string) => Number.parseInt(tokens.get(name) ?? '', 10)
+    expect(px('--nt-space-group')).toBeGreaterThanOrEqual(3 * px('--nt-space-item'))
+    expect(px('--nt-space-section')).toBeGreaterThan(px('--nt-space-group'))
   })
 })
 
