@@ -50,10 +50,12 @@ import settingsGroupStory from '../patterns/SettingsGroup.gallery'
 import shelfGroupStory from '../patterns/ShelfGroup.gallery'
 import shimmerStory from '../patterns/Shimmer.gallery'
 import stackedRowStory from '../patterns/StackedRow.gallery'
+import statTileStory from '../patterns/StatTile.gallery'
 import statusLineStory from '../patterns/StatusLine.gallery'
 import statusShapeStory from '../patterns/StatusShape.gallery'
 import summaryBarStory from '../patterns/SummaryBar.gallery'
 import avatarStory from '../primitives/Avatar.gallery'
+import avatarGroupStory from '../primitives/AvatarGroup.gallery'
 import brandIconStory from '../primitives/BrandIcon.gallery'
 import buttonStory from '../primitives/Button.gallery'
 import calendarStory from '../primitives/Calendar.gallery'
@@ -100,6 +102,7 @@ import tagStory from '../primitives/Tag.gallery'
 import textareaStory from '../primitives/Textarea.gallery'
 import thumbnailStory from '../primitives/Thumbnail.gallery'
 import toggleStory from '../primitives/Toggle.gallery'
+import trendBadgeStory from '../primitives/TrendBadge.gallery'
 import { collectStories, type Story } from './story'
 
 /**
@@ -223,4 +226,7 @@ export const stories: Story[] = collectStories([
   fileDropStory,
   dataTableStory,
   paginationStory,
+  avatarGroupStory,
+  trendBadgeStory,
+  statTileStory,
 ])
