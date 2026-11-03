@@ -4,7 +4,6 @@ import {
   DropdownMenu,
   Icon,
   IconButton,
-  KbdKeys,
   List,
   ListGroup,
   PickerPill,
@@ -159,7 +158,7 @@ function Message({ message }: { message: Message }): ReactNode {
   if (message.role === 'user') {
     return (
       <Missing name="ChatMessage" note="Bericht van de gebruiker" className="flex justify-end">
-        <p className="m-0 max-w-[80%] rounded-2xl rounded-br-md bg-bubble px-4 py-2.5 text-[14px] text-fg leading-relaxed">
+        <p className="m-0 max-w-[80%] rounded-lg rounded-br-sm bg-bubble px-4 py-2.5 text-[13px] text-fg leading-relaxed">
           {message.text}
         </p>
       </Missing>
@@ -171,7 +170,7 @@ function Message({ message }: { message: Message }): ReactNode {
       <div className="-ml-1.5 flex items-center gap-0.5">
         <CopyButton text={message.text} {...galleryLabels.copy} />
         <IconButton icon="rotate-ccw" size="sm" label="Opnieuw" />
-        <span className="ml-2 text-[11.5px] text-muted">Opus 5.5 · 12 s</span>
+        <span className="ml-2 text-[11px] text-muted">Opus 5.5 · 12 s</span>
       </div>
     </Missing>
   )
@@ -181,16 +180,11 @@ function Message({ message }: { message: Message }): ReactNode {
 function Conversations(): ReactNode {
   const [open, setOpen] = useState<Record<string, boolean>>({})
   return (
-    <div className="hidden w-72 shrink-0 flex-col border-border border-r bg-frame @4xl:flex">
+    <div className="hidden w-72 shrink-0 flex-col bg-frame @4xl:flex">
       <div className="flex h-12 shrink-0 items-center gap-2 px-4">
         <h2 className="m-0 flex-1 font-medium text-[13px] text-fg">Gesprekken</h2>
         <IconButton icon="search" size="sm" label="Zoek gesprekken" />
         <IconButton icon="square-pen" size="sm" label="Nieuw gesprek" />
-      </div>
-      <div className="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-attention-border bg-attention-subtle px-3 py-2 text-[12px]">
-        <StatusShape kind="attention" />
-        <span className="flex-1 text-fg">2 gesprekken wachten op jou</span>
-        <KbdKeys platform="mac">⌘J</KbdKeys>
       </div>
       <div className="min-h-0 flex-1">
         <ScrollArea>
@@ -281,7 +275,7 @@ function Chat(): ReactNode {
         <Conversations />
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
-            <h1 className="m-0 min-w-0 truncate font-medium text-[14px] text-fg">
+            <h1 className="m-0 min-w-0 truncate font-medium text-[13px] text-fg">
               Btw uit een bedrag halen
             </h1>
             <span className="hidden min-w-0 items-center gap-2 text-[12px] text-muted @2xl:flex">
@@ -325,7 +319,7 @@ function Chat(): ReactNode {
           </div>
           <div className="mx-auto w-full max-w-[720px] px-4 pb-4 @3xl:px-8 @3xl:pb-6">
             <Missing name="Composer" note="Tekstvak en werkbalk als één kader">
-              <div className="flex flex-col gap-1 rounded-2xl border border-border bg-composer px-3 pt-2.5 pb-2 shadow-menu">
+              <div className="flex flex-col gap-1 rounded-lg border border-border bg-composer px-3 pt-2.5 pb-2 shadow-menu">
                 <Textarea
                   label="Bericht"
                   variant="bare"

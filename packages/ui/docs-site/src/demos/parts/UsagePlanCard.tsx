@@ -6,18 +6,16 @@ import { Missing } from '../../demo-kit/Missing'
 export function UsagePlanCard(): ReactNode {
   return (
     <Missing name="PlanCard" className="h-full">
-      <div className="flex h-full flex-col gap-4 rounded-xl border border-border bg-overlay p-4">
+      <div className="flex h-full flex-col gap-4 rounded-lg bg-overlay p-4">
         <div className="flex items-center gap-2">
           <span className="font-medium text-[13px] text-fg">Team</span>
           <Tag tone="success">Huidig plan</Tag>
         </div>
         <p className="m-0 flex items-baseline gap-1.5">
-          <span className="font-heading text-[30px] text-fg leading-none tabular-nums tracking-[-0.02em]">
-            € 24
-          </span>
+          <span className="font-heading text-[20px] text-fg leading-none tabular-nums">€ 24</span>
           <span className="text-[12px] text-muted">per lid per maand, excl. btw</span>
         </p>
-        <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[12.5px] text-secondary">
+        <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px] text-secondary">
           {[
             'Onbeperkt gesprekken en specs',
             '250 agent-uren per maand',
@@ -30,7 +28,7 @@ export function UsagePlanCard(): ReactNode {
             </li>
           ))}
         </ul>
-        <div className="mt-auto flex items-center justify-between gap-2 border-border border-t pt-3">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
           <span className="text-[12px] text-muted">6 leden · € 174,24 per maand</span>
           <Button variant="secondary" size="sm">
             Wijzigen

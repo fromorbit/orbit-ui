@@ -6,14 +6,16 @@ import { handBackOnlyLostFocus } from './hand-back'
 import { Icon } from './Icon'
 
 const trigger = cva(
-  'no-drag inline-flex max-w-56 items-center gap-1.5 rounded-md border bg-surface px-2 text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
+  'no-drag inline-flex items-center gap-1.5 rounded-md border bg-surface px-2 text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
   {
     variants: {
       size: controlSize,
       // The border of a choice that failed its check, as on `Input`.
       invalid: { true: 'border-danger', false: 'border-border' },
+      // The whole width of a form column, as `Combobox` and `DatePicker` take it.
+      block: { true: 'w-full min-w-0 justify-between', false: 'max-w-56' },
     },
-    defaultVariants: { size: 'md', invalid: false },
+    defaultVariants: { size: 'md', invalid: false, block: false },
   },
 )
 
@@ -50,6 +52,8 @@ export interface SelectProps<T extends string> {
   'aria-required'?: boolean | undefined
   /** The trigger's id, so a `<label for>` of `FormField` focuses it. */
   id?: string | undefined
+  /** The whole width of its column, as in a form; otherwise at most 14rem. */
+  block?: boolean
 }
 
 /**
@@ -74,6 +78,7 @@ export function Select<T extends string>({
   'aria-invalid': ariaInvalid,
   'aria-required': ariaRequired,
   id,
+  block,
 }: SelectProps<T>) {
   return (
     <RadixSelect.Root
@@ -88,7 +93,7 @@ export function Select<T extends string>({
         aria-invalid={ariaInvalid}
         aria-required={ariaRequired}
         id={id}
-        className={trigger({ size, invalid: ariaInvalid === true })}
+        className={trigger({ size, invalid: ariaInvalid === true, block: block === true })}
       >
         <span className="truncate">
           <RadixSelect.Value />

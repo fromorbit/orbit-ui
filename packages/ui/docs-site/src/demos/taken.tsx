@@ -211,7 +211,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
             </div>
           </div>
           {spec.reviewer === ME ? (
-            <div className="flex flex-col gap-3 rounded-xl border border-attention-border bg-attention-subtle p-4">
+            <div className="flex flex-col gap-3 rounded-lg bg-attention-subtle p-4">
               <p className="m-0 text-[13px] text-fg leading-relaxed">
                 Deze spec wacht op jouw akkoord. Na goedkeuren kan een agent hem uitvoeren op een
                 eigen branch.
@@ -280,7 +280,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
           />
           <section className="flex flex-col gap-1.5">
             <h3 className="m-0 font-medium text-[12px] text-muted">In het kort</h3>
-            <p className="m-0 text-[13.5px] text-fg leading-relaxed">{spec.summary}</p>
+            <p className="m-0 text-[13px] text-fg leading-relaxed">{spec.summary}</p>
           </section>
           {spec.done === '' ? null : (
             <section className="flex flex-col gap-1.5">
@@ -301,7 +301,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 </TimelineItem>
               ))}
               <TimelineItem marker={<Avatar name="Sem Oudeweg" size="sm" />} time="2 u">
-                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-border bg-overlay px-3 py-2">
+                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg bg-surface px-3 py-2">
                   <span className="font-medium text-fg">Sem Oudeweg</span>
                   <span className="text-fg leading-relaxed">
                     Moet het restant ook in het account van de klant zichtbaar zijn?
@@ -344,7 +344,7 @@ function Specs(): ReactNode {
   return (
     <AppFrame product="orbit" current="taken">
       <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
-        <h1 className="m-0 font-medium text-[14px] text-fg">Specs</h1>
+        <h1 className="m-0 font-medium text-[13px] text-fg">Specs</h1>
         <SegmentedControl<View>
           label="Weergave"
           size="sm"
@@ -359,7 +359,7 @@ function Specs(): ReactNode {
         <div className="hidden w-52 @3xl:block">
           <Input label="Zoek specs" placeholder="Zoek…" icon="search" size="sm" />
         </div>
-        <Button variant="primary" size="sm">
+        <Button variant="secondary" size="sm">
           Nieuwe spec
         </Button>
       </div>

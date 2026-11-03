@@ -457,8 +457,9 @@ const HEADING_SMALL = 'm-0 mt-2 text-[13px] font-medium first:mt-0'
 const LIST = 'm-0 whitespace-normal pl-4'
 const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-normal'
 // A task item carries a checkbox instead of a marker, but keeps the indent of the list it is in,
-// so the boxes line up with the bullets and numbers around them.
-const TASK_ITEM = `${ITEM} list-none`
+// so the boxes line up with the bullets and numbers around them. A hanging indent of the box's
+// width (14px and its 8px margin) lines a wrapped line up with the words, not under the box.
+const TASK_ITEM = `${ITEM} list-none pl-[22px] -indent-[22px]`
 
 /** A heading on the chat's capped scale. */
 function Heading({ level, children }: { level: 1 | 2 | 3 | 4 | 5 | 6; children: ReactNode }) {

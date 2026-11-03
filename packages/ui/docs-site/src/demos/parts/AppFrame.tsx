@@ -94,7 +94,7 @@ export interface AppFrameProps {
 function AppName({ product }: { product: 'orbit' | 'halo' }): ReactNode {
   if (product === 'orbit') return <OrbitWordmark className="h-[15px] text-fg" />
   return (
-    <span className="flex items-center gap-1 font-heading text-[16px] text-fg tracking-[-0.01em]">
+    <span className="flex items-center gap-1 font-heading text-[15px] text-fg tracking-[-0.01em]">
       Halo
       <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
     </span>
@@ -168,7 +168,7 @@ export function AppFrame({
           />
         </div>
       </div>
-      <div className="flex h-12 shrink-0 items-center gap-2 border-border border-b bg-frame px-2 @3xl:hidden">
+      <div className="flex h-12 shrink-0 items-center gap-2 bg-frame px-2 @3xl:hidden">
         <DropdownMenu
           trigger={<IconButton icon="panel-left" size="sm" label="Navigatie" />}
           label="Navigatie"

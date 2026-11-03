@@ -15,6 +15,13 @@ test('shows the chosen value with the label as its accessible name', () => {
   expect(trigger).toHaveTextContent('Project A')
 })
 
+test('block takes the width of its column instead of stopping at 14rem', () => {
+  render(<Select label="Taal" value="a" options={options} onValueChange={vi.fn()} block />)
+  const trigger = screen.getByRole('combobox', { name: 'Taal' })
+  expect(trigger).toHaveClass('w-full')
+  expect(trigger).not.toHaveClass('max-w-56')
+})
+
 test('opens with Enter and picks with arrow keys', async () => {
   const onValueChange = vi.fn()
   render(<Select label="Project" value="a" options={options} onValueChange={onValueChange} />)

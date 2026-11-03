@@ -113,7 +113,7 @@ export const nl = {
     cvcHint: (length) => `${length} cijfers, ${length === 4 ? 'voorop' : 'achterop'}`,
     name: 'Naam op de kaart',
     namePlaceholder: 'Noor de Vries',
-    cardNamePlaceholder: 'NAAM OP DE KAART',
+    cardNamePlaceholder: 'Naam op de kaart',
     cardExpiry: 'Geldig tot',
     genericBrand: 'Kaart',
     errors: {

@@ -266,12 +266,12 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
             ].map((fact) => (
               <div
                 key={fact.label}
-                className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-overlay px-3 py-2.5 @3xl:flex-row @3xl:items-baseline @3xl:gap-2 @3xl:px-4 @3xl:py-3"
+                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay px-3 py-2.5 @3xl:flex-row @3xl:items-baseline @3xl:gap-2 @3xl:px-4 @3xl:py-3"
               >
-                <span className="whitespace-nowrap font-heading text-[17px] text-fg tabular-nums @3xl:text-[20px]">
+                <span className="whitespace-nowrap font-heading text-[20px] text-fg tabular-nums">
                   {fact.value}
                 </span>
-                <span className="min-w-0 truncate text-[12px] text-muted @3xl:text-[12.5px]">
+                <span className="min-w-0 truncate text-[12px] text-muted @3xl:text-[12px]">
                   <span className="@3xl:hidden">{fact.short}</span>
                   <span className="hidden @3xl:inline">{`${fact.label.toLowerCase()} · ${fact.note}`}</span>
                 </span>
@@ -310,7 +310,7 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
       </ScrollArea>
       {selected.length > 0 ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4">
-          <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-lg border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
             <span className="text-[13px] text-fg tabular-nums">{`${selected.length} geselecteerd`}</span>
             <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
               Wissen

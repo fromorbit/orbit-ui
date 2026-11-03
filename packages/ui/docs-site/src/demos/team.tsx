@@ -5,6 +5,8 @@ import {
   Button,
   Checkbox,
   Chip,
+  DataTable,
+  type DataTableColumn,
   Dialog,
   DropdownMenu,
   FormField,
@@ -18,7 +20,6 @@ import {
   Textarea,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import { Missing } from '../demo-kit/Missing'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame, DAY, HOUR, NOW } from './parts/AppFrame'
 import { Panel } from './parts/Panel'
@@ -203,8 +204,19 @@ function InviteDialog({
   )
 }
 
-/** Roles against rights in a grid, drawn as the missing `PermissionMatrix`. */
-function PermissionMatrixSketch({
+/** One right, as a row of the table of rights. */
+interface RightRow {
+  right: string
+  index: number
+}
+
+const RIGHT_ROWS: readonly RightRow[] = RIGHTS.map((right, index) => ({ right, index }))
+
+/**
+ * Roles against rights: a `DataTable` whose role columns hold a box per right. The owner may do
+ * everything, so the owner's boxes are on and cannot be changed.
+ */
+function Permissions({
   matrix,
   onChange,
 }: {
@@ -212,44 +224,40 @@ function PermissionMatrixSketch({
   onChange(role: Assignable, index: number, on: boolean): void
 }): ReactNode {
   const roles: Role[] = ['owner', 'admin', 'member', 'guest']
+  const columns: DataTableColumn<RightRow>[] = [
+    {
+      id: 'right',
+      header: 'Recht',
+      cell: (row) => <span className="whitespace-nowrap text-secondary">{row.right}</span>,
+    },
+    ...roles.map(
+      (role): DataTableColumn<RightRow> => ({
+        id: role,
+        header: ROLE_LABEL[role],
+        align: 'center',
+        cell: (row) => (
+          <span className="inline-flex align-middle">
+            <Checkbox
+              label={`${ROLE_LABEL[role]}: ${row.right}`}
+              checked={role === 'owner' ? true : (matrix[role][row.index] ?? false)}
+              disabled={role === 'owner'}
+              onCheckedChange={(on) => {
+                if (role !== 'owner') onChange(role, row.index, on)
+              }}
+            />
+          </span>
+        ),
+      }),
+    ),
+  ]
   return (
-    <Missing name="PermissionMatrix" note="Rechten tegen rollen; de eigenaar mag alles">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[24rem] border-collapse text-[13px]">
-          <thead>
-            <tr className="border-border border-b text-[12px] text-muted">
-              <th className="py-2.5 pr-3 pl-4 text-left font-normal">Recht</th>
-              {roles.map((role) => (
-                <th key={role} className="w-[4.5rem] px-1 py-2.5 text-center font-normal">
-                  {ROLE_LABEL[role]}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {RIGHTS.map((right, index) => (
-              <tr key={right} className="border-border border-b last:border-b-0">
-                <td className="whitespace-nowrap py-2.5 pr-3 pl-4 text-secondary">{right}</td>
-                {roles.map((role) => (
-                  <td key={role} className="px-1 py-2.5">
-                    <span className="flex justify-center">
-                      <Checkbox
-                        label={`${ROLE_LABEL[role]}: ${right}`}
-                        checked={role === 'owner' ? true : (matrix[role][index] ?? false)}
-                        disabled={role === 'owner'}
-                        onCheckedChange={(on) => {
-                          if (role !== 'owner') onChange(role, index, on)
-                        }}
-                      />
-                    </span>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Missing>
+    <DataTable
+      label="Rechten per rol"
+      columns={columns}
+      rows={RIGHT_ROWS}
+      rowKey={(row) => row.right}
+      labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
+    />
   )
 }
 
@@ -371,7 +379,7 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                   </div>
                 }
               >
-                <ul className="m-0 list-none border-border border-t p-0">
+                <ul className="m-0 list-none p-0">
                   {shown.map((member) => (
                     <MemberRow
                       key={member.email}
@@ -387,7 +395,7 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                 </ul>
               </Panel>
               <Panel title="Openstaande uitnodigingen" meta={String(invited.length)} flush>
-                <ul className="m-0 list-none border-border border-t p-0">
+                <ul className="m-0 list-none p-0">
                   {invited.map((invite) => (
                     <li
                       key={invite.email}
@@ -428,8 +436,8 @@ function Team({ variant }: DemoScreenProps): ReactNode {
               </Panel>
             </div>
             <Panel title="Rechten per rol" meta="voor de hele werkruimte" flush>
-              <div className="border-border border-t">
-                <PermissionMatrixSketch
+              <div>
+                <Permissions
                   matrix={matrix}
                   onChange={(role, index, on) =>
                     setMatrix((now) => ({

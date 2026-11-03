@@ -14,11 +14,10 @@ export const MISSING = {
     'Een bericht in een gesprek: afzender, tijd, bubbel voor de gebruiker, platte tekst voor de assistent en acties eronder.',
   Composer:
     'Het invoerkader van een chat: een groeiend tekstvak met werkbalk (model, bijlage, versturen) als één geheel.',
-  PermissionMatrix: 'Rollen tegen rechten in een raster van vinkjes, met kop per rol.',
   PlanCard:
     'Een abonnementskaart: naam, prijs per maand, wat erin zit en een knop; de huidige gemarkeerd.',
   FindingCard:
-    'Een bevinding van een review: gewicht als rand en woord, titel, uitleg, pagina en schermafbeelding ernaast.',
+    'Een bevinding van een review: gewicht als teken en woord, titel, uitleg, pagina en schermafbeelding ernaast.',
   Scrubber:
     'De tijdlijn van een opname: afspeelpositie, slepen en markeringen per gebeurtenis (klik, navigatie, fout).',
 } as const
@@ -101,7 +100,7 @@ export function Missing({
       {marked ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -top-2 right-3 z-10 rounded-full border border-accent-border bg-bg px-1.5 font-mono text-[10px] leading-4 text-accent-text"
+          className="pointer-events-none absolute -top-2 right-3 z-10 rounded-full border border-accent-border bg-bg px-1.5 font-mono text-[11px] leading-4 text-accent-text"
         >
           {name}
         </span>

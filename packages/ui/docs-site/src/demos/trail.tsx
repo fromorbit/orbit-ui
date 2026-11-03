@@ -14,6 +14,8 @@ import {
   SegmentedControl,
   Tabs,
   Tag,
+  Timeline,
+  TimelineItem,
 } from '../../../src'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
@@ -43,11 +45,11 @@ const SPEEDS = [
 ] as const
 
 /** The glyph and tone of a line of the events, per kind. */
-const EVENT_LOOK: Record<TrailEventKind, { icon: IconName; tone: string; word: string }> = {
-  klik: { icon: 'mouse-pointer-click', tone: 'text-secondary', word: 'Klik' },
-  navigatie: { icon: 'globe', tone: 'text-accent-text', word: 'Navigatie' },
-  fout: { icon: 'octagon-alert', tone: 'text-danger', word: 'Fout' },
-  verzoek: { icon: 'alert-triangle', tone: 'text-danger', word: 'Mislukt verzoek' },
+const EVENT_LOOK: Record<TrailEventKind, { icon: IconName; word: string }> = {
+  klik: { icon: 'mouse-pointer-click', word: 'Klik' },
+  navigatie: { icon: 'globe', word: 'Navigatie' },
+  fout: { icon: 'octagon-alert', word: 'Fout' },
+  verzoek: { icon: 'alert-triangle', word: 'Mislukt verzoek' },
 }
 
 /** The glyph and tone of a console line, per level. */
@@ -57,35 +59,40 @@ const LEVEL_LOOK: Record<ConsoleLine['level'], { icon: IconName; row: string; te
   error: { icon: 'octagon-alert', row: 'bg-danger-subtle', text: 'text-danger' },
 }
 
-/** What happened in the recording, line by line; the line the player is at stands out. */
+/**
+ * What happened in the recording, as a timeline: what went wrong in red, the line the player is at
+ * in full strength, and what the player has not reached yet as a dashed round.
+ */
 function Events(): ReactNode {
   return (
-    <ol className="m-0 flex list-none flex-col p-2">
-      {EVENTS.map((event) => {
-        const look = EVENT_LOOK[event.kind]
-        const here = event.at === POSITION
-        return (
-          <li
-            key={`${event.kind}-${event.at}`}
-            className={`flex items-center gap-3 rounded-md px-2.5 py-1.5 ${here ? 'bg-surface-active' : ''}`}
-          >
-            <span className="w-12 shrink-0 font-mono text-[11.5px] text-muted tabular-nums">
-              {clock(event.at)}
-            </span>
-            <span className={look.tone}>
-              <Icon name={look.icon} size="sm" />
-            </span>
-            <span className="min-w-0 flex-1 truncate text-[13px] text-fg">
-              {event.title}
-              {event.detail === undefined ? null : (
-                <span className="text-muted">{` · ${event.detail}`}</span>
-              )}
-            </span>
-            <span className="hidden text-[12px] text-muted @xl:inline">{look.word}</span>
-          </li>
-        )
-      })}
-    </ol>
+    <div className="px-4 py-4">
+      <Timeline label="Gebeurtenissen">
+        {EVENTS.map((event) => {
+          const look = EVENT_LOOK[event.kind]
+          const here = event.at === POSITION
+          const ahead = event.at > POSITION
+          const wrong = event.kind === 'fout' || event.kind === 'verzoek'
+          return (
+            <TimelineItem
+              key={`${event.kind}-${event.at}`}
+              marker={<Icon name={look.icon} size="sm" />}
+              tone={ahead ? 'pending' : wrong ? 'danger' : 'default'}
+              time={<span className="tabular-nums">{clock(event.at)}</span>}
+            >
+              <span className="min-w-0 truncate">
+                <span className={here ? 'font-medium text-fg' : ahead ? 'text-muted' : 'text-fg'}>
+                  {event.title}
+                </span>
+                {event.detail === undefined ? null : (
+                  <span className="text-muted">{` · ${event.detail}`}</span>
+                )}
+                <span className="sr-only">{` (${look.word})`}</span>
+              </span>
+            </TimelineItem>
+          )
+        })}
+      </Timeline>
+    </div>
   )
 }
 
@@ -128,7 +135,7 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
       header: 'Methode',
       sortValue: (request) => request.method,
       cell: (request) => (
-        <span className="font-mono text-[11.5px] text-secondary">{request.method}</span>
+        <span className="font-mono text-[11px] text-secondary">{request.method}</span>
       ),
     },
     {
@@ -136,7 +143,7 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
       header: 'Pad',
       sortValue: (request) => request.path,
       cell: (request) => (
-        <span className={`font-mono text-[11.5px] ${failed(request) ? 'text-danger' : 'text-fg'}`}>
+        <span className={`font-mono text-[11px] ${failed(request) ? 'text-danger' : 'text-fg'}`}>
           {request.path}
         </span>
       ),
@@ -194,7 +201,7 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
 function Network(): ReactNode {
   const longest = Math.max(...NETWORK.map((request) => request.at * 1000 + request.ms))
   return (
-    <div className="p-2 text-[12.5px]">
+    <div className="p-2 text-[12px]">
       <DataTable
         label="Netwerk"
         columns={networkColumns(longest)}
@@ -217,7 +224,7 @@ function TriggerTag({ trigger }: { trigger: string }): ReactNode {
  */
 function Trail(): ReactNode {
   const [speed, setSpeed] = useState<Speed>('1')
-  const [tab, setTab] = useState('console')
+  const [tab, setTab] = useState('gebeurtenissen')
   const [current, setCurrent] = useState('r1')
   const errors = EVENTS.filter((event) => event.kind === 'fout').length
   return (
@@ -244,7 +251,7 @@ function Trail(): ReactNode {
             <div className="flex min-w-0 flex-col gap-5">
               <section
                 aria-label="Speler"
-                className="flex flex-col gap-3 rounded-xl border border-border bg-overlay p-3 @3xl:p-4"
+                className="flex flex-col gap-3 rounded-lg bg-overlay p-3 @3xl:p-4"
               >
                 <TrailReplay />
                 <TrailScrubber events={EVENTS} duration={DURATION} position={POSITION} />
@@ -273,7 +280,7 @@ function Trail(): ReactNode {
               </section>
               <section
                 aria-label="Wat er gebeurde"
-                className="flex flex-col overflow-hidden rounded-xl border border-border bg-overlay"
+                className="flex flex-col overflow-hidden rounded-lg bg-overlay"
               >
                 <Tabs
                   label="Wat er gebeurde"

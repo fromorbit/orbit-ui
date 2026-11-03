@@ -1,10 +1,13 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
   Banner,
   Button,
+  type CardValue,
   CopyButton,
+  CreditCardField,
   DataTable,
   type DataTableColumn,
+  Form,
   Icon,
   IconButton,
   type IconName,
@@ -16,7 +19,7 @@ import {
   TimelineItem,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
-import type { DemoModule } from '../demo-kit/types'
+import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
 import { type Bar, ChartSketch } from './parts/ChartSketch'
 import { type Figure, KpiTile } from './parts/KpiTile'
@@ -307,7 +310,13 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
 }
 
 /** One invoice in full: the amount, its parts, the reference and its history. */
-function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
+function InvoiceDetail({
+  invoice,
+  toPayment,
+}: {
+  invoice: Invoice
+  toPayment: () => void
+}): ReactNode {
   const status = STATUS[invoice.status]
   return (
     <Panel
@@ -324,7 +333,7 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
     >
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
-          <span className="font-heading text-[28px] text-fg leading-none tabular-nums tracking-[-0.02em]">
+          <span className="font-heading text-[20px] text-fg leading-none tabular-nums">
             {euro(gross(invoice))}
           </span>
           <Tag tone={status.tone}>{status.label}</Tag>
@@ -357,7 +366,7 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
             <Button variant="primary" size="sm">
               Nu betalen met iDEAL
             </Button>
-            <Button variant="secondary" size="sm">
+            <Button variant="secondary" size="sm" onClick={toPayment}>
               Betaalwijze wijzigen
             </Button>
           </div>
@@ -367,10 +376,88 @@ function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
   )
 }
 
+/** Where the panel of the payment method is, for the button of a failed invoice. */
+const PAYMENT_ID = 'betaalwijze'
+
+/** A card being entered after the failed direct debit: number and expiry typed, the code not yet. */
+const NEW_CARD: CardValue = {
+  number: '4242424242424242',
+  expiry: '0829',
+  cvc: '',
+  name: 'Iris Kamphorst',
+}
+
+/**
+ * The payment method: what pays now, and a card to pay with instead. The picture of the card fills
+ * in as it is typed and turns over for the code.
+ */
+function PaymentMethod(): ReactNode {
+  const [card, setCard] = useState<CardValue>(NEW_CARD)
+  const [submitted, setSubmitted] = useState(false)
+  return (
+    <section id={PAYMENT_ID} className="scroll-mt-4">
+      <Panel title="Betaalwijze" meta="wat Zilverberg betaalt">
+        <div className="grid grid-cols-1 gap-8 @4xl:grid-cols-[20rem_minmax(0,1fr)]">
+          <Form
+            label="Betalen met een kaart"
+            onSubmit={() => setSubmitted(true)}
+            actions={
+              <Button type="submit" variant="secondary">
+                Kaart gebruiken
+              </Button>
+            }
+          >
+            <CreditCardField
+              value={card}
+              onValueChange={setCard}
+              labels={galleryLabels.creditCard}
+              showErrors={submitted}
+              now={new Date(2026, 9, 20)}
+            />
+          </Form>
+          <div className="flex flex-col gap-4">
+            <PropertyList
+              label="Nu"
+              groups={[
+                [
+                  { label: 'Betaalwijze', value: 'SEPA-incasso' },
+                  { label: 'Rekening', value: 'NL·· ···· 4021' },
+                  { label: 'Op naam van', value: 'Zilverberg B.V.' },
+                  { label: 'Laatste poging', value: 'mislukt op 3 oktober' },
+                ],
+              ]}
+            />
+            <p className="m-0 max-w-md text-[12px] text-muted leading-relaxed">
+              Met een kaart gaan de volgende facturen van de kaart af. De incasso stopt dan, en de
+              open factuur van september betaalt de kaart meteen.
+            </p>
+          </div>
+        </div>
+      </Panel>
+    </section>
+  )
+}
+
 /** The plan, what of it was used this month, and the invoices with one opened beside them. */
-function Usage(): ReactNode {
+function Usage({ variant }: DemoScreenProps): ReactNode {
   const [selected, setSelected] = useState('ZB-2026-0098')
   const invoice = INVOICES.find((entry) => entry.number === selected) ?? INVOICES[0]
+  const toPayment = () => {
+    const field = document.getElementById(PAYMENT_ID)
+    field?.scrollIntoView({ block: 'start' })
+    field?.querySelector<HTMLInputElement>('input[autocomplete="cc-number"]')?.focus({
+      preventScroll: true,
+    })
+  }
+  // The variant "Betaalwijze" opens the page at the card; only the scroll area moves, not the page.
+  useEffect(() => {
+    if (variant !== 'betaalwijze') return
+    const panel = document.getElementById(PAYMENT_ID)
+    const viewport = panel?.closest<HTMLElement>('[data-radix-scroll-area-viewport]')
+    if (!panel || !viewport) return
+    viewport.scrollTop +=
+      panel.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 16
+  }, [variant])
   return (
     <AppFrame product="orbit" current="gebruik">
       <ScrollArea>
@@ -414,8 +501,9 @@ function Usage(): ReactNode {
             <Panel title="Facturen" meta={`${INVOICES.length} van 11`} flush>
               <InvoiceTable selected={selected} onSelect={setSelected} />
             </Panel>
-            {invoice ? <InvoiceDetail invoice={invoice} /> : null}
+            {invoice ? <InvoiceDetail invoice={invoice} toPayment={toPayment} /> : null}
           </div>
+          <PaymentMethod />
         </div>
       </ScrollArea>
     </AppFrame>
@@ -428,5 +516,9 @@ export default {
     'Wat de werkruimte deze maand van Orbit gebruikte, het plan en de facturen. Een mislukte incasso staat bovenaan, met het verloop ernaast.',
   icon: 'sliders-horizontal',
   product: 'orbit',
+  variants: [
+    { value: 'overzicht', label: 'Overzicht' },
+    { value: 'betaalwijze', label: 'Betaalwijze' },
+  ],
   Screen: Usage,
 } satisfies DemoModule

@@ -174,7 +174,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
     cell: (space) => (
       <div className="flex min-w-0 flex-col gap-0.5">
         <SpaceName space={space} />
-        <span className="truncate font-mono text-[11.5px] text-muted">{space.host}</span>
+        <span className="truncate font-mono text-[11px] text-muted">{space.host}</span>
       </div>
     ),
   },
@@ -225,7 +225,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
 function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
   const [picked, setPicked] = useState<readonly string[]>(['s2'])
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-overlay">
+    <div className="overflow-hidden rounded-lg bg-overlay">
       <DataTable
         label="Spaces"
         columns={COLUMNS}
@@ -241,9 +241,9 @@ function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
             <span className="flex h-5 items-center">
               <StatusMark kind={space.kind} />
             </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13.5px]">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13px]">
               <SpaceName space={space} />
-              <span className="truncate font-mono text-[11.5px] text-muted">{space.host}</span>
+              <span className="truncate font-mono text-[11px] text-muted">{space.host}</span>
               <span className="text-[12px] text-secondary">
                 {space.status} ·{' '}
                 <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
@@ -264,7 +264,7 @@ function SpacePages({ total }: { total: number }): ReactNode {
     <Pagination
       page={page}
       total={total}
-      pageSize={10}
+      pageSize={8}
       onPageChange={setPage}
       labels={{
         label: "Pagina's",
@@ -291,13 +291,14 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
             title="Apps"
             meta={empty ? 'Zilverberg · nog geen apps' : 'Zilverberg · 4 apps · 12 spaces'}
             actions={
-              <Button variant="primary" size="sm">
+              // Empty, the action of the empty state is the one filled button.
+              <Button variant={empty ? 'secondary' : 'primary'} size="sm">
                 Nieuwe space
               </Button>
             }
           />
           {empty ? (
-            <div className="flex min-h-96 items-center justify-center rounded-xl border border-border border-dashed bg-overlay p-6">
+            <div className="flex min-h-96 items-center justify-center rounded-lg bg-overlay p-6">
               <EmptyState
                 icon="rows"
                 title="Nog geen spaces"
@@ -331,7 +332,7 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
                 />
               </div>
               {shown.length === 0 ? (
-                <div className="rounded-xl border border-border bg-overlay p-8">
+                <div className="rounded-lg bg-overlay p-8">
                   <EmptyState
                     icon="search"
                     title="Geen spaces gevonden"

@@ -3,7 +3,10 @@ import {
   Avatar,
   Banner,
   Button,
+  Combobox,
   ConfirmDialog,
+  Form,
+  FormField,
   Input,
   List,
   ListRow,
@@ -215,67 +218,134 @@ function Repository(): ReactNode {
   )
 }
 
+/** Time zones to find by typing: a list too long to scan as a `Select`. */
+const ZONES = [
+  { value: 'Europe/Amsterdam', label: 'Amsterdam', detail: 'CET', keywords: ['nederland'] },
+  { value: 'Europe/Brussels', label: 'Brussel', detail: 'CET', keywords: ['belgie'] },
+  { value: 'Europe/Berlin', label: 'Berlijn', detail: 'CET', keywords: ['duitsland'] },
+  { value: 'Europe/Lisbon', label: 'Lissabon', detail: 'WET', keywords: ['portugal'] },
+  { value: 'Europe/London', label: 'Londen', detail: 'GMT', keywords: ['engeland'] },
+  { value: 'Europe/Helsinki', label: 'Helsinki', detail: 'EET', keywords: ['finland'] },
+  { value: 'America/New_York', label: 'New York', detail: 'EST' },
+  { value: 'America/Curacao', label: 'Willemstad', detail: 'AST', keywords: ['curacao'] },
+  { value: 'Asia/Jakarta', label: 'Jakarta', detail: 'WIB', keywords: ['indonesie'] },
+  { value: 'UTC', label: 'UTC', detail: '+00:00' },
+] as const
+
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+
+/**
+ * The profile as one form: the fields under their labels, checked when it is saved, with the
+ * focus on the first field that is wrong.
+ */
+function ProfileForm(): ReactNode {
+  const [name, setName] = useState(ME)
+  const [email, setEmail] = useState('iris@zilverberg.example')
+  const [language, setLanguage] = useState('nl')
+  const [zone, setZone] = useState<string | null>('Europe/Amsterdam')
+  const [checked, setChecked] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const nameError = checked && name.trim() === '' ? 'Vul je naam in.' : undefined
+  const emailError = checked && !EMAIL.test(email) ? 'Vul een geldig e-mailadres in.' : undefined
+  return (
+    <SettingsGroup title="Profiel">
+      <div className="p-4">
+        <Form
+          onSubmit={() => {
+            setChecked(true)
+            setSaved(name.trim() !== '' && EMAIL.test(email))
+          }}
+          actions={
+            <>
+              <Button type="submit" variant="primary">
+                Opslaan
+              </Button>
+              {saved ? <span className="text-[12px] text-muted">Opgeslagen</span> : null}
+            </>
+          }
+        >
+          <div className="flex items-center gap-3">
+            <Avatar name={ME} size="md" />
+            <Button variant="secondary" size="sm">
+              Foto wijzigen
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2">
+            <FormField label="Naam" required {...(nameError ? { error: nameError } : {})}>
+              {(field) => (
+                <Input
+                  label="Naam"
+                  value={name}
+                  onChange={(event) => {
+                    setName(event.target.value)
+                    setSaved(false)
+                  }}
+                  {...field}
+                />
+              )}
+            </FormField>
+            <FormField
+              label="E-mailadres"
+              description="Voor inloggen en facturen."
+              required
+              {...(emailError ? { error: emailError } : {})}
+            >
+              {(field) => (
+                <Input
+                  label="E-mailadres"
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    setSaved(false)
+                  }}
+                  {...field}
+                />
+              )}
+            </FormField>
+            <FormField label="Taal">
+              {(field) => (
+                <Select
+                  label="Taal"
+                  value={language}
+                  options={[
+                    { value: 'nl', label: 'Nederlands' },
+                    { value: 'en', label: 'English' },
+                  ]}
+                  onValueChange={setLanguage}
+                  block
+                  {...field}
+                />
+              )}
+            </FormField>
+            <FormField label="Tijdzone" description="Voor de tijden in meldingen en verslagen.">
+              {(field) => (
+                <Combobox
+                  label="Tijdzone"
+                  placeholder="Kies een tijdzone"
+                  labels={galleryLabels.combobox}
+                  options={ZONES}
+                  value={zone}
+                  onValueChange={setZone}
+                  block
+                  {...field}
+                />
+              )}
+            </FormField>
+          </div>
+        </Form>
+      </div>
+    </SettingsGroup>
+  )
+}
+
 /** Name, address, language and the security of the account. */
 function Account(): ReactNode {
-  const [language, setLanguage] = useState('nl')
-  const [zone, setZone] = useState('ams')
   const [keySet, setKeySet] = useState(true)
   const [remove, setRemove] = useState(false)
   return (
     <>
-      <SettingsGroup title="Profiel">
-        <SettingRow labels={labels} label="Foto" description="Zichtbaar voor je team">
-          {() => (
-            <div className="flex items-center gap-3">
-              <Avatar name={ME} size="md" />
-              <Button variant="secondary" size="sm">
-                Wijzigen
-              </Button>
-            </div>
-          )}
-        </SettingRow>
-        <TextSetting label="Naam" initial={ME} />
-        <TextSetting
-          label="E-mailadres"
-          description="Voor inloggen en facturen"
-          initial="iris@zilverberg.example"
-        />
-        <SettingRow labels={labels} label="Taal">
-          {({ labelId }) => (
-            <Wide>
-              <Select
-                label="Taal"
-                aria-labelledby={labelId}
-                size="sm"
-                value={language}
-                options={[
-                  { value: 'nl', label: 'Nederlands' },
-                  { value: 'en', label: 'English' },
-                ]}
-                onValueChange={setLanguage}
-              />
-            </Wide>
-          )}
-        </SettingRow>
-        <SettingRow labels={labels} label="Tijdzone">
-          {({ labelId }) => (
-            <Wide>
-              <Select
-                label="Tijdzone"
-                aria-labelledby={labelId}
-                size="sm"
-                value={zone}
-                options={[
-                  { value: 'ams', label: 'Amsterdam (CET)' },
-                  { value: 'lon', label: 'Londen (GMT)' },
-                  { value: 'utc', label: 'UTC' },
-                ]}
-                onValueChange={setZone}
-              />
-            </Wide>
-          )}
-        </SettingRow>
-      </SettingsGroup>
+      <ProfileForm />
       <SettingsGroup title="Beveiliging">
         <SwitchSetting
           label="Tweestapsverificatie"
@@ -452,13 +522,14 @@ function SettingsPage({ initial }: { initial: Section }): ReactNode {
               label="Onderdelen"
               labels={LIST_LABELS}
               searchable={false}
+              checkSlot={false}
             />
           </div>
         </div>
         <div className="flex min-w-0 max-w-3xl flex-1 flex-col gap-6">
           <div className="flex flex-col gap-0.5">
-            <h2 className="m-0 font-heading text-[16px] text-fg">{current?.label}</h2>
-            <p className="m-0 text-[12.5px] text-muted">{INTRO[section]}</p>
+            <h2 className="m-0 font-heading text-[15px] text-fg">{current?.label}</h2>
+            <p className="m-0 text-[12px] text-muted">{INTRO[section]}</p>
           </div>
           <Content />
         </div>

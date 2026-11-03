@@ -187,6 +187,23 @@ test('an amount column aligns to the end on tabular figures', () => {
   expect(screen.getByText('512 MB').className).toContain('tabular-nums')
 })
 
+test('a centred column centres its header and its cells', () => {
+  render(
+    <DataTable
+      label="Rechten"
+      columns={[
+        { id: 'name', header: 'Recht', cell: (s: Space) => s.name },
+        { id: 'on', header: 'Lid', cell: (s: Space) => `aan ${s.id}`, align: 'center' },
+      ]}
+      rows={SPACES}
+      rowKey={(s) => s.id}
+      labels={LABELS}
+    />,
+  )
+  expect(screen.getByRole('columnheader', { name: 'Lid' }).className).toContain('text-center')
+  expect(screen.getByText('aan s1').className).toContain('text-center')
+})
+
 test('with card a list stands beside the table for a narrow width', () => {
   render(
     <DataTable

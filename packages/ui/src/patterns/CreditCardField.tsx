@@ -25,7 +25,7 @@ export interface CreditCardFieldLabels {
   cvcHint(length: number): string
   name: string
   namePlaceholder: string
-  /** What the picture of the card says where the name is still empty: "NAAM OP DE KAART". */
+  /** What the picture of the card says where the name is still empty: "Naam op de kaart". */
   cardNamePlaceholder: string
   /** The small word above the expiry on the picture: "Geldig tot". */
   cardExpiry: string
@@ -136,7 +136,7 @@ export function CreditCardVisual({ value, flipped, labels }: CreditCardVisualPro
       aria-hidden="true"
       data-nt-credit-card
       data-flipped={flipped}
-      className="aspect-[1.586] w-full max-w-80 perspective-[1000px]"
+      className="@container aspect-[1.586] w-full max-w-80 perspective-[1000px]"
     >
       <div
         className={`relative size-full transform-3d transition-transform duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${flipped ? 'rotate-y-180' : ''}`}
@@ -147,7 +147,10 @@ export function CreditCardVisual({ value, flipped, labels }: CreditCardVisualPro
             <BrandMark brand={rule.brand} generic={labels.genericBrand} />
           </div>
           <div className="h-7 w-10 rounded-md bg-(--nt-brand-mist) opacity-70" />
-          <p data-nt-card-number className="m-0 font-mono text-[20px] tracking-wide">
+          <p
+            data-nt-card-number
+            className="m-0 whitespace-nowrap font-mono text-[15px] tracking-wide @[19rem]:text-[20px]"
+          >
             {maskedCardNumber(value.number)}
           </p>
           <div className="flex items-end justify-between gap-4">

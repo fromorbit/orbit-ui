@@ -107,7 +107,7 @@ function Inventory({
                 <a
                   href={`${DEMO_PREFIX}${OVERVIEW_SLUG}`}
                   title={MISSING[name]}
-                  className="rounded-sm font-mono text-[11.5px] text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="rounded-sm font-mono text-[11px] text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   {name}
                 </a>
@@ -179,7 +179,7 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
       <header className="flex flex-wrap items-end gap-x-6 gap-y-3 px-1">
         <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1">
           <div className="flex items-center gap-2.5">
-            <h2 id={titleId} className="m-0 font-heading text-[19px] text-fg tracking-[-0.01em]">
+            <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
               {demo.title}
             </h2>
             <span data-product={product} className="flex items-center gap-1.5">
@@ -221,7 +221,7 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
       </header>
       <div className="flex justify-center rounded-2xl border border-border bg-frame bg-[radial-gradient(var(--nt-border)_1px,transparent_1px)] bg-size-[18px_18px] p-2 sm:p-3">
         <div
-          className={`h-[min(780px,82dvh)] overflow-hidden rounded-xl border border-border shadow-menu transition-[width] duration-200 motion-reduce:transition-none ${view === 'code' ? 'w-full' : WIDTH[viewport]}`}
+          className={`h-[min(780px,82dvh)] overflow-hidden rounded-xl border border-border shadow-menu transition-[width] duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${view === 'code' ? 'w-full' : WIDTH[viewport]}`}
         >
           {view === 'code' ? (
             <CodeView demo={demo} />
@@ -251,7 +251,7 @@ export function MissingOverview(): ReactNode {
       className="flex scroll-mt-16 flex-col gap-4"
     >
       <div className="flex flex-col gap-1 px-1">
-        <h2 id={titleId} className="m-0 font-heading text-[19px] text-fg tracking-[-0.01em]">
+        <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
           Overzicht ontbrekend
         </h2>
         <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
@@ -267,7 +267,7 @@ export function MissingOverview(): ReactNode {
           <li
             key={entry.name}
             aria-labelledby={`${listId}-${entry.name}`}
-            className="flex flex-col gap-2 rounded-xl border border-border bg-overlay p-4"
+            className="flex flex-col gap-2 rounded-lg bg-overlay p-4"
           >
             <div className="flex items-center gap-2">
               <span className="font-mono text-[11px] text-muted tabular-nums">
@@ -345,13 +345,11 @@ export function DemoGallery({
             <span className="absolute top-[85.4%] left-[14.6%] size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-satellite shadow-[0_0_14px_3px_var(--nt-satellite)]" />
           </div>
           <div className="relative flex max-w-2xl flex-col gap-3">
-            <p className="m-0 text-(--nt-brand-slate) text-[12px] uppercase tracking-[0.14em]">
-              Demo&apos;s
-            </p>
+            <p className="m-0 text-(--nt-brand-slate) text-[12px] font-medium">Demo&apos;s</p>
             <h1 className="m-0 font-heading text-[28px] leading-tight tracking-[-0.02em] sm:text-[34px]">
               Hele schermen uit de Orbit-familie
             </h1>
-            <p className="m-0 text-(--nt-brand-mist) text-[14px] leading-relaxed opacity-85">
+            <p className="m-0 text-(--nt-brand-mist) text-[15px] leading-relaxed opacity-85">
               {`${DEMOS.length} schermen van Orbit en Halo, gebouwd uit de componenten van deze bibliotheek. Elk scherm past zich aan zijn breedte aan en de code staat ernaast. Wat nog ontbreekt is nagetekend en gemarkeerd: ${missingCount} componenten op de wensenlijst.`}
             </p>
           </div>

@@ -288,10 +288,7 @@ function FileCard({
 }): ReactNode {
   const [open, setOpen] = useState(file.diff !== undefined && !seen)
   return (
-    <section
-      aria-label={file.path}
-      className="overflow-hidden rounded-xl border border-border bg-overlay"
-    >
+    <section aria-label={file.path} className="overflow-hidden rounded-lg bg-overlay">
       <header className="flex min-h-11 items-center gap-2 py-1 pr-3 pl-2">
         <IconButton
           icon={open ? 'chevron-down' : 'chevron-right'}
@@ -301,7 +298,7 @@ function FileCard({
           onClick={() => setOpen((value) => !value)}
         />
         <PierreFileIcon path={file.path} />
-        <span className="min-w-0 flex-1 truncate font-mono text-[12.5px]">
+        <span className="min-w-0 flex-1 truncate font-mono text-[12px]">
           <PathLabel path={file.path} emphasis={file.kind === 'delete' ? 'gone' : 'name'} />
         </span>
         <span className="hidden shrink-0 font-mono text-[12px] tabular-nums @lg:inline">
@@ -319,7 +316,7 @@ function FileCard({
       {open ? (
         <div className="border-border border-t">
           {file.diff === undefined ? (
-            <p className="m-0 px-4 py-3 text-[12.5px] text-muted">
+            <p className="m-0 px-4 py-3 text-[12px] text-muted">
               Deze wijziging is te groot om hier te tonen.
             </p>
           ) : (
@@ -408,7 +405,7 @@ function Stacks(): ReactNode {
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
             <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1.5">
-              <h2 className="m-0 font-heading text-[17px] text-fg">{stack.title}</h2>
+              <h2 className="m-0 font-heading text-[15px] text-fg">{stack.title}</h2>
               <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
                 {stack.explanation}
               </p>
@@ -458,7 +455,7 @@ function Report(): ReactNode {
           <span className="text-[12px] text-muted">6 min · 23 stappen · 2 schermafbeeldingen</span>
         </div>
         <Panel title="Samenvatting">
-          <p className="m-0 text-[13.5px] text-fg leading-relaxed">{SUMMARY}</p>
+          <p className="m-0 text-[13px] text-fg leading-relaxed">{SUMMARY}</p>
         </Panel>
         <SeverityBand findings={FINDINGS} />
         <div className="flex flex-col gap-3">
@@ -530,19 +527,19 @@ function CodeReview({ variant = 'stapels' }: DemoScreenProps): ReactNode {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <header className="flex flex-wrap items-end gap-x-6 gap-y-3">
             <div className="flex min-w-0 flex-1 basis-80 flex-col gap-1.5">
-              <h1 className="m-0 flex items-baseline gap-2 font-heading text-[22px] text-fg leading-tight tracking-[-0.01em]">
+              <h1 className="m-0 flex items-baseline gap-2 font-heading text-[20px] text-fg leading-tight tracking-[-0.01em]">
                 <span className="font-normal text-muted">{`#${PULL.number}`}</span>
                 {PULL.title}
               </h1>
-              <p className="m-0 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12.5px] text-secondary">
+              <p className="m-0 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] text-secondary">
                 <Avatar name={PULL.author} size="sm" />
                 <span className="text-fg">{PULL.author}</span>
                 wil
-                <code className="rounded-md bg-surface-active px-1.5 py-px font-mono text-[11.5px] text-fg">
+                <code className="rounded-md bg-surface-active px-1.5 py-px font-mono text-[11px] text-fg">
                   {PULL.from}
                 </code>
                 samenvoegen in
-                <code className="rounded-md bg-surface-active px-1.5 py-px font-mono text-[11.5px] text-fg">
+                <code className="rounded-md bg-surface-active px-1.5 py-px font-mono text-[11px] text-fg">
                   {PULL.into}
                 </code>
                 <span className="text-muted">{`· ${PULL.commits} commits`}</span>
@@ -562,7 +559,8 @@ function CodeReview({ variant = 'stapels' }: DemoScreenProps): ReactNode {
                   count={false}
                 />
               </span>
-              <Button variant="primary" size="sm">
+              {/* One filled button per view: on the report, posting it is the main action. */}
+              <Button variant={variant === 'verslag' ? 'secondary' : 'primary'} size="sm">
                 Review afronden
               </Button>
             </div>

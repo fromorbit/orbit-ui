@@ -44,7 +44,7 @@ export function TrailReplay(): ReactNode {
         </div>
         <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-2">
-            <span className="font-heading text-[18px] text-fg">Kassa</span>
+            <span className="font-heading text-[15px] text-fg">Kassa</span>
             <ul className="m-0 flex list-none flex-col p-0">
               {LINES.map((line) => (
                 <li
@@ -53,25 +53,25 @@ export function TrailReplay(): ReactNode {
                 >
                   <span className="size-8 shrink-0 rounded-md bg-surface-active" />
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[12.5px] text-fg">{line.name}</span>
+                    <span className="truncate text-[12px] text-fg">{line.name}</span>
                     <span className="truncate text-[11px] text-muted">{line.note}</span>
                   </span>
-                  <span className="text-[12.5px] text-fg tabular-nums">{line.price}</span>
+                  <span className="text-[12px] text-fg tabular-nums">{line.price}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-overlay p-3">
             <span className="text-[12px] text-muted">Betaalmethode</span>
-            <span className="flex h-8 items-center justify-between rounded-md border border-border px-2.5 text-[12.5px] text-fg">
+            <span className="flex h-8 items-center justify-between rounded-md border border-border px-2.5 text-[12px] text-fg">
               iDEAL · Rabobank
               <Icon name="chevron-down" size="sm" tone="faint" />
             </span>
-            <span className="flex items-baseline justify-between text-[12.5px]">
+            <span className="flex items-baseline justify-between text-[12px]">
               <span className="text-secondary">Totaal</span>
               <span className="font-medium text-fg tabular-nums">€ 39,45</span>
             </span>
-            <span className="relative flex h-8 items-center justify-center rounded-md bg-accent font-medium text-[12.5px] text-accent-fg">
+            <span className="relative flex h-8 items-center justify-center rounded-md bg-accent font-medium text-[12px] text-accent-fg">
               Betalen
               <span className="absolute -inset-1.5 rounded-lg border-2 border-danger/70" />
               <span className="absolute -right-1 -bottom-2 text-fg">

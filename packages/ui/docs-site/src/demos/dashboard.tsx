@@ -284,7 +284,7 @@ function Overview(): ReactNode {
               <ul className="m-0 flex list-none flex-col gap-4 p-0">
                 {HOST.map((part) => (
                   <li key={part.label} className="flex flex-col gap-1.5">
-                    <span className="flex items-baseline justify-between gap-2 text-[12.5px]">
+                    <span className="flex items-baseline justify-between gap-2 text-[12px]">
                       <span className="text-secondary">{part.label}</span>
                       <span className="text-muted tabular-nums">{part.text}</span>
                     </span>

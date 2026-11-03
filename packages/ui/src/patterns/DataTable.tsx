@@ -24,8 +24,11 @@ export interface DataTableColumn<Row> {
   cell(row: Row): ReactNode
   /** Makes the column sortable, by this value of each row (text compares in the locale's order). */
   sortValue?(row: Row): string | number
-  /** `end` for amounts and counts, which line up on their last digit; `start` by default. */
-  align?: 'start' | 'end'
+  /**
+   * `end` for amounts and counts, which line up on their last digit; `center` for a column of
+   * boxes or marks, such as the rights of a role; `start` by default.
+   */
+  align?: 'start' | 'center' | 'end'
   /** Steps aside below this width of the table: `md` 48rem, `lg` 56rem, `xl` 72rem. */
   hideBelow?: DataTableHideBelow
   /** Hides the words of the head (they still name it): for a column of row menus. */
@@ -87,8 +90,16 @@ const HIDE: Record<DataTableHideBelow, string> = {
 }
 
 /** The classes of a cell, from its column. */
-function cellClass(column: { align?: 'start' | 'end'; hideBelow?: DataTableHideBelow }): string {
-  const align = column.align === 'end' ? 'text-right tabular-nums' : 'text-left'
+function cellClass(column: {
+  align?: 'start' | 'center' | 'end'
+  hideBelow?: DataTableHideBelow
+}): string {
+  const align =
+    column.align === 'end'
+      ? 'text-right tabular-nums'
+      : column.align === 'center'
+        ? 'text-center'
+        : 'text-left'
   return column.hideBelow ? `${align} ${HIDE[column.hideBelow]}` : align
 }
 

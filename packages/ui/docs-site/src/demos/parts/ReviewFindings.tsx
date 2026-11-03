@@ -22,7 +22,6 @@ const WEIGHT: Record<
   {
     one: string
     many: string
-    edge: string
     text: string
     tone: ShareTone
     icon: IconName
@@ -31,7 +30,6 @@ const WEIGHT: Record<
   blocking: {
     one: 'blokkerend',
     many: 'blokkerend',
-    edge: 'border-l-danger',
     text: 'text-danger',
     tone: 'danger',
     icon: 'octagon-alert',
@@ -39,7 +37,6 @@ const WEIGHT: Record<
   problem: {
     one: 'probleem',
     many: 'problemen',
-    edge: 'border-l-attention',
     text: 'text-attention',
     tone: 'attention',
     icon: 'alert-triangle',
@@ -47,7 +44,6 @@ const WEIGHT: Record<
   note: {
     one: 'opmerking',
     many: 'opmerkingen',
-    edge: 'border-l-border-strong',
     text: 'text-muted',
     tone: 'neutral',
     icon: 'message-square',
@@ -70,7 +66,7 @@ export function SeverityBand({ findings }: { findings: readonly Finding[] }): Re
     }
   })
   return (
-    <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-overlay px-4 py-3.5">
+    <div className="flex flex-col gap-2.5 rounded-lg bg-overlay px-4 py-3.5">
       <h3 className="m-0 font-medium text-[13px] text-fg">Bevindingen</h3>
       <ShareBar label="Bevindingen per gewicht" segments={segments} />
     </div>
@@ -112,27 +108,23 @@ function Shot({ kind }: { kind: 'fout' | 'klein' }): ReactNode {
 }
 
 /**
- * One finding as a card, drawn as the missing `FindingCard`: the weight as an edge and a word,
+ * One finding as a card, drawn as the missing `FindingCard`: the weight as a sign and a word,
  * the title, what the agent saw, the page, and the screenshot beside it.
  */
 export function ReviewFinding({ finding }: { finding: Finding }): ReactNode {
   const weight = WEIGHT[finding.severity]
   return (
     <Missing name="FindingCard">
-      <article
-        className={`flex gap-4 rounded-xl border border-border border-l-[3px] bg-overlay px-4 py-3.5 ${weight.edge}`}
-      >
+      <article className="flex gap-4 rounded-lg bg-overlay px-4 py-3.5">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p
-            className={`m-0 flex items-center gap-1.5 font-medium text-[11.5px] uppercase tracking-[0.06em] ${weight.text}`}
-          >
+          <p className={`m-0 flex items-center gap-1.5 font-medium text-[12px] ${weight.text}`}>
             <Icon name={weight.icon} size="sm" />
             {weight.one}
           </p>
-          <h4 className="m-0 font-medium text-[14px] text-fg">{finding.title}</h4>
+          <h4 className="m-0 font-medium text-[13px] text-fg">{finding.title}</h4>
           <p className="m-0 text-[13px] text-secondary leading-relaxed">{finding.detail}</p>
           {finding.url === undefined ? null : (
-            <p className="m-0 mt-0.5 font-mono text-[11.5px] text-muted">{finding.url}</p>
+            <p className="m-0 mt-0.5 font-mono text-[11px] text-muted">{finding.url}</p>
           )}
         </div>
         {finding.screenshot === undefined ? null : (

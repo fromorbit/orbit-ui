@@ -17,7 +17,7 @@ export interface PanelProps {
 
 /**
  * A card on the canvas with a heading: the plane a menu has (`bg-overlay`, a step lighter in dark,
- * white in light), so it reads as lying on the page. The demos' own layout, not a component.
+ * white in light), so it reads as lying on the page; its brightness is its edge, no frame. The demos' own layout, not a component.
  */
 export function Panel({
   title,
@@ -31,7 +31,7 @@ export function Panel({
   return (
     <section
       aria-labelledby={id}
-      className={`flex min-w-0 flex-col rounded-xl border border-border bg-overlay ${className ?? ''}`}
+      className={`flex min-w-0 flex-col rounded-lg bg-overlay ${className ?? ''}`}
     >
       <header className="flex min-h-11 items-center gap-2 px-4 pt-1">
         <h3 id={id} className="m-0 font-medium text-[13px] text-fg">

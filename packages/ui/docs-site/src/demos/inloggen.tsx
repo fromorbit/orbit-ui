@@ -4,6 +4,7 @@ import {
   BrandIcon,
   Button,
   CheckboxField,
+  Form,
   FormField,
   Icon,
   Input,
@@ -58,10 +59,10 @@ function Wide({ children }: { children: ReactNode }): ReactNode {
 function Heading({ title, children }: { title: string; children: ReactNode }): ReactNode {
   return (
     <div className="flex flex-col gap-1.5">
-      <h1 className="m-0 font-heading text-[26px] text-fg leading-tight tracking-[-0.02em]">
+      <h1 className="m-0 font-heading text-[20px] text-fg leading-tight tracking-[-0.01em]">
         {title}
       </h1>
-      <p className="m-0 text-[13.5px] text-secondary leading-relaxed">{children}</p>
+      <p className="m-0 text-[13px] text-secondary leading-relaxed">{children}</p>
     </div>
   )
 }
@@ -71,6 +72,18 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
   const [email, setEmail] = useState(EMAIL)
   const [password, setPassword] = useState(failed ? '' : 'zomer-collectie-26')
   const [remember, setRemember] = useState(true)
+  // After a wrong password the field is empty and says so; a submit checks both fields again.
+  const [checked, setChecked] = useState(failed)
+  const emailError =
+    checked && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+      ? 'Vul een geldig e-mailadres in.'
+      : undefined
+  const passwordError =
+    checked && password === ''
+      ? failed
+        ? 'Vul je wachtwoord opnieuw in.'
+        : 'Vul je wachtwoord in.'
+      : undefined
   return (
     <>
       <Heading title="Welkom terug">{`Log in om verder te werken in ${WORKSPACE}.`}</Heading>
@@ -90,8 +103,8 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
         </Wide>
       </div>
       <Divider>of met e-mail</Divider>
-      <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
-        <FormField label="E-mailadres">
+      <Form label="Inloggen met e-mail" onSubmit={() => setChecked(true)}>
+        <FormField label="E-mailadres" {...(emailError ? { error: emailError } : {})}>
           {(field) => (
             <Input
               label="E-mailadres"
@@ -103,10 +116,7 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
             />
           )}
         </FormField>
-        <FormField
-          label="Wachtwoord"
-          {...(failed ? { error: 'Vul je wachtwoord opnieuw in.' } : {})}
-        >
+        <FormField label="Wachtwoord" {...(passwordError ? { error: passwordError } : {})}>
           {(field) => (
             <Input
               label="Wachtwoord"
@@ -125,7 +135,7 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
             checked={remember}
             onCheckedChange={setRemember}
           />
-          <a href="#/demo/inloggen" className={`text-[12.5px] ${LINK}`}>
+          <a href="#/demo/inloggen" className={`text-[12px] ${LINK}`}>
             Wachtwoord vergeten?
           </a>
         </div>
@@ -134,7 +144,7 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
             Inloggen
           </Button>
         </Wide>
-      </form>
+      </Form>
     </>
   )
 }
@@ -171,7 +181,7 @@ function Code(): ReactNode {
           Verifiëren
         </Button>
       </Wide>
-      <p className="m-0 flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-muted">
+      <p className="m-0 flex flex-wrap items-center justify-between gap-2 text-[12px] text-muted">
         <span>
           Niets ontvangen? Opnieuw sturen over <span className="text-fg tabular-nums">0:42</span>
         </span>
@@ -190,21 +200,21 @@ function Workspaces(): ReactNode {
       <Heading title="Kies een werkruimte">
         Je bent ingelogd als <span className="font-medium text-fg">{EMAIL}</span>.
       </Heading>
-      <ul className="m-0 flex list-none flex-col overflow-hidden rounded-xl border border-border bg-overlay p-0">
+      <ul className="m-0 flex list-none flex-col overflow-hidden rounded-lg bg-overlay p-0">
         {WORKSPACES.map((space) => (
           <li key={space.name} className="border-border not-first:border-t">
             <a
               href="#/demo/chat"
               className="flex items-center gap-3 px-4 py-3 text-fg no-underline outline-focus hover:bg-row-hover focus-visible:-outline-offset-2 focus-visible:outline-2"
             >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface font-heading text-[15px] text-fg">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-mark font-heading text-[13px] text-fg">
                 {space.name.charAt(0)}
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="flex items-center gap-2 font-medium text-[13.5px]">
+                <span className="flex items-center gap-2 font-medium text-[13px]">
                   <span className="truncate">{space.name}</span>
                   {space.last ? (
-                    <span className="hidden shrink-0 font-normal text-[11.5px] text-muted @md:inline">
+                    <span className="hidden shrink-0 font-normal text-[11px] text-muted @md:inline">
                       laatst geopend
                     </span>
                   ) : null}
@@ -250,7 +260,7 @@ function Galaxy(): ReactNode {
         <p className="m-0 font-heading text-[30px] leading-[1.15] tracking-[-0.02em]">
           Werk samen met je agents, op je eigen repository.
         </p>
-        <p className="m-0 text-(--nt-brand-mist) text-[14px] leading-relaxed opacity-80">
+        <p className="m-0 text-(--nt-brand-mist) text-[15px] leading-relaxed opacity-80">
           Gesprekken, specs en reviews naast elkaar, op je eigen machine. Er gaat niets naar buiten
           zonder dat je het ziet.
         </p>
@@ -275,7 +285,7 @@ function Login({ variant = 'standaard' }: DemoScreenProps): ReactNode {
       <div className="flex min-w-0 flex-1 flex-col">
         <ScrollArea>
           <div className="flex min-h-full flex-col px-5 py-5 @xl:px-10">
-            <div className="flex items-center justify-between gap-3 text-[12.5px]">
+            <div className="flex items-center justify-between gap-3 text-[12px]">
               <OrbitWordmark className="h-4 text-fg @4xl:invisible" />
               <span className="text-muted">
                 Nog geen account?{' '}
