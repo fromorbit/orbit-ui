@@ -394,6 +394,22 @@ describe.each(palettes)('the %s palette', (_name, palette) => {
     },
   )
 
+  test.each(['run', 'fail', 'block', 'stop'])(
+    'the %s mark stands out as a status glyph on canvas, frame and a card (≥ 3)',
+    (kind) => {
+      for (const surface of ['--nt-canvas', '--nt-frame', '--nt-overlay-background']) {
+        expect(
+          contrastRatio(hexIn(palette, `--nt-status-${kind}`), hexIn(palette, surface)),
+          surface,
+        ).toBeGreaterThanOrEqual(3)
+      }
+      // The gloss is lighter than the body, or it would read as a stain.
+      expect(relativeLuminance(hexIn(palette, `--nt-status-${kind}-hi`))).toBeGreaterThan(
+        relativeLuminance(hexIn(palette, `--nt-status-${kind}`)),
+      )
+    },
+  )
+
   test('a menu lies on a layered shadow rather than one cloud', () => {
     expect((palette.get('--nt-shadow-menu') ?? '').split(',')).toHaveLength(3)
   })
@@ -416,6 +432,13 @@ describe('the light block', () => {
   test('names no token the dark palette lacks', () => {
     const extra = [...lightOnly.keys()].filter((name) => !tokens.has(name))
     expect(extra).toEqual([])
+  })
+
+  test('halves the glow and the gloss of a status mark, where dark keeps them full', () => {
+    expect(tokens.get('--nt-status-glow')).toBe('1')
+    expect(tokens.get('--nt-status-gloss')).toBe('1')
+    expect(lightOnly.get('--nt-status-glow')).toBe('0.45')
+    expect(lightOnly.get('--nt-status-gloss')).toBe('0.5')
   })
 
   test('asks the browser for light native controls', () => {

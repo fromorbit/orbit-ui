@@ -35,7 +35,21 @@ A product's own colour is never a role of the interface (never a word, a line, a
 
 The gallery has a switch for it (Orbit, Halo, Fold): the dot beside "UI" in its head is the satellite.
 
-## Breaking changes
+## Status marks (the minor after 0.2.0)
+
+What runs on its own (a service, an app, a space) shows its state with `StatusMark`: a small glossy sweet, a circle `running`, a triangle `fault`, a diamond `blocked`, a square `stopped`. The shape is the information; the colour, the gloss and the glow only make it pleasant. A chat keeps `StatusShape`, whose seven states and quiet outlines belong to a column read all day.
+
+| Part | Dark | Light |
+|---|---|---|
+| Running (`--nt-status-run`) | mint `#2FD3A6`, a dot like the satellite | the status green `--nt-success` |
+| Fault (`--nt-status-fail`) | `--nt-danger` | `--nt-danger` |
+| Blocked (`--nt-status-block`) | `--nt-attention` | `--nt-attention` |
+| Stopped (`--nt-status-stop`) | muted (Slate) | deep Slate |
+| Glow / gloss (`--nt-status-glow`, `--nt-status-gloss`) | 1 / 1 | 0.45 / 0.5 |
+
+Each colour has a `-hi` for the gloss; the names are the ones Halo gives its own sweets (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow or the gloss on an element to calm the marks inside it. Every body reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`), and the plain colour lies under the gradients, so a contrast check reads it. Inside a button, link, tab or option the mark springs to 1.18 under the pointer, only without `prefers-reduced-motion`. `theme.css` draws all of it (`nt-status-mark`); the triangle's glow is a `drop-shadow` on the outer element, because its `clip-path` cuts a `box-shadow` off.
+
+## Breaking changes of 0.2.0
 
 - **Every colour value changed**, in both themes. The names (`--nt-*` and the Tailwind names of `theme.css`) are the same; pixel references of a host (screenshots, end-to-end colour checks) change.
 - **The accent is monochrome.** `--nt-accent` is Paper in dark and Midnight in light; `--nt-accent-fg` is no longer `#ffffff` but Midnight in dark and Paper in light. Whatever a host puts on `bg-accent` with its own white text, or reads as "the blue", must take `text-accent-fg` or `accent-text`.

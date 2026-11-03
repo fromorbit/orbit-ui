@@ -77,6 +77,7 @@ import selectStory from '../primitives/Select.gallery'
 import separatorStory from '../primitives/Separator.gallery'
 import skeletonStory from '../primitives/Skeleton.gallery'
 import spinnerStory from '../primitives/Spinner.gallery'
+import statusMarkStory from '../primitives/StatusMark.gallery'
 import stepChipsStory from '../primitives/StepChips.gallery'
 import switchStory from '../primitives/Switch.gallery'
 import tabsStory from '../primitives/Tabs.gallery'
@@ -185,6 +186,7 @@ export const stories: Story[] = collectStories([
   separatorStory,
   skeletonStory,
   spinnerStory,
+  statusMarkStory,
   stepChipsStory,
   switchStory,
   tabsStory,
