@@ -138,13 +138,10 @@
   animation: nt-wave 2.2s linear infinite;
 }
 
-/* The mark of something that runs (`StatusMark`): a glossy sweet in a 14px slot, as Halo draws
-   its own (V-691). The outer element holds the slot and picks the colours of its kind (`--c` for
-   the sweet, `--hi` for its highlight); the inner one is the sweet: a highlight at 32% 28% over a
-   radial fill that darkens toward its edge, a darker inset edge below and a lighter one above,
-   and a soft glow in its own colour. `--nt-status-glow` sets the glow and `--nt-status-gloss` the
-   highlight, per theme. Under the gradients the plain colour, which is what a contrast check
-   reads. */
+/* The mark of something that runs (`StatusMark`): a flat shape in its status colour with a soft
+   glow of that colour around it, in a 14px slot, as Halo draws its own (V-691). The outer element
+   holds the slot and picks the colour of its kind (`--c`); the inner one is the shape.
+   `--nt-status-glow` sets the strength of the glow per theme. */
 .nt-status-mark {
   display: inline-flex;
   flex: none;
@@ -156,47 +153,28 @@
 }
 .nt-status-mark[data-kind="running"] {
   --c: var(--nt-status-run);
-  --hi: var(--nt-status-run-hi);
 }
 .nt-status-mark[data-kind="fault"] {
   --c: var(--nt-status-fail);
-  --hi: var(--nt-status-fail-hi);
   /* The triangle's glow: its clip-path cuts a box-shadow off, a drop-shadow on the slot follows
      the clipped outline. */
   filter: drop-shadow(
-    0 0 calc(5px * var(--nt-status-glow)) color-mix(in srgb, var(--c) 55%, transparent)
+    0 0 calc(4px * var(--nt-status-glow)) color-mix(in srgb, var(--c) 60%, transparent)
   );
 }
 .nt-status-mark[data-kind="blocked"] {
   --c: var(--nt-status-block);
-  --hi: var(--nt-status-block-hi);
 }
 .nt-status-mark[data-kind="stopped"] {
   --c: var(--nt-status-stop);
-  --hi: var(--nt-status-stop-hi);
 }
 .nt-status-mark-body {
   display: block;
   inline-size: 14px;
   block-size: 14px;
-  background:
-    radial-gradient(
-      circle at 32% 28%,
-      color-mix(
-          in srgb,
-          color-mix(in srgb, var(--hi) 95%, white) calc(var(--nt-status-gloss) * 100%),
-          transparent
-        )
-        0 18%,
-      transparent 42%
-    ),
-    radial-gradient(circle at 50% 60%, var(--c) 40%, color-mix(in srgb, var(--c) 70%, black) 100%);
-  background-color: var(--c);
-  box-shadow:
-    0 0 calc(8px * var(--nt-status-glow)) calc(1px * var(--nt-status-glow))
-    color-mix(in srgb, var(--c) 50%, transparent),
-    inset 0 -1.5px 2px color-mix(in srgb, var(--c) 60%, black),
-    inset 0 1px 1px color-mix(in srgb, var(--hi) calc(var(--nt-status-gloss) * 80%), transparent);
+  background: var(--c);
+  box-shadow: 0 0 calc(6px * var(--nt-status-glow)) calc(1px * var(--nt-status-glow))
+    color-mix(in srgb, var(--c) 55%, transparent);
 }
 .nt-status-mark[data-kind="running"] .nt-status-mark-body {
   border-radius: 50%;
@@ -215,53 +193,12 @@
   border-radius: 2px;
   rotate: 45deg;
 }
-/* A softer triangle: rounded corners, a little lower and flatter, so it weighs the same as the
-   circle. Its own gloss: a highlight in the middle over a body lit from above. */
+/* A softer triangle: rounded corners and a little flatter, so it weighs the same as the circle;
+   its middle stands 1.5px above the box's, so it sits on the line of the others. */
 .nt-status-mark[data-kind="fault"] .nt-status-mark-body {
   clip-path: path(
-    "M 5.7 4.6 Q 7 2.6 8.3 4.6 L 12.5 11.3 Q 13.5 13 11.5 13 L 2.5 13 Q 0.5 13 1.5 11.3 Z"
+    "M 5.7 3.1 Q 7 1.1 8.3 3.1 L 12.5 9.8 Q 13.5 11.5 11.5 11.5 L 2.5 11.5 Q 0.5 11.5 1.5 9.8 Z"
   );
-  background:
-    radial-gradient(
-      circle at 42% 50%,
-      color-mix(
-          in srgb,
-          color-mix(in srgb, var(--hi) 95%, white) calc(var(--nt-status-gloss) * 100%),
-          transparent
-        )
-        0 12%,
-      transparent 34%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--hi) 60%, var(--c)),
-      var(--c) 55%,
-      color-mix(in srgb, var(--c) 70%, black)
-    );
-  background-color: var(--c);
-}
-/* Inside something to press or choose, the sweet springs up under the pointer. Only for those who
-   did not ask for less motion: `scale` composes with the diamond's `rotate`. */
-@media (prefers-reduced-motion: no-preference) {
-  .nt-status-mark-body {
-    transition: scale 0.25s cubic-bezier(0.3, 1.8, 0.5, 1);
-  }
-  :is(
-      button,
-      a[href],
-      summary,
-      [role="button"],
-      [role="link"],
-      [role="tab"],
-      [role="option"],
-      [role="menuitem"],
-      [role="menuitemradio"],
-      [role="radio"],
-      [role="switch"]
-    ):not(:disabled, [aria-disabled="true"]):hover
-    .nt-status-mark-body {
-    scale: 1.18;
-  }
 }
 
 @keyframes nt-pulse {

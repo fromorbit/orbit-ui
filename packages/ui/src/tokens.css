@@ -142,22 +142,17 @@
      tone of attention, half as strong, so a page full of comments still reads calmly. */
   --nt-comment-underline: rgb(229 164 69 / 0.6);
 
-  /* The marks of something that runs (`StatusMark`): a glossy sweet per state, its body in the
-     first colour and its gloss in the second, the highlight. The bodies are the status colours
-     above (running is mint on Midnight, a dot like the satellite), so a mark reaches the 3:1 of a
-     status glyph wherever the words reach 4.5:1. The same names as Halo's own sweets (V-691). */
+  /* The marks of something that runs (`StatusMark`): a flat shape in the status colour with a
+     soft glow of it. The status colours above (running is mint on Midnight, a dot like the
+     satellite), so a mark reaches the 3:1 of a status glyph wherever the words reach 4.5:1. The
+     same names as Halo's own marks (V-691). */
   --nt-status-run: #2fd3a6;
-  --nt-status-run-hi: #b9ffe9;
   --nt-status-fail: var(--nt-danger);
-  --nt-status-fail-hi: #ffc2c4;
   --nt-status-block: var(--nt-attention);
-  --nt-status-block-hi: #ffe2a8;
   --nt-status-stop: var(--nt-text-muted);
-  --nt-status-stop-hi: #d9dcef;
-  /* The strength of a mark's glow in its own colour and of its gloss: full on a dark ground,
-     where they read as light. A host may set either on an element to calm the marks inside it. */
+  /* The strength of a mark's glow: full on a dark ground, where it reads as light. A host may set
+     it on an element to calm the marks inside it. */
   --nt-status-glow: 1;
-  --nt-status-gloss: 1;
 
   --nt-radius-sm: 4px;
   --nt-radius-md: 6px;
@@ -359,18 +354,13 @@
   --nt-danger-border: rgb(191 48 48 / 0.3);
   --nt-comment-underline: rgb(150 90 0 / 0.55);
 
-  /* The marks on Paper keep the deep status colours (3:1 and more at their edge); the glow and the
-     gloss half as strong, where a full one smudges. */
+  /* The marks on Paper keep the deep status colours (3:1 and more); the glow a whisper, where a
+     full one smudges. */
   --nt-status-run: var(--nt-success);
-  --nt-status-run-hi: #7cf0b8;
   --nt-status-fail: var(--nt-danger);
-  --nt-status-fail-hi: #ff8a8e;
   --nt-status-block: var(--nt-attention);
-  --nt-status-block-hi: #ffc861;
   --nt-status-stop: var(--nt-brand-slate-deep);
-  --nt-status-stop-hi: #b6bbdc;
-  --nt-status-glow: 0.45;
-  --nt-status-gloss: 0.5;
+  --nt-status-glow: 0.22;
 
   /* A menu is white on Paper; its shadow, in Midnight, lifts it. */
   --nt-overlay-background: #ffffff;

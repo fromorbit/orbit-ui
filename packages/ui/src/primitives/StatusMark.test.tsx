@@ -60,50 +60,41 @@ test('with a label the mark is named by its status word', () => {
 describe('the drawing in theme.css', () => {
   const tokenOf = { running: 'run', fault: 'fail', blocked: 'block', stopped: 'stop' } as const
 
-  test.each(kinds)('%s takes its body and its highlight from its own tokens', (kind) => {
-    const declarations = rule(`.nt-status-mark[data-kind="${kind}"]`)
-    expect(declarations).toContain(`--c: var(--nt-status-${tokenOf[kind]});`)
-    expect(declarations).toContain(`--hi: var(--nt-status-${tokenOf[kind]}-hi);`)
+  test.each(kinds)('%s takes its colour from its own token', (kind) => {
+    expect(rule(`.nt-status-mark[data-kind="${kind}"]`)).toContain(
+      `--c: var(--nt-status-${tokenOf[kind]});`,
+    )
   })
 
-  test('the sweet: a highlight at 32% 28% over a body that darkens to its edge, and a glow', () => {
+  test('a flat shape in its colour with a soft glow of it: no gloss, no inset edges', () => {
     const body = rule('.nt-status-mark-body')
-    expect(body).toMatch(/radial-gradient\(\s*circle at 32% 28%/)
-    expect(body).toMatch(/radial-gradient\(circle at 50% 60%/)
-    // The darker inset edge below and the lighter one above.
-    expect(body).toMatch(/inset 0 -1\.5px 2px/)
-    expect(body).toMatch(/inset 0 1px 1px/)
-    // The glow and the gloss at the strength of the theme.
-    expect(body).toContain('calc(8px * var(--nt-status-glow))')
-    expect(body).toContain('calc(var(--nt-status-gloss) * 100%)')
-    // The plain colour under the gradients, which a contrast check reads.
-    expect(body).toContain('background-color: var(--c);')
+    expect(body).toContain('background: var(--c);')
+    expect(body).toMatch(
+      /box-shadow: 0 0 calc\(6px \* var\(--nt-status-glow\)\) calc\(1px \* var\(--nt-status-glow\)\)\s+color-mix\(in srgb, var\(--c\) 55%, transparent\);/,
+    )
+    expect(themeCss).not.toMatch(/nt-status-mark[^{]*\{[^}]*(gradient|inset)/)
   })
 
-  test('the triangle is clipped, so its glow is a drop-shadow on the slot', () => {
+  test('the triangle is clipped higher in its box, so its glow is a drop-shadow on the slot', () => {
     expect(rule('.nt-status-mark[data-kind="fault"] .nt-status-mark-body')).toContain(
-      'clip-path: path(',
+      '"M 5.7 3.1 Q 7 1.1 8.3 3.1 L 12.5 9.8 Q 13.5 11.5 11.5 11.5 L 2.5 11.5 Q 0.5 11.5 1.5 9.8 Z"',
     )
     expect(rule('.nt-status-mark[data-kind="fault"]')).toMatch(
-      /filter: drop-shadow\(\s*0 0 calc\(5px \* var\(--nt-status-glow\)\)/,
+      /filter: drop-shadow\(\s*0 0 calc\(4px \* var\(--nt-status-glow\)\) color-mix\(in srgb, var\(--c\) 60%, transparent\)/,
     )
   })
 
-  test('the diamond is a turned square, so the spring scale composes with its turn', () => {
+  test('the diamond is a turned square, so its glow is not clipped', () => {
     expect(rule('.nt-status-mark[data-kind="blocked"] .nt-status-mark-body')).toContain(
       'rotate: 45deg;',
     )
   })
 
-  test('the spring under the pointer moves only for those who did not ask for less motion', () => {
-    const start = themeCss.indexOf('@media (prefers-reduced-motion: no-preference)')
-    expect(start).toBeGreaterThan(-1)
-    const hover = themeCss.indexOf('scale: 1.18;')
-    expect(hover).toBeGreaterThan(start)
-    // Only once, and only inside that block: no spring without it.
-    expect(themeCss.split('scale: 1.18;')).toHaveLength(2)
-    const block = themeCss.slice(start, hover)
-    expect(block).toMatch(/:not\(:disabled, \[aria-disabled="true"\]\):hover/)
-    expect(block).toContain('button')
+  test('the mark stands still under the pointer: no spring, no transition', () => {
+    const own = themeCss.slice(
+      themeCss.indexOf('/* The mark of something that runs'),
+      themeCss.indexOf('@keyframes nt-pulse'),
+    )
+    expect(own).not.toMatch(/scale|transition|:hover/)
   })
 })

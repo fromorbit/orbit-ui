@@ -19,7 +19,7 @@ const rows: [StatusMarkKind, string, string][] = [
   ['stopped', 'docs', 'gestopt 2 u'],
 ]
 
-/** The marks beside their words, then the same in a list and a row of filters. */
+/** The marks in a list and in a row of filters. */
 function Sampler(): ReactNode {
   return (
     <div className="flex flex-col gap-4 text-[13px] text-fg">
@@ -32,7 +32,7 @@ function Sampler(): ReactNode {
           </span>
         ))}
       </div>
-      {/* Inside a button the mark springs up under the pointer, unless motion is reduced. */}
+      {/* Inside a button, as in the filter row of a list of spaces. */}
       <div className="flex flex-wrap gap-2">
         {kinds.map(([kind, word]) => (
           <Button key={kind} variant="secondary" size="sm">
@@ -60,7 +60,7 @@ export default {
       </div>
     ),
     'In een lijst en een rij filters': () => <Sampler />,
-    // The light palette on its own element: the glow there is 0.45 of the dark one.
+    // The light palette on its own element: the glow there is 0.22 of the dark one.
     'Op Papier': () => (
       <div data-theme="light" className="rounded-lg bg-canvas p-4">
         <Sampler />

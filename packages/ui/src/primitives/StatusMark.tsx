@@ -30,17 +30,15 @@ export interface StatusMarkProps {
 }
 
 /**
- * The status of something that runs as a small glossy sweet: a circle running, a triangle at
- * fault, a diamond blocked, a square stopped.
+ * The status of something that runs as a small mark with a soft glow: a circle running, a
+ * triangle at fault, a diamond blocked, a square stopped.
  *
- * The shape is the information; the colour (`--nt-status-run|fail|block|stop`), a light highlight
- * (their `-hi`) and a soft glow in the mark's own colour make it pleasant to look at. On a light
- * ground the glow and the gloss are weaker (`--nt-status-glow` 0.45, `--nt-status-gloss` 0.5;
- * both 1 in dark), and a host may set either on an element to calm the marks inside. The same
- * tokens and drawing as Halo's own status sweets. Inside a button, link, tab or option the mark springs up a little under the pointer,
- * never with reduced motion. All of it is drawn by `theme.css` (`nt-status-mark`), not by an SVG:
- * the glow of the triangle is a `drop-shadow` on the outer element, because its `clip-path` cuts a
- * `box-shadow` off.
+ * The shape is the information; it is a flat fill in its status colour
+ * (`--nt-status-run|fail|block|stop`) with a soft glow of that colour around it, full in dark and a
+ * whisper in light (`--nt-status-glow`, 1 and 0.22). A host may set the glow on an element to calm
+ * the marks inside. The same tokens and drawing as Halo's own marks. It stands still under the
+ * pointer. All of it is drawn by `theme.css` (`nt-status-mark`), not by an SVG: the glow of the
+ * triangle is a `drop-shadow` on the outer element, because its `clip-path` cuts a `box-shadow` off.
  *
  * Always the same 14px slot, so a column of names beside it stays in line.
  */

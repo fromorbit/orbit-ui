@@ -403,10 +403,6 @@ describe.each(palettes)('the %s palette', (_name, palette) => {
           surface,
         ).toBeGreaterThanOrEqual(3)
       }
-      // The gloss is lighter than the body, or it would read as a stain.
-      expect(relativeLuminance(hexIn(palette, `--nt-status-${kind}-hi`))).toBeGreaterThan(
-        relativeLuminance(hexIn(palette, `--nt-status-${kind}`)),
-      )
     },
   )
 
@@ -434,11 +430,10 @@ describe('the light block', () => {
     expect(extra).toEqual([])
   })
 
-  test('halves the glow and the gloss of a status mark, where dark keeps them full', () => {
+  test('keeps the glow of a status mark to a whisper, where dark keeps it at full strength', () => {
     expect(tokens.get('--nt-status-glow')).toBe('1')
-    expect(tokens.get('--nt-status-gloss')).toBe('1')
-    expect(lightOnly.get('--nt-status-glow')).toBe('0.45')
-    expect(lightOnly.get('--nt-status-gloss')).toBe('0.5')
+    expect(lightOnly.get('--nt-status-glow')).toBe('0.22')
+    expect(tokens.has('--nt-status-gloss')).toBe(false)
   })
 
   test('asks the browser for light native controls', () => {

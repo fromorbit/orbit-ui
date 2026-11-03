@@ -37,7 +37,7 @@ The gallery has a switch for it (Orbit, Halo, Fold): the dot beside "UI" in its 
 
 ## Status marks (the minor after 0.2.0)
 
-What runs on its own (a service, an app, a space) shows its state with `StatusMark`: a small glossy sweet, a circle `running`, a triangle `fault`, a diamond `blocked`, a square `stopped`. The shape is the information; the colour, the gloss and the glow only make it pleasant. A chat keeps `StatusShape`, whose seven states and quiet outlines belong to a column read all day.
+What runs on its own (a service, an app, a space) shows its state with `StatusMark`: a circle `running`, a triangle `fault`, a diamond `blocked`, a square `stopped`, each a flat fill in its status colour with a soft glow of that colour around it. The shape is the information; the glow only makes it pleasant. A chat keeps `StatusShape`, whose seven states and quiet outlines belong to a column read all day.
 
 | Part | Dark | Light |
 |---|---|---|
@@ -45,9 +45,9 @@ What runs on its own (a service, an app, a space) shows its state with `StatusMa
 | Fault (`--nt-status-fail`) | `--nt-danger` | `--nt-danger` |
 | Blocked (`--nt-status-block`) | `--nt-attention` | `--nt-attention` |
 | Stopped (`--nt-status-stop`) | muted (Slate) | deep Slate |
-| Glow / gloss (`--nt-status-glow`, `--nt-status-gloss`) | 1 / 1 | 0.45 / 0.5 |
+| Glow (`--nt-status-glow`) | 1 | 0.22 |
 
-Each colour has a `-hi` for the gloss; the names are the ones Halo gives its own sweets (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow or the gloss on an element to calm the marks inside it. Every body reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`), and the plain colour lies under the gradients, so a contrast check reads it. Inside a button, link, tab or option the mark springs to 1.18 under the pointer, only without `prefers-reduced-motion`. `theme.css` draws all of it (`nt-status-mark`); the triangle's glow is a `drop-shadow` on the outer element, because its `clip-path` cuts a `box-shadow` off.
+The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners that sits 1.5px above the middle of its box, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
 
 ## Breaking changes of 0.2.0
 
