@@ -19,6 +19,7 @@ import creditCardFieldStory from '../patterns/CreditCardField.gallery'
 import editableTableStory from '../patterns/EditableTable.gallery'
 import emptyStateStory from '../patterns/EmptyState.gallery'
 import errorStateStory from '../patterns/ErrorState.gallery'
+import fileDropStory from '../patterns/FileDrop.gallery'
 import fileLinkStory from '../patterns/FileLink.gallery'
 import gitHubLinkStory from '../patterns/GitHubLink.gallery'
 import hostedSurfaceStory from '../patterns/HostedSurface.gallery'
@@ -75,6 +76,7 @@ import orbitSymbolStory from '../primitives/OrbitSymbol.gallery'
 import orbitWordmarkStory from '../primitives/OrbitWordmark.gallery'
 import otpInputStory from '../primitives/OtpInput.gallery'
 import pillStory from '../primitives/Pill.gallery'
+import progressBarStory from '../primitives/ProgressBar.gallery'
 import progressMeterStory from '../primitives/ProgressMeter.gallery'
 import projectMarkStory from '../primitives/ProjectMark.gallery'
 import radioGroupStory from '../primitives/RadioGroup.gallery'
@@ -215,4 +217,6 @@ export const stories: Story[] = collectStories([
   creditCardFieldStory,
   calendarStory,
   datePickerStory,
+  progressBarStory,
+  fileDropStory,
 ])

@@ -4,6 +4,10 @@ import { forwardRef } from 'react'
 export interface FileInputProps {
   /** Every file chosen in one round, in the order the dialog gave them. */
   onFiles(files: File[]): void
+  /** The types the dialog offers, as the `accept` attribute: `"image/*,.pdf"`. Left out, any. */
+  accept?: string
+  /** One file per round instead of several; several by default. */
+  single?: boolean
 }
 
 /**
@@ -17,14 +21,15 @@ export interface FileInputProps {
  * without a control that looks like anything: a hidden file input has no visual design of its own.
  */
 export const FileInput = forwardRef<HTMLInputElement, FileInputProps>(function FileInput(
-  { onFiles },
+  { onFiles, accept, single = false },
   ref,
 ) {
   return (
     <input
       ref={ref}
       type="file"
-      multiple
+      multiple={!single}
+      accept={accept}
       className="sr-only"
       tabIndex={-1}
       aria-hidden="true"
