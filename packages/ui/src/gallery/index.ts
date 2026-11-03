@@ -1,5 +1,6 @@
 import comboboxStory from '../overlays/Combobox.gallery'
 import confirmDialogStory from '../overlays/ConfirmDialog.gallery'
+import datePickerStory from '../overlays/DatePicker.gallery'
 import dialogStory from '../overlays/Dialog.gallery'
 import dropdownMenuCountsStory from '../overlays/DropdownMenu.counts.gallery'
 import dropdownMenuStory from '../overlays/DropdownMenu.gallery'
@@ -52,6 +53,7 @@ import summaryBarStory from '../patterns/SummaryBar.gallery'
 import avatarStory from '../primitives/Avatar.gallery'
 import brandIconStory from '../primitives/BrandIcon.gallery'
 import buttonStory from '../primitives/Button.gallery'
+import calendarStory from '../primitives/Calendar.gallery'
 import checkboxStory from '../primitives/Checkbox.gallery'
 import checkboxFieldStory from '../primitives/CheckboxField.gallery'
 import checkboxGroupStory from '../primitives/CheckboxGroup.gallery'
@@ -211,4 +213,6 @@ export const stories: Story[] = collectStories([
   sliderStory,
   otpInputStory,
   creditCardFieldStory,
+  calendarStory,
+  datePickerStory,
 ])
