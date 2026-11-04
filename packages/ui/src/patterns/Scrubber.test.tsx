@@ -7,6 +7,7 @@ import {
   Scrubber,
   type ScrubberKind,
   type ScrubberMarker,
+  scrubberGroups,
   scrubberTicks,
 } from './Scrubber'
 
@@ -15,7 +16,7 @@ type Kind = 'klik' | 'fout' | 'navigatie'
 const KINDS: Record<Kind, ScrubberKind> = {
   klik: { label: 'Klik', shape: 'dot' },
   fout: { label: 'Fout', shape: 'diamond', tone: 'danger' },
-  navigatie: { label: 'Navigatie', shape: 'bar' },
+  navigatie: { label: 'Navigatie', shape: 'chevron' },
 }
 
 const MARKERS: ScrubberMarker<Kind>[] = [
@@ -28,7 +29,15 @@ const MARKERS: ScrubberMarker<Kind>[] = [
 const clock = (seconds: number) =>
   `${Math.floor(seconds / 60)}:${String(Math.floor(seconds) % 60).padStart(2, '0')}`
 
-function Player({ start = 14, legend = true }: { start?: number; legend?: boolean }) {
+function Player({
+  start = 14,
+  legend = true,
+  action,
+}: {
+  start?: number
+  legend?: boolean
+  action?: string
+}) {
   const [value, setValue] = useState(start)
   return (
     <Scrubber
@@ -39,8 +48,11 @@ function Player({ start = 14, legend = true }: { start?: number; legend?: boolea
       markers={MARKERS}
       kinds={KINDS}
       formatTime={clock}
-      valueText={(seconds) => `${clock(seconds)} van 0:24`}
+      valueText={(seconds, here) =>
+        [`${clock(seconds)} van 0:24`, ...here.map((marker) => marker.label)].join(', ')
+      }
       {...(legend ? { legendLabel: 'Markeringen' } : {})}
+      {...(action ? { legendActions: { fout: <span>{action}</span> } } : {})}
     />
   )
 }
@@ -51,7 +63,7 @@ describe('Scrubber', () => {
     const slider = screen.getByRole('slider', { name: 'Afspeelpositie' })
     expect(slider).toHaveAttribute('aria-valuenow', '14')
     expect(slider).toHaveAttribute('aria-valuemax', '24')
-    expect(slider).toHaveAttribute('aria-valuetext', '0:14 van 0:24')
+    expect(slider).toHaveAttribute('aria-valuetext', '0:14 van 0:24, TypeError in Kassa.betaal')
   })
 
   test('the keys move the playhead: an arrow one step, End to the end', async () => {
@@ -71,6 +83,29 @@ describe('Scrubber', () => {
     expect(markers[0]?.style.left).toBe('12.5%')
     expect(markers[1]?.style.left).toBe('50%')
     expect(markers[0]?.closest('[aria-hidden="true"]')).not.toBeNull()
+    expect(markers[0]).toHaveAttribute('tabindex', '-1')
+  })
+
+  test('a press on a marker seeks to its moment', () => {
+    const { container } = render(<Player start={0} />)
+    const marker = container.querySelector<HTMLElement>('[data-nt-scrubber-marker="fout"]')
+    if (!marker) throw new Error('no marker')
+    fireEvent.click(marker)
+    expect(screen.getByRole('slider')).toHaveAttribute('aria-valuenow', '14')
+  })
+
+  test('on a marker the thumb opens into a ring in its tone', () => {
+    const on = render(<Player start={14} />)
+    expect(on.container.querySelector('[data-nt-scrubber-thumb]')).toHaveAttribute(
+      'data-nt-scrubber-thumb',
+      'danger',
+    )
+    on.unmount()
+    const free = render(<Player start={8} />)
+    expect(free.container.querySelector('[data-nt-scrubber-thumb]')).toHaveAttribute(
+      'data-nt-scrubber-thumb',
+      'free',
+    )
   })
 
   test('the legend lists the kinds that occur, with their counts', () => {
@@ -79,6 +114,15 @@ describe('Scrubber', () => {
     expect([...legend.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
       'Klik2',
       'Fout2',
+    ])
+  })
+
+  test("a legend action takes the place of its kind's count", () => {
+    render(<Player action="1 van 2" />)
+    const legend = screen.getByRole('list', { name: 'Markeringen' })
+    expect([...legend.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
+      'Klik2',
+      'Fout1 van 2',
     ])
   })
 
@@ -133,6 +177,36 @@ describe('scrubberTicks', () => {
     [0, [0]],
   ])('%i seconds take round ticks', (duration, ticks) => {
     expect(scrubberTicks(duration)).toEqual(ticks)
+  })
+})
+
+describe('scrubberGroups', () => {
+  const near: ScrubberMarker<Kind>[] = [
+    { at: 14.35, kind: 'fout', label: 'TypeError' },
+    { at: 14.6, kind: 'klik', label: 'Klikt' },
+    { at: 20, kind: 'fout', label: 'TypeError' },
+  ]
+  test.each([
+    [0, [[14.35], [14.6], [20]]],
+    [320, [[14.35, 14.6], [20]]],
+    [1600, [[14.35], [14.6], [20]]],
+  ])('on a track of %ipx, markers that would touch are one group', (width, groups) => {
+    expect(
+      scrubberGroups(near, 24, width).map((group) => group.markers.map((marker) => marker.at)),
+    ).toEqual(groups)
+  })
+
+  test('what went wrong leads its group and is drawn at its own moment', () => {
+    const groups = scrubberGroups(
+      [
+        { at: 19.1, kind: 'klik', label: 'Klikt opnieuw' },
+        { at: 20.35, kind: 'fout', label: 'TypeError' },
+      ],
+      24,
+      256,
+      KINDS,
+    )
+    expect(groups.map((group) => [group.at, group.markers.length])).toEqual([[20.35, 2]])
   })
 })
 

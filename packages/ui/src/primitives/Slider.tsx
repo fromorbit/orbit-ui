@@ -83,7 +83,7 @@ export function Slider({
           aria-invalid={ariaInvalid}
           aria-valuetext={valueText(value)}
           id={id}
-          className="block size-4 rounded-full border-2 border-overlay bg-fg shadow-menu outline-focus transition-transform duration-(--nt-duration-fast) hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
+          className="block size-4 rounded-full border-2 border-overlay bg-fg outline-focus transition-transform duration-(--nt-duration-fast) hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
         />
       </RadixSlider.Root>
       {showValue ? (

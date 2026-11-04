@@ -18,7 +18,9 @@ const ERROR = EVENTS.find((event) => event.kind === 'fout')?.at ?? 0
  * The recorded page at `position`: the checkout of the web shop with its order and the payment by
  * iDEAL. Once the customer has pressed Betalen the button is ringed with the pointer on it, and
  * from the first error on the message the customer got stands under it. A drawing from the
- * tokens, as a replay shows the page in its own styles.
+ * tokens, as a replay shows the page in its own styles: dimmed and a step less saturated, so the
+ * recorded shop's own buttons never compete with the player's, and a quiet "Zo zag de klant het"
+ * in its address bar says whose page this is.
  */
 export function TrailReplay({ position }: { position: number }): ReactNode {
   const clicked = position >= PAY
@@ -39,8 +41,11 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
           <Icon name="lock" size="sm" tone="faint" />
           webwinkel.zilverberg.test/kassa
         </span>
+        <span className="hidden shrink-0 text-[11px] text-muted @xl:inline">
+          Zo zag de klant het
+        </span>
       </div>
-      <div className="flex flex-col gap-4 p-4 @3xl:p-5">
+      <div className="pointer-events-none flex flex-col gap-3 p-3 opacity-70 saturate-50 @3xl:gap-4 @3xl:p-4">
         <div className="flex items-center justify-between">
           <span className="whitespace-nowrap font-heading text-[15px] text-fg">
             Zilverberg Koffie
@@ -58,7 +63,7 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
               {LINES.map((line) => (
                 <li
                   key={line.name}
-                  className="flex items-center gap-3 border-border border-b py-2 last:border-b-0"
+                  className="flex items-center gap-3 border-border border-b py-1.5 last:border-b-0"
                 >
                   <span className="size-8 shrink-0 rounded-md bg-surface-active" />
                   <span className="flex min-w-0 flex-1 flex-col">
@@ -84,7 +89,7 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
               Betalen
               {clicked ? (
                 <>
-                  <span className="absolute -inset-1.5 rounded-lg border-2 border-danger/70" />
+                  <span className="absolute -inset-1.5 rounded-lg border-2 border-secondary border-dashed" />
                   <span className="absolute -right-1 -bottom-2 text-fg">
                     <Icon name="mouse-pointer-click" size="sm" />
                   </span>

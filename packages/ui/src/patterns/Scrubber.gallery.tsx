@@ -6,17 +6,17 @@ type Kind = 'klik' | 'navigatie' | 'fout' | 'verzoek'
 
 /** The kinds of a recorded browser session, in the words of Halo's trail. */
 const KINDS: Record<Kind, ScrubberKind> = {
-  klik: { label: 'Klik', shape: 'dot' },
-  navigatie: { label: 'Navigatie', shape: 'bar' },
   fout: { label: 'Fout', shape: 'diamond', tone: 'danger' },
   verzoek: { label: 'Mislukt verzoek', shape: 'ring', tone: 'danger' },
+  klik: { label: 'Klik', shape: 'dot' },
+  navigatie: { label: 'Navigatie', shape: 'chevron' },
 }
 
 /** A customer who tries to pay twice and gets a server error both times. */
 const CHECKOUT: ScrubberMarker<Kind>[] = [
-  { at: 0.2, kind: 'navigatie', label: 'Opent /' },
+  { at: 0.2, kind: 'navigatie', label: 'Opent de startpagina (/)' },
   { at: 3.1, kind: 'klik', label: 'Klikt op In winkelmand' },
-  { at: 5.8, kind: 'navigatie', label: 'Opent /kassa' },
+  { at: 5.8, kind: 'navigatie', label: 'Opent de kassa (/kassa)' },
   { at: 9.2, kind: 'klik', label: 'Kiest een bank' },
   { at: 12.6, kind: 'klik', label: 'Klikt op Betalen' },
   { at: 14.35, kind: 'fout', label: 'TypeError in Kassa.betaal' },
@@ -24,8 +24,33 @@ const CHECKOUT: ScrubberMarker<Kind>[] = [
   { at: 19.1, kind: 'klik', label: 'Klikt opnieuw op Betalen' },
   { at: 20.35, kind: 'fout', label: 'TypeError in Kassa.betaal' },
   { at: 20.6, kind: 'verzoek', label: 'POST /api/bestellingen · 500' },
-  { at: 23.0, kind: 'navigatie', label: 'Opent /' },
+  { at: 23.0, kind: 'navigatie', label: 'Opent de startpagina (/)' },
 ]
+
+/** A failed request and the error it throws in the same tenth of a second. */
+const TOGETHER: ScrubberMarker<Kind>[] = [
+  { at: 1.2, kind: 'navigatie', label: 'Opent de kassa (/kassa)' },
+  { at: 4.8, kind: 'klik', label: 'Klikt op Betalen' },
+  { at: 5.1, kind: 'verzoek', label: 'POST /api/betaal · 502' },
+  { at: 5.1, kind: 'fout', label: 'Error: betaling geweigerd in Kassa.betaal' },
+  { at: 9.4, kind: 'navigatie', label: 'Opent de startpagina (/)' },
+]
+
+/** Two minutes of a customer who browses a lot: 48 events, dense where they click fast. */
+const BUSY: ScrubberMarker<Kind>[] = Array.from({ length: 48 }, (_, index) => {
+  const at = Math.round((index * 2.4 + (index % 5) * 0.35 + 0.4) * 10) / 10
+  const kind: Kind =
+    index === 31 ? 'fout' : index === 32 ? 'verzoek' : index % 7 === 0 ? 'navigatie' : 'klik'
+  const label =
+    kind === 'fout'
+      ? 'TypeError in Zoeken.filter'
+      : kind === 'verzoek'
+        ? 'GET /api/zoeken?q=bonen · 500'
+        : kind === 'navigatie'
+          ? `Opent pagina ${index / 7 + 1} van het assortiment`
+          : `Klikt op product ${index + 1}`
+  return { at, kind, label }
+})
 
 /** A long session in the admin, with one slow request near the end. */
 const ADMIN: ScrubberMarker<Kind>[] = [
@@ -50,6 +75,7 @@ function Player({
   markers,
   legend = true,
   disabled = false,
+  note,
   width = 'max-w-[640px]',
 }: {
   duration: number
@@ -57,11 +83,13 @@ function Player({
   markers: ScrubberMarker<Kind>[]
   legend?: boolean
   disabled?: boolean
+  /** A line under the player that says why it cannot play yet, and what comes next. */
+  note?: string
   width?: string
 }): ReactNode {
   const [value, setValue] = useState(start)
   return (
-    <div className={`w-full ${width} rounded-lg bg-overlay p-4`}>
+    <div className={`flex w-full ${width} flex-col gap-2 rounded-lg bg-overlay p-4`}>
       <Scrubber
         label="Afspeelpositie"
         duration={duration}
@@ -70,10 +98,20 @@ function Player({
         markers={markers}
         kinds={KINDS}
         formatTime={clock}
-        valueText={(seconds) => `${clock(seconds)} van ${clock(duration)}`}
+        valueText={(seconds, here) =>
+          [
+            `${clock(seconds)} van ${clock(duration)}`,
+            ...here.map((marker) => `${KINDS[marker.kind].label}: ${marker.label}`),
+          ].join(', ')
+        }
         {...(legend ? { legendLabel: 'Markeringen' } : {})}
         disabled={disabled}
       />
+      {note === undefined ? null : (
+        <p role="status" className="m-0 text-[12px] text-secondary">
+          {note}
+        </p>
+      )}
     </div>
   )
 }
@@ -84,6 +122,12 @@ export default {
   states: {
     'At the first error': () => <Player duration={24} start={14.35} markers={CHECKOUT} />,
     'At the start: nothing played yet': () => <Player duration={24} start={0} markers={CHECKOUT} />,
+    'An error and a failed request at the same moment: one mark, both shapes': () => (
+      <Player duration={10} start={2} markers={TOGETHER} />
+    ),
+    'Dense: 48 events, grouped with a count where they touch': () => (
+      <Player duration={120} start={76} markers={BUSY} />
+    ),
     'A long recording: ticks every five minutes': () => (
       <Player duration={721} start={402} markers={ADMIN} />
     ),
@@ -94,7 +138,13 @@ export default {
       <Player duration={95} start={31} markers={[]} legend={false} />
     ),
     'Still being processed: disabled': () => (
-      <Player duration={24} start={0} markers={[]} disabled />
+      <Player
+        duration={24}
+        start={0}
+        markers={[]}
+        disabled
+        note="Opname wordt nog verwerkt. Over een paar seconden kun je afspelen."
+      />
     ),
   },
 } satisfies Story
