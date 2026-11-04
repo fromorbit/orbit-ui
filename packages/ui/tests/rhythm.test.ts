@@ -30,12 +30,18 @@ const GLYPHS = new Set([
   'primitives/ProjectMark.tsx',
 ])
 
+/**
+ * The one allowed exception to the scale: the figure of a dashboard tile (`StatTile`) at 26px, so
+ * the number a tile exists for reads first, above a 20px page title (`family-style.md`).
+ */
+const FIGURES = new Map([['patterns/StatTile.tsx', '26']])
+
 test('text takes one of the five sizes of the scale', () => {
   const offenders = files().flatMap(([file, text]) =>
     GLYPHS.has(file)
       ? []
       : [...text.matchAll(/\btext-\[([\d.]+)px\]/g)]
-          .filter((match) => !SCALE.has(match[1] ?? ''))
+          .filter((match) => !SCALE.has(match[1] ?? '') && FIGURES.get(file) !== match[1])
           .map((match) => `${file}: ${match[0]}`),
   )
   expect(offenders).toEqual([])

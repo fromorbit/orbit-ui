@@ -515,11 +515,11 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                       {/* Beside the address where there is room; behind ⋯ on a phone, so the
                           address itself stays readable. */}
                       <span className="hidden shrink-0 items-center gap-1 @xl:flex">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="secondary" size="sm">
                           Opnieuw sturen
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="secondary"
                           size="sm"
                           onClick={() =>
                             setInvited((now) => now.filter((entry) => entry.email !== invite.email))
@@ -570,7 +570,11 @@ function Team({ variant }: DemoScreenProps): ReactNode {
               meta="voor de hele werkruimte"
               flush
               actions={
-                <Button variant="ghost" size="sm" onClick={() => setEditingRights((now) => !now)}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditingRights((now) => !now)}
+                >
                   {editingRights ? 'Klaar' : 'Aanpassen'}
                 </Button>
               }

@@ -224,7 +224,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
 function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
   const [picked, setPicked] = useState<readonly string[]>([])
   return (
-    <div className="overflow-hidden rounded-lg bg-overlay">
+    <div className="overflow-hidden rounded-lg bg-overlay shadow-plane">
       <DataTable
         label="Spaces"
         columns={COLUMNS}
@@ -300,7 +300,7 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
                 })}
           />
           {empty ? (
-            <div className="flex min-h-96 items-center justify-center rounded-lg bg-overlay p-6">
+            <div className="flex min-h-96 items-center justify-center rounded-lg bg-overlay p-6 shadow-plane">
               <EmptyState
                 icon="rows"
                 title="Nog geen spaces"
@@ -334,7 +334,7 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
                 />
               </div>
               {shown.length === 0 ? (
-                <div className="rounded-lg bg-overlay p-8">
+                <div className="rounded-lg bg-overlay p-8 shadow-plane">
                   <EmptyState
                     icon="search"
                     title="Geen spaces gevonden"

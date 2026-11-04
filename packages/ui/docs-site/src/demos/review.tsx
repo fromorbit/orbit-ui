@@ -298,7 +298,7 @@ function FileCard({
 }): ReactNode {
   const [open, setOpen] = useState(file.diff !== undefined && !seen)
   return (
-    <section aria-label={file.path} className="overflow-hidden rounded-lg bg-overlay">
+    <section aria-label={file.path} className="overflow-hidden rounded-lg bg-overlay shadow-plane">
       <header className="flex min-h-11 items-center gap-2 py-1 pr-3 pl-2">
         <IconButton
           icon={open ? 'chevron-down' : 'chevron-right'}
@@ -460,7 +460,7 @@ function Verdict(): ReactNode {
     <Panel title="Oordeel">
       <div className="flex flex-col gap-4">
         <div
-          className={`flex items-start gap-2.5 rounded-md px-3 py-2.5 ${asComment ? 'bg-surface' : 'bg-danger-subtle'}`}
+          className={`flex items-start gap-2.5 rounded-md px-3 py-2.5 ${asComment ? 'bg-plane shadow-plane' : 'bg-danger-subtle'}`}
         >
           <span className={`flex h-5 items-center ${asComment ? 'text-muted' : 'text-danger'}`}>
             <Icon name={asComment ? 'message-square' : 'octagon-alert'} size="sm" />

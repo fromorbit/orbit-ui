@@ -335,7 +335,7 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
             ].map((fact) => (
               <div
                 key={fact.label}
-                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay px-3 py-2.5 @3xl:px-4 @3xl:py-3 @5xl:flex-row @5xl:items-baseline @5xl:gap-2"
+                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay shadow-plane px-3 py-2.5 @3xl:px-4 @3xl:py-3 @5xl:flex-row @5xl:items-baseline @5xl:gap-2"
               >
                 <span className="whitespace-nowrap font-heading text-[20px] text-fg tabular-nums">
                   {fact.value}
@@ -394,7 +394,7 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
         <div className="flex shrink-0 justify-center px-4 pt-2 pb-4">
           <div className="flex items-center gap-3 rounded-lg border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
             <span className="whitespace-nowrap text-[13px] text-fg tabular-nums">{`${selected.length} geselecteerd`}</span>
-            <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
+            <Button variant="secondary" size="sm" onClick={() => setSelected([])}>
               <span className="@md:hidden">Opheffen</span>
               <span className="hidden @md:inline">Selectie opheffen</span>
             </Button>

@@ -246,7 +246,7 @@ describe('tokens.css', () => {
   })
 })
 
-describe.each(palettes)('the %s palette', (_name, palette) => {
+describe.each(palettes)('the %s palette', (theme, palette) => {
   // The contrast requirements of the palette, computed from the file rather than from fixed
   // figures: they hold whatever a value later becomes.
   test('the words on the accent fill reach AA (≥ 4.5)', () => {
@@ -383,10 +383,22 @@ describe.each(palettes)('the %s palette', (_name, palette) => {
     },
   )
 
-  test('the frame (sidebar, window) is darker than the canvas (conversation, panel)', () => {
-    expect(relativeLuminance(hexIn(palette, '--nt-frame'))).toBeLessThan(
-      relativeLuminance(hexIn(palette, '--nt-canvas')),
-    )
+  test('the frame and the canvas differ; a hairline parts them only where white meets Paper', () => {
+    const frame = relativeLuminance(hexIn(palette, '--nt-frame'))
+    const canvas = relativeLuminance(hexIn(palette, '--nt-canvas'))
+    if (theme === 'dark') {
+      // The sidebar recedes and the content leads; the brightness is the separation.
+      expect(frame).toBeLessThan(canvas)
+      expect(palette.get('--nt-frame-edge')).toBe('transparent')
+      expect(palette.get('--nt-shadow-plane')).toBe('0 0 #0000')
+    } else {
+      // White regions on a page of Paper, a touch off-white: a hairline is the edge, not a fill.
+      expect(palette.get('--nt-frame')).toBe('#ffffff')
+      expect(palette.get('--nt-plane')).toBe('#ffffff')
+      expect(palette.get('--nt-overlay-background')).toBe('#ffffff')
+      expect(frame).toBeGreaterThan(canvas)
+      expect(palette.get('--nt-frame-edge')).toBe('var(--nt-border)')
+    }
     // `bg` stays an alias of the canvas until every use has moved over.
     expect(palette.get('--nt-bg')).toBe('var(--nt-canvas)')
   })

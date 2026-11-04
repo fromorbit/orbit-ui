@@ -309,7 +309,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 </TimelineItem>
               ))}
               <TimelineItem marker={<Avatar name="Sem Oudeweg" size="sm" />} time="2 u">
-                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg bg-surface px-3 py-2">
+                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg bg-plane px-3 py-2 shadow-plane">
                   <span className="font-medium text-fg">Sem Oudeweg</span>
                   <span className="text-fg leading-relaxed">
                     Moet het restant ook in het account van de klant zichtbaar zijn?

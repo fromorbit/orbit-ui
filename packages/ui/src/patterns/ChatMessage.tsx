@@ -146,7 +146,7 @@ export function ChatMessage({
     return (
       <article aria-label={label} {...described} className="group flex flex-col items-end gap-1">
         <div className="flex w-full flex-row-reverse items-end justify-start gap-2">
-          <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-br-sm bg-bubble px-3 py-2 text-[13px] text-fg leading-5 [overflow-wrap:anywhere]">
+          <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-br-sm bg-bubble px-3 shadow-plane py-2 text-[13px] text-fg leading-5 [overflow-wrap:anywhere]">
             {children}
           </div>
           {footer}

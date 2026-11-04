@@ -177,7 +177,7 @@ export function AppFrame({
   const here = places.find((place) => place.id === current)
   return (
     <div className="flex h-full min-h-0 w-full flex-col @3xl:flex-row">
-      <div className="hidden w-60 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) @3xl:flex">
+      <div className="hidden w-60 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) shadow-frame-edge @3xl:flex">
         <div className="flex h-12 shrink-0 items-center px-4">
           <AppName product={product} />
         </div>
@@ -206,7 +206,7 @@ export function AppFrame({
           />
         </div>
       </div>
-      <div className="flex h-12 shrink-0 items-center gap-2 bg-frame px-2 @3xl:hidden">
+      <div className="flex h-12 shrink-0 items-center gap-2 bg-frame px-2 shadow-[inset_0_-1px_0_var(--nt-frame-edge)] @3xl:hidden">
         <DropdownMenu
           trigger={<IconButton icon="panel-left" size="sm" label="Navigatie" />}
           label="Navigatie"

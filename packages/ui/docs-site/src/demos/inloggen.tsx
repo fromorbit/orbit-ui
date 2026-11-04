@@ -200,7 +200,7 @@ function Workspaces(): ReactNode {
       <Heading title="Kies een werkruimte">
         Je bent ingelogd als <span className="font-medium text-fg">{EMAIL}</span>.
       </Heading>
-      <ul className="m-0 flex list-none flex-col overflow-hidden rounded-lg bg-overlay p-0">
+      <ul className="m-0 flex list-none flex-col overflow-hidden rounded-lg bg-overlay p-0 shadow-plane">
         {WORKSPACES.map((space) => (
           <li key={space.name} className="border-border not-first:border-t">
             <a

@@ -222,7 +222,7 @@ function Message({ message }: { message: Message }): ReactNode {
 function Conversations(): ReactNode {
   const [open, setOpen] = useState<Record<string, boolean>>({})
   return (
-    <div className="hidden w-72 shrink-0 flex-col bg-frame @4xl:flex">
+    <div className="hidden w-72 shrink-0 flex-col bg-frame shadow-frame-edge @4xl:flex">
       <div className="flex h-12 shrink-0 items-center gap-2 px-4">
         {/* A title, not a heading: the list below is named "Gesprekken" already, and the demo's own
             heading says the same word. */}

@@ -95,7 +95,7 @@ export function FindingCard({
       {...(place === null ? {} : { 'aria-describedby': placeId })}
       data-nt-finding-card
       data-severity={severity}
-      className="@container min-w-0 rounded-lg bg-overlay"
+      className="@container min-w-0 rounded-lg bg-overlay shadow-plane"
     >
       <span id={weightId} hidden>{`${severityLabel}:`}</span>
       <div className="grid grid-cols-1 gap-3 p-4 @lg:grid-cols-[minmax(0,1fr)_auto] @lg:gap-x-6">

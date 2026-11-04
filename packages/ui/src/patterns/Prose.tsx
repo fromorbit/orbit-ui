@@ -431,7 +431,7 @@ function MarkdownFence({ code }: { code: () => string }) {
   const labels = useProseLabels()
   return (
     <div data-nt-code-block data-nt-markdown-fence className="group/code relative">
-      <div className="rounded-md bg-surface p-3">
+      <div className="rounded-md bg-plane p-3 shadow-plane">
         <DocumentView markdown={code()} document={FENCE_DOCUMENT} labels={labels} />
       </div>
       <div data-nt-code-copy className={CODE_COPY}>
@@ -500,7 +500,7 @@ const SCROLLS =
  * a mask would clip a ring drawn outside the scroller, so the block draws it.
  */
 const CODE_BLOCK =
-  'group/code relative rounded-md bg-surface outline-focus has-[>[role=group]:focus-visible]:outline-2 has-[>[role=group]:focus-visible]:outline-offset-2'
+  'group/code relative rounded-md bg-plane shadow-plane outline-focus has-[>[role=group]:focus-visible]:outline-2 has-[>[role=group]:focus-visible]:outline-offset-2'
 const CODE_BLOCK_WRAPPED = 'group/code relative'
 const CODE_REGION =
   'no-drag overflow-x-auto p-3 outline-none pointer-coarse:pt-9 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)'
@@ -515,7 +515,7 @@ const CODE_FADE = '[mask-image:linear-gradient(to_left,transparent,black_40px)]'
 const CODE_COPY =
   'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto motion-reduce:transition-none'
 const CODE_REGION_WRAPPED =
-  'no-drag rounded-md border border-border bg-surface p-3 pointer-coarse:pt-9 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
+  'no-drag rounded-md border border-border bg-plane p-3 pointer-coarse:pt-9 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
 const PRE_WRAPPED =
   'm-0 font-mono text-[12px] leading-normal whitespace-pre-wrap break-words [&>code]:bg-transparent [&>code]:p-0'
 // `w-max`: the line is as long as it is, so the padding of the scroller stays at its end and the

@@ -32,7 +32,7 @@ export function SettingsGroup({ title, action, children }: SettingsGroupProps) {
   const card = hasRows ? (
     <div
       data-nt-settings-card
-      className="rounded-lg bg-surface [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
+      className="rounded-lg bg-plane shadow-plane [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
     >
       {children}
     </div>

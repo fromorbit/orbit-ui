@@ -21,7 +21,8 @@ export interface StatTileProps {
  * period before.
  *
  * A group named by its label, so a screen reader that jumps through a row of tiles hears "Actieve
- * spaces, 1.284, 12% gestegen, t.o.v. vorige week" for each. The figure takes the heading weight
+ * spaces, 1.284, 12% gestegen, t.o.v. vorige week" for each. The figure is 26px, the one size off the
+ * scale (`family-style.md`), so it is read first; it takes the heading weight
  * and tabular digits, so a row of tiles lines its numbers up. Several tiles stand in a grid the
  * caller lays out; a tile fills its cell. In a narrow tile the comparison wraps under the trend
  * rather than being cut: the words that explain the number stay whole.
@@ -34,7 +35,7 @@ export function StatTile({ label, value, trend, comparison, aside, children }: S
       role="group"
       aria-labelledby={labelId}
       data-nt-stat-tile
-      className="flex h-full min-w-0 flex-col gap-2 rounded-lg bg-overlay p-4"
+      className="flex h-full min-w-0 flex-col gap-2 rounded-lg bg-overlay p-4 shadow-plane"
     >
       <div className="flex items-start justify-between gap-2">
         <p id={labelId} className="m-0 text-[12px] text-muted">
@@ -42,7 +43,7 @@ export function StatTile({ label, value, trend, comparison, aside, children }: S
         </p>
         {aside}
       </div>
-      <p className="m-0 whitespace-nowrap font-heading text-[20px] text-fg tabular-nums leading-7">
+      <p className="m-0 whitespace-nowrap font-heading text-[26px] text-fg tabular-nums leading-8">
         {value}
       </p>
       {trend !== undefined || comparison !== undefined ? (

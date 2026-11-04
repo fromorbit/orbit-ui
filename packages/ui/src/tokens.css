@@ -49,6 +49,9 @@
   --nt-frame: #0c1229;
   --nt-canvas: var(--nt-brand-midnight);
   --nt-bg: var(--nt-canvas);
+  /* The edge between the frame and the canvas, drawn as an inset shadow (`shadow-frame-edge`) so it
+     takes no room: none in dark, where the brightness is the separation; a hairline in light. */
+  --nt-frame-edge: transparent;
   /* Planes and lines in Mist, so they stay blue on Midnight. */
   --nt-surface: rgb(231 233 242 / 0.04);
   --nt-surface-hover: rgb(231 233 242 / 0.07);
@@ -56,6 +59,12 @@
      1.18:1 on a panel — a shade rather than a place, which is why that row used to need an accent
      outline on top. Neutral by design: an open panel carries no accent. */
   --nt-surface-active: rgb(231 233 242 / 0.12);
+  /* The plane of a region that holds a group of its own on the canvas (a settings group, a code
+     block, a summary): the tint of `surface` in dark, white in light. Its edge (`shadow-plane`) is
+     a hairline and a soft shadow in light, where white on Paper needs one, and nothing in dark,
+     where the tint is the edge. */
+  --nt-plane: rgb(231 233 242 / 0.04);
+  --nt-shadow-plane: 0 0 #0000;
   /* The quiet items of a list (the chats of the sidebar): a softer
      hover and a soft card for the chosen one, without border or accent. */
   --nt-row-hover: rgb(231 233 242 / 0.05);
@@ -328,15 +337,20 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  /* Paper, with a frame a step darker than the canvas, as in dark: the sidebar recedes, the content
-     leads. A card, a menu and the composer are white on it. */
-  --nt-frame: #efeee9;
+  /* White regions on a page of Paper, a touch off-white: the sidebar, a card, a menu, the composer
+     and a region of its own are white, and the small difference, a hairline or a soft shadow parts
+     them, never a grey fill. The frame (sidebar, window) is white too, parted from the canvas by
+     the hairline of `frame-edge`. */
+  --nt-frame: #ffffff;
   --nt-canvas: var(--nt-brand-paper);
   --nt-bg: var(--nt-canvas);
+  --nt-frame-edge: var(--nt-border);
   /* Planes and lines in Midnight at low strength, so they stay blue on Paper. */
   --nt-surface: rgb(17 25 54 / 0.03);
   --nt-surface-hover: rgb(17 25 54 / 0.05);
   --nt-surface-active: rgb(17 25 54 / 0.09);
+  --nt-plane: #ffffff;
+  --nt-shadow-plane: 0 0 0 1px rgb(17 25 54 / 0.07), 0 1px 2px rgb(17 25 54 / 0.04);
   --nt-row-hover: rgb(17 25 54 / 0.04);
   --nt-row-active: rgb(17 25 54 / 0.06);
   --nt-border: rgb(17 25 54 / 0.09);
@@ -344,7 +358,8 @@
   --nt-control-border: rgb(17 25 54 / 0.52);
   --nt-pill: rgb(17 25 54 / 0.03);
   --nt-pill-hover: rgb(17 25 54 / 0.06);
-  --nt-bubble: rgb(17 25 54 / 0.04);
+  /* Your own message is white on Paper, with the edge of a plane (`shadow-plane`). */
+  --nt-bubble: #ffffff;
   --nt-mark: rgb(17 25 54 / 0.07);
   /* Midnight at 56% on white: 4.0:1, the same quiet step below the accent as in dark. */
   --nt-chart-mark: rgb(17 25 54 / 0.56);
@@ -356,11 +371,11 @@
   --nt-composer: #ffffff;
   /* 3.3:1 against the canvas, the focus indicator on its own as in dark. */
   --nt-border-focus: rgb(17 25 54 / 0.5);
-  /* The code area of a diff a shade under the canvas, as in dark. `PierreDiff` paints the
+  /* The code area of a diff is white, as a card is: it lies in one. `PierreDiff` paints the
      library's ground with it. */
-  --nt-diff-bg: #efeee9;
+  --nt-diff-bg: #ffffff;
   /* Four levels against the canvas: `text` Midnight 15.7:1, `secondary` (Midnight at 80% over
-     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (5.2:1 on the frame), `faint` 3.3:1 — again only
+     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (6.0:1 on the white frame), `faint` 3.3:1 — again only
      icons and decoration. */
   --nt-text: var(--nt-brand-midnight);
   --nt-text-secondary: #3f455b;
@@ -423,7 +438,7 @@
     0 0 0 1px rgb(17 25 54 / 0.08), 0 4px 12px rgb(17 25 54 / 0.08),
     0 16px 40px rgb(17 25 54 / 0.12);
 
-  /* Violet: 5.7:1 on the canvas, 5.4:1 on the frame. */
+  /* Violet: 5.7:1 on the canvas, 6.2:1 on the white frame. */
   --nt-focus-ring: var(--nt-brand-violet);
   --nt-scrollbar-thumb: var(--nt-border);
   --nt-scrollbar-thumb-hover: var(--nt-text-muted);
@@ -494,9 +509,9 @@
   --nt-panel-background: rgb(17 25 54 / 0.7);
 }
 
-/* The same strengths over the light material: the frame and the canvas of the light block. */
+/* The same strengths over the light material: the frame (white) and the canvas of the light block. */
 :root[data-translucent="true"][data-theme="light"] {
-  --nt-app-background: rgb(239 238 233 / 0.6);
+  --nt-app-background: rgb(255 255 255 / 0.6);
   --nt-panel-background: rgb(245 244 240 / 0.7);
 }
 

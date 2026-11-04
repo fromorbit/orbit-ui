@@ -98,7 +98,7 @@ function Spaces() {
   const [page, setPage] = useState(1)
   return (
     <div className="flex w-full max-w-[48rem] flex-col gap-3">
-      <div className="overflow-hidden rounded-lg bg-surface">
+      <div className="overflow-hidden rounded-lg bg-plane shadow-plane">
         <DataTable
           label="Spaces"
           columns={COLUMNS}
@@ -134,7 +134,7 @@ export default {
   states: {
     "Gesorteerd, één rij gekozen, met pagina's": () => <Spaces />,
     Laden: () => (
-      <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-surface">
+      <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-plane shadow-plane">
         <DataTable
           label="Spaces"
           columns={COLUMNS}
@@ -146,7 +146,7 @@ export default {
       </div>
     ),
     Leeg: () => (
-      <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-surface">
+      <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-plane shadow-plane">
         <DataTable
           label="Spaces"
           columns={COLUMNS}

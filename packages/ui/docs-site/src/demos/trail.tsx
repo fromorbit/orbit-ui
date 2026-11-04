@@ -335,11 +335,11 @@ function Trail(): ReactNode {
             actions={
               <>
                 <div className="hidden @xl:block">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="secondary" size="sm">
                     Openen in Orbit Review
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm">
+                <Button variant="secondary" size="sm">
                   Opname delen
                 </Button>
               </>
@@ -349,7 +349,7 @@ function Trail(): ReactNode {
             <div className="flex min-w-0 flex-col gap-6">
               <section
                 aria-label="Speler"
-                className="flex flex-col gap-3 rounded-lg bg-overlay p-3 @3xl:p-4"
+                className="flex flex-col gap-3 rounded-lg bg-overlay p-3 shadow-plane @3xl:p-4"
               >
                 <TrailReplay position={position} />
                 <div className="flex flex-col gap-2 bg-overlay @max-3xl:sticky @max-3xl:bottom-0 @max-3xl:z-10 @max-3xl:-mx-3 @max-3xl:-mb-3 @max-3xl:rounded-b-lg @max-3xl:px-3 @max-3xl:pt-2 @max-3xl:pb-3">
@@ -461,7 +461,7 @@ function Trail(): ReactNode {
               </section>
               <section
                 aria-label="Wat er gebeurde"
-                className="flex flex-col overflow-hidden rounded-lg bg-overlay"
+                className="flex flex-col overflow-hidden rounded-lg bg-overlay shadow-plane"
               >
                 <Tabs
                   label="Wat er gebeurde"

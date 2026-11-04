@@ -35,7 +35,7 @@ export function Panel({
   return (
     <section
       aria-labelledby={id}
-      className={`flex min-w-0 flex-col rounded-lg bg-overlay ${className ?? ''}`}
+      className={`flex min-w-0 flex-col rounded-lg bg-overlay shadow-plane ${className ?? ''}`}
     >
       <header className="flex min-h-11 items-center gap-2 px-4 pt-1">
         <Heading id={id} className="m-0 font-medium text-[13px] text-fg">

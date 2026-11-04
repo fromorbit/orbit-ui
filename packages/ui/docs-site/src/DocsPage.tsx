@@ -243,7 +243,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
         {mode === 'components' ? (
           <nav
             aria-label="Componenten"
-            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-none`}
+            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-frame-edge`}
           >
             <div className="flex h-12 shrink-0 items-center gap-2 px-4">
               <OrbitWordmark className="h-4 text-fg" />

@@ -326,7 +326,7 @@ function Overview(): ReactNode {
             title="Builds"
             meta={period === '1' ? 'per uur' : 'per dag'}
             actions={
-              <Button variant="ghost" size="sm">
+              <Button variant="secondary" size="sm">
                 Bekijk alle builds
               </Button>
             }

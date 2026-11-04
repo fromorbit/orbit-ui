@@ -71,8 +71,8 @@ function featureOf(feature: string | PlanFeature): PlanFeature {
 
 /** The plane of a plan at rest: every alternative on one quiet surface. */
 const REST: Record<PlanCardPlane, string> = {
-  overlay: 'bg-overlay',
-  surface: 'bg-surface',
+  overlay: 'bg-overlay shadow-plane',
+  surface: 'bg-plane shadow-plane',
 }
 
 /**
@@ -80,7 +80,7 @@ const REST: Record<PlanCardPlane, string> = {
  * of a lit row laid over it as an image. Violet stays for links and focus; the tag in the heading
  * is the one signal of "you are here", the tint only lifts the card a step from its neighbours.
  */
-const CURRENT = 'bg-overlay bg-linear-to-b from-row-active to-row-active'
+const CURRENT = 'bg-overlay bg-linear-to-b from-row-active to-row-active shadow-plane'
 
 /**
  * The quiet words of a card (the period, a figure, the summary): `muted` at rest; on the tint of

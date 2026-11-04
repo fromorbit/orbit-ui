@@ -34,11 +34,11 @@ test('the figures are read as words, once', () => {
   expect(screen.getByText('128 regels erbij, 41 eraf')).toHaveClass('sr-only')
 })
 
-test('Bekijk is no louder than the label: muted at rest', () => {
+test('Bekijk is a framed secondary button, never a floating text action', () => {
   render(<SummaryBar labels={nl.summary} files={4} added={128} removed={41} onOpen={() => {}} />)
-  expect(screen.getByRole('button', { name: 'Bekijk' }).className.split(' ')).toContain(
-    'text-muted',
-  )
+  const classes = screen.getByRole('button', { name: 'Bekijk' }).className.split(' ')
+  expect(classes).toContain('border')
+  expect(classes).not.toContain('bg-accent')
 })
 
 test('Bekijk is a named button that opens the changes', async () => {
@@ -49,10 +49,12 @@ test('Bekijk is a named button that opens the changes', async () => {
 })
 
 // The card stands on the 4px grid at 32px, with the radius token.
-test('a row of a control high on a tinted plane without a frame, with the radius token', () => {
+test('a row of a control high on the plane of a region (white with a hairline in light), with the radius token', () => {
   render(<SummaryBar labels={nl.summary} files={4} added={128} removed={41} onOpen={() => {}} />)
   const bar = document.querySelector('[data-nt-summary-bar]') as HTMLElement
-  expect(bar.className.split(' ')).toEqual(expect.arrayContaining(['bg-surface', 'rounded-md']))
+  expect(bar.className.split(' ')).toEqual(
+    expect.arrayContaining(['bg-plane', 'shadow-plane', 'rounded-md']),
+  )
   expect(bar.className.split(' ')).not.toContain('border')
   expect(bar.querySelector('[data-nt-summary-row]')?.className.split(' ')).toContain(
     'h-(--nt-control-md)',

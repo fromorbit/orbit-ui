@@ -29,6 +29,8 @@
   --color-mark: var(--nt-mark);
   --color-composer: var(--nt-composer);
   --color-surface: var(--nt-surface);
+  /* The plane of a region of its own: white with the edge of `shadow-plane` in light. */
+  --color-plane: var(--nt-plane);
   --color-surface-hover: var(--nt-surface-hover);
   --color-surface-active: var(--nt-surface-active);
   --color-border: var(--nt-border);
@@ -71,6 +73,9 @@
   /* The product's own colour, only for its mark (`fill-satellite`, `bg-satellite` on a dot). */
   --color-satellite: var(--nt-satellite);
   --shadow-menu: var(--nt-shadow-menu);
+  --shadow-plane: var(--nt-shadow-plane);
+  /* The hairline on the inner end of a frame column (a sidebar) against the canvas: light only. */
+  --shadow-frame-edge: inset -1px 0 0 var(--nt-frame-edge);
   --radius-sm: var(--nt-radius-sm);
   --radius-md: var(--nt-radius-md);
   --radius-lg: var(--nt-radius-lg);

@@ -286,7 +286,7 @@ export function MissingOverview(): ReactNode {
         </p>
       </div>
       {entries.length === 0 ? (
-        <div className="rounded-xl bg-surface py-4">
+        <div className="rounded-xl bg-plane py-4 shadow-plane">
           <EmptyState
             icon="check-circle"
             title="Er ontbreekt niets"
@@ -303,7 +303,7 @@ export function MissingOverview(): ReactNode {
             <li
               key={entry.name}
               aria-labelledby={`${listId}-${entry.name}`}
-              className="flex flex-col gap-2 rounded-lg bg-overlay p-4"
+              className="flex flex-col gap-2 rounded-lg bg-overlay p-4 shadow-plane"
             >
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[11px] text-muted tabular-nums">

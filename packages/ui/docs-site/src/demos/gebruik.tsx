@@ -442,8 +442,9 @@ const PAYMENT_ID = 'betaalwijze'
 const NO_CARD: CardValue = { number: '', expiry: '', cvc: '', name: '' }
 
 /**
- * The payment method: first what pays now and why to change it, then a card to add instead. No
- * picture of a card: the one method in sight is the one in use (Prägnanz).
+ * The payment method: the card to add first, at the top, with the card itself in sight as it is
+ * typed, because that is the way out of the failed debit; under it the one-off iDEAL payment, and
+ * last what pays now. Each part is a group of its own, 24px apart (Proximity).
  */
 function PaymentMethod(): ReactNode {
   const [card, setCard] = useState<CardValue>(NO_CARD)
@@ -452,49 +453,16 @@ function PaymentMethod(): ReactNode {
     <section id={PAYMENT_ID} className="scroll-mt-4">
       <Panel headingLevel={2} title="Betaalwijze" meta="hoe Zilverberg betaalt">
         <div className="flex max-w-xl flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <PropertyList
-              label="Nu"
-              groups={[
-                [
-                  { label: 'Betaalwijze', value: 'SEPA-incasso' },
-                  { label: 'Rekening', value: 'NL •••• 4021' },
-                  { label: 'Op naam van', value: 'Zilverberg B.V.' },
-                  {
-                    label: 'Laatste poging',
-                    value: (
-                      <span className="inline-flex items-center gap-1.5">
-                        <StatusMark kind="fault" />
-                        Mislukt op 3 oktober
-                      </span>
-                    ),
-                  },
-                ],
-              ]}
-            />
-            <p className="m-0 text-[12px] text-muted leading-relaxed">
-              Met een kaart gaan de volgende facturen voortaan van de kaart af en stopt de incasso.
-              De open factuur van september schrijven we dan meteen af.
-            </p>
-          </div>
-          <section aria-labelledby="eenmalig-ideal" className="flex flex-col gap-2">
-            <h3 id="eenmalig-ideal" className="m-0 font-medium text-[13px] text-fg">
-              Eenmalig met iDEAL
-            </h3>
-            <p className="m-0 text-[12px] text-muted leading-relaxed">
-              Betaal de open factuur van september ({euro(OPEN_GROSS)}) nu via je eigen bank. De
-              incasso blijft voor de volgende facturen.
-            </p>
-            <span className="flex">
-              <Button variant="secondary" size="sm">
-                {PAY_NOW}
-              </Button>
-            </span>
-          </section>
           <section aria-labelledby="kaart-toevoegen" className="flex max-w-md flex-col gap-3">
-            <h3 id="kaart-toevoegen" className="m-0 font-medium text-[13px] text-fg">
-              Kaart toevoegen
-            </h3>
+            <div className="flex flex-col gap-1">
+              <h3 id="kaart-toevoegen" className="m-0 font-medium text-[13px] text-fg">
+                Kaart toevoegen
+              </h3>
+              <p className="m-0 text-[12px] text-muted leading-relaxed">
+                Met een kaart gaan de volgende facturen voortaan van de kaart af en stopt de
+                incasso. De open factuur van september schrijven we dan meteen af.
+              </p>
+            </div>
             <Form
               label="Kaart toevoegen"
               onSubmit={() => setSubmitted(true)}
@@ -510,10 +478,42 @@ function PaymentMethod(): ReactNode {
                 labels={galleryLabels.creditCard}
                 showErrors={submitted}
                 now={new Date(2026, 9, 20)}
-                hideCard
               />
             </Form>
           </section>
+          <section aria-labelledby="eenmalig-ideal" className="flex flex-col gap-2">
+            <h3 id="eenmalig-ideal" className="m-0 font-medium text-[13px] text-fg">
+              Eenmalig met iDEAL
+            </h3>
+            <p className="m-0 text-[12px] text-muted leading-relaxed">
+              Betaal de open factuur van september ({euro(OPEN_GROSS)}) nu via je eigen bank. De
+              incasso blijft voor de volgende facturen.
+            </p>
+            <span className="flex">
+              <Button variant="secondary" size="sm">
+                {PAY_NOW}
+              </Button>
+            </span>
+          </section>
+          <PropertyList
+            label="Nu"
+            groups={[
+              [
+                { label: 'Betaalwijze', value: 'SEPA-incasso' },
+                { label: 'Rekening', value: 'NL •••• 4021' },
+                { label: 'Op naam van', value: 'Zilverberg B.V.' },
+                {
+                  label: 'Laatste poging',
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <StatusMark kind="fault" />
+                      Mislukt op 3 oktober
+                    </span>
+                  ),
+                },
+              ],
+            ]}
+          />
         </div>
       </Panel>
     </section>
@@ -593,7 +593,7 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
             title="Gebruik en facturen"
             meta="Zilverberg · 1–20 oktober"
             actions={
-              <Button variant="quiet" size="sm">
+              <Button variant="secondary" size="sm">
                 Factuurgegevens
               </Button>
             }
@@ -602,7 +602,7 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
             tone="danger"
             action={
               <div className="flex flex-wrap items-center gap-2">
-                <Button variant="quiet" size="sm" onClick={() => setSelected('ZB-2026-0098')}>
+                <Button variant="secondary" size="sm" onClick={() => setSelected('ZB-2026-0098')}>
                   Factuur bekijken
                 </Button>
                 <Button variant="primary" size="sm">
@@ -687,16 +687,20 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               </div>
             </Panel>
           </div>
-          {/* Wide, the list and the payment method stand in the first column and the opened invoice
-              beside both, so neither column ends in an empty field; narrow, the invoice follows
-              its list. */}
+          {/* Wide, the payment method and under it the list stand in the first column and the
+              opened invoice beside both, so neither column ends in an empty field; narrow, the
+              payment method comes first and the invoice follows its list. */}
           <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] @5xl:grid-rows-[auto_1fr]">
+            <div className="min-w-0 @5xl:col-start-1 @5xl:row-start-1">
+              <PaymentMethod />
+            </div>
             <Panel
               headingLevel={2}
               title="Facturen"
               meta={`${INVOICES.length} van 10`}
+              className="@5xl:col-start-1 @5xl:row-start-2"
               actions={
-                <Button variant="quiet" size="sm">
+                <Button variant="secondary" size="sm">
                   Alle facturen
                 </Button>
               }
@@ -709,9 +713,6 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                 <InvoiceDetail invoice={invoice} />
               </div>
             ) : null}
-            <div className="min-w-0 @5xl:col-start-1 @5xl:row-start-2">
-              <PaymentMethod />
-            </div>
           </div>
         </div>
       </ScrollArea>

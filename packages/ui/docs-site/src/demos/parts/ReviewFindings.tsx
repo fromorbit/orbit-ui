@@ -150,10 +150,10 @@ export function ReviewFindings({ findings }: { findings: readonly Finding[] }): 
             {...(finding.screenshot === undefined
               ? {
                   actions: (
-                    // Pulled out by the button's own padding, so a quiet one lines up with the words.
-                    <span className="-ms-2.5 flex">
+                    // A framed button, its edge on the content column.
+                    <span className="flex">
                       <Button
-                        variant="quiet"
+                        variant="secondary"
                         size="sm"
                         aria-label={`In opname bekijken: ${finding.title}`}
                         onClick={() => show(finding)}
@@ -178,7 +178,7 @@ export function ReviewFindings({ findings }: { findings: readonly Finding[] }): 
         initialFocus="panel"
         footer={
           <>
-            <Button variant="quiet" onClick={() => setOpen(false)}>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
               Sluiten
             </Button>
             <Button variant="primary" onClick={() => setOpen(false)}>

@@ -108,7 +108,7 @@ test('the current plan is lifted the same way on either plane; every alternative
   expect(team.className).toContain('bg-overlay')
   expect(team.className).toContain('from-row-active')
   expect(team.className).not.toContain('accent')
-  expect(screen.getByRole('article', { name: 'Bedrijf' }).className).toMatch(/\bbg-surface\b/)
+  expect(screen.getByRole('article', { name: 'Bedrijf' }).className).toMatch(/\bbg-plane\b/)
   expect(screen.getByRole('article', { name: 'Solo' }).className).toMatch(/\bbg-overlay\b/)
   expect(screen.getByRole('article', { name: 'Solo' }).className).not.toContain('accent')
 })

@@ -116,7 +116,7 @@ export default {
           },
           onChange() {},
           note: (
-            <div className="mx-3 my-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-sans text-[13px] text-muted">
+            <div className="mx-3 my-1.5 rounded-lg border border-border bg-plane px-3 py-1.5 font-sans text-[13px] text-muted">
               Note box
             </div>
           ),

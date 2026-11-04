@@ -87,7 +87,7 @@ export function SummaryBar({ files, added, removed, labels, onOpen, children }: 
   return (
     <div
       data-nt-summary-bar
-      className="flex min-w-0 flex-col divide-y divide-border rounded-md bg-surface"
+      className="flex min-w-0 flex-col divide-y divide-border rounded-md bg-plane shadow-plane"
     >
       <SummaryRow
         icon={<Icon name="file-diff" size="sm" tone="faint" />}
@@ -104,7 +104,7 @@ export function SummaryBar({ files, added, removed, labels, onOpen, children }: 
           </>
         }
         action={
-          <Button variant="quiet" size="sm" onClick={onOpen}>
+          <Button variant="secondary" size="sm" onClick={onOpen}>
             {labels.open}
             <Icon name="chevron-right" size="xs" />
           </Button>
