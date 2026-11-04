@@ -8,7 +8,10 @@ import type { ScrubberKind, ScrubberMarker } from '../../../../src'
 /** What a marker on the timeline and a line of the events stands for. */
 export type TrailEventKind = 'klik' | 'navigatie' | 'fout' | 'verzoek'
 
-/** One thing that happened in the recording. */
+/**
+ * One thing that happened in the recording; its detail is always the thing it concerns (a product,
+ * a bank, a file and line, a status and duration), or nothing.
+ */
 export interface TrailEvent {
   at: number
   kind: TrailEventKind
@@ -18,7 +21,7 @@ export interface TrailEvent {
 
 /**
  * How each kind stands on the timeline: a shape per kind, and red only for what went wrong. What
- * went wrong comes first in the legend, where the error stepper sits beside "Fout". A navigation is
+ * went wrong comes first in the legend. A navigation is
  * a quiet chevron rather than violet, which is for links and focus.
  */
 export const TRAIL_KINDS: Record<TrailEventKind, ScrubberKind> = {
@@ -50,7 +53,8 @@ export interface NetworkRequest {
 export interface Recording {
   id: string
   title: string
-  trigger: 'Fout' | 'Handmatig' | 'Steekproef' | 'Testscenario'
+  /** Why it was recorded, as a cause: "Na een fout", never the bare event word "Fout". */
+  trigger: 'Na een fout' | 'Handmatig' | 'Steekproef' | 'Testscenario'
   when: string
   duration: string
   errors: number
@@ -63,17 +67,17 @@ export const DURATION = 24
 export const POSITION = 14.35
 
 export const EVENTS: TrailEvent[] = [
-  { at: 0.2, kind: 'navigatie', title: 'Opent de startpagina (/)', detail: 'Webwinkel 4.2.0' },
+  { at: 0.2, kind: 'navigatie', title: 'Opent de startpagina (/)' },
   { at: 3.1, kind: 'klik', title: 'Klikt op In winkelmand', detail: 'Koffiebonen Noord' },
   { at: 5.8, kind: 'navigatie', title: 'Opent de kassa (/kassa)' },
   { at: 9.2, kind: 'klik', title: 'Kiest een bank', detail: 'Rabobank' },
   { at: 12.6, kind: 'klik', title: 'Klikt op Betalen' },
   { at: 14.35, kind: 'fout', title: 'TypeError in Kassa.betaal', detail: 'kassa.js:88' },
-  { at: 14.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: '500 · 233 ms' },
+  { at: 14.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: 'status 500 · 233 ms' },
   { at: 19.1, kind: 'klik', title: 'Klikt opnieuw op Betalen' },
   { at: 20.35, kind: 'fout', title: 'TypeError in Kassa.betaal', detail: 'kassa.js:88' },
-  { at: 20.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: '500 · 241 ms' },
-  { at: 23.0, kind: 'navigatie', title: 'Opent de startpagina (/)', detail: 'verlaat de kassa' },
+  { at: 20.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: 'status 500 · 241 ms' },
+  { at: 23.0, kind: 'navigatie', title: 'Opent de startpagina (/)' },
 ]
 
 /** The events as markers on the timeline, named by what happened. */
@@ -117,7 +121,7 @@ export const RECORDINGS: Recording[] = [
   {
     id: 'r1',
     title: 'Kassa betaalt niet',
-    trigger: 'Fout',
+    trigger: 'Na een fout',
     when: 'vandaag 13:52',
     duration: '0:24',
     errors: 2,

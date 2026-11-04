@@ -37,27 +37,35 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
           <span className="size-2 rounded-full bg-border-strong" />
           <span className="size-2 rounded-full bg-border-strong" />
         </span>
-        <span className="mx-auto flex h-5 min-w-0 max-w-80 flex-1 items-center justify-center gap-1.5 truncate rounded-md bg-surface-active px-2 font-mono text-[11px] text-secondary">
-          <Icon name="lock" size="sm" tone="faint" />
-          webwinkel.zilverberg.test/kassa
+        {/* Cut in the middle: the host gives way with an ellipsis, the path (/kassa) stays. */}
+        <span
+          title="webwinkel.zilverberg.test/kassa"
+          className="mx-auto flex h-5 min-w-0 max-w-80 flex-1 items-center justify-center rounded-md bg-surface-active px-2 font-mono text-[11px] text-secondary"
+        >
+          <span className="mr-1.5 flex shrink-0">
+            <Icon name="lock" size="sm" tone="faint" />
+          </span>
+          <span className="min-w-0 truncate">webwinkel.zilverberg.test</span>
+          <span className="shrink-0">/kassa</span>
         </span>
         <span className="hidden shrink-0 text-[11px] text-muted @xl:inline">
           Zo zag de klant het
         </span>
       </div>
       <div className="pointer-events-none flex flex-col gap-3 p-3 opacity-70 saturate-50 @3xl:gap-4 @3xl:p-4">
-        <div className="flex items-center justify-between">
-          <span className="whitespace-nowrap font-heading text-[15px] text-fg">
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0 truncate font-heading text-[15px] text-fg">
             Zilverberg Koffie
           </span>
-          <span className="flex items-center gap-3 whitespace-nowrap text-[12px] text-secondary">
+          <span className="flex shrink-0 items-center gap-3 whitespace-nowrap text-[12px] text-secondary">
             <span className="hidden @2xl:inline">Assortiment</span>
             <span className="hidden @2xl:inline">Over ons</span>
             <span className="rounded-full bg-surface-active px-2 py-0.5 text-fg">Winkelmand 3</span>
           </span>
         </div>
         <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-          <div className="flex flex-col gap-2">
+          {/* On a phone the order gives way, so the replay, the timeline and Afspelen fit in one view. */}
+          <div className="hidden flex-col gap-2 @xl:flex">
             <span className="font-heading text-[15px] text-fg">Kassa</span>
             <ul className="m-0 flex list-none flex-col p-0">
               {LINES.map((line) => (

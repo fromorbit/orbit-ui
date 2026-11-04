@@ -29,15 +29,7 @@ const MARKERS: ScrubberMarker<Kind>[] = [
 const clock = (seconds: number) =>
   `${Math.floor(seconds / 60)}:${String(Math.floor(seconds) % 60).padStart(2, '0')}`
 
-function Player({
-  start = 14,
-  legend = true,
-  action,
-}: {
-  start?: number
-  legend?: boolean
-  action?: string
-}) {
+function Player({ start = 14, legend = true }: { start?: number; legend?: boolean }) {
   const [value, setValue] = useState(start)
   return (
     <Scrubber
@@ -52,7 +44,7 @@ function Player({
         [`${clock(seconds)} van 0:24`, ...here.map((marker) => marker.label)].join(', ')
       }
       {...(legend ? { legendLabel: 'Markeringen' } : {})}
-      {...(action ? { legendActions: { fout: <span>{action}</span> } } : {})}
+      groupLabel={(count) => `${count} gebeurtenissen`}
     />
   )
 }
@@ -94,12 +86,13 @@ describe('Scrubber', () => {
     expect(screen.getByRole('slider')).toHaveAttribute('aria-valuenow', '14')
   })
 
-  test('on a marker the thumb opens into a ring in its tone', () => {
+  test('on a marker the playhead stays neutral and its knob gives way to the mark', () => {
     const on = render(<Player start={14} />)
     expect(on.container.querySelector('[data-nt-scrubber-thumb]')).toHaveAttribute(
       'data-nt-scrubber-thumb',
-      'danger',
+      'on',
     )
+    expect(on.container.querySelector('[data-nt-scrubber-thumb]')?.className).not.toMatch(/danger/)
     on.unmount()
     const free = render(<Player start={8} />)
     expect(free.container.querySelector('[data-nt-scrubber-thumb]')).toHaveAttribute(
@@ -117,13 +110,12 @@ describe('Scrubber', () => {
     ])
   })
 
-  test("a legend action takes the place of its kind's count", () => {
-    render(<Player action="1 van 2" />)
+  test('the legend keeps the word of every kind in sight, never only its shape', () => {
+    render(<Player />)
     const legend = screen.getByRole('list', { name: 'Markeringen' })
-    expect([...legend.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
-      'Klik2',
-      'Fout1 van 2',
-    ])
+    for (const item of legend.querySelectorAll('li > span')) {
+      expect(item.className).not.toMatch(/sr-only/)
+    }
   })
 
   test('without a legend label there is no legend', () => {
@@ -189,7 +181,7 @@ describe('scrubberGroups', () => {
   test.each([
     [0, [[14.35], [14.6], [20]]],
     [320, [[14.35, 14.6], [20]]],
-    [1600, [[14.35], [14.6], [20]]],
+    [4000, [[14.35], [14.6], [20]]],
   ])('on a track of %ipx, markers that would touch are one group', (width, groups) => {
     expect(
       scrubberGroups(near, 24, width).map((group) => group.markers.map((marker) => marker.at)),

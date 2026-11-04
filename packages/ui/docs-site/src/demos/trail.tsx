@@ -67,7 +67,8 @@ const ON = 0.05
 /**
  * What happened in the recording, as a timeline that follows the playhead: what went wrong in
  * red, the last event the player passed in full strength (the current step), and what it has not
- * reached yet as a dashed round. Each event is a button that seeks the player there, so the
+ * reached yet as a dashed round; the current step also lies on a tint, so "you are here" holds at a
+ * glance. Each event is a button that seeks the player there, so the
  * keyboard reaches every moment, not only the errors. The detail (a status, a file and line) is a
  * unit of its own that wraps under the title on a narrow screen and is never cut off.
  */
@@ -99,7 +100,7 @@ function Events({
                 type="button"
                 aria-current={here ? 'step' : undefined}
                 onClick={() => onSeek(event.at)}
-                className="-mx-1.5 flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 rounded-sm px-1.5 py-0.5 text-left outline-focus hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-1"
+                className={`-mx-1.5 flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 rounded-sm px-1.5 py-0.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-1 ${here ? 'bg-surface-active' : 'hover:bg-surface'}`}
               >
                 <span className={here ? 'font-medium text-fg' : ahead ? 'text-muted' : 'text-fg'}>
                   {event.title}
@@ -267,9 +268,12 @@ function Network({ position }: { position: number }): ReactNode {
   )
 }
 
-/** The words of a recording's trigger, as a tag: an error is the only one that is red. */
+/**
+ * The words of a recording's trigger, as a quiet tag: the cause of the recording, not an event,
+ * so it leaves the red to the errors themselves.
+ */
 function TriggerTag({ trigger }: { trigger: string }): ReactNode {
-  return <Tag tone={trigger === 'Fout' ? 'danger' : 'neutral'}>{trigger}</Tag>
+  return <Tag tone="neutral">{trigger}</Tag>
 }
 
 /** The events at a moment, in the words of the legend, for the playhead's position in words. */
@@ -284,10 +288,12 @@ function spoken(seconds: number, here: readonly ScrubberMarker<TrailEventKind>[]
  * Halo's trail: a recording of a browser session around an error, replayed with its timeline,
  * what happened, the console and the network, and the other recordings of the app beside it.
  *
- * The player is one row of controls at 28px (back, play, forward, the time, the speed), and the
- * way between the errors sits in the legend beside "Fout", next to the red marks it steps through.
- * While the player stands still on an error, the play button steps back to secondary: the error
- * is then the one emphasis of the view. A jump between errors is announced politely.
+ * Under the timeline the controls wrap in three groups at 28px: the transport (5 seconds back,
+ * Afspelen as the one emphasis of the view, 5 seconds forward), the time with the speed beside it,
+ * and on the right the way between the errors ("Vorige fout", where the player is among them,
+ * "Volgende fout"). The legend stays a passive key. On a narrow screen the timeline and its
+ * controls stick to the bottom of the player while the replay scrolls past, so both stay in
+ * sight. A jump between errors is announced politely.
  */
 function Trail(): ReactNode {
   const [speed, setSpeed] = useState<Speed>('1')
@@ -298,7 +304,6 @@ function Trail(): ReactNode {
   const [announcement, setAnnouncement] = useState('')
   const errors = ERRORS.length
   const reached = ERRORS.filter((at) => at <= position + ON).length
-  const onError = ERRORS.some((at) => Math.abs(at - position) <= ON)
   const previous = adjacentMarker(MARKERS, position, 'previous', ['fout'], ON)
   const next = adjacentMarker(MARKERS, position, 'next', ['fout'], ON)
   const seek = (seconds: number) => setPosition(Math.min(Math.max(seconds, 0), DURATION))
@@ -326,16 +331,16 @@ function Trail(): ReactNode {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 @3xl:px-8 @3xl:py-8">
           <PageHeader
             title="Kassa betaalt niet"
-            meta="webwinkel · main · bewaard tot 3 nov"
+            meta="webwinkel · main · wordt verwijderd na 3 nov"
             actions={
               <>
                 <div className="hidden @xl:block">
                   <Button variant="ghost" size="sm">
-                    Open in Orbit Review
+                    Openen in Orbit Review
                   </Button>
                 </div>
-                <Button variant="secondary" size="sm">
-                  Deel opname
+                <Button variant="ghost" size="sm">
+                  Opname delen
                 </Button>
               </>
             }
@@ -347,7 +352,7 @@ function Trail(): ReactNode {
                 className="flex flex-col gap-3 rounded-lg bg-overlay p-3 @3xl:p-4"
               >
                 <TrailReplay position={position} />
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 bg-overlay @max-3xl:sticky @max-3xl:bottom-0 @max-3xl:z-10 @max-3xl:-mx-3 @max-3xl:-mb-3 @max-3xl:rounded-b-lg @max-3xl:px-3 @max-3xl:pt-2 @max-3xl:pb-3">
                   <Scrubber
                     label="Afspeelpositie"
                     duration={DURATION}
@@ -362,86 +367,93 @@ function Trail(): ReactNode {
                     formatTime={clock}
                     valueText={spoken}
                     legendLabel="Markeringen"
-                    legendActions={{
-                      fout: (
-                        <span className="flex items-center">
+                    groupLabel={(count) => `${count} gebeurtenissen`}
+                    controls={
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        <div className="flex items-center gap-2">
+                          <Tooltip label="5 seconden terug">
+                            <IconButton
+                              icon="rewind"
+                              size="sm"
+                              label="5 seconden terug"
+                              onClick={() => seek(position - 5)}
+                            />
+                          </Tooltip>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => {
+                              if (!playing && position >= DURATION) seek(0)
+                              setPlaying(!playing)
+                            }}
+                          >
+                            <Icon name={playing ? 'pause' : 'play'} size="sm" />
+                            {playing ? 'Pauzeren' : 'Afspelen'}
+                          </Button>
+                          <Tooltip label="5 seconden vooruit">
+                            <IconButton
+                              icon="fast-forward"
+                              size="sm"
+                              label="5 seconden vooruit"
+                              onClick={() => seek(position + 5)}
+                            />
+                          </Tooltip>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[13px] text-fg tabular-nums whitespace-nowrap">
+                            {clock(position)}
+                            <span className="font-normal text-muted">{` / ${clock(DURATION)}`}</span>
+                          </span>
+                          <DropdownMenu
+                            label="Snelheid"
+                            side="top"
+                            align="start"
+                            trigger={
+                              <Button variant="ghost" size="sm" aria-label={`Snelheid ${speed}×`}>
+                                {`${speed}×`}
+                              </Button>
+                            }
+                            items={SPEEDS.map((option) => ({
+                              id: option,
+                              label: `${option}×`,
+                              kind: 'radio' as const,
+                              group: 'snelheid',
+                              checked: speed === option,
+                              onSelect: () => setSpeed(option),
+                            }))}
+                          />
+                        </div>
+                        <fieldset
+                          aria-label="Fouten"
+                          className="m-0 ml-auto flex min-w-0 items-center gap-1 border-0 p-0"
+                        >
                           <Tooltip label="Vorige fout">
                             <IconButton
                               icon="chevron-left"
-                              size="xs"
+                              size="sm"
+                              outlined
                               label="Vorige fout"
                               aria-disabled={previous === undefined}
                               onClick={() => jump(previous)}
                             />
                           </Tooltip>
-                          <span className="min-w-12 text-center text-muted tabular-nums">
-                            {reached === 0 ? `${errors}` : `${reached} van ${errors}`}
+                          <span className="min-w-22 px-1 text-center text-[13px] text-secondary tabular-nums whitespace-nowrap">
+                            {reached === 0 ? `${errors} fouten` : `Fout ${reached} van ${errors}`}
                           </span>
                           <Tooltip label="Volgende fout">
                             <IconButton
                               icon="chevron-right"
-                              size="xs"
+                              size="sm"
+                              outlined
                               label="Volgende fout"
                               aria-disabled={next === undefined}
                               onClick={() => jump(next)}
                             />
                           </Tooltip>
-                        </span>
-                      ),
-                    }}
+                        </fieldset>
+                      </div>
+                    }
                   />
-                  <div className="flex items-center gap-2">
-                    <Tooltip label="5 seconden terug">
-                      <IconButton
-                        icon="rotate-ccw"
-                        size="sm"
-                        label="5 seconden terug"
-                        onClick={() => seek(position - 5)}
-                      />
-                    </Tooltip>
-                    <Button
-                      variant={onError && !playing ? 'secondary' : 'primary'}
-                      size="sm"
-                      onClick={() => {
-                        if (!playing && position >= DURATION) seek(0)
-                        setPlaying(!playing)
-                      }}
-                    >
-                      {playing ? 'Pauzeren' : 'Afspelen'}
-                    </Button>
-                    <Tooltip label="5 seconden vooruit">
-                      <IconButton
-                        icon="rotate-cw"
-                        size="sm"
-                        label="5 seconden vooruit"
-                        onClick={() => seek(position + 5)}
-                      />
-                    </Tooltip>
-                    <span className="px-1 font-medium text-[13px] text-fg tabular-nums whitespace-nowrap">
-                      {clock(position)}
-                      <span className="font-normal text-muted">{` / ${clock(DURATION)}`}</span>
-                    </span>
-                    <div className="ml-auto">
-                      <DropdownMenu
-                        label="Snelheid"
-                        side="top"
-                        align="end"
-                        trigger={
-                          <Button variant="ghost" size="sm" aria-label={`Snelheid ${speed}×`}>
-                            {`${speed}×`}
-                          </Button>
-                        }
-                        items={SPEEDS.map((option) => ({
-                          id: option,
-                          label: `${option}×`,
-                          kind: 'radio' as const,
-                          group: 'snelheid',
-                          checked: speed === option,
-                          onSelect: () => setSpeed(option),
-                        }))}
-                      />
-                    </div>
-                  </div>
                   <p role="status" className="sr-only">
                     {announcement}
                   </p>
@@ -493,12 +505,12 @@ function Trail(): ReactNode {
                   label="Details van de opname"
                   groups={[
                     [
-                      { label: 'Vastgelegd door', value: 'Halo (server)' },
+                      { label: 'Vastgelegd door', value: 'Halo, op de server' },
                       {
                         label: 'Aanleiding',
                         value: (
                           <span className="inline-flex">
-                            <TriggerTag trigger="Fout" />
+                            <TriggerTag trigger="Na een fout" />
                           </span>
                         ),
                       },
@@ -506,7 +518,7 @@ function Trail(): ReactNode {
                       { label: 'Duur', value: clock(DURATION) },
                       {
                         label: 'Fouten',
-                        value: <span className="text-danger tabular-nums">{errors}</span>,
+                        value: <span className="tabular-nums">{errors}</span>,
                       },
                     ],
                     [
@@ -523,19 +535,36 @@ function Trail(): ReactNode {
                 {/* The open recording carries the selected tint, as a chosen row does elsewhere. */}
                 <div className="px-2 pb-2 [&_[aria-current=true]]:bg-surface-active">
                   <List label="Opnames">
-                    {RECORDINGS.map((recording) => (
-                      <RoomyListRow
-                        key={recording.id}
-                        title={recording.title}
-                        meta={recording.duration}
-                        note={`${recording.trigger} · ${recording.when}${recording.errors > 0 ? ` · ${recording.errors === 1 ? '1 fout' : `${recording.errors} fouten`}` : ''}`}
-                        {...(recording.errors > 0
-                          ? { kind: 'failed' as const, status: 'Met fouten' }
-                          : { kind: 'done' as const, status: 'Zonder fouten' })}
-                        aria-current={recording.id === current ? 'true' : undefined}
-                        onClick={() => setCurrent(recording.id)}
-                      />
-                    ))}
+                    {RECORDINGS.map((recording) => {
+                      const count =
+                        recording.errors === 0
+                          ? ''
+                          : recording.errors === 1
+                            ? '1 fout'
+                            : `${recording.errors} fouten`
+                      const note = [recording.trigger, recording.when, count].filter(Boolean)
+                      return (
+                        <RoomyListRow
+                          key={recording.id}
+                          title={recording.title}
+                          meta={recording.duration}
+                          note={note.join(' · ')}
+                          {...(recording.errors > 0
+                            ? { kind: 'failed' as const, status: 'Met fouten' }
+                            : { kind: 'done' as const, status: 'Zonder fouten' })}
+                          // One clean name, each part once: "Kassa betaalt niet, met fouten, 0:24,
+                          // na een fout, vandaag 13:52, 2 fouten".
+                          aria-label={[
+                            recording.title,
+                            recording.errors > 0 ? 'met fouten' : 'zonder fouten',
+                            recording.duration,
+                            ...note.map((part, index) => (index === 0 ? part.toLowerCase() : part)),
+                          ].join(', ')}
+                          aria-current={recording.id === current ? 'true' : undefined}
+                          onClick={() => setCurrent(recording.id)}
+                        />
+                      )
+                    })}
                   </List>
                 </div>
               </Panel>

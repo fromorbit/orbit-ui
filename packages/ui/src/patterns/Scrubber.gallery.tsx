@@ -105,6 +105,7 @@ function Player({
           ].join(', ')
         }
         {...(legend ? { legendLabel: 'Markeringen' } : {})}
+        groupLabel={(count) => `${count} gebeurtenissen`}
         disabled={disabled}
       />
       {note === undefined ? null : (
@@ -125,9 +126,8 @@ export default {
     'An error and a failed request at the same moment: one mark, both shapes': () => (
       <Player duration={10} start={2} markers={TOGETHER} />
     ),
-    'Dense: 48 events, grouped with a count where they touch': () => (
-      <Player duration={120} start={76} markers={BUSY} />
-    ),
+    'Dense: 48 events, close ones grouped; a faint second shape marks a group, its card counts it':
+      () => <Player duration={120} start={76} markers={BUSY} />,
     'A long recording: ticks every five minutes': () => (
       <Player duration={721} start={402} markers={ADMIN} />
     ),
