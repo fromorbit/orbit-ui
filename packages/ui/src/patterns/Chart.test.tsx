@@ -139,7 +139,8 @@ test('with only zeros the plot holds one sentence and the next step, without a l
   expect(screen.getByText('Nog geen builds in deze periode')).toBeVisible()
   expect(screen.getByText('Kies een langere periode.')).toBeInTheDocument()
   expect(screen.getByText('Nog geen builds in deze periode').closest('[aria-hidden]')).toBeNull()
-  expect(container.querySelector('ul')).toBeNull()
+  expect(container.querySelector('ul')).toBeNull() // No table of zeros: the sentence is what a screen reader hears.
+  expect(screen.queryByRole('table')).toBeNull()
 })
 
 test('a sparkline is an image named by its label, with a dot on the latest value', () => {
@@ -197,6 +198,28 @@ test('a forecast carries a line on to the last point and raises the axis to it',
   expect(container.querySelector('[data-nt-chart-forecast]')).not.toBeNull()
   expect(screen.getByText('≈282 u')).toBeInTheDocument()
   expect(screen.getByRole('table', { name: 'Agent-uren (verwacht: 282 u)' })).toBeInTheDocument()
+})
+
+test('a forecast with a legend is named in the legend beside a dotted key', () => {
+  const { container } = render(
+    <Chart
+      kind="line"
+      label="Agent-uren"
+      series={[
+        { id: 'used', label: 'Gebruikt' },
+        { id: 'plan', label: 'Tempo van je plan', reference: true },
+      ]}
+      points={[
+        { label: '1', values: [100, 80] },
+        { label: '2', values: [180, 160] },
+        { label: '3', values: [null, 240] },
+      ]}
+      forecast={{ series: 'used', value: 282, label: '≈282 u', legend: 'Verwachting' }}
+    />,
+  )
+  expect(container.querySelector('ul')).toHaveTextContent('GebruiktTempo van je planVerwachting')
+  const key = container.querySelector('[data-nt-chart-forecast-key] line')
+  expect(key).toHaveAttribute('stroke-dasharray', '0.1 4.6')
 })
 
 test('a sparkline can draw the period before as a faint line behind it', () => {

@@ -673,6 +673,7 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                     value: PROJECTED,
                     label: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')}`,
                     text: `verwacht eind oktober: ${unit(PROJECTED, 'u')}`,
+                    legend: 'Verwachting',
                   }}
                   format={(value) => unit(value, 'u')}
                   none="nog niet bekend"

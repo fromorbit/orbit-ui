@@ -4,7 +4,6 @@ import {
   Button,
   Chart,
   type ChartPoint,
-  IconButton,
   List,
   ListRow,
   PageHeader,
@@ -31,7 +30,7 @@ const PERIODS = [
 
 /** What a figure is compared with, per period. */
 const AGAINST: Record<Period, string> = {
-  '1': 't.o.v. gisteren',
+  '1': 't.o.v. de 24 uur ervoor',
   '7': 't.o.v. vorige week',
   '30': 't.o.v. 30 dagen ervoor',
 }
@@ -51,7 +50,7 @@ const KPIS: Record<Period, Omit<Figure, 'against'>[]> = {
       tone: 'good',
       rising: false,
     },
-    { label: 'Mislukte starts', value: '2', delta: '1', tone: 'bad', rising: true },
+    { label: 'Mislukte space-starts', value: '2', delta: '1', tone: 'bad', rising: true },
   ],
   '7': [
     { label: 'Draaiende spaces', value: '9 van 12', delta: '3', tone: 'good', rising: true },
@@ -63,17 +62,16 @@ const KPIS: Record<Period, Omit<Figure, 'against'>[]> = {
       tone: 'good',
       rising: false,
     },
-    { label: 'Mislukte starts', value: '7', delta: '3', tone: 'good', rising: false },
+    { label: 'Mislukte space-starts', value: '7', delta: '3', tone: 'good', rising: false },
   ],
   '30': [
     { label: 'Draaiende spaces', value: '9 van 12', delta: '4', tone: 'good', rising: true },
     { label: 'Builds', value: '', delta: '21%', tone: 'good', rising: true },
     { label: 'Gemiddelde bouwtijd', value: '1 min 58 s', delta: '14 s', tone: 'bad', rising: true },
-    { label: 'Mislukte starts', value: '31', delta: '9', tone: 'good', rising: false },
+    { label: 'Mislukte space-starts', value: '31', delta: '9', tone: 'good', rising: false },
   ],
 }
 
-const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'] as const
 const WEEKDAY_NAMES = [
   'maandag',
   'dinsdag',
@@ -96,28 +94,30 @@ const TRAILS: Record<Period, Record<string, readonly number[]>> = {
   '1': {
     'Draaiende spaces': [7, 7, 7, 8, 8, 8, 9, 9],
     'Gemiddelde bouwtijd': [113, 108, 110, 104, 101, 106, 99, 102],
-    'Mislukte starts': [0, 0, 0, 1, 0, 0, 1, 2],
+    'Mislukte space-starts': [0, 0, 0, 1, 0, 0, 1, 2],
   },
   '7': {
     'Draaiende spaces': [6, 7, 7, 8, 8, 9, 9],
     'Gemiddelde bouwtijd': [118, 112, 109, 121, 104, 99, 111],
-    'Mislukte starts': [2, 1, 0, 2, 1, 1, 0],
+    'Mislukte space-starts': [2, 1, 0, 2, 1, 1, 0],
   },
   '30': {
     'Draaiende spaces': [5, 5, 6, 6, 7, 7, 8, 8, 9, 9],
     'Gemiddelde bouwtijd': [104, 108, 111, 106, 113, 117, 115, 119, 121, 118],
-    'Mislukte starts': [6, 5, 4, 5, 3, 4, 2, 1, 1, 0],
+    'Mislukte space-starts': [6, 5, 4, 5, 3, 4, 2, 1, 1, 0],
   },
 }
 
-/** Builds per hour of a working day: quiet at night, busy from nine to six. */
-const HOURLY = [0, 0, 0, 0, 0, 0, 1, 2, 4, 7, 9, 8, 5, 8, 9, 8, 7, 5, 3, 2, 1, 1, 0, 0]
-/** The failed ones among them: one late in the morning, one in the afternoon. */
-const HOURLY_FAILED: Record<number, number> = { 11: 1, 15: 1 }
-
-/** Builds per day of the past week, quiet in the weekend, with a bad Thursday. */
-const DAILY = [26, 29, 30, 29, 27, 8, 5]
-const DAILY_FAILED = [0, 0, 0, 4, 0, 1, 0]
+/**
+ * The builds of the past 24 hours, from 14:00 on Monday 19 October to now, 14:00 on Tuesday 20
+ * October (`NOW`, the one today of every range): the end of Monday's working day, a quiet night,
+ * and Tuesday's morning. Tuesday's hours add up to its bar in the days (13), so the ranges agree.
+ */
+const HOURLY = [3, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 2, 1, 3]
+/** The failed ones among them: one at the end of Monday afternoon and one after it. */
+const HOURLY_FAILED: Record<number, number> = { 0: 1, 2: 1 }
+/** The hour of the first point of the 24 hours. */
+const FIRST_HOUR = 14
 
 const MONTHS = [
   'januari',
@@ -135,54 +135,65 @@ const MONTHS = [
 ] as const
 const DAY = 24 * HOUR
 
-/** A made-up series of builds, per hour, day or day of the past 30, with the failed ones on top. */
+/**
+ * A made-up series of builds, with the failed ones on top: per hour of the past 24, or per day of
+ * the past 7 or 30 up to today. The week is the last 7 days of the month, so both end on Tuesday
+ * 20 October with the same bars.
+ */
 function builds(period: Period): ChartPoint[] {
   if (period === '1') {
-    return HOURLY.map((value, hour) => {
+    return HOURLY.map((value, index) => {
+      const hour = (FIRST_HOUR + index) % 24
       const label = `${String(hour).padStart(2, '0')}:00`
-      return { label, values: [value, HOURLY_FAILED[hour] ?? 0] }
+      const day = index < 24 - FIRST_HOUR ? 'maandag 19 oktober' : 'dinsdag 20 oktober'
+      return { label, title: `${day}, ${label}`, values: [value, HOURLY_FAILED[index] ?? 0] }
     })
   }
-  if (period === '7') {
-    return DAILY.map((value, index) => ({
-      label: WEEKDAYS[index] ?? '',
-      title: WEEKDAY_NAMES[index] ?? '',
-      values: [value, DAILY_FAILED[index] ?? 0],
-    }))
-  }
-  // The 30 days up to today, quiet in the weekends, a failure every few days.
+  const days = month()
+  return period === '7' ? days.slice(-7).map((point) => ({ ...point, label: point.short })) : days
+}
+
+/** The 30 days up to today, quiet in the weekends, a failure every few days. */
+function month(): (ChartPoint & { short: string })[] {
   return Array.from({ length: 30 }, (_, index) => {
     const date = new Date(NOW - (29 - index) * DAY)
     const weekday = (date.getUTCDay() + 6) % 7
     const wave = Math.sin(index / 1.7) * 4 + Math.cos(index / 3.1) * 3
     const value = Math.max(1, Math.round((weekday >= 5 ? 5 : 20) + (weekday >= 5 ? 0 : wave)))
     const failed = index % 5 === 3 && weekday < 5 ? Math.max(1, Math.round(value / 8)) : 0
-    const month = MONTHS[date.getUTCMonth()] ?? ''
+    const name = MONTHS[date.getUTCMonth()] ?? ''
     return {
-      label: `${date.getUTCDate()} ${month.slice(0, 3)}`,
-      title: `${WEEKDAY_NAMES[weekday] ?? ''} ${date.getUTCDate()} ${month}`,
+      label: `${date.getUTCDate()} ${name.slice(0, 3)}`,
+      short: WEEKDAY_NAMES[weekday]?.slice(0, 2) ?? '',
+      title: `${WEEKDAY_NAMES[weekday] ?? ''} ${date.getUTCDate()} ${name}`,
       values: [value, failed],
     }
   })
 }
 
-/** The builds and the failed ones of a series, and where most of them failed, in one sentence. */
+/**
+ * The builds and the failed ones of a series, and where they failed, in one sentence. One peak is
+ * named in full; two that tie are named both, with what each had; more say nothing of a peak.
+ */
 function summary(period: Period, points: readonly ChartPoint[]): string {
+  const failedOf = (point: ChartPoint) => point.values[1] ?? 0
   const all = points.reduce(
     (sum, point) => sum + (point.values[0] ?? 0) + (point.values[1] ?? 0),
     0,
   )
-  const failed = points.reduce((sum, point) => sum + (point.values[1] ?? 0), 0)
-  const worst = points.reduce<ChartPoint | undefined>(
-    (best, point) => ((point.values[1] ?? 0) > (best?.values[1] ?? 0) ? point : best),
-    undefined,
-  )
+  const failed = points.reduce((sum, point) => sum + failedOf(point), 0)
+  const most = Math.max(0, ...points.map(failedOf))
+  const peaks = points.filter((point) => most > 0 && failedOf(point) === most)
+  const on = period === '1' ? 'om' : 'op'
+  const [first, second] = peaks
   const where =
-    worst === undefined || failed < 2
+    failed < 2 || first === undefined || peaks.length > 2
       ? ''
-      : period === '1'
-        ? `, de meeste om ${worst.label}`
-        : `, de meeste op ${worst.title ?? worst.label}`
+      : second === undefined
+        ? `, de meeste ${on} ${period === '1' ? first.label : (first.title ?? first.label)}`
+        : most === 1
+          ? `, één ${on} ${first.label} en één ${on} ${second.label}`
+          : `, de meeste ${on} ${first.label} en ${second.label} (elk ${most})`
   return `${failed} van de ${all.toLocaleString('nl-NL')} builds mislukt${where}.`
 }
 
@@ -280,6 +291,15 @@ function Overview(): ReactNode {
           trail: TRAILS[period][kpi.label] ?? [],
           ...(kpi.label === 'Gemiddelde bouwtijd' ? { unit: duration } : {}),
         }
+  const periods = (
+    <SegmentedControl<Period>
+      label="Periode"
+      size="sm"
+      value={period}
+      options={PERIODS}
+      onValueChange={setPeriod}
+    />
+  )
   return (
     <AppFrame product="halo" current="dashboard">
       <ScrollArea>
@@ -289,24 +309,16 @@ function Overview(): ReactNode {
             meta="Zilverberg · 4 apps · 12 spaces"
             actions={
               <>
-                <SegmentedControl<Period>
-                  label="Periode"
-                  size="sm"
-                  value={period}
-                  options={PERIODS}
-                  onValueChange={setPeriod}
-                />
-                <div className="hidden @xl:block">
-                  <Button variant="primary" size="sm">
-                    Nieuwe space
-                  </Button>
-                </div>
-                <div className="@xl:hidden">
-                  <IconButton icon="plus" variant="primary" size="sm" label="Nieuwe space" />
-                </div>
+                <div className="hidden @xl:block">{periods}</div>
+                {/* The words stay at every width, as on Apps: a lone "+" says less. */}
+                <Button variant="primary" size="sm">
+                  Nieuwe space
+                </Button>
               </>
             }
           />
+          {/* Narrow, the period gets a row of its own under the title, so the title keeps its room. */}
+          <div className="-mt-2 @xl:hidden">{periods}</div>
           <Banner
             tone="attention"
             action={

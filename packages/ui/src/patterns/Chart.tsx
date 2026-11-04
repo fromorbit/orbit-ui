@@ -62,6 +62,11 @@ export interface ChartForecast {
   label: string
   /** The same in full, for the caption of the table: "verwacht eind oktober: 282 u". `label` without. */
   text?: string
+  /**
+   * Its name in the legend beside a dotted key ("Verwachting"), so the dotted run is told apart
+   * from a dashed reference. Without, the legend leaves it out.
+   */
+  legend?: string
 }
 
 /** The props of `Chart`. */
@@ -274,6 +279,25 @@ function Key({
   )
 }
 
+/** The key of a forecast: the dotted run itself, as faint as it is drawn. */
+function ForecastKey(): ReactNode {
+  return (
+    <svg aria-hidden="true" width={16} height={4} className="block shrink-0">
+      <line
+        x1={1}
+        x2={15}
+        y1={2}
+        y2={2}
+        stroke={LINE_MARK}
+        strokeOpacity={0.5}
+        strokeWidth={2}
+        strokeDasharray="0.1 4.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 /** Varied heights of the shapes that stand in for the bars while the data loads. */
 const LOADING_SHAPE = [42, 58, 50, 72, 64, 36, 30, 54, 68, 60, 46, 28]
 
@@ -323,7 +347,7 @@ export function chartLabelled(
  * full ink with round joins and runs from edge to edge; a single line lies on a wash of its own
  * ink that fades toward the baseline, and where a series stops (today) the wash stops with it: what
  * is to come is not measured. A `forecast` carries a series on from there as a faint dotted run to
- * the value it reaches, named quietly at its end. A `reference` series (a pace) is dashed in
+ * the value it reaches, named quietly at its end and, with its `legend`, in the legend. A `reference` series (a pace) is dashed in
  * `--nt-chart-reference`, a `limit` is a quiet level across the plot named at its start. Bars are
  * `--nt-chart-mark`, a step quieter than the accent, so a row of them reads calmly; the column
  * being read gets a tinted band and the bars keep their ink, so a status part stays the one
@@ -338,7 +362,7 @@ export function chartLabelled(
  * the pointer; a tap reads a point and a second tap (or one outside) closes it. The drawing itself
  * is `aria-hidden`; a screen reader gets the same values as a table named by `label`. While
  * `loading` the plot shows soft shapes and the figure is busy; with no values it is the grid with
- * the words of `empty` and `emptyNext`, without a legend. The chart follows the width of its
+ * the words of `empty` and `emptyNext`, without a legend or a table of zeros. The chart follows the width of its
  * parent.
  */
 export function Chart({
@@ -527,7 +551,7 @@ export function Chart({
       data-nt-chart={kind}
       className="m-0 flex min-w-0 flex-col gap-3"
     >
-      {series.length > 1 && drawn ? (
+      {(series.length > 1 || (forecastFrom && forecast?.legend !== undefined)) && drawn ? (
         <ul
           aria-hidden="true"
           className="m-0 flex list-none flex-wrap items-center gap-x-4 gap-y-1 p-0 text-[12px] text-secondary"
@@ -538,6 +562,12 @@ export function Chart({
               {entry.label}
             </li>
           ))}
+          {forecastFrom && forecast?.legend !== undefined ? (
+            <li className="flex items-center gap-1.5" data-nt-chart-forecast-key>
+              <ForecastKey />
+              {forecast.legend}
+            </li>
+          ) : null}
         </ul>
       ) : null}
       <div className="flex gap-2">
@@ -885,41 +915,44 @@ export function Chart({
       </div>
       {loading === undefined ? null : <span className="sr-only">{loading}</span>}
       {/* A table ignores the width and the clip of `sr-only`, and its columns would widen the page: the
-          wrapper is what is hidden. */}
-      <div className="sr-only">
-        <table id={tableId}>
-          <caption>
-            {limit || forecastFrom
-              ? `${label} (${[limit?.label, forecastFrom ? (forecast?.text ?? forecast?.label) : undefined].filter(Boolean).join('; ')})`
-              : label}
-          </caption>
-          <thead>
-            <tr>
-              <td />
-              {series.map((entry) => (
-                <th key={entry.id} scope="col">
-                  {entry.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {points.map((point) => (
-              <tr key={point.label}>
-                <th scope="row">{point.title ?? point.label}</th>
-                {series.map((entry, index) => {
-                  const value = point.values[index]
-                  return (
-                    <td key={entry.id}>
-                      {value === null || value === undefined ? none : format(value)}
-                    </td>
-                  )
-                })}
+          wrapper is what is hidden. Empty with its sentence, or loading, there are no values to read:
+          the sentence (or the loading words) is what a screen reader hears. */}
+      {(isEmpty && empty !== undefined) || loading !== undefined ? null : (
+        <div className="sr-only">
+          <table id={tableId}>
+            <caption>
+              {limit || forecastFrom
+                ? `${label} (${[limit?.label, forecastFrom ? (forecast?.text ?? forecast?.label) : undefined].filter(Boolean).join('; ')})`
+                : label}
+            </caption>
+            <thead>
+              <tr>
+                <td />
+                {series.map((entry) => (
+                  <th key={entry.id} scope="col">
+                    {entry.label}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {points.map((point) => (
+                <tr key={point.label}>
+                  <th scope="row">{point.title ?? point.label}</th>
+                  {series.map((entry, index) => {
+                    const value = point.values[index]
+                    return (
+                      <td key={entry.id}>
+                        {value === null || value === undefined ? none : format(value)}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </figure>
   )
 }

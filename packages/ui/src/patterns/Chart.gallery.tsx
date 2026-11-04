@@ -18,6 +18,13 @@ const WEEK: ChartPoint[] = [
 
 const builds = (value: number) => `${nl(value)}\u00a0builds`
 const hours = (value: number) => `${nl(value)}\u00a0u`
+/** Seconds as the StatTile of the dashboard writes them: "1 min 51 s". */
+const duration = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  if (minutes === 0) return `${rest}\u00a0s`
+  return rest === 0 ? `${minutes}\u00a0min` : `${minutes}\u00a0min ${rest}\u00a0s`
+}
 
 /** How the plot is read by key, in Dutch, as its description for a screen reader. */
 const KEYS =
@@ -52,12 +59,12 @@ const PROJECTED = Math.round((DAILY.reduce((sum, value) => sum + value, 0) / DAI
 
 /** Builds per space this week: names as long as they come. */
 const SPACES: ChartPoint[] = [
-  ['webwinkel-main', 42, 0],
-  ['webwinkel-betaling-ideal', 31, 6],
-  ['webwinkel-zoeken-v2', 24, 1],
-  ['beheer-main', 18, 0],
-  ['nieuwsbrief-sjablonen', 12, 2],
-  ['webwinkel-cadeaubon', 6, 0],
+  ['webwinkel · main', 42, 0],
+  ['webwinkel · betaling-ideal', 31, 6],
+  ['webwinkel · zoeken-v2', 24, 1],
+  ['beheer · main', 18, 0],
+  ['nieuwsbrief · sjablonen', 12, 2],
+  ['webwinkel · cadeaubon', 6, 0],
 ].map(([label, ok, failed]) => ({
   label: String(label),
   values: [Number(ok), Number(failed)],
@@ -114,6 +121,7 @@ export default {
             value: PROJECTED,
             label: `≈${PROJECTED}\u00a0u`,
             text: `verwacht eind oktober: ${PROJECTED}\u00a0u`,
+            legend: 'Verwachting',
           }}
           format={hours}
           none="nog niet bekend"
@@ -134,7 +142,7 @@ export default {
             ...(point.title === undefined ? {} : { title: point.title }),
             values: [[118, 112, 109, 121, 104, 99, 111][index] ?? 0],
           }))}
-          format={(value) => `${nl(value)}\u00a0s`}
+          format={duration}
           height={144}
           keys={KEYS}
           roleDescription="grafiek"
@@ -160,14 +168,14 @@ export default {
           </div>
         </StatTile>
         <StatTile
-          label="Mislukte starts"
+          label="Mislukte space-starts"
           value="7"
           trend={<TrendBadge value="3" direction="down" tone="good" description="Gedaald met 3" />}
           comparison="t.o.v. vorige week"
         >
           <div className="mt-auto">
             <Sparkline
-              label="Mislukte starts per dag, de afgelopen 7 dagen, van 2 naar 0"
+              label="Mislukte space-starts per dag, de afgelopen 7 dagen, van 2 naar 0"
               values={[2, 1, 0, 2, 1, 1, 0]}
             />
           </div>
@@ -175,7 +183,8 @@ export default {
       </div>
     ),
     'Laden: zachte vormen, de figuur bezig': () => (
-      <div className="w-full max-w-3xl">
+      <div className="flex w-full max-w-3xl flex-col gap-3">
+        <p className="m-0 font-medium text-[13px] text-fg">Builds per dag</p>
         <Chart label="Builds per dag" series={BUILDS} points={[]} loading="Builds laden" />
       </div>
     ),
@@ -184,7 +193,11 @@ export default {
         <Chart
           label="Builds per dag"
           series={BUILDS}
-          points={WEEK.map((point) => ({ label: point.label, values: [0, 0] }))}
+          points={WEEK.map((point) => ({
+            label: point.label,
+            ...(point.title === undefined ? {} : { title: point.title }),
+            values: [0, 0],
+          }))}
           empty="Nog geen builds in deze periode"
           emptyNext="Kies een langere periode of start een build in een space."
           emptyAction={
