@@ -75,7 +75,7 @@ function RadioGroupOptionRow({ option }: { option: RadioGroupOption }) {
     >
       <span
         aria-hidden="true"
-        className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-border"
+        className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-control-border"
       >
         <RadixRadioGroup.Indicator className="size-2 rounded-full bg-accent" />
       </span>

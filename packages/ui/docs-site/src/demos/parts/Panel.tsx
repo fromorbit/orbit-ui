@@ -10,7 +10,7 @@ export interface PanelProps {
   actions?: ReactNode
   /** No inner padding, for a list or a table that runs to the card's edges. */
   flush?: boolean
-  /** The level of its heading in the outline of the page: 3 under a section, 2 right under the page title. */
+  /** The level of its heading in the outline of the page: 2 right under the page title (the default), 3 under a section. */
   headingLevel?: 2 | 3
   /** The layout of the card in its parent: a grid span, a height. */
   className?: string
@@ -26,7 +26,7 @@ export function Panel({
   meta,
   actions,
   flush = false,
-  headingLevel = 3,
+  headingLevel = 2,
   className,
   children,
 }: PanelProps): ReactNode {

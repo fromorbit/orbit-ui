@@ -93,11 +93,11 @@ export default {
   group: 'patterns',
   title: 'Composer',
   states: {
-    'Empty: the send button rests': () => <Live />,
-    'With text: one emphasis, the send button': () => (
+    'Leeg: de verstuurknop rust': () => <Live />,
+    'Met tekst: één nadruk, de verstuurknop': () => (
       <Live initial="Zet het lage tarief van 9% er ook in, met een test." />
     ),
-    'A new chat: three rows and where it lands': () => (
+    'Een nieuw gesprek: drie regels en waar het landt': () => (
       <Live
         minRows={3}
         footer={
@@ -108,7 +108,7 @@ export default {
         }
       />
     ),
-    'With attachments': () => (
+    'Met bijlagen': () => (
       <Live
         initial="Waarom wijken deze twee af?"
         attachments={
@@ -131,10 +131,10 @@ export default {
         }
       />
     ),
-    'Running: Stop in place of send': () => (
+    'Bezig: Stoppen in plaats van versturen': () => (
       <Live running onStop={() => {}} initial="En daarna de facturen van" />
     ),
-    'Off, with the reason': () => (
+    'Uit, met de reden': () => (
       <Live
         disabledReason="Kies eerst een project om in te werken."
         disabledAction={

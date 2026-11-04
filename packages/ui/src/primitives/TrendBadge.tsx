@@ -25,7 +25,7 @@ export interface TrendBadgeProps {
 
 // Written out per tone: Tailwind finds a class only as a literal in the source.
 const TONE: Record<TrendTone, string> = {
-  good: 'bg-success/12 text-success',
+  good: 'bg-success-subtle text-success',
   bad: 'bg-danger-subtle text-danger',
   neutral: 'bg-mark text-secondary',
 }
@@ -46,7 +46,11 @@ export function TrendBadge({ value, direction, tone, description }: TrendBadgePr
       className={`inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-sm px-1.5 py-px font-medium text-[11px] tabular-nums ${TONE[tone]}`}
     >
       <Icon name={ARROW[direction]} size="xs" />
-      <span aria-hidden="true">{value}</span>
+      {/* The figure in the words' own colour: the light green falls under AA on its tint, and
+          the arrow and the plane already carry the verdict. */}
+      <span aria-hidden="true" className={tone === 'neutral' ? undefined : 'text-fg'}>
+        {value}
+      </span>
       <span className="sr-only">{description}</span>
     </span>
   )

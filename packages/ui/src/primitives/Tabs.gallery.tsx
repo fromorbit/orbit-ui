@@ -50,17 +50,17 @@ export default {
   group: 'primitives',
   title: 'Tabs',
   states: {
-    Default: () => (
+    Standaard: () => (
       <div className="h-64">
         <Tabs label="Onderdelen van de instellingen" tabs={tabs} />
       </div>
     ),
-    Horizontal: () => (
+    Horizontaal: () => (
       <div className="h-64">
         <Tabs label="Onderdelen van het paneel" tabs={tabs} orientation="horizontal" />
       </div>
     ),
-    Pill: () => (
+    Pil: () => (
       <div className="h-64">
         <Tabs
           label="Onderdelen van het paneel"
@@ -71,7 +71,7 @@ export default {
         />
       </div>
     ),
-    'One tab': () => (
+    'Eén tab': () => (
       <div className="h-32">
         <Tabs
           label="Onderdelen van het paneel"
@@ -81,7 +81,7 @@ export default {
         />
       </div>
     ),
-    'Long title': () => (
+    'Lange titel': () => (
       <div className="h-32">
         <Tabs
           label="Onderdelen van het paneel"
@@ -96,7 +96,7 @@ export default {
         />
       </div>
     ),
-    Count: () => (
+    Aantal: () => (
       <div className="h-32">
         <Tabs
           label="Onderdelen van het paneel"
@@ -106,7 +106,7 @@ export default {
         />
       </div>
     ),
-    'Closable, focused': () => (
+    'Sluitbaar, met focus': () => (
       <div className="h-32">
         <Tabs
           label="Onderdelen van het paneel"
@@ -121,7 +121,7 @@ export default {
     // The right panel's strip: level with the title bar, a drag region, holding the corner where
     // Windows lays its window controls. Switch the platform to win32 to see the room it keeps at
     // its end; six pages then shrink to their cut titles instead of running under that room.
-    'Title bar strip': () => (
+    Titelbalk: () => (
       <div className="h-32 w-full max-w-[360px] border border-border">
         <Tabs
           label="Onderdelen van het paneel"
@@ -145,7 +145,7 @@ export default {
     ),
     // The settings screen while it searches: a field above the list, the hits counted per tab,
     // and a tab without hits dimmed.
-    'Field above, counts, dimmed': () => (
+    'Veld erboven, aantallen, gedimd': () => (
       <div className="h-64">
         <Tabs
           label="Onderdelen van de instellingen"

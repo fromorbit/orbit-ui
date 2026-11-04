@@ -1,7 +1,6 @@
-import { createElement, type ReactNode, useEffect, useId, useState } from 'react'
+import { createElement, type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import {
   EmptyState,
-  Icon,
   PortalContainerProvider,
   Prose,
   SegmentedControl,
@@ -31,10 +30,14 @@ export function demoSlugOf(hash: string): string | undefined {
     : undefined
 }
 
+/** Old slugs that still lead somewhere: the Specs demo was once `taken`. */
+const RENAMED: Readonly<Record<string, string>> = { taken: 'specs' }
+
 /** The slug the page scrolls to for a hash: a known demo, the overview, or the first demo. */
 export function shownSlug(slug: string | undefined): string {
   if (slug === OVERVIEW_SLUG) return slug
-  return DEMOS.find((demo) => demo.slug === slug)?.slug ?? DEMOS[0]?.slug ?? OVERVIEW_SLUG
+  const known = slug === undefined ? undefined : (RENAMED[slug] ?? slug)
+  return DEMOS.find((demo) => demo.slug === known)?.slug ?? DEMOS[0]?.slug ?? OVERVIEW_SLUG
 }
 
 /** The id of a block on the page, which a hash scrolls to. */
@@ -83,20 +86,21 @@ function Inventory({
   stories: readonly Story[]
 }): ReactNode {
   return (
-    <div className="flex flex-col gap-1.5 px-1 text-[12px]">
+    <div className="flex flex-col gap-1 px-1 text-[12px]">
       <div className="flex items-baseline gap-3">
         <span className="w-20 shrink-0 text-muted">{`Gebruikt ${inventory.used.length}`}</span>
-        <ul aria-label="Gebruikt" className="m-0 flex list-none flex-wrap gap-x-2.5 gap-y-1 p-0">
+        {/* Every name a 24px target (WCAG 2.5.8): rows of links that never touch on a phone. */}
+        <ul aria-label="Gebruikt" className="m-0 flex list-none flex-wrap gap-x-1 p-0">
           {inventory.used.map((name) => {
             const href = storyHref(stories, name)
             return (
-              <li key={name} className="text-secondary">
+              <li key={name} className="flex min-h-6 items-center text-secondary">
                 {href === undefined ? (
                   name
                 ) : (
                   <a
                     href={href}
-                    className="rounded-sm text-secondary no-underline outline-focus hover:text-fg hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="inline-flex min-h-6 items-center rounded-sm px-1 text-secondary no-underline outline-focus hover:text-fg hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
                     {name}
                   </a>
@@ -109,13 +113,13 @@ function Inventory({
       {inventory.missing.length === 0 ? null : (
         <div className="flex items-baseline gap-3">
           <span className="w-20 shrink-0 text-muted">{`Ontbreekt ${inventory.missing.length}`}</span>
-          <ul aria-label="Ontbreekt" className="m-0 flex list-none flex-wrap gap-x-2.5 gap-y-1 p-0">
+          <ul aria-label="Ontbreekt" className="m-0 flex list-none flex-wrap gap-x-1 p-0">
             {inventory.missing.map((name) => (
               <li key={name}>
                 <a
                   href={`${DEMO_PREFIX}${OVERVIEW_SLUG}`}
                   title={MISSING[name]}
-                  className="rounded-sm font-mono text-[11px] text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="inline-flex min-h-6 items-center rounded-sm px-1 font-mono text-[11px] text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   {name}
                 </a>
@@ -182,7 +186,7 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
       id={blockId(demo.slug)}
       aria-labelledby={titleId}
       data-demo-block={demo.slug}
-      className="flex scroll-mt-16 flex-col gap-3"
+      className="flex scroll-mt-20 flex-col gap-3"
     >
       <header className="flex flex-wrap items-end gap-x-6 gap-y-3 px-1">
         <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1">
@@ -195,7 +199,7 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
               <span className="text-[12px] text-muted">{PRODUCT_NAME[product]}</span>
             </span>
           </div>
-          <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
+          <p className="m-0 max-w-2xl text-pretty text-[13px] text-secondary leading-relaxed">
             {demo.description}
           </p>
         </div>
@@ -227,9 +231,9 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
           </div>
         </div>
       </header>
-      <div className="flex justify-center rounded-2xl border border-border bg-frame bg-[radial-gradient(var(--nt-border)_1px,transparent_1px)] bg-size-[18px_18px] p-2 sm:p-3">
+      <div className="flex justify-center rounded-xl border border-border bg-frame bg-[radial-gradient(var(--nt-border)_1px,transparent_1px)] bg-size-[18px_18px] p-2 sm:p-3">
         <div
-          className={`h-[clamp(520px,calc(100dvh-220px),780px)] overflow-hidden rounded-xl border border-border shadow-menu transition-[width] duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${view === 'code' ? 'w-full' : WIDTH[viewport]}`}
+          className={`h-[clamp(520px,calc(100dvh-220px),780px)] overflow-hidden rounded-lg border border-border shadow-menu transition-[width] duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${view === 'code' ? 'w-full' : WIDTH[viewport]}`}
         >
           {view === 'code' ? (
             <CodeView demo={demo} />
@@ -257,7 +261,7 @@ export function MissingOverview(): ReactNode {
     <section
       id={blockId(OVERVIEW_SLUG)}
       aria-labelledby={titleId}
-      className="flex scroll-mt-16 flex-col gap-4"
+      className="flex scroll-mt-20 flex-col gap-4"
     >
       <div className="flex flex-col gap-1 px-1">
         <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
@@ -265,7 +269,7 @@ export function MissingOverview(): ReactNode {
         </h2>
         <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
           {entries.length === 0
-            ? 'Wat een demo mist, tekent hij na en zet hij hier op de lijst.'
+            ? 'Een demo die iets mist, tekent het na met een stippellijn; dat komt dan hier op de lijst.'
             : `${entries.length === 1 ? '1 component ontbreekt' : `${entries.length} componenten ontbreken`} in ${DEMOS.length} demo's. Bovenaan staat wat de meeste schermen missen: dat bouwen we het eerst.`}
         </p>
       </div>
@@ -327,8 +331,8 @@ export function MissingOverview(): ReactNode {
 
 /** The entries of the jump bar: every demo, then the wishlist. */
 const JUMPS = [
-  ...DEMOS.map(({ slug, title, icon }) => ({ slug, title, icon })),
-  { slug: OVERVIEW_SLUG, title: 'Wensenlijst', icon: 'list-checks' as const },
+  ...DEMOS.map(({ slug, title }) => ({ slug, title })),
+  { slug: OVERVIEW_SLUG, title: 'Wensenlijst' },
 ]
 
 /**
@@ -353,10 +357,23 @@ export function DemoGallery({
     document.getElementById(blockId(target))?.scrollIntoView?.({ block: 'start' })
   }, [target])
   const missingCount = missingOverview().length
+  // On a narrow window the strip scrolls sideways: the chip of the block in view is brought into
+  // it, so the reader always sees where they are (Serial Position).
+  const strip = useRef<HTMLUListElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `target` moves the current chip, which the effect reads from the DOM.
+  useEffect(() => {
+    const list = strip.current
+    const chip = list?.querySelector<HTMLElement>('[aria-current]')
+    if (!list || !chip || list.scrollWidth <= list.clientWidth) return
+    const left = chip.offsetLeft - list.offsetLeft
+    if (left < list.scrollLeft || left + chip.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollLeft = Math.max(0, left - (list.clientWidth - chip.offsetWidth) / 2)
+    }
+  }, [target])
   return (
     <MissingMarks value={marks}>
       <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-4 pt-6 pb-24 sm:px-8 sm:pt-8">
-        <div className="relative overflow-hidden rounded-2xl bg-(image:--nt-brand-gradient) px-6 py-8 text-(--nt-brand-paper) sm:px-10 sm:py-10">
+        <div className="relative overflow-hidden rounded-xl bg-(image:--nt-brand-gradient) px-6 py-8 text-(--nt-brand-paper) sm:px-10 sm:py-10">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -top-48 -right-28 size-[30rem] rounded-full border border-(--nt-brand-mist)/10"
@@ -369,7 +386,7 @@ export function DemoGallery({
           </div>
           <div className="relative flex max-w-2xl flex-col gap-3">
             <p className="m-0 text-(--nt-brand-slate) text-[12px] font-medium">Demo&apos;s</p>
-            <h1 className="m-0 font-heading text-[28px] leading-tight tracking-[-0.02em] sm:text-[34px]">
+            <h1 className="m-0 font-heading text-[20px] leading-tight tracking-[-0.01em]">
               Hele schermen uit de Orbit-familie
             </h1>
             <p className="m-0 text-(--nt-brand-mist) text-[15px] leading-relaxed opacity-85">
@@ -381,15 +398,19 @@ export function DemoGallery({
           aria-label="Naar een demo"
           className="sticky top-0 z-20 -mx-4 -my-8 flex items-center gap-3 border-border border-b bg-canvas/90 px-4 py-2.5 backdrop-blur-md sm:-mx-8 sm:px-8"
         >
-          <ul className="m-0 flex min-w-0 flex-1 list-none gap-1.5 overflow-x-auto p-0 [scrollbar-width:none]">
+          {/* Wraps on a wide window, so every chip is in sight; scrolls on a narrow one, with a fade
+              at the end that says there is more. */}
+          <ul
+            ref={strip}
+            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto p-0 pr-8 xl:pr-0 [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
+          >
             {JUMPS.map((jump) => (
               <li key={jump.slug} className="shrink-0">
                 <a
                   href={`${DEMO_PREFIX}${jump.slug}`}
                   aria-current={jump.slug === target ? 'location' : undefined}
-                  className="flex h-7 items-center gap-1.5 rounded-full border border-border px-2.5 text-[12px] text-secondary no-underline outline-focus hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-[current=location]:border-border-strong aria-[current=location]:bg-surface-active aria-[current=location]:text-fg"
+                  className="flex h-7 items-center rounded-full border border-border px-2.5 text-[12px] text-secondary no-underline outline-focus hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-[current=location]:border-border-strong aria-[current=location]:bg-surface-active aria-[current=location]:text-fg"
                 >
-                  <Icon name={jump.icon} size="sm" tone="faint" />
                   {jump.title}
                 </a>
               </li>

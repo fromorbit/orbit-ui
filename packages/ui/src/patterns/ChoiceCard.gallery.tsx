@@ -38,8 +38,8 @@ export default {
   group: 'patterns',
   title: 'ChoiceCard',
   states: {
-    Plain,
-    'With a key': WithKey,
-    Dimmed,
+    Eenvoudig: Plain,
+    'Met een toets': WithKey,
+    Gedimd: Dimmed,
   },
 } satisfies Story

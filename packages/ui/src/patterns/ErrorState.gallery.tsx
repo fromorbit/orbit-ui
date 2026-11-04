@@ -6,10 +6,17 @@ export default {
   group: 'patterns',
   title: 'ErrorState',
   states: {
-    'With a code': () => <ErrorState title="De run kon niet starten" code="provider_unavailable" />,
-    'With an action': () => (
+    'Met een code': () => (
+      <div className="w-full max-w-96">
+        <ErrorState
+          title="De run kon niet starten: de provider antwoordt niet. Probeer het over een minuut opnieuw."
+          code="provider_unavailable"
+        />
+      </div>
+    ),
+    'Met een actie': () => (
       <ErrorState
-        title="De run kon niet starten"
+        title="De run kon niet starten: de provider antwoordt niet."
         code="provider_unavailable"
         action={
           <Button size="sm" variant="secondary">
@@ -18,19 +25,19 @@ export default {
         }
       />
     ),
-    'Compact (inside a list or a popover)': () => (
+    'Compact (in een lijst of popover)': () => (
       <div className="w-full max-w-72">
         <ErrorState size="sm" title="De runs laden niet" code="core_unreachable" />
       </div>
     ),
-    'Compact with an action': () => (
+    'Compact met een actie': () => (
       <div className="w-full max-w-72">
         <ErrorState
           size="sm"
           title="De runs laden niet"
           action={
             <Button size="sm" variant="ghost">
-              Opnieuw
+              Opnieuw proberen
             </Button>
           }
         />
@@ -40,7 +47,7 @@ export default {
     // as wide as its widest state, so a loose sentence would widen every other reference; and a
     // wrapping sentence ends on half a pixel, which rounds the top of whatever stands under it a
     // pixel differently and would make that state's reference go stale for nothing.
-    "With the provider's own words": () => (
+    'Met de eigen woorden van de provider': () => (
       <div className="w-full max-w-72">
         <ErrorState
           title="Er ging iets mis in de backend."
@@ -49,7 +56,7 @@ export default {
         />
       </div>
     ),
-    "Compact with the provider's own words": () => (
+    'Compact met de eigen woorden van de provider': () => (
       <div className="w-full max-w-72">
         <ErrorState
           size="sm"

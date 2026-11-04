@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'ChoiceRow',
   states: {
-    'One of several': () => (
+    'Eén uit meerdere': () => (
       <div className="flex w-full max-w-[360px] flex-col gap-0.5">
         <ChoiceRow
           kind="radio"
@@ -28,7 +28,7 @@ export default {
         />
       </div>
     ),
-    'Any number': () => (
+    'Elk aantal': () => (
       <div className="flex w-full max-w-[360px] flex-col gap-0.5">
         <ChoiceRow kind="checkbox" number={1} label="Koppen" checked tabbable onChoose={() => {}} />
         <ChoiceRow

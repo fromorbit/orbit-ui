@@ -56,7 +56,7 @@ export default {
   group: 'patterns',
   title: 'ChatMessage',
   states: {
-    'A question and its answer': () => (
+    'Een vraag en het antwoord': () => (
       <Column>
         <ChatMessage
           from="user"
@@ -76,7 +76,7 @@ export default {
         </ChatMessage>
       </Column>
     ),
-    'A long message of your own wraps in its bubble': () => (
+    'Een lang eigen bericht loopt door in de ballon': () => (
       <Column>
         <ChatMessage from="user" label="Jij">
           {
@@ -85,7 +85,7 @@ export default {
         </ChatMessage>
       </Column>
     ),
-    'Thinking: the answer has not started': () => (
+    'Denkt na: het antwoord is nog niet begonnen': () => (
       <Column>
         <ChatMessage from="user" label="Jij">
           Zet het lage tarief er ook in.
@@ -98,14 +98,14 @@ export default {
         </ChatMessage>
       </Column>
     ),
-    'Streaming: no actions until it is complete': () => (
+    'Schrijft: geen acties tot het klaar is': () => (
       <Column>
         <ChatMessage from="assistant" label="Opus 5.5" streaming meta="Opus 5.5">
           <Prose labels={nl.prose} markdown="Ik pas `btwUit` aan zodat het tarief van 9% ook" />
         </ChatMessage>
       </Column>
     ),
-    'A long path breaks inside the column': () => (
+    'Een lang pad breekt binnen de kolom': () => (
       <Column>
         <ChatMessage
           from="assistant"
@@ -121,7 +121,7 @@ export default {
         </ChatMessage>
       </Column>
     ),
-    'Stopped short with an error': () => (
+    'Afgebroken met een fout': () => (
       <Column>
         <ChatMessage
           from="assistant"

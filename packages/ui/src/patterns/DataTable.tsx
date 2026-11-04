@@ -244,7 +244,12 @@ export function DataTable<Row>({
               {selectable ? <td className="py-3.5 ps-4" /> : null}
               {columns.map((column) => (
                 <td key={column.id} className={`px-3 py-3.5 ${cellClass(column)}`}>
-                  <Skeleton width={column.align === 'end' ? 'sm' : 'md'} />
+                  {/* A width that yields: the skeleton never holds a column wider than its words would. */}
+                  <span
+                    className={`block w-full ${column.align === 'end' ? 'ms-auto max-w-16' : 'max-w-32'}`}
+                  >
+                    <Skeleton />
+                  </span>
                 </td>
               ))}
             </tr>
@@ -295,6 +300,21 @@ export function DataTable<Row>({
   return (
     <div data-nt-data-table className="@container w-full min-w-0 overflow-x-auto">
       {table}
+      {card && loading ? (
+        // The narrow form of a loading table: skeleton rows in the shape of the cards, not the
+        // desktop columns squeezed into a phone.
+        <ul aria-hidden="true" className="m-0 flex list-none flex-col p-0 @3xl:hidden">
+          {[0, 1, 2].map((line) => (
+            <li
+              key={line}
+              className="flex flex-col gap-2 border-border border-b px-4 py-3 last:border-b-0"
+            >
+              <Skeleton width="md" />
+              <Skeleton width="sm" />
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {card && !loading ? (
         <ul aria-label={label} className="m-0 flex list-none flex-col p-0 @3xl:hidden">
           {shown.length === 0 ? (

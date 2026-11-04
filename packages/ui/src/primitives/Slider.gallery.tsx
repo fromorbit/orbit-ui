@@ -29,8 +29,8 @@ export default {
   group: 'primitives',
   title: 'Slider',
   states: {
-    'In a form field': () => <Memory />,
-    'Without the figure': () => (
+    'In een formulierveld': () => <Memory />,
+    'Zonder getal': () => (
       <div className="w-64">
         <Slider
           label="Volume"
@@ -41,7 +41,7 @@ export default {
         />
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <div className="w-64">
         <Slider
           label="Kernen"

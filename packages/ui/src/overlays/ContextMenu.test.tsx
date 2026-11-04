@@ -216,7 +216,7 @@ test('under a head the danger icon keeps the tone of its row, and the rows lead 
 
 test('every region of the story is reached with Tab, and offers its acts on a visible ⋯', async () => {
   const { default: story } = await import('./ContextMenu.gallery')
-  for (const name of ['With choices', 'With a head'] as const) {
+  for (const name of ['Met keuzes', 'Met een kop'] as const) {
     const State = story.states[name]
     const { unmount } = render(<State />)
     const region = document.querySelector<HTMLElement>('[data-nt-story-region]')

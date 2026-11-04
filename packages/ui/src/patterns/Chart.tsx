@@ -123,8 +123,12 @@ const RADIUS = 2
 const GAP = 2
 /** The least a part of a stacked bar shows, so one failure among many still reads as a striped cap. */
 const MIN_PART = 4
-/** Below this width a bar has no room for stripes: a status part is its flat tint, in the legend too. */
-const HATCH_MIN = 10
+/**
+ * Below this width a bar has no room for stripes: a status part is its flat tint, in the legend too.
+ * The stripes repeat every 4px, so a bar of a month at phone width (5–6px) still carries them: one
+ * encoding at every width; only a sliver this thin goes flat.
+ */
+const HATCH_MIN = 4
 /** The least room a label of the axis gets before it is cut with an ellipsis (its point in full is in the tooltip). */
 const LABEL_MIN = 80
 /** The grid of an empty plot: three quiet steps without values, the shape of a filled one, its middle free for the sentence. */
@@ -879,38 +883,42 @@ export function Chart({
           : null}
       </div>
       {loading === undefined ? null : <span className="sr-only">{loading}</span>}
-      <table id={tableId} className="sr-only">
-        <caption>
-          {limit || forecastFrom
-            ? `${label} (${[limit?.label, forecastFrom ? (forecast?.text ?? forecast?.label) : undefined].filter(Boolean).join('; ')})`
-            : label}
-        </caption>
-        <thead>
-          <tr>
-            <td />
-            {series.map((entry) => (
-              <th key={entry.id} scope="col">
-                {entry.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {points.map((point) => (
-            <tr key={point.label}>
-              <th scope="row">{point.title ?? point.label}</th>
-              {series.map((entry, index) => {
-                const value = point.values[index]
-                return (
-                  <td key={entry.id}>
-                    {value === null || value === undefined ? none : format(value)}
-                  </td>
-                )
-              })}
+      {/* A table ignores the width and the clip of `sr-only`, and its columns would widen the page: the
+          wrapper is what is hidden. */}
+      <div className="sr-only">
+        <table id={tableId}>
+          <caption>
+            {limit || forecastFrom
+              ? `${label} (${[limit?.label, forecastFrom ? (forecast?.text ?? forecast?.label) : undefined].filter(Boolean).join('; ')})`
+              : label}
+          </caption>
+          <thead>
+            <tr>
+              <td />
+              {series.map((entry) => (
+                <th key={entry.id} scope="col">
+                  {entry.label}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {points.map((point) => (
+              <tr key={point.label}>
+                <th scope="row">{point.title ?? point.label}</th>
+                {series.map((entry, index) => {
+                  const value = point.values[index]
+                  return (
+                    <td key={entry.id}>
+                      {value === null || value === undefined ? none : format(value)}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   )
 }

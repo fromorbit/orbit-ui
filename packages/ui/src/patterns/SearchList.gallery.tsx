@@ -249,7 +249,7 @@ function WithAction({ busy }: { busy: boolean }) {
         />
       </Panel>
       <p className="m-0 text-[12px] text-muted">
-        Folders added: <span data-nt-action-count>{added}</span>
+        Mappen toegevoegd: <span data-nt-action-count>{added}</span>
       </p>
     </div>
   )
@@ -297,11 +297,11 @@ export default {
   group: 'patterns',
   title: 'SearchList',
   states: {
-    'With a search field': () => <Chosen items={PROJECTS} label="Projecten" />,
+    'Met een zoekveld': () => <Chosen items={PROJECTS} label="Projecten" />,
     // The panel a reader really opens: the caret is already in the field, a row is already active,
     // and neither of those two facts paints a frame anywhere.
-    'Projects, with the focus in the field': Projects,
-    'Without a search field': () => (
+    'Projecten, met de focus in het veld': Projects,
+    'Zonder zoekveld': () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -315,7 +315,7 @@ export default {
     ),
     // The one shape in which the list itself is the tab stop and has no active row to show the
     // focus with: then, and only then, it wears a ring of its own.
-    'Without a search field, and nothing to choose': () => (
+    'Zonder zoekveld, en niets te kiezen': () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -326,12 +326,12 @@ export default {
         />
       </Panel>
     ),
-    Groups: () => (
+    Groepen: () => (
       <Panel>
         <SearchList labels={nl.list} items={GROUPED} onSelect={() => {}} label="Projecten" />
       </Panel>
     ),
-    'Paths as detail': () => (
+    'Paden als detail': () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -342,8 +342,8 @@ export default {
         />
       </Panel>
     ),
-    'A query, with the matches marked': () => <Searched query="s" items={PROJECTS} />,
-    Loading: () => (
+    'Een zoekvraag, met de treffers gemarkeerd': () => <Searched query="s" items={PROJECTS} />,
+    Laden: () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -354,13 +354,13 @@ export default {
         />
       </Panel>
     ),
-    'Nothing to choose': () => (
+    'Niets te kiezen': () => (
       <Panel>
         <SearchList labels={nl.list} items={[]} onSelect={() => {}} label="Projecten" />
       </Panel>
     ),
-    'No results': () => <Searched query="kubernetes" items={PROJECTS} />,
-    Failed: () => (
+    'Geen resultaten': () => <Searched query="kubernetes" items={PROJECTS} />,
+    Mislukt: () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -371,12 +371,12 @@ export default {
         />
       </Panel>
     ),
-    'With an action row': () => <WithAction busy={false} />,
-    'The action is waiting': () => <WithAction busy />,
+    'Met een actierij': () => <WithAction busy={false} />,
+    'De actie wacht': () => <WithAction busy />,
     // Nothing matched, so the row that is not a choice is the only place left to stand: the fill
     // reaches the shortcut chip, which has to come forward with it.
-    'The action row is where the walk is': ActionWalked,
-    'Filtered by the caller, with keys': () => (
+    'De actierij heeft de focus': ActionWalked,
+    'Gefilterd door de aanroeper, met toetsen': () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -391,7 +391,7 @@ export default {
     ),
     // A remark about the list, not a row in it: the access level of a chat, where the agent
     // cannot do the one the settings ask for and the list is therefore shorter than it looks.
-    'With a notice above the rows': () => (
+    'Met een melding boven de rijen': () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -410,7 +410,7 @@ export default {
     // contrast walk has to be able to read it there. The caption is deliberately short: the story
     // is one `inline-block`, so its widest line sets the width of every state's reference image,
     // and a long one here would move seventeen pictures that have nothing to do with this.
-    'Two groups, a tagged default': () => (
+    'Twee groepen, een gemarkeerde standaard': () => (
       <Panel>
         <SearchList
           labels={nl.list}
@@ -424,7 +424,7 @@ export default {
     ),
     // The access level of a chat: the explanation is what the row is for, so it stands under the
     // label and wraps. The same panel width as every pill opens, which is where it has to fit.
-    'Stacked: an explanation under every label': () => (
+    'Gestapeld: een uitleg onder elk label': () => (
       <Panel>
         <SearchList
           labels={nl.list}

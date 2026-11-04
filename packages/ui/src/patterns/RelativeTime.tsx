@@ -18,7 +18,7 @@ export interface RelativeTimeLabels {
 
 /**
  * Formats how long ago a timestamp was. Compact, as fits in a list: "nu", "5 min", "2 u", "3 d", "4
- * w".
+ * wk".
  *
  * Exported for a row that needs the text for its own accessible name as well and draws it with
  * {@link RelativeTimeText}. The thresholds are tested through the component.

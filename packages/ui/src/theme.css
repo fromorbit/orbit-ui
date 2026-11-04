@@ -22,6 +22,7 @@
   --color-row-hover: var(--nt-row-hover);
   --color-row-active: var(--nt-row-active);
   --color-border-strong: var(--nt-border-strong);
+  --color-control-border: var(--nt-control-border);
   --color-pill: var(--nt-pill);
   --color-pill-hover: var(--nt-pill-hover);
   --color-bubble: var(--nt-bubble);
@@ -59,6 +60,7 @@
   --color-danger: var(--nt-danger);
   --color-success: var(--nt-success);
   --color-attention-subtle: var(--nt-attention-subtle);
+  --color-success-subtle: var(--nt-success-subtle);
   --color-attention-border: var(--nt-attention-border);
   --color-attention-fill: var(--nt-attention-fill);
   --color-danger-subtle: var(--nt-danger-subtle);
@@ -292,4 +294,13 @@
     animation: none;
     opacity: 0;
   }
+}
+
+/* Meta on a lit row (`bg-row-active`, or the current row of a list or a table). Muted Slate
+   falls to 4.1:1 on that plane in dark, and cannot rise without losing its 3:1 step under the
+   caret row's words; so the meta of a lit row steps up to secondary and stays at AA. */
+.bg-row-active .text-muted,
+[aria-current="page"] .text-muted,
+[aria-current="true"] .text-muted {
+  color: var(--nt-text-secondary);
 }

@@ -19,31 +19,31 @@ export default {
   group: 'patterns',
   title: 'Banner',
   states: {
-    Attention: () => (
+    'Let op': () => (
       <Panel>
         <Banner tone="attention">Core start opnieuw</Banner>
       </Panel>
     ),
-    'Attention, busy': () => (
+    'Let op, bezig': () => (
       <Panel>
         <Banner tone="attention" busy>
           Core start opnieuw
         </Banner>
       </Panel>
     ),
-    'Attention, announced elsewhere': () => (
+    'Let op, elders aangekondigd': () => (
       <Panel>
         <Banner tone="attention" announce={false}>
           Core start opnieuw
         </Banner>
       </Panel>
     ),
-    Danger: () => (
+    Gevaar: () => (
       <Panel>
         <Banner tone="danger">Het commando is niet verstuurd</Banner>
       </Panel>
     ),
-    'Danger with an action': () => (
+    'Gevaar met een actie': () => (
       <Panel>
         <Banner
           tone="danger"
@@ -57,7 +57,7 @@ export default {
         </Banner>
       </Panel>
     ),
-    'A long message wraps to a second line': () => (
+    'Een lang bericht loopt door op een tweede regel': () => (
       <Panel>
         <Banner
           tone="danger"

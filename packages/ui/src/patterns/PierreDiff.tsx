@@ -1,8 +1,8 @@
 import {
-  DEFAULT_THEMES,
   getFiletypeFromFileName,
   getHighlighterIfLoaded,
   preloadHighlighter,
+  registerCustomCSSVariableTheme,
   type SupportedLanguages,
 } from '@pierre/diffs'
 import { File as LibraryFile, PatchDiff } from '@pierre/diffs/react'
@@ -63,6 +63,16 @@ const TIGHT_BOTTOM = '[data-code] { padding-bottom: 0; overflow-x: auto; scrollb
  */
 const DIFF_GROUND = ':host, pre { --diffs-bg: var(--nt-diff-bg) !important; }'
 
+/**
+ * The syntax colours are the app's own code tokens (`--nt-code-token-*`, held at AA on the canvas
+ * by `tokens.test.ts`), not the library's Pierre themes: those drew an orange, a green and a pink
+ * under 4,5:1 on white and a grey comment at 3:1 in dark. One theme of CSS variables serves both
+ * modes, since the tokens already differ per theme; `DIFF_STYLE` points its variables at ours.
+ */
+const CODE_THEME = 'orbit-code-tokens'
+const CODE_THEMES = { dark: CODE_THEME, light: CODE_THEME } as const
+registerCustomCSSVariableTheme(CODE_THEME, {})
+
 /** The selection of a `PierreDiff`, held by the caller so that it can clear it. */
 export interface DiffSelectionProps {
   value: DiffSelection | null
@@ -100,6 +110,25 @@ const DIFF_STYLE = {
   '--diffs-bg-addition-emphasis-override': 'rgb(from var(--nt-success) r g b / 0.10)',
   '--diffs-bg-deletion-override': 'rgb(from var(--nt-danger) r g b / 0.12)',
   '--diffs-bg-deletion-emphasis-override': 'rgb(from var(--nt-danger) r g b / 0.10)',
+  '--diffs-foreground': 'var(--nt-code-foreground)',
+  '--diffs-background': 'var(--nt-diff-bg)',
+  '--diffs-token-keyword': 'var(--nt-code-token-keyword)',
+  '--diffs-token-string': 'var(--nt-code-token-string)',
+  '--diffs-token-string-expression': 'var(--nt-code-token-string-expression)',
+  '--diffs-token-comment': 'var(--nt-code-token-comment)',
+  '--diffs-token-constant': 'var(--nt-code-token-constant)',
+  '--diffs-token-function': 'var(--nt-code-token-function)',
+  '--diffs-token-parameter': 'var(--nt-code-token-parameter)',
+  '--diffs-token-punctuation': 'var(--nt-code-token-punctuation)',
+  '--diffs-token-link': 'var(--nt-code-token-link)',
+  '--diffs-token-inserted': 'var(--nt-code-token-inserted)',
+  '--diffs-token-deleted': 'var(--nt-code-token-deleted)',
+  '--diffs-token-changed': 'var(--nt-code-token-changed)',
+  // The numbers beside the code are words too: muted, and on a changed line the code's own
+  // inserted and deleted colours, which hold AA on that line's tint.
+  '--diffs-fg-number-override': 'var(--nt-text-muted)',
+  '--diffs-fg-number-addition-override': 'var(--nt-code-token-inserted)',
+  '--diffs-fg-number-deletion-override': 'var(--nt-code-token-deleted)',
   '--diffs-font-family': 'var(--nt-font-mono)',
   // No file header is drawn, but the library still sets its host and its hunk separators
   // ("n unmodified lines") in this face.
@@ -192,6 +221,7 @@ export function PierreDiff({
   const options = useMemo(
     () => ({
       themeType: theme,
+      theme: CODE_THEMES,
       diffStyle: view.style === 'stacked' ? ('unified' as const) : ('split' as const),
       overflow: view.wordWrap ? ('wrap' as const) : ('scroll' as const),
       diffIndicators: 'classic' as const,
@@ -313,7 +343,7 @@ const ALIASES: Readonly<Record<string, string>> = {
 
 /** Whether the library's shared highlighter is loaded, with its themes and the language of `lang`. */
 function highlighterHas(lang: string): boolean {
-  return getHighlighterIfLoaded({ theme: DEFAULT_THEMES, lang }) !== undefined
+  return getHighlighterIfLoaded({ theme: CODE_THEMES, lang }) !== undefined
 }
 
 /**
@@ -344,7 +374,7 @@ function useHighlighterFor(path: string): boolean {
       if (live) setLoaded(lang)
     }
     preloadHighlighter({
-      themes: [DEFAULT_THEMES.dark, DEFAULT_THEMES.light],
+      themes: [CODE_THEME],
       langs: [lang],
       preferredHighlighter: 'shiki-js',
     }).then(settle, settle)
@@ -366,6 +396,10 @@ const FILE_STYLE = {
 } as CSSProperties
 
 /**
+ * The number of the marked line is set in the words' own secondary colour (the library's dimmed
+ * one fell to 2:1 on the marked line); the library declares it inside its shadow root, so only an
+ * `!important` there wins.
+ *
  * The file's code does not scroll on its own: the focusable group around it does, both ways, so
  * the keyboard reaches every overflow (axe: scrollable-region-focusable) and there is one
  * scrollbar, not one inside another.
@@ -374,7 +408,8 @@ const FILE_STYLE = {
  * containment clips whatever overflows — a long line was cut off at the edge of a narrow panel,
  * with nothing to scroll.
  */
-const FILE_CSS = '[data-code] { padding-bottom: 0; overflow: visible; contain: none; }'
+const FILE_CSS =
+  '[data-code] { padding-bottom: 0; overflow: visible; contain: none; } * { --diffs-selection-number-fg: var(--nt-text-secondary) !important; }'
 
 /**
  * `FILE_CSS` for a file whose long lines wrap: the code may not grow wider than the region, and
@@ -431,6 +466,7 @@ export function PierreFile({ text, path, line, wrap = false, autoFocus = false }
   const options = useMemo(
     () => ({
       themeType: theme,
+      theme: CODE_THEMES,
       overflow: wrap ? ('wrap' as const) : ('scroll' as const),
       preferredHighlighter: 'shiki-js' as const,
       disableFileHeader: true,

@@ -46,7 +46,7 @@ function CheckboxRow({
         checked={checked}
         onCheckedChange={onCheckedChange}
       />
-      <span id={labelId} className="text-fg">
+      <span id={labelId} className="text-[13px] text-fg">
         {label}
       </span>
     </div>
@@ -57,13 +57,15 @@ export default {
   group: 'primitives',
   title: 'Checkbox',
   states: {
-    Checked: () => <Checkbox label="Netwerktoegang" checked onCheckedChange={() => {}} />,
-    Unchecked: () => <Checkbox label="Netwerktoegang" checked={false} onCheckedChange={() => {}} />,
-    Disabled: () => (
+    Aangevinkt: () => <Checkbox label="Netwerktoegang" checked onCheckedChange={() => {}} />,
+    'Niet aangevinkt': () => (
+      <Checkbox label="Netwerktoegang" checked={false} onCheckedChange={() => {}} />
+    ),
+    Uitgeschakeld: () => (
       <Checkbox label="Netwerktoegang" checked={false} disabled onCheckedChange={() => {}} />
     ),
-    'In a list of options': () => <OptionList />,
-    Indeterminate: () => (
+    'In een lijst opties': () => <OptionList />,
+    Gedeeltelijk: () => (
       <Checkbox label="Alle rijen" checked="indeterminate" onCheckedChange={() => {}} />
     ),
   },

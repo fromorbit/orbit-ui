@@ -42,7 +42,7 @@ function Stage({ children }: { children: ReactNode }) {
 /** The plain case: a control, and a panel that is not up yet. */
 function Closed() {
   return (
-    <Popover trigger={<Button>Projects</Button>} label="Projects">
+    <Popover trigger={<Button>Projecten</Button>} label="Projecten">
       <Rows names={PROJECTS} />
     </Popover>
   )
@@ -61,8 +61,8 @@ function Open() {
   return (
     <Stage>
       <Popover
-        trigger={<Button>Projects</Button>}
-        label="Projects"
+        trigger={<Button>Projecten</Button>}
+        label="Projecten"
         open={open}
         onOpenChange={setOpen}
       >
@@ -135,9 +135,9 @@ export default {
   group: 'overlays',
   title: 'Popover',
   states: {
-    Closed,
-    Open,
-    'A long list scrolls inside the panel': LongList,
-    'Inside a field that also listens to Escape': BesideAField,
+    Dicht: Closed,
+    Open: Open,
+    'Een lange lijst scrolt in het paneel': LongList,
+    'In een veld dat ook naar Escape luistert': BesideAField,
   },
 } satisfies Story

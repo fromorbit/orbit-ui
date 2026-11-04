@@ -72,7 +72,7 @@ export default {
   group: 'patterns',
   title: 'Chart',
   states: {
-    'Stacked bars: builds per day, failures on top': () => (
+    'Gestapelde staven: builds per dag, mislukte bovenop': () => (
       <div className="w-full max-w-3xl">
         <Chart
           label="Builds per dag"
@@ -85,7 +85,7 @@ export default {
         />
       </div>
     ),
-    'Many bars: a month, a label every few and the last': () => (
+    'Veel staven: een maand, om de paar een label en de laatste': () => (
       <div className="w-full max-w-3xl">
         <Chart
           label="Builds per dag in oktober"
@@ -98,7 +98,7 @@ export default {
         />
       </div>
     ),
-    'Line against a plan: the limit drawn, the rest of the month a forecast': () => (
+    'Lijn tegen een plan: de grens getekend, de rest van de maand een verwachting': () => (
       <div className="w-full max-w-3xl">
         <Chart
           kind="line"
@@ -122,7 +122,7 @@ export default {
         />
       </div>
     ),
-    'One line: no legend, the title names it': () => (
+    'Eén lijn: geen legenda, de titel noemt hem': () => (
       <div className="flex w-full max-w-3xl flex-col gap-3">
         <p className="m-0 font-medium text-[13px] text-fg">Gemiddelde bouwtijd per dag</p>
         <Chart
@@ -141,7 +141,7 @@ export default {
         />
       </div>
     ),
-    'Sparkline in a StatTile': () => (
+    'Sparkline in een StatTile': () => (
       <div className="grid w-full max-w-3xl grid-cols-2 gap-3">
         <StatTile
           label="Builds"
@@ -174,12 +174,12 @@ export default {
         </StatTile>
       </div>
     ),
-    'Loading: soft shapes, the figure busy': () => (
+    'Laden: zachte vormen, de figuur bezig': () => (
       <div className="w-full max-w-3xl">
         <Chart label="Builds per dag" series={BUILDS} points={[]} loading="Builds laden" />
       </div>
     ),
-    'Empty: the grid, one sentence and the next step': () => (
+    'Leeg: het raster, één zin en de volgende stap': () => (
       <div className="w-full max-w-3xl">
         <Chart
           label="Builds per dag"
@@ -195,7 +195,7 @@ export default {
         />
       </div>
     ),
-    'Narrow: 320px, a month of bars': () => (
+    'Smal: 320px, een maand aan staven': () => (
       <div className="w-full max-w-[288px]">
         <Chart
           label="Builds per dag in oktober"
@@ -208,7 +208,7 @@ export default {
         />
       </div>
     ),
-    'One point: a single bar and a single dot': () => (
+    'Eén punt: één staaf en één stip': () => (
       <div className="grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
         <Chart
           label="Builds vandaag"
@@ -230,7 +230,7 @@ export default {
         />
       </div>
     ),
-    'Long labels: a bar per space, the names cut to their room': () => (
+    'Lange labels: een staaf per space, de namen ingekort': () => (
       <div className="flex w-full max-w-3xl flex-col gap-8">
         <Chart
           label="Builds per space, deze week"

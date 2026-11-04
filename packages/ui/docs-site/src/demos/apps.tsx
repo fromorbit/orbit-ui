@@ -5,7 +5,6 @@ import {
   type DataTableColumn,
   DropdownMenu,
   EmptyState,
-  Icon,
   IconButton,
   Input,
   PageHeader,
@@ -26,7 +25,7 @@ type Filter = 'all' | 'running' | 'fault' | 'stopped'
 const FILTERS = [
   { value: 'all', label: 'Alle' },
   { value: 'running', label: 'Draait' },
-  { value: 'fault', label: 'Fout' },
+  { value: 'fault', label: 'Start niet' },
   { value: 'stopped', label: 'Gestopt' },
 ] as const
 
@@ -192,7 +191,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
   {
     id: 'stack',
     header: 'Stack',
-    hideBelow: 'xl',
+    hideBelow: 'lg',
     cell: (space) => (
       <span className="flex flex-wrap gap-1">
         {space.stack.map((part) => (
@@ -223,7 +222,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
 
 /** The spaces as a table: sortable, rows to select, and narrow every row a card. */
 function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
-  const [picked, setPicked] = useState<readonly string[]>(['s2'])
+  const [picked, setPicked] = useState<readonly string[]>([])
   return (
     <div className="overflow-hidden rounded-lg bg-overlay">
       <DataTable
@@ -245,8 +244,9 @@ function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
               <SpaceName space={space} />
               <span className="truncate font-mono text-[11px] text-muted">{space.host}</span>
               <span className="text-[12px] text-secondary">
-                {space.status} ·{' '}
-                <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
+                {space.status} · deploy{' '}
+                <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />{' '}
+                geleden
               </span>
             </div>
             <RowMenu space={space} />
@@ -289,13 +289,17 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <PageHeader
             title="Apps"
-            meta={empty ? 'Zilverberg · nog geen apps' : 'Zilverberg · 4 apps · 12 spaces'}
-            actions={
-              // Empty, the action of the empty state is the one filled button.
-              <Button variant={empty ? 'secondary' : 'primary'} size="sm">
-                Nieuwe space
-              </Button>
-            }
+            meta={empty ? 'Zilverberg · nog geen spaces' : 'Zilverberg · 4 apps · 12 spaces'}
+            // Empty, the empty state's own "Repository koppelen" is the one next step.
+            {...(empty
+              ? {}
+              : {
+                  actions: (
+                    <Button variant="primary" size="sm">
+                      Nieuwe space
+                    </Button>
+                  ),
+                })}
           />
           {empty ? (
             <div className="flex min-h-96 items-center justify-center rounded-lg bg-overlay p-6">

@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'Separator',
   states: {
-    Horizontal: () => (
+    Horizontaal: () => (
       <div className="w-64">
         <p className="m-0 text-[13px] text-fg">Above</p>
         <div className="my-2">
@@ -14,7 +14,7 @@ export default {
         <p className="m-0 text-[13px] text-fg">Below</p>
       </div>
     ),
-    Vertical: () => (
+    Verticaal: () => (
       <div className="flex h-8 items-center gap-2">
         <p className="m-0 text-[13px] text-fg">Left</p>
         <Separator orientation="vertical" />

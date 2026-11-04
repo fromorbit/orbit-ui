@@ -47,7 +47,7 @@ function SendImage({ host }: { host: FakeHost }) {
     host.surfaces.emit({ type: 'frozen', id: 'tab_galerij_bevroren', seq: 1, image: PAGE })
   }, [host])
   return (
-    <div className="flex h-[240px] w-[400px] border border-border">
+    <div className="flex h-[240px] w-full max-w-[400px] border border-border">
       <HostedSurface id="tab_galerij_bevroren" />
     </div>
   )
@@ -177,7 +177,7 @@ export default {
   group: 'patterns',
   title: 'HostedSurface',
   states: {
-    Frozen,
-    'In a column': InAColumn,
+    Bevroren: Frozen,
+    'In een kolom': InAColumn,
   },
 } satisfies Story

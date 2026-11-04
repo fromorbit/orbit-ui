@@ -270,6 +270,29 @@ describe.each(palettes)('the %s palette', (_name, palette) => {
     },
   )
 
+  test('--nt-text-secondary, the meta of a lit row, reaches AA on it, on the canvas and on a card', () => {
+    // Muted stays 3:1 under the caret row's words, so a lit row lifts its meta to secondary.
+    for (const ground of ['--nt-canvas', '--nt-overlay-background']) {
+      const row = composite(palette.get('--nt-row-active') ?? '', hexIn(palette, ground))
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text-secondary'), row),
+        ground,
+      ).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  test('--nt-control-border parts an empty box from the canvas, the frame and a card (≥ 3)', () => {
+    for (const ground of ['--nt-canvas', '--nt-frame', '--nt-overlay-background']) {
+      const edge = composite(palette.get('--nt-control-border') ?? '', hexIn(palette, ground))
+      expect(contrastRatio(edge, hexIn(palette, ground)), ground).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  test('--nt-text on a success tag reaches AA (≥ 4.5)', () => {
+    const plane = composite(palette.get('--nt-success-subtle') ?? '', hexIn(palette, '--nt-canvas'))
+    expect(contrastRatio(hexIn(palette, '--nt-text'), plane)).toBeGreaterThanOrEqual(4.5)
+  })
+
   test('--nt-text-muted on a card or menu reaches AA (≥ 4.5)', () => {
     expect(
       contrastRatio(hexIn(palette, '--nt-text-muted'), hexIn(palette, '--nt-overlay-background')),

@@ -36,8 +36,8 @@ export default {
   group: 'patterns',
   title: 'Pagination',
   states: {
-    'First page': () => <Pages initial={1} total={128} />,
-    'In the middle of many': () => <Pages initial={12} total={600} />,
-    'One page': () => <Pages initial={1} total={8} />,
+    'Eerste pagina': () => <Pages initial={1} total={128} />,
+    'Midden in vele': () => <Pages initial={12} total={600} />,
+    'Eén pagina': () => <Pages initial={1} total={8} />,
   },
 } satisfies Story

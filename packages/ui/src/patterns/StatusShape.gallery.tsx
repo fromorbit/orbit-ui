@@ -5,14 +5,14 @@ import type { RunStatusKind } from './status-kind'
 
 /** Every kind with the word it stands for; a chat that never started keeps an empty slot. */
 const kinds: [RunStatusKind | null, string][] = [
-  ['running', 'Running'],
-  ['attention', 'Waiting for you'],
-  ['failed', 'Failed'],
-  ['interrupted', 'Interrupted'],
-  ['queued', 'Queued'],
-  ['done', 'Done'],
-  ['closed', 'Closed (after a restart)'],
-  [null, 'Never started'],
+  ['running', 'Loopt'],
+  ['attention', 'Wacht op jou'],
+  ['failed', 'Mislukt'],
+  ['interrupted', 'Onderbroken'],
+  ['queued', 'In de wachtrij'],
+  ['done', 'Klaar'],
+  ['closed', 'Gesloten (na een herstart)'],
+  [null, 'Nooit gestart'],
 ]
 
 /** Every kind beside its word, plain and — beside it — with a message standing ready. */
@@ -34,8 +34,8 @@ export default {
   group: 'patterns',
   title: 'StatusShape',
   states: {
-    'Every kind beside its word, plain and dotted': () => <Kinds />,
-    'Enlarged four times, to judge the drawing': () => (
+    'Elke soort naast zijn woord, vol en gestippeld': () => <Kinds />,
+    'Vier keer vergroot, om de tekening te beoordelen': () => (
       // Scaled by a wrapper rather than drawn larger: what shows here is what
       // the sidebar renders, magnified. The top row plain, the bottom row dotted.
       <div className="flex flex-col gap-6">
@@ -54,7 +54,7 @@ export default {
     ),
     // With `label` a shape is named by its status word and shows it as a tooltip on hover;
     // the drawing is the same. Waiting for you is an amber outline, only failed is filled.
-    'Named by its status word, for a tooltip': () => (
+    'Genoemd naar zijn statuswoord, voor een tooltip': () => (
       <TooltipProvider>
         <div className="flex items-center gap-3">
           {kinds

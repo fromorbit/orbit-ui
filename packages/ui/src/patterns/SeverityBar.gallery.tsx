@@ -6,7 +6,7 @@ export default {
   group: 'patterns',
   title: 'SeverityBar',
   states: {
-    'Findings of a review': () => (
+    'Bevindingen van een review': () => (
       <div className="w-full max-w-96">
         <SeverityBar
           label="Bevindingen naar ernst"
@@ -15,7 +15,7 @@ export default {
         />
       </div>
     ),
-    'Many findings: four-digit counts': () => (
+    'Veel bevindingen: aantallen van vier cijfers': () => (
       <div className="w-full max-w-96">
         <SeverityBar
           label="Bevindingen naar ernst"
@@ -24,7 +24,7 @@ export default {
         />
       </div>
     ),
-    'Narrow: 320px, the legend wraps': () => (
+    'Smal: 320px, de legenda loopt door': () => (
       <div className="w-full max-w-[288px]">
         <SeverityBar
           label="Bevindingen naar ernst"
@@ -33,12 +33,12 @@ export default {
         />
       </div>
     ),
-    'Only remarks: no bar': () => (
+    'Alleen opmerkingen: geen balk': () => (
       <div className="w-full max-w-96">
         <SeverityBar label="Bevindingen naar ernst" counts={{ note: 3 }} labels={nl.severity} />
       </div>
     ),
-    'Nothing found': () => (
+    'Niets gevonden': () => (
       <div className="w-full max-w-96">
         <SeverityBar label="Bevindingen naar ernst" counts={{}} labels={nl.severity} />
       </div>

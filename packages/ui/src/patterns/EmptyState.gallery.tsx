@@ -6,12 +6,12 @@ export default {
   group: 'patterns',
   title: 'EmptyState',
   states: {
-    'Title only': () => <EmptyState icon="message-circle" title="Nog geen gesprekken" />,
+    'Alleen een titel': () => <EmptyState icon="message-circle" title="Nog geen gesprekken" />,
     // The form a whole panel uses: the same drawing, with the title as the document's heading.
-    'As the heading of a panel': () => (
+    'Als kop van een paneel': () => (
       <EmptyState icon="message-circle" title="Waar wil je aan werken?" titleAs="h1" />
     ),
-    'With an action': () => (
+    'Met een actie': () => (
       <EmptyState
         icon="message-circle"
         title="Nog geen gesprekken"
@@ -23,7 +23,7 @@ export default {
         }
       />
     ),
-    'Nothing found': () => (
+    'Niets gevonden': () => (
       <EmptyState
         icon="search"
         title="Niets gevonden"

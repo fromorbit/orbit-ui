@@ -13,6 +13,7 @@ function goTo(hash: string): void {
 }
 
 afterEach(() => {
+  localStorage.clear()
   history.replaceState(null, '', '#')
   document.documentElement.removeAttribute('data-theme')
   document.documentElement.removeAttribute('data-product')
@@ -40,7 +41,7 @@ describe('the docs page', () => {
     goTo('#/primitives-button')
     render(<DocsPage stories={stories} />)
     expect(screen.getByRole('heading', { level: 1, name: 'Button' })).toBeInTheDocument()
-    expect(screen.getByText('Variants')).toBeInTheDocument()
+    expect(screen.getByText('Varianten')).toBeInTheDocument()
   })
 
   test('follows a change of the hash', () => {
@@ -67,6 +68,21 @@ describe('the docs page', () => {
     expect(document.documentElement.dataset.theme).toBe('dark')
     await userEvent.click(screen.getByRole('radio', { name: 'Licht' }))
     expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  test('keeps the chosen theme for the next visit', async () => {
+    const { unmount } = render(<DocsPage stories={stories} />)
+    await userEvent.click(screen.getByRole('radio', { name: 'Licht' }))
+    unmount()
+    document.documentElement.removeAttribute('data-theme')
+    render(<DocsPage stories={stories} />)
+    expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  test('names the groups of the catalogue in Dutch above a story', () => {
+    goTo('#/primitives-button')
+    render(<DocsPage stories={stories} />)
+    expect(screen.getAllByText('Bouwstenen').length).toBeGreaterThan(0)
   })
 
   test('switches the satellite between the products of the family', async () => {

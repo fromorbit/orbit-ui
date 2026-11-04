@@ -52,13 +52,13 @@ export default {
   group: 'patterns',
   title: 'FileDrop',
   states: {
-    Empty: () => (
+    Leeg: () => (
       <div className="w-full max-w-96">
         <FileDrop labels={LABELS} onFiles={() => {}} />
       </div>
     ),
-    'With uploads': () => <Uploads />,
-    'With an error': () => (
+    'Met uploads': () => <Uploads />,
+    'Met een fout': () => (
       <div className="w-full max-w-96">
         <FileDrop
           labels={LABELS}
@@ -67,7 +67,7 @@ export default {
         />
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <div className="w-full max-w-96">
         <FileDrop labels={LABELS} onFiles={() => {}} disabled />
       </div>

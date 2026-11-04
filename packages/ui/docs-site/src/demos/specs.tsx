@@ -3,6 +3,7 @@ import {
   Avatar,
   Button,
   DatePicker,
+  DropdownMenu,
   Icon,
   IconButton,
   Input,
@@ -13,11 +14,11 @@ import {
   ProgressMeter,
   PropertyList,
   Prose,
-  type RunStatusKind,
   ScrollArea,
   SegmentedControl,
   StackedRowBranch,
   StatusMark,
+  type StatusMarkKind,
   Tag,
   Textarea,
   Timeline,
@@ -31,12 +32,12 @@ import { AppFrame, ME } from './parts/AppFrame'
 type State = 'review' | 'building' | 'approved' | 'draft' | 'done'
 
 /** The words and the status shape of every state. */
-const STATES: Record<State, { label: string; kind: RunStatusKind }> = {
-  review: { label: 'Wacht op review', kind: 'attention' },
-  building: { label: 'In uitvoering', kind: 'running' },
-  approved: { label: 'Goedgekeurd', kind: 'queued' },
-  draft: { label: 'Concept', kind: 'queued' },
-  done: { label: 'Klaar', kind: 'done' },
+const STATES: Record<State, { label: string; mark: StatusMarkKind }> = {
+  review: { label: 'Wacht op akkoord', mark: 'blocked' },
+  building: { label: 'In uitvoering', mark: 'running' },
+  approved: { label: 'Goedgekeurd', mark: 'stopped' },
+  draft: { label: 'Concept', mark: 'stopped' },
+  done: { label: 'Klaar', mark: 'stopped' },
 }
 
 /** One spec of the made-up web shop. */
@@ -156,11 +157,11 @@ const SPECS: Spec[] = [
   },
 ]
 
-/** The groups of the list per view: "Voor jou" holds what waits for you and what you own. */
+/** The groups of the list per view: "Voor jou" holds what waits for your approval and what you own. */
 type View = 'mine' | 'open'
 
 const GROUPS: { heading: string; states: State[] }[] = [
-  { heading: 'Wacht op review', states: ['review'] },
+  { heading: 'Wacht op akkoord', states: ['review'] },
   { heading: 'In uitvoering', states: ['building'] },
   { heading: 'Gepland', states: ['approved', 'draft'] },
   { heading: 'Klaar', states: ['done'] },
@@ -173,12 +174,14 @@ const ACTIVITY = [
   { icon: 'user', text: `Review gevraagd aan ${ME}`, when: '5 u' },
 ] as const
 
-/** The status mark of a row: the glowing circle only while an agent works, the shape otherwise. */
+/**
+ * The status mark of a row: one `StatusMark` for every state, flat with a soft glow at one size,
+ * the amber diamond for what waits on an approval, the circle while an agent builds, the quiet
+ * square for the rest; the word beside it says which.
+ */
 function rowStatus(spec: Spec) {
   const state = STATES[spec.state]
-  return spec.state === 'building'
-    ? { marker: <StatusMark kind="running" size="sm" />, status: state.label }
-    : { kind: state.kind, status: state.label }
+  return { marker: <StatusMark kind={state.mark} />, status: state.label }
 }
 
 /** The detail of one spec beside the list: the gate, what it says, and what happened on it. */
@@ -216,16 +219,20 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 Deze spec wacht op jouw akkoord. Na goedkeuren kan een agent hem uitvoeren op een
                 eigen branch.
               </p>
-              <div className="flex flex-wrap gap-2">
+              {/* One next step; approving without running and a remark wait behind the menu. */}
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Button variant="primary" size="sm">
                   Goedkeuren en uitvoeren
                 </Button>
-                <Button variant="secondary" size="sm">
-                  Goedkeuren
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Opmerking
-                </Button>
+                <DropdownMenu
+                  trigger={<IconButton icon="more-horizontal" size="sm" label="Meer keuzes" />}
+                  label="Meer keuzes"
+                  align="start"
+                  items={[
+                    { id: 'approve', label: 'Alleen goedkeuren', icon: 'check' },
+                    { id: 'remark', label: 'Opmerking plaatsen', icon: 'message-square' },
+                  ]}
+                />
               </div>
             </div>
           ) : null}
@@ -251,7 +258,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                   ),
                 },
                 {
-                  label: 'Klaar als',
+                  label: 'Criteria',
                   value: (
                     <ProgressMeter
                       value={met}
@@ -333,16 +340,11 @@ function Specs(): ReactNode {
   const [view, setView] = useState<View>('mine')
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const shown = SPECS.filter((spec) =>
-    view === 'open'
-      ? spec.state !== 'done'
-      : spec.owner === ME ||
-        spec.reviewer === ME ||
-        spec.state === 'building' ||
-        spec.state === 'done',
+    view === 'open' ? spec.state !== 'done' : spec.owner === ME || spec.reviewer === ME,
   )
   const spec = SPECS.find((entry) => entry.id === chosen)
   return (
-    <AppFrame product="orbit" current="taken">
+    <AppFrame product="orbit" current="specs">
       <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
         <h1 className="m-0 font-medium text-[13px] text-fg">Specs</h1>
         <SegmentedControl<View>
@@ -357,7 +359,7 @@ function Specs(): ReactNode {
         />
         <div className="flex-1" />
         <div className="hidden w-52 @3xl:block">
-          <Input label="Zoek specs" placeholder="Zoek…" icon="search" size="sm" />
+          <Input label="Zoek een spec" placeholder="Zoek een spec…" icon="search" size="sm" />
         </div>
         <Button variant="secondary" size="sm">
           Nieuwe spec
@@ -376,7 +378,7 @@ function Specs(): ReactNode {
                       key={group.heading}
                       heading={group.heading}
                       count={rows.length}
-                      label={`${group.heading}, ${rows.length} specs`}
+                      label={`${group.heading}, ${rows.length === 1 ? '1 spec' : `${rows.length} specs`}`}
                       open={open[group.heading] ?? true}
                       onOpenChange={(next) => setOpen((now) => ({ ...now, [group.heading]: next }))}
                     >
@@ -424,7 +426,7 @@ function Specs(): ReactNode {
 export default {
   title: 'Specs',
   description:
-    'De specs van Orbit: bovenaan wat op jouw review wacht, dan wat een agent nu bouwt en wat gepland is. Naast de lijst de gekozen spec met zijn akkoord, criteria en activiteit.',
+    'De specs van Orbit: bovenaan wat op jouw akkoord wacht, dan wat een agent nu bouwt en wat gepland is. Naast de lijst de gekozen spec met zijn akkoord, criteria en activiteit.',
   icon: 'clipboard-list',
   product: 'orbit',
   Screen: Specs,

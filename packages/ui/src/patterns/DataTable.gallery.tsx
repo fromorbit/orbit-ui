@@ -132,8 +132,8 @@ export default {
   group: 'patterns',
   title: 'DataTable',
   states: {
-    'Sorted, one row selected, with pages': () => <Spaces />,
-    Loading: () => (
+    "Gesorteerd, één rij gekozen, met pagina's": () => <Spaces />,
+    Laden: () => (
       <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-surface">
         <DataTable
           label="Spaces"
@@ -145,7 +145,7 @@ export default {
         />
       </div>
     ),
-    Empty: () => (
+    Leeg: () => (
       <div className="w-full max-w-[48rem] overflow-hidden rounded-lg bg-surface">
         <DataTable
           label="Spaces"

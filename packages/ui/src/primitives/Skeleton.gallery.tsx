@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'Skeleton',
   states: {
-    Widths: () => (
+    Breedtes: () => (
       <div className="flex flex-col gap-2">
         <Skeleton width="sm" />
         <Skeleton width="md" />
@@ -13,13 +13,13 @@ export default {
         <Skeleton width="full" />
       </div>
     ),
-    'Row of lines': () => (
+    'Rij regels': () => (
       <div className="flex flex-col gap-2">
         <Skeleton width="full" />
         <Skeleton width="full" />
         <Skeleton width="lg" />
       </div>
     ),
-    Circle: () => <Skeleton width="sm" shape="circle" />,
+    Cirkel: () => <Skeleton width="sm" shape="circle" />,
   },
 } satisfies Story

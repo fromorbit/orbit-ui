@@ -7,7 +7,13 @@ import { nl } from '../testing/labels'
 import { SettingRow, type SettingRowProps } from './SettingRow'
 
 /** The card a row stands in on the screen, at the width of the settings column. */
-function Card({ width = 'w-[560px]', children }: { width?: string; children: ReactNode }) {
+function Card({
+  width = 'w-full max-w-[560px]',
+  children,
+}: {
+  width?: string
+  children: ReactNode
+}) {
   return (
     <TooltipProvider>
       <div className={`${width} rounded-lg bg-surface`}>{children}</div>
@@ -65,22 +71,22 @@ export default {
   group: 'patterns',
   title: 'SettingRow',
   states: {
-    Plain: () => (
+    Eenvoudig: () => (
       <Card>
         <SwitchRow />
       </Card>
     ),
-    'With a description': () => (
+    'Met een beschrijving': () => (
       <Card>
         <ChoiceRow description="De standaard voor een nieuw gesprek" />
       </Card>
     ),
-    'With a hint, no description': () => (
+    'Met een hint, zonder beschrijving': () => (
       <Card>
         <SwitchRow hint="Geldt voor elke host die een gesprek opent" />
       </Card>
     ),
-    'Modified: reset offered': () => (
+    'Gewijzigd: herstellen aangeboden': () => (
       <Card>
         <ChoiceRow
           description="De standaard voor een nieuw gesprek"
@@ -90,12 +96,12 @@ export default {
         />
       </Card>
     ),
-    'Project follows app': () => (
+    'Project volgt de app': () => (
       <Card>
         <SwitchRow source="app" description="De standaard voor een nieuw gesprek" />
       </Card>
     ),
-    'Project has its own value': () => (
+    'Project heeft een eigen waarde': () => (
       <Card>
         <SwitchRow
           source="project"
@@ -105,7 +111,7 @@ export default {
         />
       </Card>
     ),
-    'App: a project differs': () => (
+    'App: een project wijkt af': () => (
       <Card>
         <SwitchRow
           differs="Anders in webwinkel"
@@ -113,17 +119,17 @@ export default {
         />
       </Card>
     ),
-    'Signs and tags': () => (
+    'Tekens en tags': () => (
       <Card>
         <SwitchRow label="Doorschijnend venster" restart scopes={['project', 'chat']} />
       </Card>
     ),
-    Dimmed: () => (
+    Gedimd: () => (
       <Card>
         <SwitchRow label="Model kiezen" dimmed="Stel eerst een API-sleutel in" />
       </Card>
     ),
-    Error: () => (
+    Fout: () => (
       <Card>
         <ChoiceRow
           description="De standaard voor een nieuw gesprek"
@@ -131,7 +137,7 @@ export default {
         />
       </Card>
     ),
-    'Narrow: the control moves under the label': () => (
+    'Smal: de bediening gaat onder het label': () => (
       <Card width="w-full max-w-[400px]">
         <ChoiceRow
           description="De standaard voor een nieuw gesprek"
@@ -140,7 +146,7 @@ export default {
         />
       </Card>
     ),
-    'A group of rows': () => (
+    'Een groep rijen': () => (
       <Card>
         <div className="divide-y divide-border">
           <ChoiceRow description="De standaard voor een nieuw gesprek" />

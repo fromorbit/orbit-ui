@@ -10,7 +10,7 @@ const ORDER = [
   'dashboard',
   'apps',
   'inloggen',
-  'taken',
+  'specs',
   'branches',
   'gebruik',
   'instellingen',

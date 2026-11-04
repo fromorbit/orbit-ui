@@ -72,11 +72,11 @@ function Dangerous() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Chat verwijderen</Button>
+      <Button onClick={() => setOpen(true)}>Gesprek verwijderen</Button>
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}
-        title="Chat verwijderen"
+        title="Gesprek verwijderen"
         body="Dit kan niet ongedaan worden gemaakt."
         confirmLabel="Verwijderen"
         cancelLabel="Annuleren"
@@ -90,5 +90,5 @@ function Dangerous() {
 export default {
   group: 'overlays',
   title: 'ConfirmDialog',
-  states: { Closed, Open, Dangerous },
+  states: { Dicht: Closed, Open: Open, Onomkeerbaar: Dangerous },
 } satisfies Story

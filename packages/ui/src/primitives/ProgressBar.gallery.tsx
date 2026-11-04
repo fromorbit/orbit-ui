@@ -5,17 +5,17 @@ export default {
   group: 'primitives',
   title: 'ProgressBar',
   states: {
-    'Under way': () => (
+    Onderweg: () => (
       <div className="w-full max-w-72">
         <ProgressBar label="Uploaden" value={64} />
       </div>
     ),
-    Indeterminate: () => (
+    Gedeeltelijk: () => (
       <div className="w-full max-w-72">
         <ProgressBar label="Image bouwen" />
       </div>
     ),
-    Done: () => (
+    Klaar: () => (
       <div className="w-full max-w-72">
         <ProgressBar label="Kopiëren" value={100} />
       </div>

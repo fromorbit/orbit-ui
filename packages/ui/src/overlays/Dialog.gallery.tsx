@@ -81,5 +81,5 @@ function Long() {
 export default {
   group: 'overlays',
   title: 'Dialog',
-  states: { Open, Long },
+  states: { Open: Open, 'Lange inhoud': Long },
 } satisfies Story

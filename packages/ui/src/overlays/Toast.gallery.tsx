@@ -12,12 +12,12 @@ import { Toast, ToastProvider } from './Toast'
  * the reference. The box hands itself to the layer as portal container, and `transform-gpu` makes
  * it the containing block the fixed viewport inside it positions against.
  */
-function Stage({ children }: { children: ReactNode }) {
+function Stage({ children, tall = false }: { children: ReactNode; tall?: boolean }) {
   const [box, setBox] = useState<HTMLElement | null>(null)
   return (
     <div
       ref={setBox}
-      className="relative h-52 w-full max-w-96 transform-gpu overflow-hidden rounded-md border border-border bg-bg"
+      className={`relative ${tall ? 'h-72' : 'h-52'} w-full max-w-96 transform-gpu overflow-hidden rounded-md border border-border bg-bg`}
     >
       <PortalContainerProvider container={box}>{children}</PortalContainerProvider>
     </div>
@@ -28,7 +28,7 @@ export default {
   group: 'overlays',
   title: 'Toast',
   states: {
-    One: () => (
+    Eén: () => (
       <Stage>
         <ToastProvider label="Meldingen van het eerste verhaal">
           <Toast
@@ -40,11 +40,11 @@ export default {
         </ToastProvider>
       </Stage>
     ),
-    'With an action': () => (
+    'Met een actie': () => (
       <Stage>
         <ToastProvider label="Meldingen met een actie">
           <Toast
-            title="Chat gearchiveerd"
+            title="Gesprek gearchiveerd"
             action={{ label: 'Ongedaan maken', onClick: () => {} }}
             duration={Number.POSITIVE_INFINITY}
             onOpenChange={() => {}}
@@ -52,28 +52,29 @@ export default {
         </ToastProvider>
       </Stage>
     ),
-    'Three stacked': () => (
-      <Stage>
+    'Drie gestapeld': () => (
+      // Taller than the rest: three toasts, each of which may take two lines on a phone.
+      <Stage tall>
         <ToastProvider label="Meldingen die op elkaar staan">
           <Toast
-            title="Chat A wacht op een antwoord"
+            title="Gesprek A wacht op een antwoord"
             duration={Number.POSITIVE_INFINITY}
             onOpenChange={() => {}}
           />
           <Toast
-            title="Chat B wacht op een antwoord"
+            title="Gesprek B wacht op een antwoord"
             duration={Number.POSITIVE_INFINITY}
             onOpenChange={() => {}}
           />
           <Toast
-            title="Chat C wacht op een antwoord"
+            title="Gesprek C wacht op een antwoord"
             duration={Number.POSITIVE_INFINITY}
             onOpenChange={() => {}}
           />
         </ToastProvider>
       </Stage>
     ),
-    'A long title that wraps': () => (
+    'Een lange titel die doorloopt': () => (
       <Stage>
         <ToastProvider label="Meldingen met een lange titel">
           <Toast

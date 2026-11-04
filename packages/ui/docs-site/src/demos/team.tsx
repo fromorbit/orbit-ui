@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   Avatar,
-  AvatarGroup,
   Button,
   Checkbox,
   Chip,
@@ -15,6 +14,7 @@ import {
   PageHeader,
   RelativeTime,
   ScrollArea,
+  SegmentedControl,
   Select,
   Tag,
   Textarea,
@@ -61,7 +61,7 @@ const MEMBERS: Member[] = [
 const RIGHTS = [
   'Agents laten werken',
   'Specs goedkeuren',
-  'Overnemen in main',
+  'Samenvoegen in main',
   'Reviews plaatsen',
   'Leden uitnodigen',
   'Plan wijzigen',
@@ -251,13 +251,65 @@ function Permissions({
     ),
   ]
   return (
-    <DataTable
-      label="Rechten per rol"
-      columns={columns}
-      rows={RIGHT_ROWS}
-      rowKey={(row) => row.right}
-      labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
-    />
+    <>
+      {/* A phone has no room for four columns of boxes: one role at a time, its rights a list. */}
+      <div className="@xl:hidden">
+        <RoleRights matrix={matrix} onChange={onChange} />
+      </div>
+      <div className="hidden @xl:block">
+        <DataTable
+          label="Rechten per rol"
+          columns={columns}
+          rows={RIGHT_ROWS}
+          rowKey={(row) => row.right}
+          labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
+        />
+      </div>
+    </>
+  )
+}
+
+const ROLE_OPTIONS = [{ value: 'owner', label: 'Eigenaar' }, ...ROLES] as const
+
+/** The rights of one role, picked with a segmented control: the narrow form of the matrix. */
+function RoleRights({
+  matrix,
+  onChange,
+}: {
+  matrix: Record<Assignable, boolean[]>
+  onChange(role: Assignable, index: number, on: boolean): void
+}): ReactNode {
+  const [role, setRole] = useState<Role>('member')
+  return (
+    <div className="flex flex-col gap-2 px-4 pb-3">
+      <div className="*:w-full">
+        <SegmentedControl<Role>
+          label="Rol"
+          size="sm"
+          value={role}
+          options={ROLE_OPTIONS}
+          onValueChange={setRole}
+        />
+      </div>
+      <ul className="m-0 list-none p-0">
+        {RIGHTS.map((right, index) => (
+          <li
+            key={right}
+            className="flex min-h-10 items-center justify-between gap-3 border-border border-t first:border-t-0"
+          >
+            <span className="text-[13px] text-secondary">{right}</span>
+            <Checkbox
+              label={`${ROLE_LABEL[role]}: ${right}`}
+              checked={role === 'owner' ? true : (matrix[role][index] ?? false)}
+              disabled={role === 'owner'}
+              onCheckedChange={(on) => {
+                if (role !== 'owner') onChange(role, index, on)
+              }}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
@@ -276,11 +328,15 @@ function MemberRow({
         <span className="truncate text-[13px] text-fg">{member.name}</span>
         <span className="truncate text-[12px] text-muted">{member.email}</span>
       </div>
-      <span className="hidden w-24 shrink-0 text-[12px] text-muted @2xl:block">
+      <span className="hidden w-36 shrink-0 text-[12px] text-muted @2xl:block">
         {member.seen === 0 ? (
           'Nu actief'
         ) : (
-          <RelativeTime labels={galleryLabels.time} at={NOW - member.seen} now={NOW} />
+          <>
+            {'Actief '}
+            <RelativeTime labels={galleryLabels.time} at={NOW - member.seen} now={NOW} />
+            {' geleden'}
+          </>
         )}
       </span>
       <div className="flex shrink-0 justify-end @2xl:w-28">
@@ -347,17 +403,9 @@ function Team({ variant }: DemoScreenProps): ReactNode {
             title="Team"
             meta={`${members.length} leden · ${invited.length === 1 ? '1 uitnodiging' : `${invited.length} uitnodigingen`} open`}
             actions={
-              <>
-                <span className="hidden @xl:inline-flex">
-                  <AvatarGroup
-                    names={members.map((member) => member.name)}
-                    label={`${members.length} leden`}
-                  />
-                </span>
-                <Button variant="primary" size="sm" onClick={() => setInviting(true)}>
-                  Uitnodigen
-                </Button>
-              </>
+              <Button variant="primary" size="sm" onClick={() => setInviting(true)}>
+                Uitnodigen
+              </Button>
             }
           />
           <div className="grid grid-cols-1 items-start gap-5 @6xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
@@ -413,18 +461,49 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                           />
                         </span>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        Opnieuw sturen
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setInvited((now) => now.filter((entry) => entry.email !== invite.email))
-                        }
-                      >
-                        Intrekken
-                      </Button>
+                      {/* Beside the address where there is room; behind ⋯ on a phone, so the
+                          address itself stays readable. */}
+                      <span className="hidden shrink-0 items-center gap-1 @xl:flex">
+                        <Button variant="ghost" size="sm">
+                          Opnieuw sturen
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setInvited((now) => now.filter((entry) => entry.email !== invite.email))
+                          }
+                        >
+                          Intrekken
+                        </Button>
+                      </span>
+                      <span className="@xl:hidden">
+                        <DropdownMenu
+                          trigger={
+                            <IconButton
+                              icon="more-horizontal"
+                              size="sm"
+                              label={`Acties voor ${invite.email}`}
+                            />
+                          }
+                          label={`Acties voor ${invite.email}`}
+                          align="end"
+                          items={[
+                            { id: 'resend', label: 'Opnieuw sturen', icon: 'rotate-cw' },
+                            {
+                              id: 'revoke',
+                              label: 'Intrekken',
+                              icon: 'x',
+                              tone: 'danger',
+                              separated: true,
+                              onSelect: () =>
+                                setInvited((now) =>
+                                  now.filter((entry) => entry.email !== invite.email),
+                                ),
+                            },
+                          ]}
+                        />
+                      </span>
                     </li>
                   ))}
                   {invited.length === 0 ? (

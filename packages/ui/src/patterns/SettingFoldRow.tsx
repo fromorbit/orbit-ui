@@ -51,7 +51,7 @@ export function SettingFoldRow({
       {/* Under 480px the status goes under the label, as a `SettingRow` puts its control there,
           so the explanation is not cut to a word or two. */}
       <span className="min-w-0 flex-1 @max-[30rem]:basis-full">
-        <span className="block truncate leading-5 text-fg">{label}</span>
+        <span className="block truncate text-[13px] leading-5 text-fg">{label}</span>
         {description === undefined || description.trim() === '' ? null : (
           <span className="block truncate text-[12px] leading-4 text-muted" title={description}>
             {description}

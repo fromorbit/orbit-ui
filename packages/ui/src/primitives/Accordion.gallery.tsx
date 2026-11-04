@@ -44,7 +44,7 @@ export default {
   group: 'primitives',
   title: 'Accordion',
   states: {
-    'One open at a time': () => <Faq />,
-    'Several open': () => <Several />,
+    'Eén tegelijk open': () => <Faq />,
+    'Meerdere open': () => <Several />,
   },
 } satisfies Story

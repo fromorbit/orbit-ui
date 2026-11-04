@@ -157,10 +157,13 @@ function Files() {
 function Open() {
   const stage = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
+    const open = () => {
       const row = stage.current?.querySelector('[data-nt-story-file]')
-      if (!row) return
+      if (!row || row.closest('[data-state="open"]')) return
       const box = row.getBoundingClientRect()
+      // Only while the row is in sight: a menu opened off screen would be closed by the scroll
+      // that brings it in.
+      if (box.bottom < 0 || box.top > window.innerHeight) return
       row.dispatchEvent(
         new MouseEvent('contextmenu', {
           bubbles: true,
@@ -169,8 +172,22 @@ function Open() {
           clientY: box.bottom - 2,
         }),
       )
-    })
-    return () => cancelAnimationFrame(frame)
+    }
+    const frame = requestAnimationFrame(open)
+    // A scroll closes a context menu, as a native one does; this state is a picture of the open
+    // menu, so it opens again once a scroll has settled with the row in sight (a phone scrolls
+    // to it before it can be seen).
+    let settle: ReturnType<typeof setTimeout> | undefined
+    const onScroll = () => {
+      clearTimeout(settle)
+      settle = setTimeout(open, 200)
+    }
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true })
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(settle)
+      window.removeEventListener('scroll', onScroll, { capture: true })
+    }
   }, [])
   return (
     // As tall as the open panel reaches, so the next state starts at the same distance as the rest.
@@ -341,9 +358,9 @@ export default {
   group: 'overlays',
   title: 'ContextMenu',
   states: {
-    Open,
-    'With choices': WithChoices,
-    'With a head': WithAHead,
-    Disabled,
+    Open: Open,
+    'Met keuzes': WithChoices,
+    'Met een kop': WithAHead,
+    Uitgeschakeld: Disabled,
   },
 } satisfies Story

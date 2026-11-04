@@ -38,7 +38,7 @@ export default {
   group: 'overlays',
   title: 'Sheet',
   states: {
-    'From the right': () => <Details initial />,
-    'From the left': () => <Details side="start" />,
+    'Van rechts': () => <Details initial />,
+    'Van links': () => <Details side="start" />,
   },
 } satisfies Story

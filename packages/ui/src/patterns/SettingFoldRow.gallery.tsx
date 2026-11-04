@@ -99,7 +99,7 @@ export default {
   group: 'patterns',
   title: 'SettingFoldRow',
   states: {
-    'Agents, folded': () => <Agents open={false} />,
-    'Agents, one open': () => <Agents open />,
+    'Agents, ingeklapt': () => <Agents open={false} />,
+    'Agents, één open': () => <Agents open />,
   },
 } satisfies Story

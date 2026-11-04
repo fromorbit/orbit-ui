@@ -9,7 +9,7 @@ export default {
   group: 'patterns',
   title: 'GitHubLink',
   states: {
-    'In a sentence': () => (
+    'In een zin': () => (
       <p className="w-full max-w-96 text-[13px] leading-normal">
         Samengevoegd in{' '}
         <GitHubLink

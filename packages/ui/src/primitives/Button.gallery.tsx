@@ -15,14 +15,14 @@ export default {
   group: 'primitives',
   title: 'Button',
   states: {
-    Variants: () => (
+    Varianten: () => (
       <div className="flex gap-2">
         <Button variant="primary">Versturen</Button>
         <Button>Annuleren</Button>
         <Button variant="ghost">Overslaan</Button>
       </div>
     ),
-    Sizes: () => (
+    Maten: () => (
       <div className="flex items-center gap-2">
         <Button size="xs">Heel klein</Button>
         <Button size="sm">Klein</Button>
@@ -30,7 +30,7 @@ export default {
         <Button size="lg">Groot</Button>
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <div className="flex gap-2">
         <Button variant="primary" disabled>
           Versturen
@@ -38,7 +38,7 @@ export default {
         <Button disabled>Annuleren</Button>
       </div>
     ),
-    Loading: () => (
+    Laden: () => (
       // Each pair shares a label, variant and size: at rest next to loading, so the equal width
       // is visible rather than just asserted.
       <div className="flex gap-2">
@@ -50,12 +50,12 @@ export default {
         <Button loading>Annuleren</Button>
       </div>
     ),
-    Block: () => (
+    'Volle breedte': () => (
       <div className="w-48">
         <Button block>Nieuw gesprek</Button>
       </div>
     ),
-    'Long label': () => (
+    'Lang label': () => (
       // A column narrower than either label: the `block` button must cut its label off with an
       // ellipsis instead of wrapping over the row below, and the one that sizes to its content
       // stays a single line and simply grows past the column.
@@ -64,7 +64,7 @@ export default {
         <Button>Begin een gesprek over het afrekenen</Button>
       </div>
     ),
-    Shrink: () => (
+    Krimpen: () => (
       // Two buttons in a row that is too narrow for both, with `min-w-0` on the row so a flex item
       // may go below its content. The first is allowed to give up width and loses its tail; the
       // second keeps every pixel of its label and pushes the row past its own right edge — which
@@ -80,12 +80,12 @@ export default {
         </div>
       </div>
     ),
-    'Ghost as a toggle': () => <GhostToggle />,
+    'Ghost als schakelaar': () => <GhostToggle />,
     // Last, so it moves no reference above it. The key inside the button: on the
     // accent as a dark plane of 16%, Enter as its icon; quiet on the other variants. The last one
     // is `aria-disabled`: dimmed, but still a tab stop. Wrapped inside 256px: the widest state
     // sets the width of every state of a story, and this one must not move their references.
-    'With a key': () => (
+    'Met een toets': () => (
       <div className="flex max-w-64 flex-wrap items-center gap-2">
         <Button variant="primary" shortcut="Enter">
           Versturen

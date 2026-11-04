@@ -63,7 +63,7 @@ export default {
   group: 'primitives',
   title: 'ScrollArea',
   states: {
-    Default: () => (
+    Standaard: () => (
       // The fixed height lives here, in the story: `ScrollArea` itself only fills whatever box
       // it is given.
       <div className="h-48 w-64 rounded-md border border-border bg-surface">
@@ -72,7 +72,7 @@ export default {
         </ScrollArea>
       </div>
     ),
-    'With focusable content': () => (
+    'Met focusbare inhoud': () => (
       // No label: the buttons are the tab stops, so the viewport adds none of its own.
       <div className="h-48 w-64 rounded-md border border-border bg-surface">
         <ScrollArea>
@@ -80,7 +80,7 @@ export default {
         </ScrollArea>
       </div>
     ),
-    'With a row that must truncate': () => (
+    'Met een rij die moet inkorten': () => (
       // The sidebar's case: the column has a fixed width and a row's text does not. It has to
       // truncate inside the column, never widen it — see the Radix note in ScrollArea.tsx.
       <div className="h-48 w-56 rounded-md border border-border bg-surface">
@@ -89,7 +89,7 @@ export default {
         </ScrollArea>
       </div>
     ),
-    'Long list': () => (
+    'Lange lijst': () => (
       // The two shapes, one above the other, which should not be told apart: `ScrollArea` draws its own
       // bar over the content, and a plain `overflow-y-auto` gets the global one from `index.css`
       // (8px, the same thumb, no track, no arrows). Point at either to see its thumb.

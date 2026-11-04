@@ -28,7 +28,7 @@ const KINDS: readonly ChoiceCardItem[] = [
 function InPanel({ width }: { width: number }) {
   return (
     <TooltipProvider>
-      <div className="px-3" style={{ width }}>
+      <div className="w-full px-3" style={{ maxWidth: width }}>
         <ChoiceCards label="Open een tabblad" items={KINDS} onChoose={() => {}} />
       </div>
     </TooltipProvider>
@@ -39,7 +39,7 @@ export default {
   group: 'patterns',
   title: 'ChoiceCards',
   states: {
-    'Narrow panel': () => <InPanel width={320} />,
-    'Wide panel': () => <InPanel width={480} />,
+    'Smal paneel': () => <InPanel width={320} />,
+    'Breed paneel': () => <InPanel width={480} />,
   },
 } satisfies Story

@@ -8,6 +8,7 @@ import {
 } from 'react'
 import {
   CopyButton,
+  DropdownMenu,
   IconButton,
   OrbitWordmark,
   type Platform,
@@ -41,6 +42,37 @@ const THEME_OPTIONS = [
   { value: 'dark', label: 'Donker' },
   { value: 'light', label: 'Licht' },
 ] as const
+
+/** Where the page keeps the chosen theme, so a reload keeps it; per viewer, never required. */
+const THEME_KEY = 'orbit-ui-docs-theme'
+
+/** The theme of the last visit, or dark: storage may be missing or throw (a private window). */
+function storedTheme(): Theme {
+  try {
+    return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
+/** The groups of the catalogue in the page's language: a quiet eyebrow, not a folder name. */
+const GROUP_LABEL: Record<Story['group'], string> = {
+  primitives: 'Bouwstenen',
+  overlays: 'Lagen',
+  patterns: 'Patronen',
+  features: 'Schermen',
+}
+
+/**
+ * Keeps a click on the page's own switches from touching the story under them: no focus moves
+ * (a menu or a text selection of the story stays as it is) and the press never reaches the
+ * document, where an open layer would read it as a click outside and close. The keyboard still
+ * reaches the switches as ever.
+ */
+const KEEP_STORY_STATE = {
+  onMouseDown: (event: { preventDefault(): void }) => event.preventDefault(),
+  onPointerDown: (event: { stopPropagation(): void }) => event.stopPropagation(),
+}
 
 /** The products of the family, whose satellite `tokens.css` picks with `data-product`. */
 type Product = 'orbit' | 'halo' | 'fold'
@@ -95,7 +127,7 @@ function useHash(): string {
 function StateFrame({ state }: { state: ComponentType }): ReactNode {
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   return (
-    <div ref={setFrame} className="relative py-3">
+    <div ref={setFrame} className="relative">
       <PortalContainerProvider container={frame}>{createElement(state)}</PortalContainerProvider>
     </div>
   )
@@ -126,13 +158,18 @@ export interface DocsPageProps {
  */
 export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const hash = useHash()
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>(storedTheme)
   const [product, setProduct] = useState<Product>('orbit')
   const [platform, setPlatform] = useState<Platform>('mac')
   const shortcuts = useMemo(() => docsShortcuts(platform), [platform])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem(THEME_KEY, theme)
+    } catch {
+      // A private window: the theme simply lasts until the reload.
+    }
   }, [theme])
 
   useEffect(() => {
@@ -169,8 +206,8 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
       stories.map((entry) => ({
         id: storyId(entry),
         label: entry.title,
-        group: entry.group,
-        keywords: [entry.group, ...Object.keys(entry.states)],
+        group: GROUP_LABEL[entry.group],
+        keywords: [entry.group, GROUP_LABEL[entry.group], ...Object.keys(entry.states)],
       })),
     [stories],
   )
@@ -217,7 +254,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
           </nav>
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col bg-canvas">
-          <header className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-border border-b px-3 py-2 sm:px-4">
+          <header className="flex h-12 shrink-0 items-center gap-2 border-border border-b px-4 sm:gap-3">
             {mode === 'components' ? (
               <div className="md:hidden">
                 <IconButton
@@ -229,7 +266,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                 />
               </div>
             ) : (
-              <div className="flex items-center gap-2 pr-1">
+              <div className="hidden items-center gap-2 pr-1 sm:flex">
                 <OrbitWordmark className="h-4 text-fg" />
                 <span className="text-[13px] text-muted">UI</span>
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
@@ -242,30 +279,57 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
               options={MODE_OPTIONS}
               onValueChange={switchMode}
             />
-            <div className="hidden flex-1 sm:block" />
-            <div className="hidden lg:block">
-              <SegmentedControl<Platform>
-                label="Platform"
+            <div className="flex-1" />
+            <div className="flex items-center gap-2 sm:gap-3" {...KEEP_STORY_STATE}>
+              <div className="hidden lg:block">
+                <SegmentedControl<Platform>
+                  label="Platform"
+                  size="sm"
+                  value={platform}
+                  options={PLATFORM_OPTIONS}
+                  onValueChange={setPlatform}
+                />
+              </div>
+              <div className="hidden sm:block">
+                <SegmentedControl<Product>
+                  label="Product"
+                  size="sm"
+                  value={product}
+                  options={PRODUCT_OPTIONS}
+                  onValueChange={setProduct}
+                />
+              </div>
+              <div className="sm:hidden">
+                <DropdownMenu
+                  label="Product"
+                  align="end"
+                  trigger={
+                    <button
+                      type="button"
+                      aria-label={`Product: ${PRODUCT_OPTIONS.find((option) => option.value === product)?.label ?? ''}`}
+                      className="flex size-7 items-center justify-center rounded-md text-muted outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      <span aria-hidden="true" className="size-2 rounded-full bg-satellite" />
+                    </button>
+                  }
+                  items={PRODUCT_OPTIONS.map((option) => ({
+                    id: option.value,
+                    label: option.label,
+                    kind: 'radio' as const,
+                    group: 'product',
+                    checked: option.value === product,
+                    onSelect: () => setProduct(option.value),
+                  }))}
+                />
+              </div>
+              <SegmentedControl<Theme>
+                label="Thema"
                 size="sm"
-                value={platform}
-                options={PLATFORM_OPTIONS}
-                onValueChange={setPlatform}
+                value={theme}
+                options={THEME_OPTIONS}
+                onValueChange={setTheme}
               />
             </div>
-            <SegmentedControl<Product>
-              label="Product"
-              size="sm"
-              value={product}
-              options={PRODUCT_OPTIONS}
-              onValueChange={setProduct}
-            />
-            <SegmentedControl<Theme>
-              label="Thema"
-              size="sm"
-              value={theme}
-              options={THEME_OPTIONS}
-              onValueChange={setTheme}
-            />
           </header>
           {mode === 'demos' ? (
             <main
@@ -285,12 +349,10 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
             >
               {story ? (
                 <article className="max-w-4xl p-4 sm:p-8">
-                  <div className="mb-6 flex items-center gap-2">
-                    <div className="min-w-0">
-                      <p className="m-0 text-[11px] text-muted">{story.group}</p>
-                      <h1 className="m-0 text-[18px] font-medium text-fg">{story.title}</h1>
-                    </div>
-                    <div className="ml-auto">
+                  <div className="mb-6 flex flex-col gap-1">
+                    <p className="m-0 text-[12px] text-muted">{GROUP_LABEL[story.group]}</p>
+                    <div className="flex items-center gap-1.5">
+                      <h1 className="m-0 min-w-0 font-medium text-[20px] text-fg">{story.title}</h1>
                       <CopyButton
                         text={() => location.href}
                         label="Kopieer link"

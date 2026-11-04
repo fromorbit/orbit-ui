@@ -8,8 +8,8 @@ import { StackedRow, StackedRowBranch } from './StackedRow'
 
 /** Two finished chats that sank to the shelf; the names are made up. */
 const settled = [
-  { project: 'webshop', title: 'Kortingscodes valideren', branch: 'nt/kortingscodes', time: '4d' },
-  { project: 'boekhoud-api', title: 'Btw-tarieven 2027', branch: 'main', time: '1w' },
+  { project: 'webshop', title: 'Kortingscodes valideren', branch: 'nt/kortingscodes', time: '4 d' },
+  { project: 'boekhoud-api', title: 'Btw-tarieven 2027', branch: 'main', time: '1 wk' },
 ]
 
 /** The foot of the chat column: the last chat, then the shelf with its hairline to the edge. */
@@ -18,7 +18,7 @@ function Shelf({ initial }: { initial: boolean }) {
   return (
     <div className="w-66 bg-frame">
       <div className="px-2">
-        <List label="Chats">
+        <List label="Gesprekken">
           <StackedRow
             label="CI-cache verkleinen, interne-tools, main, 2d"
             meta={
@@ -63,7 +63,7 @@ export default {
   title: 'ShelfGroup',
   states: {
     // Design 6c: "Afgerond 143" folded at the foot of the list, the chevron pointing down.
-    Folded: () => <Shelf initial={false} />,
+    Ingeklapt: () => <Shelf initial={false} />,
     // Open, the chevron turned over and the settled chats under it, their titles a step back.
     Open: () => <Shelf initial />,
   },

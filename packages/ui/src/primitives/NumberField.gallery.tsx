@@ -5,11 +5,11 @@ export default {
   group: 'primitives',
   title: 'NumberField',
   states: {
-    Value: () => (
+    Waarde: () => (
       <NumberField label="Concurrent runs" value={4} min={1} max={16} onCommit={() => {}} />
     ),
-    Sizes: () => (
-      <div className="flex items-center gap-2">
+    Maten: () => (
+      <div className="flex flex-wrap items-center gap-2">
         <NumberField
           label="Concurrent runs"
           value={4}
@@ -29,7 +29,7 @@ export default {
         />
       </div>
     ),
-    'With a unit': () => (
+    'Met een eenheid': () => (
       <NumberField
         label="Approval timeout"
         value={15}
@@ -39,7 +39,7 @@ export default {
         onCommit={() => {}}
       />
     ),
-    'Thousands separators': () => (
+    Duizendtallen: () => (
       <NumberField
         label="Tokens per task"
         value={200000}
@@ -49,10 +49,10 @@ export default {
         onCommit={() => {}}
       />
     ),
-    'At the limit': () => (
+    'Op de grens': () => (
       <NumberField label="Concurrent runs" value={16} min={1} max={16} onCommit={() => {}} />
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <NumberField
         label="Concurrent runs"
         value={4}

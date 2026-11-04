@@ -145,7 +145,10 @@ export function Dialog({
             {/* Room for the close button, which comes last in the focus order (below). */}
             <span aria-hidden="true" className="size-7 shrink-0" />
           </div>
-          <div ref={body} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
+          <div
+            ref={body}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 text-[13px]"
+          >
             {children}
           </div>
           {footer === undefined ? null : (

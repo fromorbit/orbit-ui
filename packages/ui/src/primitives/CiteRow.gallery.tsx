@@ -7,7 +7,7 @@ export default {
   group: 'primitives',
   title: 'CiteRow',
   states: {
-    Rows: () => (
+    Rijen: () => (
       <div className="flex w-full max-w-[400px] flex-col">
         <CiteRow icon="check" tone="success" label="Gift cards sit beside cash" onJump={jump} />
         <CiteRow
@@ -18,13 +18,13 @@ export default {
         />
         <CiteRow
           icon="check-circle"
-          label="Een bon van 25 op een mand van 40 laat 15 te betalen, en een verkeerde code wordt geweigerd"
+          label="Een bon van € 25 op een mand van € 40 laat € 15 te betalen, en een verkeerde code wordt geweigerd"
           description="14 criteria"
           onJump={jump}
         />
       </div>
     ),
-    Framed: () => (
+    Omkaderd: () => (
       <div className="flex w-full max-w-[400px] flex-col gap-1.5">
         <CiteRow
           framed

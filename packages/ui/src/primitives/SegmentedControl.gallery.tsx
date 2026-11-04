@@ -6,30 +6,30 @@ export default {
   group: 'primitives',
   title: 'SegmentedControl',
   states: {
-    'Two options': () => (
+    'Twee opties': () => (
       <SegmentedControl
         label="Translucent window"
         value="auto"
         options={[
-          { value: 'auto', label: 'Automatic' },
-          { value: 'off', label: 'Off' },
+          { value: 'auto', label: 'Automatisch' },
+          { value: 'off', label: 'Uit' },
         ]}
         onValueChange={() => {}}
       />
     ),
-    'Three options': () => (
+    'Drie opties': () => (
       <SegmentedControl
         label="Text size"
         value="medium"
         options={[
-          { value: 'small', label: 'Small' },
-          { value: 'medium', label: 'Medium' },
-          { value: 'large', label: 'Large' },
+          { value: 'small', label: 'Klein' },
+          { value: 'medium', label: 'Middel' },
+          { value: 'large', label: 'Groot' },
         ]}
         onValueChange={() => {}}
       />
     ),
-    'Four options': () => (
+    'Vier opties': () => (
       <SegmentedControl
         label="Density"
         value="b"
@@ -44,28 +44,28 @@ export default {
     ),
     // A setting that another setting switches off is disabled rather than hidden, so the reader
     // sees what the choice would have been; the whole group dims, the checked segment included.
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <SegmentedControl
         label="Text size"
         value="medium"
         disabled
         options={[
-          { value: 'small', label: 'Small' },
-          { value: 'medium', label: 'Medium' },
-          { value: 'large', label: 'Large' },
+          { value: 'small', label: 'Klein' },
+          { value: 'medium', label: 'Middel' },
+          { value: 'large', label: 'Groot' },
         ]}
         onValueChange={() => {}}
       />
     ),
-    Sizes: () => (
-      <div className="flex items-center gap-2">
+    Maten: () => (
+      <div className="flex flex-wrap items-center gap-2">
         <SegmentedControl
           label="Translucent window"
           size="sm"
           value="auto"
           options={[
-            { value: 'auto', label: 'Automatic' },
-            { value: 'off', label: 'Off' },
+            { value: 'auto', label: 'Automatisch' },
+            { value: 'off', label: 'Uit' },
           ]}
           onValueChange={() => {}}
         />
@@ -73,8 +73,8 @@ export default {
           label="Translucent window"
           value="auto"
           options={[
-            { value: 'auto', label: 'Automatic' },
-            { value: 'off', label: 'Off' },
+            { value: 'auto', label: 'Automatisch' },
+            { value: 'off', label: 'Uit' },
           ]}
           onValueChange={() => {}}
         />
@@ -83,8 +83,8 @@ export default {
           size="lg"
           value="auto"
           options={[
-            { value: 'auto', label: 'Automatic' },
-            { value: 'off', label: 'Off' },
+            { value: 'auto', label: 'Automatisch' },
+            { value: 'off', label: 'Uit' },
           ]}
           onValueChange={() => {}}
         />
@@ -92,13 +92,13 @@ export default {
     ),
     // Last, so it moves no reference above it: one option that cannot be chosen now, dimmed on its
     // own — the stand Lezen of a document over 2 MB.
-    'One option dimmed': () => (
+    'Eén optie gedimd': () => (
       <SegmentedControl
         label="Mode"
         size="sm"
         value="code"
         options={[
-          { value: 'read', label: 'Read', disabled: true },
+          { value: 'read', label: 'Lezen', disabled: true },
           { value: 'code', label: 'Code' },
         ]}
         onValueChange={() => {}}
@@ -107,9 +107,9 @@ export default {
     // The header of a file tab: `sm` is the frameless toolbar variant, 20px beside a 24px ghost
     // button. A wide toolbar keeps the words; under 480px the two groups of a markdown document
     // keep only their icons, the words stay the names.
-    'In a toolbar': () => (
+    'In een werkbalk': () => (
       <div className="flex flex-col gap-3">
-        {(['w-[560px]', 'w-80'] as const).map((width) => (
+        {(['w-full max-w-[560px]', 'w-80'] as const).map((width) => (
           <div
             key={width}
             className={`@container/toolbar flex h-(--nt-control-lg) ${width} items-center gap-2 border-border border-b px-3 text-[12px]`}
@@ -121,8 +121,8 @@ export default {
               collapse
               value="content"
               options={[
-                { value: 'content', label: 'File', icon: 'file' },
-                { value: 'diff', label: 'Diff', icon: 'file-diff' },
+                { value: 'content', label: 'Bestand', icon: 'file' },
+                { value: 'diff', label: 'Verschil', icon: 'file-diff' },
               ]}
               onValueChange={() => {}}
             />
@@ -132,14 +132,14 @@ export default {
               collapse
               value="read"
               options={[
-                { value: 'read', label: 'Read', icon: 'book-open' },
+                { value: 'read', label: 'Lezen', icon: 'book-open' },
                 { value: 'code', label: 'Code', icon: 'code' },
-                { value: 'split', label: 'Split', icon: 'columns' },
+                { value: 'split', label: 'Naast elkaar', icon: 'columns' },
               ]}
               onValueChange={() => {}}
             />
             <Button size="sm" variant="ghost">
-              Open in editor
+              Openen in editor
             </Button>
           </div>
         ))}

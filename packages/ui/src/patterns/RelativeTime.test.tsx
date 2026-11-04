@@ -8,7 +8,7 @@ const NL: RelativeTimeLabels = {
   minutes: (count) => `${count} min`,
   hours: (count) => `${count} u`,
   days: (count) => `${count} d`,
-  weeks: (count) => `${count} w`,
+  weeks: (count) => `${count} wk`,
 }
 
 /** The same in English, where an hour is an `h`. */
@@ -39,8 +39,8 @@ test.each([
   [23 * hour, '23 u'],
   [day, '1 d'],
   [6 * day, '6 d'],
-  [7 * day, '1 w'],
-  [30 * day, '4 w'],
+  [7 * day, '1 wk'],
+  [30 * day, '4 wk'],
 ])('%i ms ago is "%s"', (ago, expected) => {
   expect(shortText(now - ago)).toBe(expected)
 })

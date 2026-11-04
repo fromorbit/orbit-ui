@@ -44,33 +44,33 @@ export default {
   group: 'patterns',
   title: 'StatusLine',
   states: {
-    Muted: () => (
+    Gedempt: () => (
       <Pane>
         <StatusLine>Klaar</StatusLine>
       </Pane>
     ),
-    Busy: () => (
+    Bezig: () => (
       <Pane>
         <StatusLine busy>Opslaan…</StatusLine>
       </Pane>
     ),
-    Success: () => (
+    Gelukt: () => (
       <Pane>
         <StatusLine tone="success">Opgeslagen</StatusLine>
       </Pane>
     ),
-    Danger: () => (
+    Gevaar: () => (
       <Pane>
         <StatusLine tone="danger">Niet opgeslagen</StatusLine>
       </Pane>
     ),
-    'Busy with meta (above the composer)': () => (
+    'Bezig met meta (boven de invoer)': () => (
       <Pane>
         <StatusLine busy meta="3,4k tokens">
           Bezig · leest translate.ts
         </StatusLine>
       </Pane>
     ),
-    'Changing (the element stays mounted)': Changing,
+    'Wisselend (het element blijft staan)': Changing,
   },
 } satisfies Story

@@ -420,10 +420,7 @@ export function Scrubber<K extends string>({
   }
 
   return (
-    <div
-      data-nt-scrubber
-      className={`@container flex min-w-0 flex-col gap-2 ${off ? 'opacity-40' : ''}`}
-    >
+    <div data-nt-scrubber className="@container flex min-w-0 flex-col gap-2">
       <div className="flex flex-col">
         <RadixSlider.Root
           value={[position]}
@@ -443,7 +440,9 @@ export function Scrubber<K extends string>({
             : {})}
           onPointerMove={track}
           onPointerLeave={() => setHover(null)}
-          className="no-drag group/scrubber relative flex h-(--nt-control-md) min-w-0 touch-none items-center select-none"
+          // Only the track dims while it is off: the times under it and the legend stay words at
+          // full strength, read in `muted` as ever.
+          className={`no-drag group/scrubber relative flex h-(--nt-control-md) min-w-0 touch-none items-center select-none ${off ? 'opacity-40' : ''}`}
         >
           <RadixSlider.Track
             ref={measure}

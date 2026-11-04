@@ -8,7 +8,7 @@ export default {
   group: 'primitives',
   title: 'Field',
   states: {
-    'Label only': () => (
+    'Alleen een label': () => (
       <Field label="Netwerktoegang">
         {({ labelId, describedById }) => (
           <Switch
@@ -21,7 +21,7 @@ export default {
         )}
       </Field>
     ),
-    'With description': () => (
+    'Met beschrijving': () => (
       <Field label="Runs tegelijk" description="Hoeveel beurten tegelijk mogen lopen.">
         {({ labelId, describedById }) => (
           <NumberField
@@ -36,7 +36,7 @@ export default {
         )}
       </Field>
     ),
-    'With a SegmentedControl': () => (
+    'Met een SegmentedControl': () => (
       <Field label="Dichtheid" description="Hoeveel lucht een rij in een lijst krijgt.">
         {({ labelId, describedById }) => (
           <SegmentedControl
@@ -46,7 +46,7 @@ export default {
             value="compact"
             options={[
               { value: 'compact', label: 'Compact' },
-              { value: 'comfortable', label: 'Comfortable' },
+              { value: 'comfortable', label: 'Ruim' },
             ]}
             onValueChange={() => {}}
           />
@@ -55,7 +55,7 @@ export default {
     ),
     // The bare button, without the Tooltip a caller wraps it in (`primitives/` may not import
     // `overlays/`): see `features/settings/SettingRow.gallery.tsx` for the wrapped, hoverable one.
-    'With a hint, unwrapped': () => (
+    'Met een hint, zonder omlijsting': () => (
       <Field label="Geschiedenis" hint="Per projectprofiel">
         {({ labelId, describedById }) => (
           <NumberField
@@ -70,7 +70,7 @@ export default {
         )}
       </Field>
     ),
-    'With error': () => (
+    'Met een fout': () => (
       <Field
         label="Wachttijd voor akkoord"
         description="Hoe lang een akkoord mag wachten voordat het verloopt."

@@ -29,12 +29,12 @@ export default {
   group: 'patterns',
   title: 'PathLabel',
   states: {
-    'A path that fits': () => (
+    'Een pad dat past': () => (
       <Column width="wide">
         <PathLabel path="/work/nt-agent" />
       </Column>
     ),
-    'A long path in a narrow column': () => (
+    'Een lang pad in een smalle kolom': () => (
       <div className="w-56">
         <Column width="narrow">
           <PathLabel path="/work/klanten/atlas/checkouts/nt-agent" />
@@ -43,31 +43,31 @@ export default {
     ),
     // As an expression, not an attribute string: JSX does not read escape sequences, so a
     // `path="C:\\work"` attribute would carry two backslashes instead of one.
-    'A Windows path': () => (
+    'Een Windows-pad': () => (
       <Column width="wide">
         <PathLabel path={'C:\\work\\klanten\\atlas\\checkouts\\nt-agent'} />
       </Column>
     ),
-    'Just a name': () => (
+    'Alleen een naam': () => (
       <Column width="wide">
         <PathLabel path="nt-agent" />
       </Column>
     ),
     // Last, so the states above keep their reference images: a file as the main text of a row in
     // the changes tab — the folder quiet, the name bright.
-    'A file name that stands out': () => (
+    'Een bestandsnaam die opvalt': () => (
       <Column width="wide">
         <PathLabel path="src/components/lezer.ts" emphasis="name" />
       </Column>
     ),
-    'A file that is gone': () => (
+    'Een bestand dat weg is': () => (
       <Column width="wide">
         <PathLabel path="docs/beeld.png" emphasis="gone" />
       </Column>
     ),
     // The head of a document: the folder loses its start, so the
     // folders nearest the name stay.
-    'Cut from the start in the head of a document': () => (
+    'Vooraan ingekort in de kop van een document': () => (
       <div className="w-56">
         <Column width="narrow">
           <PathLabel

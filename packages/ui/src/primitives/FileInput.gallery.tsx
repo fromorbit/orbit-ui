@@ -20,6 +20,6 @@ export default {
   group: 'primitives',
   title: 'FileInput',
   states: {
-    'Behind a visible trigger': () => <Demo />,
+    'Achter een zichtbare knop': () => <Demo />,
   },
 } satisfies Story

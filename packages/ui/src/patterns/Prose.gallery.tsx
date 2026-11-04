@@ -115,17 +115,17 @@ const paths = [
 /** A made-up document, as the reading mode shows one. */
 const handbook = [
   '---',
-  'title: Handbook',
+  'title: Handboek',
   '---',
   '',
-  '# Handbook',
+  '# Handboek',
   '',
-  'How the made-up shop works. Read [the installation](installation.md) first, or jump to',
-  '[usage](#usage). A `javascript:` link stays [text](javascript:void(0)).',
+  'Hoe de verzonnen winkel werkt. Lees eerst [de installatie](installatie.md), of ga naar',
+  '[gebruik](#gebruik). Een `javascript:`-link blijft [tekst](javascript:void(0)).',
   '',
-  '![The shop in one picture](diagram.png)',
+  '![De winkel in één plaatje](diagram.png)',
   '',
-  '## Usage',
+  '## Gebruik',
   '',
   '```ts',
   'export const total = (prices: number[]) => prices.reduce((a, b) => a + b, 0)',
@@ -141,8 +141,8 @@ const documentOptions: ProseDocument = {
   linkable: (href) => !href.startsWith('javascript:'),
   image: async () => DIAGRAM,
   headings: [
-    { from: 25, anchor: 'handbook' },
-    { from: 238, anchor: 'usage' },
+    { from: 25, anchor: 'handboek' },
+    { from: 247, anchor: 'gebruik' },
   ],
   highlight: true,
   frontmatter: 'folded',
@@ -152,16 +152,16 @@ export default {
   group: 'patterns',
   title: 'Prose',
   states: {
-    'An answer with every element': () => <Column markdown={answer} />,
-    'Raw HTML stays text': () => <Column markdown={raw} />,
+    'Een antwoord met elk element': () => <Column markdown={answer} />,
+    'Losse HTML blijft tekst': () => <Column markdown={raw} />,
     // Last, so it moves no reference above it: paths the agent named become links.
-    'Paths as file links': () => (
+    'Paden als bestandslinks': () => (
       <div className="w-full max-w-96">
         <Prose labels={nl.prose} markdown={paths} references={references} />
       </div>
     ),
     // After the others, so it moves none of their references: the reading mode.
-    'A document': () => (
+    'Een document': () => (
       <div className="w-full max-w-96">
         <Prose labels={nl.prose} markdown={handbook} document={documentOptions} />
       </div>

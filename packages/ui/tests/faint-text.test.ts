@@ -1,4 +1,4 @@
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { expect, test } from 'vitest'
 import { read, SRC, sources, stripComments, underSrc } from './guards/source'
 
@@ -11,7 +11,8 @@ import { read, SRC, sources, stripComments, underSrc } from './guards/source'
 test('the Tailwind class text-faint appears only in the tone of Icon', () => {
   // `text-*` sets `color`, which an `<svg>` of Lucide paints its stroke in: on `Icon` that is an
   // icon colour, anywhere else it would reach a word.
-  const offenders = sources(/\.tsx?$/)
+  const docs = resolve(import.meta.dirname, '..', 'docs-site', 'src')
+  const offenders = [...sources(/\.tsx?$/), ...sources(/\.tsx?$/, docs)]
     .filter((file) => underSrc(file) !== 'primitives/Icon.tsx')
     .filter((file) => /text-faint\b|text-\(--nt-text-faint\)/.test(stripComments(read(file))))
     .map(underSrc)

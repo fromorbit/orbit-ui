@@ -29,7 +29,7 @@ export default {
   group: 'patterns',
   title: 'SettingsGroup',
   states: {
-    'Heading and rows': () => (
+    'Kop en rijen': () => (
       <TooltipProvider>
         <div className="w-full max-w-[560px]">
           <SettingsGroup title="Nieuwe gesprekken">
@@ -39,7 +39,7 @@ export default {
         </div>
       </TooltipProvider>
     ),
-    'An action in the heading': () => (
+    'Een actie in de kop': () => (
       <TooltipProvider>
         <div className="w-full max-w-[560px]">
           <SettingsGroup
@@ -55,7 +55,7 @@ export default {
         </div>
       </TooltipProvider>
     ),
-    'Empty: only the heading and its action': () => (
+    'Leeg: alleen de kop en zijn actie': () => (
       <div className="w-full max-w-[560px]">
         <SettingsGroup
           title="Extensies"
@@ -69,7 +69,7 @@ export default {
         </SettingsGroup>
       </div>
     ),
-    'Two groups, stacked': () => (
+    'Twee groepen, gestapeld': () => (
       <TooltipProvider>
         <div className="flex w-full max-w-[560px] flex-col gap-6">
           <SettingsGroup title="Nieuwe gesprekken">

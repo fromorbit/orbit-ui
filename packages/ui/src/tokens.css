@@ -64,6 +64,9 @@
      of its own: a pill, the round "+", the composer's plane, a key cap. */
   --nt-border: rgb(231 233 242 / 0.08);
   --nt-border-strong: rgb(231 233 242 / 0.14);
+  /* The edge of a control that is only an edge at rest, an unchecked box: 3:1 against the canvas,
+     the frame and a card (WCAG 1.4.11), where the hairline would all but vanish. */
+  --nt-control-border: rgb(231 233 242 / 0.42);
   /* The plane inside a pill with a border (the model and the access level in the composer), and
      that plane lit on hover or while its menu is open. */
   --nt-pill: rgb(231 233 242 / 0.05);
@@ -146,6 +149,8 @@
   --nt-danger: #ff7b7b;
 
   --nt-success: #4cb782;
+  /* The plane of a tag that says something went well, a tint like attention's and danger's. */
+  --nt-success-subtle: rgb(76 183 130 / 0.1);
   --nt-attention-subtle: rgb(229 164 69 / 0.08);
   --nt-attention-border: rgb(229 164 69 / 0.28);
   /* Attention as a fill (a share of a bar), not as words: the amber itself in dark. */
@@ -336,6 +341,7 @@
   --nt-row-active: rgb(17 25 54 / 0.06);
   --nt-border: rgb(17 25 54 / 0.09);
   --nt-border-strong: rgb(17 25 54 / 0.14);
+  --nt-control-border: rgb(17 25 54 / 0.52);
   --nt-pill: rgb(17 25 54 / 0.03);
   --nt-pill-hover: rgb(17 25 54 / 0.06);
   --nt-bubble: rgb(17 25 54 / 0.04);
@@ -392,6 +398,7 @@
   --nt-attention: #965a00;
   --nt-danger: #bf3030;
   --nt-success: #1f7a4a;
+  --nt-success-subtle: rgb(31 122 74 / 0.09);
   --nt-attention-subtle: rgb(150 90 0 / 0.08);
   --nt-attention-border: rgb(150 90 0 / 0.3);
   /* A fill carries no words, so it needs no AA: a clear amber where the deep ochre of the words
@@ -440,22 +447,25 @@
   --nt-terminal-ansi-14: #095f73; /* bright cyan */
   --nt-terminal-ansi-15: #000000; /* bright white */
 
-  /* The code of a document reads the light ANSI colours above: Shiki's css-variables theme in
+  /* The code of a document reads the colours below: Shiki's css-variables theme in
      `@fromorbit/doc-view` needs no theme of its own for light. */
   --nt-code-foreground: var(--nt-text);
   --nt-code-background: transparent;
-  --nt-code-token-keyword: var(--nt-terminal-ansi-5);
-  --nt-code-token-string: var(--nt-terminal-ansi-2);
-  --nt-code-token-string-expression: var(--nt-terminal-ansi-2);
-  --nt-code-token-comment: var(--nt-text-muted);
-  --nt-code-token-constant: var(--nt-terminal-ansi-3);
-  --nt-code-token-function: var(--nt-terminal-ansi-4);
+  /* A step darker than the terminal's colours: code also sits on the green and red tint of a
+     changed line, and on the stronger tint of a changed word inside it, where the terminal's
+     greens and purples fell under 4,5:1. */
+  --nt-code-token-keyword: #7c37aa;
+  --nt-code-token-string: #1a683d;
+  --nt-code-token-string-expression: #1a683d;
+  --nt-code-token-comment: #515778;
+  --nt-code-token-constant: #7c5300;
+  --nt-code-token-function: #2759a6;
   --nt-code-token-parameter: var(--nt-terminal-ansi-7);
   --nt-code-token-punctuation: var(--nt-terminal-ansi-7);
-  --nt-code-token-link: var(--nt-accent-text);
-  --nt-code-token-inserted: var(--nt-success);
-  --nt-code-token-deleted: var(--nt-danger);
-  --nt-code-token-changed: var(--nt-attention);
+  --nt-code-token-link: #493ada;
+  --nt-code-token-inserted: #1a683f;
+  --nt-code-token-deleted: #ac2b2b;
+  --nt-code-token-changed: #875100;
 
   --nt-app-background: var(--nt-frame);
   --nt-sidebar-background: var(--nt-frame);

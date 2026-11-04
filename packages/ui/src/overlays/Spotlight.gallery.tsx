@@ -67,5 +67,5 @@ function Closed() {
 export default {
   group: 'overlays',
   title: 'Spotlight',
-  states: { Open, Closed },
+  states: { Open: Open, Dicht: Closed },
 } satisfies Story

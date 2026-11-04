@@ -12,8 +12,8 @@ const HITS: MentionListItem[] = [
 
 /** An empty query: first what this chat changed, then the rest of the project. */
 const OPENED: MentionListItem[] = [
-  { path: 'notities.md', kind: 'file', group: 'Gewijzigd in deze chat' },
-  { path: 'src/winkelmand/totaal.ts', kind: 'file', group: 'Gewijzigd in deze chat' },
+  { path: 'notities.md', kind: 'file', group: 'Gewijzigd in dit gesprek' },
+  { path: 'src/winkelmand/totaal.ts', kind: 'file', group: 'Gewijzigd in dit gesprek' },
   { path: 'README.md', kind: 'file', group: 'Bestanden' },
   { path: 'package.json', kind: 'file', group: 'Bestanden' },
   { path: 'src', kind: 'dir', group: 'Bestanden' },
@@ -51,9 +51,9 @@ export default {
   group: 'patterns',
   title: 'MentionList',
   states: {
-    Hits: state(HITS),
-    'Empty query': state(OPENED),
-    'A cut list': state(HITS, true),
-    'No files': state([]),
+    Treffers: state(HITS),
+    'Lege zoekvraag': state(OPENED),
+    'Een ingekorte lijst': state(HITS, true),
+    'Geen bestanden': state([]),
   },
 } satisfies Story

@@ -16,7 +16,7 @@ export default {
   title: 'Avatar',
   states: {
     // As in the foot of the sidebar: the round, then the name in 13px.
-    'Small, beside a name': () => (
+    'Klein, naast een naam': () => (
       <div className="flex flex-col gap-2 text-[13px] text-secondary">
         {people.map((person) => (
           <span key={person} className="flex items-center gap-2">
@@ -30,14 +30,14 @@ export default {
         </span>
       </div>
     ),
-    'Medium, at the head of the account menu': () => (
+    'Middel, bovenaan het accountmenu': () => (
       <div className="flex gap-3">
         <Avatar name="Robin de Vries" size="md" />
         <Avatar name="Noor Bakker" size="md" />
         <Avatar name={null} size="md" />
       </div>
     ),
-    'Large, at the head of the account page': () => (
+    'Groot, bovenaan de accountpagina': () => (
       <div className="flex gap-3">
         <Avatar name="Noor Bakker" size="lg" />
         <Avatar name="Sem de Vries" size="lg" />

@@ -62,5 +62,5 @@ function Open() {
 export default {
   group: 'overlays',
   title: 'DropdownMenu with submenus',
-  states: { Open },
+  states: { Open: Open },
 } satisfies Story

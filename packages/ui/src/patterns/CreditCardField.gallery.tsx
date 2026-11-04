@@ -34,15 +34,15 @@ export default {
   group: 'patterns',
   title: 'CreditCardField',
   states: {
-    Empty: () => <Demo initial={EMPTY_CARD} />,
-    'Visa, filled': () => <Demo initial={VISA} />,
-    'After a submit with errors': () => (
+    Leeg: () => <Demo initial={EMPTY_CARD} />,
+    'Visa, ingevuld': () => <Demo initial={VISA} />,
+    'Na versturen met fouten': () => (
       <Demo
         initial={{ number: '4242424242424241', expiry: '1025', cvc: '1', name: '' }}
         showErrors
       />
     ),
-    'The cards': () => (
+    'De kaarten': () => (
       <div className="grid w-full max-w-[40rem] grid-cols-1 gap-4 sm:grid-cols-2">
         <CreditCardVisual value={MASTERCARD} flipped={false} labels={nl.creditCard} />
         <CreditCardVisual value={AMEX} flipped={false} labels={nl.creditCard} />

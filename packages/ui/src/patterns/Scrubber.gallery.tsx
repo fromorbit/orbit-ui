@@ -121,23 +121,25 @@ export default {
   group: 'patterns',
   title: 'Scrubber',
   states: {
-    'At the first error': () => <Player duration={24} start={14.35} markers={CHECKOUT} />,
-    'At the start: nothing played yet': () => <Player duration={24} start={0} markers={CHECKOUT} />,
-    'An error and a failed request at the same moment: one mark, both shapes': () => (
+    'Bij de eerste fout': () => <Player duration={24} start={14.35} markers={CHECKOUT} />,
+    'Aan het begin: nog niets afgespeeld': () => (
+      <Player duration={24} start={0} markers={CHECKOUT} />
+    ),
+    'Een fout en een mislukt verzoek tegelijk: één markering, beide vormen': () => (
       <Player duration={10} start={2} markers={TOGETHER} />
     ),
-    'Dense: 48 events, close ones grouped; a faint second shape marks a group, its card counts it':
+    'Dicht: 48 gebeurtenissen, dichtbij gegroepeerd; een vage tweede vorm markeert een groep, de kaart telt hem':
       () => <Player duration={120} start={76} markers={BUSY} />,
-    'A long recording: ticks every five minutes': () => (
+    'Een lange opname: streepjes om de vijf minuten': () => (
       <Player duration={721} start={402} markers={ADMIN} />
     ),
-    'Narrow: 320px': () => (
+    'Smal: 320px': () => (
       <Player duration={24} start={14.35} markers={CHECKOUT} width="max-w-[288px]" />
     ),
-    'Without markers or legend': () => (
+    'Zonder markeringen of legenda': () => (
       <Player duration={95} start={31} markers={[]} legend={false} />
     ),
-    'Still being processed: disabled': () => (
+    'Wordt nog verwerkt: uitgeschakeld': () => (
       <Player
         duration={24}
         start={0}

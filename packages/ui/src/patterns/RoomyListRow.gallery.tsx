@@ -12,7 +12,7 @@ export default {
   group: 'patterns',
   title: 'Roomy list row',
   states: {
-    'A title over one or two lines, and a note': () => (
+    'Een titel over een of twee regels, en een notitie': () => (
       <div className="w-full max-w-80">
         <List label="Subagents">
           <RoomyListRow
@@ -46,7 +46,7 @@ export default {
       </div>
     ),
     // The menu of a row stands beside it, quiet until hover or focus: the picture shows its room.
-    'With actions beside it, and something under it': () => (
+    'Met acties ernaast en iets eronder': () => (
       <div className="w-full max-w-80">
         <List label="Subagents">
           <RoomyListRow

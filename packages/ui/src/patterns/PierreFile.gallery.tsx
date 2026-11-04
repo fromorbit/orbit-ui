@@ -35,17 +35,17 @@ export default {
   group: 'patterns',
   title: 'PierreFile',
   states: {
-    File: () => (
+    Bestand: () => (
       <div className="h-64 w-full max-w-[36rem]">
         <PierreFile text={sourceFile} path="src/winkelmand/totaal.ts" />
       </div>
     ),
-    'File at a line': () => (
+    'Bestand bij een regel': () => (
       <div className="h-64 w-full max-w-[36rem]">
         <PierreFile text={sourceFile} path="src/winkelmand/totaal.ts" line={18} />
       </div>
     ),
-    'Wrapped lines': () => (
+    'Doorlopende regels': () => (
       <div className="h-64 w-full max-w-[36rem]">
         <PierreFile text={wideFile} path="src/winkelmand/totaal.ts" line={7} wrap />
       </div>

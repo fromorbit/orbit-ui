@@ -52,7 +52,7 @@ export const nl = {
     minutes: (count) => `${count} min`,
     hours: (count) => `${count} u`,
     days: (count) => `${count} d`,
-    weeks: (count) => `${count} w`,
+    weeks: (count) => `${count} wk`,
   } satisfies RelativeTimeLabels,
   list: {
     empty: 'Niets om te kiezen',
@@ -72,8 +72,10 @@ export const nl = {
     cell: (column, row) => `${column}, rij ${row}`,
   } satisfies EditableTableLabels,
   summary: {
-    files: (count) => (count === 1 ? `${count} bestand gewijzigd` : `${count} bestanden gewijzigd`),
-    lines: (added, removed) => `${added} regels erbij, ${removed} eraf`,
+    files: (count) =>
+      count === 1 ? '1 bestand gewijzigd' : `${count.toLocaleString('nl-NL')} bestanden gewijzigd`,
+    lines: (added, removed) =>
+      `${added.toLocaleString('nl-NL')} regels erbij, ${removed.toLocaleString('nl-NL')} eraf`,
     open: 'Bekijk',
   } satisfies SummaryBarLabels,
   treeMarks: {

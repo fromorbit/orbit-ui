@@ -2,40 +2,40 @@ import type { Story } from '../gallery/story'
 import { IconSegmentedControl } from './IconSegmentedControl'
 
 const options = [
-  { value: 'stacked', icon: 'rows', label: 'Stacked' },
-  { value: 'split', icon: 'columns', label: 'Split' },
+  { value: 'stacked', icon: 'rows', label: 'Onder elkaar' },
+  { value: 'split', icon: 'columns', label: 'Naast elkaar' },
 ] as const
 
 export default {
   group: 'primitives',
   title: 'IconSegmentedControl',
   states: {
-    States: () => (
+    Staten: () => (
       <IconSegmentedControl
-        label="Diff layout"
+        label="Weergave van het verschil"
         value="stacked"
         options={options}
         onValueChange={() => {}}
       />
     ),
-    Sizes: () => (
+    Maten: () => (
       <div className="flex items-center gap-2">
         <IconSegmentedControl
-          label="Diff layout"
+          label="Weergave van het verschil"
           value="stacked"
           options={options}
           size="sm"
           onValueChange={() => {}}
         />
         <IconSegmentedControl
-          label="Diff layout"
+          label="Weergave van het verschil"
           value="stacked"
           options={options}
           size="md"
           onValueChange={() => {}}
         />
         <IconSegmentedControl
-          label="Diff layout"
+          label="Weergave van het verschil"
           value="stacked"
           options={options}
           size="lg"
@@ -43,9 +43,9 @@ export default {
         />
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <IconSegmentedControl
-        label="Diff layout"
+        label="Weergave van het verschil"
         value="stacked"
         options={options}
         disabled

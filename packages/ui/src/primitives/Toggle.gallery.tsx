@@ -5,23 +5,23 @@ export default {
   group: 'primitives',
   title: 'Toggle',
   states: {
-    States: () => (
+    Staten: () => (
       <div className="flex gap-2">
-        <Toggle icon="wrap-text" label="Off" pressed={false} onPressedChange={() => {}} />
-        <Toggle icon="wrap-text" label="On" pressed onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Uit" pressed={false} onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Aan" pressed onPressedChange={() => {}} />
       </div>
     ),
-    Sizes: () => (
+    Maten: () => (
       <div className="flex items-center gap-2">
-        <Toggle icon="wrap-text" label="Small" pressed size="sm" onPressedChange={() => {}} />
-        <Toggle icon="wrap-text" label="Medium" pressed size="md" onPressedChange={() => {}} />
-        <Toggle icon="wrap-text" label="Large" pressed size="lg" onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Klein" pressed size="sm" onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Middel" pressed size="md" onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Groot" pressed size="lg" onPressedChange={() => {}} />
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <div className="flex gap-2">
-        <Toggle icon="wrap-text" label="Off" pressed={false} disabled onPressedChange={() => {}} />
-        <Toggle icon="wrap-text" label="On" pressed disabled onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Uit" pressed={false} disabled onPressedChange={() => {}} />
+        <Toggle icon="wrap-text" label="Aan" pressed disabled onPressedChange={() => {}} />
       </div>
     ),
   },

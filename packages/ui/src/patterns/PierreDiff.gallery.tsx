@@ -49,7 +49,7 @@ export default {
   group: 'patterns',
   title: 'PierreDiff',
   states: {
-    Added: () => (
+    Toegevoegd: () => (
       <PierreDiff
         diff={added}
         path="/work/lezer/src/greet.ts"
@@ -58,7 +58,7 @@ export default {
         emptyLabel="Geen wijziging"
       />
     ),
-    Removed: () => (
+    Verwijderd: () => (
       <PierreDiff
         diff={removed}
         path="/work/lezer/src/greet.ts"
@@ -67,7 +67,7 @@ export default {
         emptyLabel="Geen wijziging"
       />
     ),
-    Mixed: () => (
+    Gemengd: () => (
       <PierreDiff
         diff={mixed}
         path="/work/lezer/src/greet.ts"
@@ -76,7 +76,7 @@ export default {
         emptyLabel="Geen wijziging"
       />
     ),
-    Long: () => (
+    'Lange inhoud': () => (
       <div className="w-full max-w-96">
         <PierreDiff
           diff={long}
@@ -87,7 +87,7 @@ export default {
         />
       </div>
     ),
-    'Unknown language': () => (
+    'Onbekende taal': () => (
       <PierreDiff
         diff={unknownLanguage}
         path="/work/lezer/notes.zzz"
@@ -98,7 +98,7 @@ export default {
     ),
     // Last, so it moves no reference above it: lines 2–3 selected, with a stand-in where the
     // changes tab hangs its note box (`LineNote`, which `shared/ui/` may not import).
-    'Selected lines': () => (
+    'Gekozen regels': () => (
       <PierreDiff
         diff={mixed}
         path="/work/lezer/src/greet.ts"

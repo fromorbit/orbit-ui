@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'ShareBar',
   states: {
-    'Findings per severity': () => (
+    'Bevindingen per ernst': () => (
       <div className="w-full max-w-96">
         <ShareBar
           label="Bevindingen"
@@ -29,7 +29,7 @@ export default {
         />
       </div>
     ),
-    'Tests per outcome': () => (
+    'Tests per uitkomst': () => (
       <div className="w-full max-w-96">
         <ShareBar
           label="Tests"

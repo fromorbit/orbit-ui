@@ -59,8 +59,8 @@ export default {
   group: 'overlays',
   title: 'Tooltip',
   states: {
-    Default,
-    'With a shortcut': WithAShortcut,
-    'On a long label': OnALongLabel,
+    Standaard: Default,
+    'Met een sneltoets': WithAShortcut,
+    'Bij een lang label': OnALongLabel,
   },
 } satisfies Story

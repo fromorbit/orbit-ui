@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'Icon',
   states: {
-    Icons: () => (
+    Iconen: () => (
       // Wrapping, and capped: the registry grows, and one endless row would push the gallery's
       // stage wider than the window — which axe reports, rightly, as a scrollable region no
       // keyboard can reach. 1008px is the width this row had while it still fitted on one line, so
@@ -19,7 +19,7 @@ export default {
         ))}
       </div>
     ),
-    Tones: () => (
+    Tonen: () => (
       // A tone never stands alone: what turns red also changes shape, and the word that goes with
       // it lives wherever the caller keeps its accessible name.
       <div className="flex items-center gap-4">
@@ -33,7 +33,7 @@ export default {
         </div>
       </div>
     ),
-    Sizes: () => (
+    Maten: () => (
       <div className="flex items-center gap-4">
         <div className="flex flex-col items-center gap-1 text-[12px] text-muted">
           <Icon name="chevron-down" size="xs" />

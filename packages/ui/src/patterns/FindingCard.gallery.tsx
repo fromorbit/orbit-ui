@@ -31,7 +31,7 @@ export default {
   group: 'patterns',
   title: 'FindingCard',
   states: {
-    'Blocking, with a screenshot': () => (
+    'Blokkerend, met een schermafbeelding': () => (
       <div className="w-full max-w-[640px]">
         <FindingCard
           headingLevel={2}
@@ -47,7 +47,7 @@ export default {
         </FindingCard>
       </div>
     ),
-    'Every severity, heavy to light': () => (
+    'Elke ernst, van zwaar naar licht': () => (
       <div className="flex w-full max-w-[640px] flex-col gap-2">
         <FindingCard
           headingLevel={2}
@@ -82,7 +82,7 @@ export default {
         </FindingCard>
       </div>
     ),
-    'With actions': () => (
+    'Met acties': () => (
       <div className="w-full max-w-[640px]">
         <FindingCard
           headingLevel={2}
@@ -117,7 +117,7 @@ export default {
         </FindingCard>
       </div>
     ),
-    'Long words, a deep file and a long story': () => (
+    'Lange woorden, een diep bestand en een lang verhaal': () => (
       <div className="w-full max-w-[640px]">
         <FindingCard
           headingLevel={2}
@@ -136,7 +136,7 @@ export default {
         </FindingCard>
       </div>
     ),
-    'Narrow: the screenshot under the words': () => (
+    'Smal: de schermafbeelding onder de tekst': () => (
       <div className="w-full max-w-[340px]">
         <FindingCard
           headingLevel={2}

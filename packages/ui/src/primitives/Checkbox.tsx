@@ -61,7 +61,7 @@ export function Checkbox({
       className={
         ariaInvalid
           ? 'no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-danger bg-surface text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:bg-accent data-[state=indeterminate]:bg-accent'
-          : 'no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-border bg-surface text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent'
+          : 'no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-control-border bg-surface text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent'
       }
     >
       <RadixCheckbox.Indicator>

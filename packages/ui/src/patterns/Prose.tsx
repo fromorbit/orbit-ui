@@ -672,7 +672,12 @@ function DocumentView({
     () => (code: () => string) => <CopyButton text={code} {...copy} />,
     [copy],
   )
-  return <DocProse markdown={markdown} labels={labels} renderCopy={renderCopy} {...document} />
+  // A long line of code scrolls inside its own block, never the page around the document.
+  return (
+    <div className="min-w-0 [&_pre]:max-w-full [&_pre]:overflow-x-auto">
+      <DocProse markdown={markdown} labels={labels} renderCopy={renderCopy} {...document} />
+    </div>
+  )
 }
 
 /**

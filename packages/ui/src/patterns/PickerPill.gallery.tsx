@@ -250,7 +250,7 @@ function ChatPills() {
  */
 function TightToolbar() {
   return (
-    <div className="w-[588px] rounded-lg border border-border bg-surface p-3">
+    <div className="w-full max-w-[588px] rounded-lg border border-border bg-surface p-3">
       <div className="@container/toolbar flex items-center gap-1">
         <ChatPills />
       </div>
@@ -261,7 +261,7 @@ function TightToolbar() {
 /** The same surface at the column's full width (768px), where the toolbar is 742px. */
 function RoomyToolbar() {
   return (
-    <div className="w-[768px] rounded-lg border border-border bg-surface p-3">
+    <div className="w-full max-w-[768px] rounded-lg border border-border bg-surface p-3">
       <div className="@container/toolbar flex items-center gap-1">
         <ChatPills />
       </div>
@@ -279,9 +279,9 @@ function RoomyToolbar() {
  */
 function ProjectLine() {
   return (
-    <div className="w-[588px]">
+    <div className="w-full max-w-[588px]">
       <div className="rounded-lg border border-border bg-surface p-3 text-[13px] text-muted">
-        Ask for changes…
+        Vraag om wijzigingen…
       </div>
       <div className="mt-2 flex h-6 items-center pl-[5px]">
         <PickerPill
@@ -309,7 +309,7 @@ function ProjectLine() {
  */
 function CollapsedForms() {
   return (
-    <div className="w-[420px] rounded-lg border border-border bg-surface p-3">
+    <div className="w-full max-w-[420px] rounded-lg border border-border bg-surface p-3">
       <div className="@container/toolbar flex items-center gap-1">
         <PickerPill
           listLabels={nl.list}
@@ -412,9 +412,9 @@ export default {
   group: 'patterns',
   title: 'PickerPill',
   states: {
-    'At rest': () => <Project action />,
+    'In rust': () => <Project action />,
     Open: Opened,
-    'Read-only, beside the pill it replaces': () => (
+    'Alleen-lezen, naast de pil die hij vervangt': () => (
       <div className="flex flex-col items-start gap-1">
         <Project />
         <PickerPill
@@ -429,7 +429,7 @@ export default {
         />
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <PickerPill
         listLabels={nl.list}
         label="Model"
@@ -440,7 +440,7 @@ export default {
         disabledReason="You cannot switch models during a turn"
       />
     ),
-    Attention: () => (
+    'Let op': () => (
       <PickerPill
         listLabels={nl.list}
         label="Toegang"
@@ -458,7 +458,7 @@ export default {
     ),
     // Long enough to pass the 160px cap by a comfortable margin: this state exists to show a value
     // losing its tail, so a name that happens to fit would prove nothing at all.
-    'A long value': () => (
+    'Een lange waarde': () => (
       <PickerPill
         listLabels={nl.list}
         label="Project"
@@ -469,25 +469,25 @@ export default {
         onSelect={() => {}}
       />
     ),
-    'Four in a row': Toolbar,
-    'Three in a row that is too tight for them': Tight,
-    'Collapsing, in a toolbar with no room left': TightToolbar,
-    'The same toolbar once the window is wide': RoomyToolbar,
-    'Collapsed: every form, beside a pill that keeps its value': CollapsedForms,
+    'Vier op een rij': Toolbar,
+    'Drie op een rij die te krap is': Tight,
+    'Inklappend, in een werkbalk zonder ruimte': TightToolbar,
+    'Dezelfde werkbalk in een breed venster': RoomyToolbar,
+    'Ingeklapt: elke vorm, naast een pil die zijn waarde houdt': CollapsedForms,
     // Last on the page on purpose: a state inserted higher up moves every state under it, and an
     // element screenshot of a moved box rasterises a whisker differently — five references would
     // change for a story that did not.
-    'Under the composer, with a line to itself': ProjectLine,
+    'Onder de invoer, op een eigen regel': ProjectLine,
     // After the last state rather than among the others, for the reason given above. The scope
     // picker at the head of the changes tab: no fill, no border, the value in the foreground.
-    'Plain, at the head of a panel': () => (
+    'Eenvoudig, bovenaan een paneel': () => (
       <PickerPill
         listLabels={nl.list}
         frame="plain"
         label="Bereik"
-        value="Deze chat"
+        value="Dit gesprek"
         items={[
-          { id: 'chat', label: 'Deze chat' },
+          { id: 'chat', label: 'Dit gesprek' },
           { id: 'branch', label: 'Hele branch' },
         ]}
         selectedId="chat"

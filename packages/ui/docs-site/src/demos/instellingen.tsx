@@ -132,7 +132,7 @@ function TextSetting({
 const TOOLS = [
   { name: 'Bun 1.4.4', kind: 'done', status: 'Gevonden' },
   { name: 'Node 24.11', kind: 'done', status: 'Gevonden' },
-  { name: 'Docker', kind: 'failed', status: 'Draait niet' },
+  { name: 'Docker', kind: 'attention', status: 'Draait niet' },
 ] as const
 
 /** Orbit Review's settings for one repository, with the check of the machine on top. */
@@ -140,8 +140,9 @@ function Repository(): ReactNode {
   const [verdict, setVerdict] = useState('changes')
   return (
     <>
+      {/* One state, one mark: amber here and on the Omgeving row below, the same words in both. */}
       <Banner
-        tone="danger"
+        tone="attention"
         action={
           <Button variant="secondary" size="sm">
             Opnieuw controleren
@@ -165,7 +166,7 @@ function Repository(): ReactNode {
         <SettingFoldRow
           label="Omgeving"
           description="Wat Review op deze machine nodig heeft"
-          status={{ tone: 'attention', label: 'Docker ontbreekt' }}
+          status={{ tone: 'attention', label: 'Docker draait niet' }}
         >
           <List label="Omgeving">
             {TOOLS.map((tool) => (
@@ -388,7 +389,7 @@ function Account(): ReactNode {
           </List>
         </SettingFoldRow>
       </SettingsGroup>
-      <SettingsGroup title="Account opheffen">
+      <SettingsGroup title="Account verwijderen">
         <SettingRow
           labels={labels}
           label="Account verwijderen"
@@ -480,7 +481,7 @@ function Subscription(): ReactNode {
         }
       >
         De incasso van € 174,24 voor september is mislukt: onvoldoende saldo. We proberen het op 24
-        oktober opnieuw.
+        okt opnieuw.
       </Banner>
       <PlanCards label="Plannen">
         <PlanCard

@@ -44,7 +44,7 @@ export default {
   group: 'patterns',
   title: 'List',
   states: {
-    'Every kind, and a row without one': () => (
+    'Elke soort, en een rij zonder': () => (
       <Column>
         <List label="Runs">
           <ListRow
@@ -90,7 +90,7 @@ export default {
         </List>
       </Column>
     ),
-    'Status as the only detail': () => (
+    'Status als enige detail': () => (
       <Column>
         <List label="Runs">
           <ListRow title="Transport herschrijven" kind="running" status="Loopt" />
@@ -98,7 +98,7 @@ export default {
         </List>
       </Column>
     ),
-    'Selected, and a title too long for its column': () => {
+    'Gekozen, en een titel te lang voor de kolom': () => {
       const [current, setCurrent] = useState('a')
       return (
         <Column>
@@ -121,7 +121,7 @@ export default {
         </Column>
       )
     },
-    'Two groups (the arrows run through both)': () => (
+    'Twee groepen (de pijltjes lopen door beide)': () => (
       <Column>
         <List label="Gesprekken">
           <Group heading="nt-agent">
@@ -154,7 +154,7 @@ export default {
       </Column>
     ),
     // Last, so it moves no reference image above it.
-    'Foldable groups with status shapes (the sidebar)': () => {
+    'Inklapbare groepen met statusvormen (de zijbalk)': () => {
       const [open, setOpen] = useState({ agent: true, shop: false })
       return (
         <Column>
@@ -205,7 +205,7 @@ export default {
       )
     },
     // Last, so it moves no reference image above it.
-    'Two lines: where and how much': () => (
+    'Twee regels: waar en hoeveel': () => (
       <Column>
         <List label="Gesprekken">
           <ListRow
@@ -236,7 +236,7 @@ export default {
         </List>
       </Column>
     ),
-    'Rows that fold, open and closed': () => (
+    'Rijen die inklappen, open en dicht': () => (
       // `px-2`: the chevron needs the 8px gutter left of the row, as in the sidebar's column.
       <Column>
         <div className="px-2">
@@ -291,7 +291,7 @@ export default {
     ),
     // The rows of the Specs column: 28px in the 13px of the base (`dense`), with a status word or
     // nothing at the right, and the number under the pointer.
-    'Dense rows': () => (
+    'Dichte rijen': () => (
       <Column>
         <List label="Documenten">
           <ListRow title="Retour zonder account" status="Spec, in review" dense meta="Review" />
@@ -307,7 +307,7 @@ export default {
     ),
     // A plan with its progress at rest and its number under the pointer (`hoverMeta`), and its
     // steps as compact rows under it without a detail of their own (`meta={false}`).
-    'Compact rows and a detail for the pointer': () => (
+    'Compacte rijen en een detail voor de muis': () => (
       <Column>
         <List label="Plan">
           <ListRow title="Plan afrekenen" status="Plan, actief" meta="1/3" hoverMeta="PLAN-9" />

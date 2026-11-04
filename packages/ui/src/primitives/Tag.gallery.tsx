@@ -5,15 +5,15 @@ export default {
   group: 'primitives',
   title: 'Tag',
   states: {
-    Tones: () => (
-      <div className="flex gap-2">
-        <Tag>Draft</Tag>
+    Tonen: () => (
+      <div className="flex flex-wrap gap-2">
+        <Tag>Concept</Tag>
         <Tag tone="success" icon="check-circle">
-          Ready
+          Klaar
         </Tag>
-        <Tag tone="attention">Pending</Tag>
+        <Tag tone="attention">Wacht</Tag>
         <Tag tone="danger" icon="alert-triangle">
-          Failed
+          Mislukt
         </Tag>
       </div>
     ),

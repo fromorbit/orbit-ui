@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactElement } from 'react'
+import { Fragment, type MouseEvent, type ReactElement, type ReactNode } from 'react'
 import { isCommandClick } from '../provider/platform'
 import { useUi } from '../provider/UiProvider'
 import { PierreFileIcon } from './PierreFileIcon'
@@ -26,6 +26,24 @@ export interface FileLinkProps {
 
 /** `:12` or `:12:5` at the end of what the agent wrote. */
 const LINE = /:\d+(?::\d+)?$/
+
+/**
+ * The folders of a path with a chance to break after every `/`, so a long path wraps at its
+ * separators in a narrow column instead of running past the edge (and the icon stays with the
+ * first folder rather than standing alone on a line).
+ */
+function breakable(folders: string): ReactNode[] {
+  return folders.split('/').flatMap((part, index, parts): ReactNode[] =>
+    index === parts.length - 1
+      ? [part]
+      : [
+          // biome-ignore lint/suspicious/noArrayIndexKey: the folders of one path, never reordered; two may share a name.
+          <Fragment key={`${index}-${part}`}>
+            {part}/<wbr />
+          </Fragment>,
+        ],
+  )
+}
 
 /**
  * A path the agent named, as a quiet button in running text: the type icon of the file, the folder
@@ -59,12 +77,12 @@ export function FileLink({ text, path, line, column, label, onOpen }: FileLinkPr
       aria-label={label}
       title={title}
       onClick={open}
-      className="inline cursor-pointer rounded-sm px-1 py-0.5 font-mono text-[12px] text-fg outline-focus box-decoration-clone transition-colors duration-(--nt-duration-fast) hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
+      className="inline cursor-pointer rounded-sm px-1 text-left [overflow-wrap:anywhere] py-0.5 font-mono text-[12px] text-fg outline-focus box-decoration-clone transition-colors duration-(--nt-duration-fast) hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
     >
       <span className="mr-1 inline-flex translate-y-[2px] text-fg">
         <PierreFileIcon path={path} />
       </span>
-      <span className="text-muted">{written.slice(0, nameStart)}</span>
+      <span className="text-muted">{breakable(written.slice(0, nameStart))}</span>
       <span>{written.slice(nameStart)}</span>
       {suffix ? <span className="text-muted">{suffix}</span> : null}
     </button>

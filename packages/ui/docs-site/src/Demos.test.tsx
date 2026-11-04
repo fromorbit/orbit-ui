@@ -46,7 +46,7 @@ const SLUGS = [
   'dashboard',
   'apps',
   'inloggen',
-  'taken',
+  'specs',
   'branches',
   'gebruik',
   'instellingen',
@@ -95,11 +95,11 @@ describe('the demos tab', () => {
   })
 
   test('returns to the block that was open after a visit to the components', async () => {
-    goTo('#/demo/taken')
+    goTo('#/demo/specs')
     render(<DocsPage stories={stories} />)
     await userEvent.click(screen.getByRole('radio', { name: 'Componenten' }))
     await userEvent.click(screen.getByRole('radio', { name: "Demo's" }))
-    expect(location.hash).toBe('#/demo/taken')
+    expect(location.hash).toBe('#/demo/specs')
   })
 
   test('keeps a story hash on the components tab', () => {

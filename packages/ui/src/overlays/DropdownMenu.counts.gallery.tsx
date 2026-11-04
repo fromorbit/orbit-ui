@@ -5,7 +5,7 @@ import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 /** The scopes of the list in Specs, each with its count and its key. */
 const SCOPES: DropdownMenuItem[] = [
   // Names what is counted, and the radio group under it.
-  { id: 'tasks', label: 'Taken', kind: 'heading' },
+  { id: 'tasks', label: 'Specs', kind: 'heading' },
   {
     id: 'forYou',
     label: 'Voor jou',
@@ -61,5 +61,5 @@ function Open() {
 export default {
   group: 'overlays',
   title: 'DropdownMenu with counts',
-  states: { Open },
+  states: { Open: Open },
 } satisfies Story
