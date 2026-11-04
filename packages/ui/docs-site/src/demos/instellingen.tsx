@@ -12,6 +12,7 @@ import {
   ListRow,
   PageHeader,
   PlanCard,
+  PlanCards,
   RadioGroup,
   ScrollArea,
   SearchList,
@@ -22,8 +23,8 @@ import {
   SettingFoldRow,
   SettingRow,
   SettingsGroup,
+  StatusMark,
   Switch,
-  Tag,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
@@ -53,7 +54,7 @@ const INTRO: Record<Section, string> = {
   repository: `Hoe Orbit Review ${REPO} installeert, start en beoordeelt.`,
   account: 'Je profiel, je taal en hoe je inlogt.',
   meldingen: 'Wat je hoort, en wanneer niet.',
-  abonnement: 'Het plan van Zilverberg en wie het betaalt.',
+  abonnement: 'Het plan van Zilverberg en hoe het betaald wordt.',
 }
 
 /**
@@ -148,9 +149,12 @@ function Repository(): ReactNode {
       <SettingsGroup title="Koppeling">
         <SettingRow labels={labels} label="Repository" description="Gekoppeld via GitHub">
           {() => (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="font-mono text-[12px] text-secondary">{REPO}</span>
-              <Tag tone="success">Gekoppeld</Tag>
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+                <StatusMark kind="running" />
+                Gekoppeld
+              </span>
             </div>
           )}
         </SettingRow>
@@ -182,7 +186,7 @@ function Repository(): ReactNode {
         />
         <SwitchSetting
           label="Vertrouwd"
-          description="Start zonder te vragen; alleen voor repositories van je eigen team"
+          description="Start zonder te vragen; alleen voor je eigen team"
           initial
         />
       </SettingsGroup>
@@ -198,19 +202,20 @@ function Repository(): ReactNode {
           description="Een goedkeuring plaatst Review nooit"
         >
           {({ labelId }) => (
-            <Wide>
+            <div className="w-56 max-w-full">
               <Select
                 label="Bij een blokkerende bevinding"
                 aria-labelledby={labelId}
                 size="sm"
                 value={verdict}
                 options={[
-                  { value: 'changes', label: 'Vraag om wijzigingen' },
-                  { value: 'comment', label: 'Alleen een comment' },
+                  { value: 'changes', label: 'Om wijzigingen vragen' },
+                  { value: 'comment', label: 'Alleen een opmerking' },
                 ]}
                 onValueChange={setVerdict}
+                block
               />
-            </Wide>
+            </div>
           )}
         </SettingRow>
       </SettingsGroup>
@@ -451,62 +456,74 @@ function Notifications(): ReactNode {
 }
 
 /**
- * The plan the workspace is on beside the one above it, then who pays: two plans rather than a
- * table of every plan, so the choice stays small, and the whole of the usage on its own page.
+ * The plan the workspace is on beside the one above it, then how it is paid: two plans rather than
+ * a table of every plan, so the choice stays small, and the whole of the usage on its own page.
+ * The plans lie on the tint of the settings groups under them, so the column speaks one region
+ * language; the failed direct debit is said here as on Gebruik, with the step that settles it.
  */
 function Subscription(): ReactNode {
   return (
     <>
-      <div className="@container">
-        <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2">
-          <PlanCard
-            name="Team"
-            price="€ 24"
-            period="per lid per maand, excl. btw"
-            description="Voor een team dat samen bouwt en reviewt."
-            features={[
-              'Onbeperkt gesprekken en specs',
-              '250 agent-uren per maand',
-              'Orbit Review op 10 repositories',
-              '50 GB opslag voor opnames',
-            ]}
-            current
-            currentLabel="Huidig plan"
-            summary="6 leden · € 174,24 per maand incl. btw"
-          />
-          <PlanCard
-            name="Bedrijf"
-            price="€ 39"
-            period="per lid per maand, excl. btw"
-            description="Voor meer teams, met inloggen via je eigen provider."
-            features={[
-              'Alles van Team',
-              '1.000 agent-uren per maand',
-              'Orbit Review op elke repository',
-              '250 GB opslag voor opnames',
-              'Inloggen met SSO',
-            ]}
-            summary="6 leden · € 283,14 per maand incl. btw"
-            action={
-              <Button variant="secondary" size="sm">
-                Overstappen
-              </Button>
-            }
-          />
-        </div>
-      </div>
-      <SettingsGroup title="Betaling">
-        <SettingRow labels={labels} label="Betaalwijze" description="SEPA-incasso, NL·· ···· 4021">
-          {() => (
+      <PlanCards label="Plannen">
+        <PlanCard
+          name="Team"
+          price="€ 24"
+          period="per lid per maand, excl. btw"
+          description="Voor een team dat samen bouwt en reviewt."
+          features={[
+            'Onbeperkt gesprekken en specs',
+            '250 agent-uren per maand',
+            'Orbit Review op 10 repositories',
+            '50 GB opslag voor opnames',
+          ]}
+          current
+          currentLabel="Huidig plan"
+          plane="surface"
+          summary="6 leden · € 174,24 per maand incl. btw"
+        />
+        <PlanCard
+          name="Bedrijf"
+          price="€ 39"
+          period="per lid per maand, excl. btw"
+          description="Voor meer teams, met inloggen via je eigen provider."
+          features={[
+            'Alles van Team',
+            '1.000 agent-uren per maand',
+            'Orbit Review op elke repository',
+            '250 GB opslag voor opnames',
+            'Inloggen met SSO',
+          ]}
+          plane="surface"
+          summary="6 leden · € 283,14 per maand incl. btw"
+          action={
             <Button variant="secondary" size="sm">
-              Wijzigen
+              Naar Bedrijf
             </Button>
+          }
+        />
+      </PlanCards>
+      <SettingsGroup title="Betaling">
+        <SettingRow
+          labels={labels}
+          label="Betaalwijze"
+          description="SEPA-incasso, NL •••• 4021 · nieuwe poging 24 okt"
+        >
+          {({ describedById }) => (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+                <StatusMark kind="fault" />
+                Incasso mislukt
+              </span>
+              <Button variant="primary" size="sm" aria-describedby={describedById}>
+                Nu betalen
+              </Button>
+            </div>
           )}
         </SettingRow>
         <SettingRow
           labels={labels}
           label="Gebruik en facturen"
-          description="Wat Zilverberg deze maand gebruikte, en elke factuur"
+          description="Het gebruik, de facturen en de betaalwijze"
         >
           {() => (
             <Button
@@ -539,17 +556,18 @@ function SettingsPage({ initial }: { initial: Section }): ReactNode {
   const current = SECTIONS.find((entry) => entry.id === section)
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5 text-[13px] @3xl:px-8 @3xl:py-7">
-      <PageHeader title="Instellingen" meta={`Zilverberg · ${REPO}`} />
+      <PageHeader
+        title="Instellingen"
+        meta={section === 'repository' ? `Zilverberg · ${REPO}` : 'Zilverberg'}
+      />
       <div className="@4xl:hidden">
-        <Wide>
-          <Select<Section>
-            label="Onderdeel"
-            size="sm"
-            value={section}
-            options={SECTIONS.map(({ id, label }) => ({ value: id, label }))}
-            onValueChange={setSection}
-          />
-        </Wide>
+        <Select<Section>
+          label="Onderdeel"
+          value={section}
+          options={SECTIONS.map(({ id, label }) => ({ value: id, label }))}
+          onValueChange={setSection}
+          block
+        />
       </div>
       <div className="flex gap-8">
         <div className="hidden w-48 shrink-0 @4xl:block">

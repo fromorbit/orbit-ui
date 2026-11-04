@@ -12,7 +12,7 @@ const DOT: Record<SettingFoldTone, string> = {
 }
 
 /** The frame of the row: the height and insets of every `SettingRow`. */
-const ROW = 'flex min-h-12 w-full items-center gap-6 px-4 py-3'
+const ROW = 'flex min-h-12 w-full items-center gap-x-6 gap-y-2 px-4 py-3 @max-[30rem]:flex-wrap'
 
 /** The props of `SettingFoldRow`. */
 export interface SettingFoldRowProps {
@@ -51,7 +51,9 @@ export function SettingFoldRow({
   const foldable = Children.toArray(children).length > 0
   const head = (
     <>
-      <span className="min-w-0 flex-1">
+      {/* Under 480px the status goes under the label, as a `SettingRow` puts its control there,
+          so the explanation is not cut to a word or two. */}
+      <span className="min-w-0 flex-1 @max-[30rem]:basis-full">
         <span className="block truncate leading-5 text-fg">{label}</span>
         {description === undefined || description.trim() === '' ? null : (
           <span className="block truncate text-[12px] leading-4 text-muted" title={description}>
@@ -90,7 +92,7 @@ export function SettingFoldRow({
     </>
   )
   return (
-    <div data-nt-setting-fold-row>
+    <div data-nt-setting-fold-row className="@container">
       {foldable ? (
         <button
           type="button"

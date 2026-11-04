@@ -17,7 +17,8 @@ import {
   PlanCard,
   PropertyList,
   ScrollArea,
-  Tag,
+  StatusMark,
+  type StatusMarkKind,
   Timeline,
   TimelineItem,
 } from '../../../src'
@@ -43,7 +44,7 @@ const KPIS: Figure[] = [
     // More hours is not good news on its own: at this pace the month ends over the plan.
     tone: 'neutral',
     rising: true,
-    against: 't.o.v. 1–20 september',
+    against: 'tegenover 1–20 september',
     // The first 20 days of each month, so the line compares the same stretch as the delta.
     trail: [131, 138, 129, 146, 152, 149, 160, 182],
   },
@@ -51,9 +52,10 @@ const KPIS: Figure[] = [
     label: 'Reviews',
     value: '46',
     delta: '9',
-    tone: 'good',
+    // Every chip stays neutral: the change is news, whether it is good depends on the reader.
+    tone: 'neutral',
     rising: true,
-    against: 't.o.v. 1–20 september',
+    against: 'tegenover 1–20 september',
     trail: [31, 34, 29, 38, 35, 41, 37, 46],
   },
   {
@@ -62,7 +64,7 @@ const KPIS: Figure[] = [
     delta: '31',
     tone: 'neutral',
     rising: false,
-    against: 't.o.v. 1–20 september',
+    against: 'tegenover 1–20 september',
     trail: [204, 196, 188, 181, 172, 166, 159, 128],
   },
   {
@@ -72,7 +74,7 @@ const KPIS: Figure[] = [
     // Normal growth at 37% of the limit: no alarm until it nears the 50 GB.
     tone: 'neutral',
     rising: true,
-    against: 't.o.v. 20 september',
+    against: 'tegenover 20 september',
     meter: { value: 18.4, max: 50, text: '18,4 van 50 GB', note: '37% van 50 GB' },
   },
 ]
@@ -102,12 +104,22 @@ const EXTRA_NET = (PROJECTED - PLAN_HOURS) * EXTRA_HOUR
 /** A number and its unit, kept on one line. */
 const unit = (value: number, name: string) => `${value.toLocaleString('nl-NL')}\u00a0${name}`
 
-type InvoiceStatus = 'open' | 'paid' | 'failed'
+type InvoiceStatus = 'paid' | 'failed'
 
-const STATUS: Record<InvoiceStatus, { label: string; tone: 'neutral' | 'success' | 'danger' }> = {
-  open: { label: 'Open', tone: 'neutral' },
-  paid: { label: 'Betaald', tone: 'success' },
-  failed: { label: 'Mislukt', tone: 'danger' },
+/** The status of an invoice as the flat mark with its glow and a word, as every status here. */
+const STATUS: Record<InvoiceStatus, { label: string; kind: StatusMarkKind }> = {
+  paid: { label: 'Betaald', kind: 'running' },
+  failed: { label: 'Mislukt', kind: 'fault' },
+}
+
+/** The mark and the word of an invoice's status. */
+function InvoiceState({ status }: { status: InvoiceStatus }): ReactNode {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+      <StatusMark kind={STATUS[status].kind} />
+      {STATUS[status].label}
+    </span>
+  )
 }
 
 /** One step in the life of an invoice. */
@@ -135,25 +147,6 @@ interface Invoice {
 
 const INVOICES: readonly Invoice[] = [
   {
-    number: 'ZB-2026-0110',
-    period: 'oktober 2026',
-    date: '1 nov 2026',
-    members: 6,
-    net: 14_400,
-    status: 'open',
-    method: 'SEPA-incasso',
-    reference: 'inc_7Qm2Lx9TfK',
-    steps: [
-      {
-        icon: 'clock',
-        label: 'Wordt aangemaakt',
-        at: '1 nov',
-        note: 'Op basis van 6 leden',
-        tone: 'muted',
-      },
-    ],
-  },
-  {
     number: 'ZB-2026-0098',
     period: 'september 2026',
     date: '1 okt 2026',
@@ -169,7 +162,7 @@ const INVOICES: readonly Invoice[] = [
         icon: 'x',
         label: 'Incasso mislukt',
         at: '3 okt, 09:14',
-        note: 'Onvoldoende saldo (AM04)',
+        note: 'Onvoldoende saldo op de rekening',
         tone: 'danger',
       },
       {
@@ -271,9 +264,7 @@ function invoiceColumns(onSelect: (number: string) => void): DataTableColumn<Inv
     {
       id: 'status',
       header: 'Status',
-      cell: (invoice) => (
-        <Tag tone={STATUS[invoice.status].tone}>{STATUS[invoice.status].label}</Tag>
-      ),
+      cell: (invoice) => <InvoiceState status={invoice.status} />,
     },
     {
       id: 'download',
@@ -285,7 +276,6 @@ function invoiceColumns(onSelect: (number: string) => void): DataTableColumn<Inv
           icon="arrow-down"
           size="sm"
           label={`Download ${invoice.number} als pdf`}
-          disabled={invoice.status === 'open'}
           onClick={(event) => event.stopPropagation()}
         />
       ),
@@ -293,7 +283,42 @@ function invoiceColumns(onSelect: (number: string) => void): DataTableColumn<Inv
   ]
 }
 
-/** The invoices as a table, the newest first; a row opens beside it. */
+/**
+ * One invoice as a row of two lines, for a narrow table: number and month at the start, amount and
+ * status at the end, the download after it, so nothing scrolls sideways on a phone.
+ */
+function InvoiceCard({
+  invoice,
+  current,
+  onSelect,
+}: {
+  invoice: Invoice
+  current: boolean
+  onSelect(number: string): void
+}): ReactNode {
+  return (
+    <div className={`flex items-center gap-2 py-2 pr-2 pl-4 ${current ? 'bg-row-active' : ''}`}>
+      <button
+        type="button"
+        onClick={() => onSelect(invoice.number)}
+        {...(current ? { 'aria-current': 'true' as const } : {})}
+        className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-sm text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
+      >
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate font-mono text-[12px] text-fg">{invoice.number}</span>
+          <span className="truncate text-[12px] text-muted">{invoice.period}</span>
+        </span>
+        <span className="flex shrink-0 flex-col items-end">
+          <span className="text-[13px] text-fg tabular-nums">{euro(gross(invoice))}</span>
+          <InvoiceState status={invoice.status} />
+        </span>
+      </button>
+      <IconButton icon="arrow-down" size="sm" label={`Download ${invoice.number} als pdf`} />
+    </div>
+  )
+}
+
+/** The invoices as a table, the newest first; a row opens beside it. Narrow, a list of rows. */
 function InvoiceTable({
   selected,
   onSelect,
@@ -312,6 +337,13 @@ function InvoiceTable({
         defaultSort={{ column: 'date', direction: 'descending' }}
         current={selected}
         onRowClick={(invoice) => onSelect(invoice.number)}
+        card={(invoice) => (
+          <InvoiceCard
+            invoice={invoice}
+            current={invoice.number === selected}
+            onSelect={onSelect}
+          />
+        )}
       />
     </div>
   )
@@ -342,33 +374,19 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
 }
 
 /** One invoice in full: the amount, its parts, the reference and its history. */
-function InvoiceDetail({
-  invoice,
-  toPayment,
-}: {
-  invoice: Invoice
-  toPayment: () => void
-}): ReactNode {
-  const status = STATUS[invoice.status]
+function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
   return (
     <Panel
       title={invoice.number}
       meta={invoice.period}
-      actions={
-        <IconButton
-          icon="arrow-down"
-          size="sm"
-          label="Download als pdf"
-          disabled={invoice.status === 'open'}
-        />
-      }
+      actions={<IconButton icon="arrow-down" size="sm" label="Download als pdf" />}
     >
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
           <span className="font-heading text-[20px] text-fg leading-none tabular-nums">
             {euro(gross(invoice))}
           </span>
-          <Tag tone={status.tone}>{status.label}</Tag>
+          <InvoiceState status={invoice.status} />
         </div>
         <PropertyList
           label="Factuur"
@@ -393,80 +411,89 @@ function InvoiceDetail({
           ]}
         />
         <InvoiceTimeline steps={invoice.steps} />
-        {invoice.status === 'failed' ? (
-          <div className="flex flex-wrap gap-2">
-            <Button variant="primary" size="sm">
-              Nu betalen met iDEAL
-            </Button>
-            <Button variant="secondary" size="sm" onClick={toPayment}>
-              Betaalwijze wijzigen
-            </Button>
-          </div>
-        ) : null}
       </div>
     </Panel>
   )
 }
 
-/** Where the panel of the payment method is, for the button of a failed invoice. */
+/** Where the panel of the payment method is, for the variant that opens the page there. */
 const PAYMENT_ID = 'betaalwijze'
 
-/** A card being entered after the failed direct debit: number and expiry typed, the code not yet. */
-const NEW_CARD: CardValue = {
-  number: '4242424242424242',
-  expiry: '0829',
-  cvc: '',
-  name: 'Iris Kamphorst',
-}
+/** A card not yet entered: the form waits for one. */
+const NO_CARD: CardValue = { number: '', expiry: '', cvc: '', name: '' }
 
 /**
- * The payment method: what pays now, and a card to pay with instead. The picture of the card fills
- * in as it is typed and turns over for the code.
+ * The payment method: first what pays now and why to change it, then a card to add instead. No
+ * picture of a card: the one method in sight is the one in use (Prägnanz).
  */
 function PaymentMethod(): ReactNode {
-  const [card, setCard] = useState<CardValue>(NEW_CARD)
+  const [card, setCard] = useState<CardValue>(NO_CARD)
   const [submitted, setSubmitted] = useState(false)
   return (
     <section id={PAYMENT_ID} className="scroll-mt-4">
-      <Panel title="Betaalwijze" meta="wat Zilverberg betaalt">
-        <div className="grid grid-cols-1 gap-8 @4xl:grid-cols-[20rem_minmax(0,1fr)]">
-          <Form
-            label="Betalen met een kaart"
-            onSubmit={() => setSubmitted(true)}
-            actions={
-              <Button type="submit" variant="secondary">
-                Kaart gebruiken
-              </Button>
-            }
-          >
-            <CreditCardField
-              value={card}
-              onValueChange={setCard}
-              labels={galleryLabels.creditCard}
-              showErrors={submitted}
-              now={new Date(2026, 9, 20)}
-            />
-          </Form>
-          <div className="flex flex-col gap-4">
+      <Panel title="Betaalwijze" meta="hoe Zilverberg betaalt">
+        <div className="flex max-w-xl flex-col gap-6">
+          <div className="flex flex-col gap-2">
             <PropertyList
               label="Nu"
               groups={[
                 [
                   { label: 'Betaalwijze', value: 'SEPA-incasso' },
-                  { label: 'Rekening', value: 'NL·· ···· 4021' },
+                  { label: 'Rekening', value: 'NL •••• 4021' },
                   { label: 'Op naam van', value: 'Zilverberg B.V.' },
-                  { label: 'Laatste poging', value: 'mislukt op 3 oktober' },
+                  {
+                    label: 'Laatste poging',
+                    value: (
+                      <span className="inline-flex items-center gap-1.5">
+                        <StatusMark kind="fault" />
+                        Mislukt op 3 oktober
+                      </span>
+                    ),
+                  },
                 ],
               ]}
             />
-            <p className="m-0 max-w-md text-[12px] text-muted leading-relaxed">
-              Met een kaart gaan de volgende facturen van de kaart af. De incasso stopt dan, en de
-              open factuur van september betaalt de kaart meteen.
+            <p className="m-0 text-[12px] text-muted leading-relaxed">
+              Met een kaart gaan de volgende facturen voortaan van de kaart af en stopt de incasso.
+              De open factuur van september schrijven we dan meteen af.
             </p>
           </div>
+          <section aria-labelledby="kaart-toevoegen" className="flex max-w-md flex-col gap-3">
+            <h4 id="kaart-toevoegen" className="m-0 font-medium text-[13px] text-fg">
+              Kaart toevoegen
+            </h4>
+            <Form
+              label="Kaart toevoegen"
+              onSubmit={() => setSubmitted(true)}
+              actions={
+                <Button type="submit" variant="secondary">
+                  Kaart gebruiken
+                </Button>
+              }
+            >
+              <CreditCardField
+                value={card}
+                onValueChange={setCard}
+                labels={galleryLabels.creditCard}
+                showErrors={submitted}
+                now={new Date(2026, 9, 20)}
+                hideCard
+              />
+            </Form>
+          </section>
         </div>
       </Panel>
     </section>
+  )
+}
+
+/** "≈" as the eye reads it and "ongeveer" as a voice says it: some voices skip the sign. */
+function About({ children }: { children: ReactNode }): ReactNode {
+  return (
+    <>
+      <span aria-hidden="true">≈</span>
+      <span className="sr-only">ongeveer</span> {children}
+    </>
   )
 }
 
@@ -475,9 +502,12 @@ function PaymentMethod(): ReactNode {
  * the figures in a column at the end like the use of the plan above it.
  */
 function NextInvoice(): ReactNode {
-  const rows = [
+  const rows: { label: string; value: ReactNode }[] = [
     { label: 'Plan, 6 leden', value: euro(PLAN_NET) },
-    { label: `${unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan`, value: `≈ ${euro(EXTRA_NET)}` },
+    {
+      label: `${unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan`,
+      value: <About>{euro(EXTRA_NET)}</About>,
+    },
   ]
   return (
     <section aria-labelledby="volgende-factuur" className="flex flex-col gap-2">
@@ -494,7 +524,7 @@ function NextInvoice(): ReactNode {
         <div className="flex items-baseline justify-between gap-3">
           <dt className="font-medium text-fg">Verwacht, incl. btw</dt>
           <dd className="m-0 font-medium text-fg tabular-nums">
-            ≈ {euro(Math.round((PLAN_NET + EXTRA_NET) * 1.21))}
+            <About>{euro(Math.round((PLAN_NET + EXTRA_NET) * 1.21))}</About>
           </dd>
         </div>
       </dl>
@@ -506,13 +536,6 @@ function NextInvoice(): ReactNode {
 function Usage({ variant }: DemoScreenProps): ReactNode {
   const [selected, setSelected] = useState('ZB-2026-0098')
   const invoice = INVOICES.find((entry) => entry.number === selected) ?? INVOICES[0]
-  const toPayment = () => {
-    const field = document.getElementById(PAYMENT_ID)
-    field?.scrollIntoView({ block: 'start' })
-    field?.querySelector<HTMLInputElement>('input[autocomplete="cc-number"]')?.focus({
-      preventScroll: true,
-    })
-  }
   // The variant "Betaalwijze" opens the page at the card; only the scroll area moves, not the page.
   useEffect(() => {
     if (variant !== 'betaalwijze') return
@@ -525,12 +548,12 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
   return (
     <AppFrame product="orbit" current="gebruik">
       <ScrollArea>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <PageHeader
             title="Gebruik en facturen"
-            meta="Zilverberg · oktober tot en met de 20e"
+            meta="Zilverberg · 1–20 oktober"
             actions={
-              <Button variant="secondary" size="sm">
+              <Button variant="quiet" size="sm">
                 Factuurgegevens
               </Button>
             }
@@ -538,9 +561,14 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
           <Banner
             tone="danger"
             action={
-              <Button variant="secondary" size="sm" onClick={() => setSelected('ZB-2026-0098')}>
-                Bekijk factuur
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="quiet" size="sm" onClick={() => setSelected('ZB-2026-0098')}>
+                  Factuur bekijken
+                </Button>
+                <Button variant="primary" size="sm">
+                  Nu betalen met iDEAL
+                </Button>
+              </div>
             }
           >
             De incasso van september is mislukt. We proberen het op 24 oktober opnieuw.
@@ -554,7 +582,7 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               />
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(17rem,1fr)_minmax(0,2fr)]">
+          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(17rem,1fr)_minmax(0,2fr)]">
             <PlanCard
               name="Team"
               price="€ 24"
@@ -563,10 +591,10 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                 'Onbeperkt gesprekken en specs',
                 {
                   label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
-                  detail: `${USED} gebruikt`,
+                  detail: `${unit(USED, 'u')} gebruikt`,
                 },
-                { label: 'Orbit Review op 10 repositories', detail: '7 in gebruik' },
-                { label: '50 GB opslag voor opnames', detail: '18,4 GB' },
+                { label: 'Orbit Review op 10 repositories', detail: '7 gebruikt' },
+                { label: '50 GB opslag voor opnames', detail: '18,4\u00a0GB gebruikt' },
               ]}
               current
               currentLabel="Huidig plan"
@@ -592,7 +620,7 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                   forecast={{
                     series: 'used',
                     value: PROJECTED,
-                    label: `≈${unit(PROJECTED, 'u')}`,
+                    label: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')}`,
                     text: `verwacht eind oktober: ${unit(PROJECTED, 'u')}`,
                   }}
                   format={(value) => unit(value, 'u')}
@@ -608,11 +636,20 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               </div>
             </Panel>
           </div>
-          <div className="grid grid-cols-1 items-start gap-5 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-            <Panel title="Facturen" meta={`${INVOICES.length} van 11`} flush>
+          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+            <Panel
+              title="Facturen"
+              meta={`${INVOICES.length} van 10`}
+              actions={
+                <Button variant="quiet" size="sm">
+                  Alle facturen
+                </Button>
+              }
+              flush
+            >
               <InvoiceTable selected={selected} onSelect={setSelected} />
             </Panel>
-            {invoice ? <InvoiceDetail invoice={invoice} toPayment={toPayment} /> : null}
+            {invoice ? <InvoiceDetail invoice={invoice} /> : null}
           </div>
           <PaymentMethod />
         </div>
