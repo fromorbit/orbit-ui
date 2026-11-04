@@ -25,6 +25,7 @@ import emptyStateStory from '../patterns/EmptyState.gallery'
 import errorStateStory from '../patterns/ErrorState.gallery'
 import fileDropStory from '../patterns/FileDrop.gallery'
 import fileLinkStory from '../patterns/FileLink.gallery'
+import findingCardStory from '../patterns/FindingCard.gallery'
 import gitHubLinkStory from '../patterns/GitHubLink.gallery'
 import hostedSurfaceStory from '../patterns/HostedSurface.gallery'
 import listStory from '../patterns/List.gallery'
@@ -50,6 +51,7 @@ import selectionBarStory from '../patterns/SelectionBar.gallery'
 import settingFoldRowStory from '../patterns/SettingFoldRow.gallery'
 import settingRowStory from '../patterns/SettingRow.gallery'
 import settingsGroupStory from '../patterns/SettingsGroup.gallery'
+import severityBarStory from '../patterns/SeverityBar.gallery'
 import shelfGroupStory from '../patterns/ShelfGroup.gallery'
 import shimmerStory from '../patterns/Shimmer.gallery'
 import stackedRowStory from '../patterns/StackedRow.gallery'
@@ -152,6 +154,7 @@ export const stories: Story[] = collectStories([
   emptyStateStory,
   errorStateStory,
   fileLinkStory,
+  findingCardStory,
   gitHubLinkStory,
   hostedSurfaceStory,
   listStory,
@@ -176,6 +179,7 @@ export const stories: Story[] = collectStories([
   settingFoldRowStory,
   settingRowStory,
   settingsGroupStory,
+  severityBarStory,
   shelfGroupStory,
   shimmerStory,
   stackedRowStory,

@@ -9,6 +9,7 @@ import type { ProseLabels } from '../patterns/Prose'
 import type { RelativeTimeLabels } from '../patterns/RelativeTime'
 import type { SearchListLabels } from '../patterns/SearchList'
 import type { SettingRowLabels } from '../patterns/SettingRow'
+import type { FindingSeverity, SeverityBarLabels } from '../patterns/SeverityBar'
 import type { SummaryBarLabels } from '../patterns/SummaryBar'
 import type { SecretFieldLabels } from '../primitives/SecretField'
 
@@ -132,4 +133,15 @@ export const nl = {
       nameMissing: 'Vul de naam op de kaart in.',
     },
   } satisfies CreditCardFieldLabels,
+  severity: {
+    blocking: (count) => `${count} blokkerend`,
+    problem: (count) => (count === 1 ? '1 probleem' : `${count} problemen`),
+    note: (count) => (count === 1 ? '1 opmerking' : `${count} opmerkingen`),
+    none: 'Geen bevindingen',
+  } satisfies SeverityBarLabels,
+  severityWord: {
+    blocking: 'Blokkerend',
+    problem: 'Probleem',
+    note: 'Opmerking',
+  } satisfies Record<FindingSeverity, string>,
 }

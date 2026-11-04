@@ -20,7 +20,7 @@ import {
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
 import { Panel } from './parts/Panel'
-import { type Finding, ReviewFinding, SeverityBand } from './parts/ReviewFindings'
+import { type Finding, ReviewFindings } from './parts/ReviewFindings'
 import { ReviewSeen } from './parts/ReviewSeen'
 
 /** The pull request under review, made up: a web shop that learns to take iDEAL. */
@@ -443,8 +443,8 @@ function Stacks(): ReactNode {
 function Report(): ReactNode {
   const [asComment, setAsComment] = useState(false)
   return (
-    <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(0,1fr)_19rem]">
-      <div className="flex min-w-0 flex-col gap-5">
+    <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="flex min-w-0 flex-col gap-6">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <StepChips
             label="Fases van de review"
@@ -457,36 +457,38 @@ function Report(): ReactNode {
         <Panel title="Samenvatting">
           <p className="m-0 text-[13px] text-fg leading-relaxed">{SUMMARY}</p>
         </Panel>
-        <SeverityBand findings={FINDINGS} />
-        <div className="flex flex-col gap-3">
-          {FINDINGS.map((finding) => (
-            <ReviewFinding key={finding.title} finding={finding} />
-          ))}
-        </div>
+        <ReviewFindings findings={FINDINGS} />
       </div>
-      <aside className="flex min-w-0 flex-col gap-5">
+      <aside className="flex min-w-0 flex-col gap-6">
         <Panel title="Oordeel">
           <div className="flex flex-col gap-4">
-            <div className="flex items-start gap-2.5 rounded-lg border border-danger-border bg-danger-subtle px-3 py-2.5">
-              <span className="mt-0.5 text-danger">
-                <Icon name="octagon-alert" size="sm" />
+            {/* A region by its tint, no frame: danger while it asks for changes, quiet as a remark. */}
+            <div
+              className={`flex items-start gap-2.5 rounded-md px-3 py-2.5 ${asComment ? 'bg-surface' : 'bg-danger-subtle'}`}
+            >
+              <span className={`flex h-5 items-center ${asComment ? 'text-muted' : 'text-danger'}`}>
+                <Icon name={asComment ? 'message-square' : 'octagon-alert'} size="sm" />
               </span>
               <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="font-medium text-[13px] text-fg">
+                <span className="font-medium text-[13px] text-fg leading-5">
                   {asComment ? 'Alleen een opmerking' : 'Vraagt om wijzigingen'}
                 </span>
                 <span className="text-[12px] text-secondary leading-snug">
                   {asComment
                     ? 'Het verslag komt als opmerking; de pull request blijft open voor samenvoegen.'
-                    : 'Omdat er een blokkerende bevinding is. Een review keurt nooit zelf goed.'}
+                    : 'Er is een blokkerende bevinding. Een review keurt nooit zelf goed.'}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[13px] text-fg" aria-hidden="true">
-                Als Comment
+                Alleen als opmerking
               </span>
-              <Switch label="Als Comment" checked={asComment} onCheckedChange={setAsComment} />
+              <Switch
+                label="Alleen als opmerking"
+                checked={asComment}
+                onCheckedChange={setAsComment}
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Button variant="primary">
@@ -502,7 +504,12 @@ function Report(): ReactNode {
         <Panel title="Eerdere reviews" flush>
           <div className="px-2 pb-2">
             <List label="Eerdere reviews">
-              <ListRow title="Gisteren, 16:40" kind="failed" status="Mislukt" meta="Docker" />
+              <ListRow
+                title="Gisteren, 16:40"
+                kind="failed"
+                status="Mislukt"
+                meta="Docker startte niet"
+              />
               <ListRow title="Maandag, 10:12" kind="done" status="Klaar" meta="3 bevindingen" />
             </List>
           </div>

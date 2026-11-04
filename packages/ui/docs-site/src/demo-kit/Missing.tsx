@@ -12,8 +12,6 @@ export const MISSING = {
     'Een lijn-, vlak- of staafgrafiek met assen, tooltip en legenda op de tokens; nu is er geen enkele grafiek.',
   PlanCard:
     'Een abonnementskaart: naam, prijs per maand, wat erin zit en een knop; de huidige gemarkeerd.',
-  FindingCard:
-    'Een bevinding van een review: gewicht als teken en woord, titel, uitleg, pagina en schermafbeelding ernaast.',
   Scrubber:
     'De tijdlijn van een opname: afspeelpositie, slepen en markeringen per gebeurtenis (klik, navigatie, fout).',
 } as const
