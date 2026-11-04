@@ -60,7 +60,7 @@ export default {
     // below it.
     Werkmap: () => (
       // A tinted plane, not a frame: the region reads by its tint, as every region of the kit.
-      <div className="h-[280px] w-72 overflow-hidden rounded-lg bg-surface">
+      <div className="h-[280px] w-72 overflow-hidden rounded-lg bg-plane shadow-plane">
         <PierreTree
           entries={workDirectory}
           onSelect={() => {}}

@@ -6,7 +6,10 @@ import { Switch } from '../primitives/Switch'
 import { nl } from '../testing/labels'
 import { SettingRow, type SettingRowProps } from './SettingRow'
 
-/** The card a row stands in on the screen, at the width of the settings column. */
+/**
+ * The card a row stands in on the screen, at the width of the settings column: the plane of a
+ * `SettingsGroup`, a white card with a hairline in light.
+ */
 function Card({
   width = 'w-full max-w-[560px]',
   children,
@@ -16,7 +19,7 @@ function Card({
 }) {
   return (
     <TooltipProvider>
-      <div className={`${width} rounded-lg bg-surface`}>{children}</div>
+      <div className={`${width} rounded-lg bg-plane shadow-plane`}>{children}</div>
     </TooltipProvider>
   )
 }

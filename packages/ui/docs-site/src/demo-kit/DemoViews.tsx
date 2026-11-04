@@ -96,7 +96,8 @@ function Inventory({
             return (
               <li key={name} className="flex min-h-6 items-center text-secondary">
                 {href === undefined ? (
-                  name
+                  // The inset of a link, so a wrapped line starts on the edge of the first.
+                  <span className="px-1">{name}</span>
                 ) : (
                   <a
                     href={href}
@@ -452,7 +453,7 @@ export function DemoGallery({
               at both ends that says there is more, the first chip at rest on the gutter. */}
           <ul
             ref={strip}
-            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto py-1 pr-8 pl-3.5 xl:pr-0 xl:pl-0.5 [mask-image:linear-gradient(to_right,transparent,black_14px,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
+            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto py-1 pr-8 pl-3.5 xl:pr-0 xl:pl-0.5 [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
           >
             {JUMPS.map((jump) => (
               <li key={jump.slug} className="shrink-0">

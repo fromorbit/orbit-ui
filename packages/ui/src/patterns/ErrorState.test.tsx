@@ -82,3 +82,20 @@ test('the text comes from the caller: the pattern translates nothing itself', ()
   expect(screen.getByRole('alert')).toHaveTextContent('Provider niet beschikbaar')
   expect(screen.getByRole('alert')).toHaveTextContent('provider_unavailable')
 })
+
+test('the compact action follows its message instead of floating at the far edge', () => {
+  render(
+    <ErrorState
+      size="sm"
+      title="De taken laden niet"
+      action={
+        <Button size="sm" variant="secondary">
+          Opnieuw proberen
+        </Button>
+      }
+    />,
+  )
+  const slot = screen.getByRole('button', { name: 'Opnieuw proberen' }).parentElement
+  expect(slot?.className).not.toMatch(/\b(ml|ms)-auto\b/)
+  expect(slot?.previousElementSibling).toHaveTextContent('De taken laden niet')
+})

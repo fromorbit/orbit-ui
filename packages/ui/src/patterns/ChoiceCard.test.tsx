@@ -20,7 +20,8 @@ test('a card is one row with icon, title and key', () => {
 test('rests one step lighter than the panel and steps up on hover', () => {
   render(<ChoiceCard icon="file-diff" title="Wijzigingen" />)
   const card = screen.getByRole('button', { name: 'Wijzigingen' })
-  expect(card.className).toContain('bg-surface')
+  expect(card.className).toContain('bg-plane')
+  expect(card.className).toContain('shadow-plane')
   expect(card.className).toContain('hover:bg-surface-hover')
   expect(card.className).toContain('focus-visible:bg-surface-hover')
   // No outline around a card: the fill is the shape.

@@ -66,7 +66,7 @@ export default {
     Standaard: () => (
       // The fixed height lives here, in the story: `ScrollArea` itself only fills whatever box
       // it is given.
-      <div className="h-48 w-64 rounded-md border border-border bg-surface">
+      <div className="h-48 w-64 rounded-md border border-border bg-plane">
         <ScrollArea label="Rijen">
           <Rows />
         </ScrollArea>
@@ -74,7 +74,7 @@ export default {
     ),
     'Met focusbare inhoud': () => (
       // No label: the buttons are the tab stops, so the viewport adds none of its own.
-      <div className="h-48 w-64 rounded-md border border-border bg-surface">
+      <div className="h-48 w-64 rounded-md border border-border bg-plane">
         <ScrollArea>
           <ButtonRows />
         </ScrollArea>
@@ -83,7 +83,7 @@ export default {
     'Met een rij die moet inkorten': () => (
       // The sidebar's case: the column has a fixed width and a row's text does not. It has to
       // truncate inside the column, never widen it — see the Radix note in ScrollArea.tsx.
-      <div className="h-48 w-56 rounded-md border border-border bg-surface">
+      <div className="h-48 w-56 rounded-md border border-border bg-plane">
         <ScrollArea>
           <TruncatingRows />
         </ScrollArea>
@@ -94,14 +94,14 @@ export default {
       // bar over the content, and a plain `overflow-y-auto` gets the global one from `index.css`
       // (8px, the same thumb, no track, no arrows). Point at either to see its thumb.
       <div className="flex flex-col gap-4">
-        <div className="h-48 w-64 rounded-md border border-border bg-surface">
+        <div className="h-48 w-64 rounded-md border border-border bg-plane">
           <ScrollArea label="Rijen in een ScrollArea">
             <Rows />
           </ScrollArea>
         </div>
         <div
           data-nt-plain-scroller
-          className="h-48 w-64 overflow-y-auto rounded-md border border-border bg-surface"
+          className="h-48 w-64 overflow-y-auto rounded-md border border-border bg-plane"
         >
           <ButtonRows />
         </div>

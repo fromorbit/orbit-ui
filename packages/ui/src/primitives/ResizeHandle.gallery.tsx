@@ -17,7 +17,7 @@ function Stage({ value }: { value: number }) {
         max={640}
         onValueChange={() => {}}
       />
-      <div className="w-56 bg-surface" />
+      <div className="w-56 bg-plane shadow-plane" />
     </div>
   )
 }

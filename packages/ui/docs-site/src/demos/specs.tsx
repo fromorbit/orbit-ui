@@ -184,13 +184,20 @@ function rowStatus(spec: Spec) {
   return { marker: <StatusMark kind={state.mark} />, status: state.label }
 }
 
+/**
+ * A white card with a hairline in light, on the off-white page, as the lists of Apps, Branches and
+ * Team; nothing in dark, where the list and the pane lie on the canvas as they did.
+ */
+const LIGHT_CARD =
+  'in-data-[theme=light]:rounded-lg in-data-[theme=light]:bg-plane in-data-[theme=light]:shadow-plane'
+
 /** The detail of one spec beside the list: the gate, what it says, and what happened on it. */
 function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
   const [deadline, setDeadline] = useState<string | null>('2026-10-31')
   const state = STATES[spec.state]
   const [met, all] = spec.criteria
   return (
-    <div className="hidden w-[360px] shrink-0 flex-col border-border border-l bg-bg @4xl:flex @5xl:w-[420px]">
+    <div className="hidden w-[360px] shrink-0 flex-col border-border border-l bg-bg in-data-[theme=light]:bg-plane @4xl:flex @5xl:w-[420px]">
       <PanelTabHeader
         title={<span className="font-mono text-[12px] text-muted">{spec.id}</span>}
         actions={
@@ -214,7 +221,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
             </div>
           </div>
           {spec.reviewer === ME ? (
-            <div className="flex flex-col gap-3 rounded-lg bg-attention-subtle p-4">
+            <div className="flex flex-col gap-3 rounded-lg bg-attention-subtle p-4 in-data-[theme=light]:bg-plane in-data-[theme=light]:shadow-plane">
               <p className="m-0 text-[13px] text-fg leading-relaxed">
                 Deze spec wacht op jouw akkoord. Na goedkeuren kan een agent hem uitvoeren op een
                 eigen branch.
@@ -401,51 +408,57 @@ function Specs(): ReactNode {
         <div className="@container/list min-w-0 flex-1">
           <ScrollArea>
             <div className="mx-auto max-w-5xl px-3 py-3 @3xl:px-5">
-              <List label="Specs">
-                {GROUPS.map((group) => {
-                  const rows = shown.filter((entry) => group.states.includes(entry.state))
-                  if (rows.length === 0) return null
-                  return (
-                    <ListGroup
-                      key={group.heading}
-                      heading={group.heading}
-                      count={rows.length}
-                      label={`${group.heading}, ${rows.length === 1 ? '1 spec' : `${rows.length} specs`}`}
-                      open={open[group.heading] ?? true}
-                      onOpenChange={(next) => setOpen((now) => ({ ...now, [group.heading]: next }))}
-                    >
-                      {rows.map((entry) => (
-                        <ListRow
-                          key={entry.id}
-                          title={entry.title}
-                          {...rowStatus(entry)}
-                          current={beside && entry.id === chosen}
-                          emphasis="strong"
-                          onClick={() => setChosen(entry.id)}
-                          meta={
-                            <span className="flex items-center gap-3">
-                              {entry.criteria[1] > 0 ? (
-                                <span className="hidden @xl/list:inline-flex">
-                                  <ProgressMeter
-                                    value={entry.criteria[0]}
-                                    max={entry.criteria[1]}
-                                    label={`Criteria van ${entry.id}`}
-                                    valueText={galleryLabels.progress}
-                                  />
+              <div
+                className={`in-data-[theme=light]:px-2 in-data-[theme=light]:py-3 ${LIGHT_CARD}`}
+              >
+                <List label="Specs">
+                  {GROUPS.map((group) => {
+                    const rows = shown.filter((entry) => group.states.includes(entry.state))
+                    if (rows.length === 0) return null
+                    return (
+                      <ListGroup
+                        key={group.heading}
+                        heading={group.heading}
+                        count={rows.length}
+                        label={`${group.heading}, ${rows.length === 1 ? '1 spec' : `${rows.length} specs`}`}
+                        open={open[group.heading] ?? true}
+                        onOpenChange={(next) =>
+                          setOpen((now) => ({ ...now, [group.heading]: next }))
+                        }
+                      >
+                        {rows.map((entry) => (
+                          <ListRow
+                            key={entry.id}
+                            title={entry.title}
+                            {...rowStatus(entry)}
+                            current={beside && entry.id === chosen}
+                            emphasis="strong"
+                            onClick={() => setChosen(entry.id)}
+                            meta={
+                              <span className="flex items-center gap-3">
+                                {entry.criteria[1] > 0 ? (
+                                  <span className="hidden @xl/list:inline-flex">
+                                    <ProgressMeter
+                                      value={entry.criteria[0]}
+                                      max={entry.criteria[1]}
+                                      label={`Criteria van ${entry.id}`}
+                                      valueText={galleryLabels.progress}
+                                    />
+                                  </span>
+                                ) : null}
+                                <span className="hidden w-16 font-mono text-[11px] text-muted @md/list:inline">
+                                  {entry.id}
                                 </span>
-                              ) : null}
-                              <span className="hidden w-16 font-mono text-[11px] text-muted @md/list:inline">
-                                {entry.id}
+                                <Avatar name={entry.owner} size="sm" />
                               </span>
-                              <Avatar name={entry.owner} size="sm" />
-                            </span>
-                          }
-                        />
-                      ))}
-                    </ListGroup>
-                  )
-                })}
-              </List>
+                            }
+                          />
+                        ))}
+                      </ListGroup>
+                    )
+                  })}
+                </List>
+              </div>
             </div>
           </ScrollArea>
         </div>

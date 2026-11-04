@@ -38,10 +38,14 @@ export function Panel({
       className={`flex min-w-0 flex-col rounded-lg bg-overlay shadow-plane ${className ?? ''}`}
     >
       <header className="flex min-h-11 items-center gap-2 px-4 pt-1">
-        <Heading id={id} className="m-0 font-medium text-[13px] text-fg">
-          {title}
-        </Heading>
-        {meta === undefined ? null : <span className="text-[12px] text-muted">{meta}</span>}
+        {/* The title keeps one line; where the head is short of room, the note goes under it
+            rather than breaking the title into a ragged column beside the actions. */}
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 py-1">
+          <Heading id={id} className="m-0 whitespace-nowrap font-medium text-[13px] text-fg">
+            {title}
+          </Heading>
+          {meta === undefined ? null : <span className="text-[12px] text-muted">{meta}</span>}
+        </div>
         {actions === undefined ? null : (
           <div className="ml-auto flex items-center gap-1.5">{actions}</div>
         )}

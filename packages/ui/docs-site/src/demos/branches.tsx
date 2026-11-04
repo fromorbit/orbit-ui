@@ -8,6 +8,7 @@ import {
   DataTable,
   type DataTableColumn,
   DropdownMenu,
+  Icon,
   IconButton,
   PageHeader,
   RelativeTime,
@@ -189,8 +190,9 @@ function listed(names: readonly string[]): string {
 }
 
 /**
- * A branch as a phone shows it: the box, the name and its state on one line, the last commit
- * under it (cut before the time, never after), so why a row is ticked stays in sight.
+ * A branch as a phone shows it: the box and the whole name on the first line, its state, the last
+ * commit and the time under it (the commit cut before the time, never after), so the name reads
+ * whole and why a row is ticked stays in sight.
  */
 function BranchCard({
   branch,
@@ -214,13 +216,15 @@ function BranchCard({
         )}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="flex min-w-0 flex-1 items-center gap-1.5 font-mono text-[13px] text-fg">
-            <BranchName branch={branch} />
+        {/* The name has the whole width, and wraps rather than being cut: it is what the row is. */}
+        <span className="flex min-w-0 items-start gap-1.5 font-mono text-[13px] leading-5 text-fg">
+          <span aria-hidden="true" className="flex h-5 w-3 shrink-0 items-center">
+            {branch.worktree ? <Icon name="folder-git-2" size="xs" tone="faint" /> : null}
           </span>
-          <Tag {...(fate.tone === undefined ? {} : { tone: fate.tone })}>{fate.label}</Tag>
+          <span className="min-w-0 [overflow-wrap:anywhere]">{branch.name}</span>
         </span>
         <span className="flex min-w-0 items-center gap-1.5 text-[12px] text-muted">
+          <Tag {...(fate.tone === undefined ? {} : { tone: fate.tone })}>{fate.label}</Tag>
           <span className="min-w-0 flex-1 truncate text-secondary">{branch.commit}</span>
           <span className="shrink-0">
             <RelativeTime labels={galleryLabels.time} at={branch.at} now={NOW} />

@@ -385,30 +385,35 @@ function MemberRow({
   return (
     <li className="flex items-center gap-3 border-border border-t px-4 py-2.5 first:border-t-0">
       <Avatar name={member.name} size="md" />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[13px] text-fg">{member.name}</span>
-        <span className="truncate text-[12px] text-muted">{member.email}</span>
-      </div>
-      {/* The name and address take the room; when the row is short of it, the activity goes
-          first, so an address is never cut while a column of times keeps its space. */}
-      <span className="hidden w-28 shrink-0 whitespace-nowrap text-[12px] text-muted @3xl:block">
-        {seenText(member.seen)}
-      </span>
-      {/* One width for every role, so the selects stand as a column with one left edge. */}
-      <div className="flex shrink-0 justify-end @2xl:w-28">
-        {member.role === 'owner' ? (
-          <Tag>Eigenaar</Tag>
-        ) : (
-          <div className="flex @2xl:w-full @2xl:*:w-full">
-            <Select<Assignable>
-              label={`Rol van ${member.name}`}
-              size="sm"
-              value={member.role}
-              options={ROLES}
-              onValueChange={onRole}
-            />
-          </div>
-        )}
+      {/* On a phone the role goes under the address, so the name and the address keep the width
+          of the row; from 512px on they stand side by side as columns. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-2 @lg:flex-row @lg:items-center @lg:gap-3">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-[13px] text-fg">{member.name}</span>
+          <span className="truncate text-[12px] text-muted">{member.email}</span>
+        </div>
+        {/* The name and address take the room; when the row is short of it, the activity goes
+            first, so an address is never cut while a column of times keeps its space. */}
+        <span className="hidden w-36 shrink-0 whitespace-nowrap text-[12px] text-muted @3xl:block">
+          {seenText(member.seen)}
+        </span>
+        {/* One width for every role at every width, the tag of the owner on the same left edge,
+            so the roles stand as a column. */}
+        <div className="flex w-28 shrink-0 justify-start">
+          {member.role === 'owner' ? (
+            <Tag>Eigenaar</Tag>
+          ) : (
+            <div className="flex w-full *:w-full">
+              <Select<Assignable>
+                label={`Rol van ${member.name}`}
+                size="sm"
+                value={member.role}
+                options={ROLES}
+                onValueChange={onRole}
+              />
+            </div>
+          )}
+        </div>
       </div>
       {/* At every width: on a phone too, the menu is the only way to a member's acts. */}
       <DropdownMenu

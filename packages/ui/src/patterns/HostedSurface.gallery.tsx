@@ -112,8 +112,11 @@ function Column() {
 
   return (
     <div className="flex h-[360px]">
-      {/* A tinted plane, not a frame: the resize edge on its right is the column's only line. */}
-      <div className="flex flex-col rounded-lg bg-surface" style={{ width: `${width}px` }}>
+      {/* The plane of a column: a tint in dark, a white card with a hairline in light. */}
+      <div
+        className="flex flex-col rounded-lg bg-plane shadow-plane"
+        style={{ width: `${width}px` }}
+      >
         <Bar>
           <span className="min-w-0 flex-1 truncate px-1 font-mono text-[12px] text-muted">
             winkel.voorbeeld.nl
@@ -137,7 +140,7 @@ function Column() {
               />
             }
           />
-          <Button size="sm" variant="ghost" onClick={() => setDialog(true)}>
+          <Button size="sm" variant="secondary" onClick={() => setDialog(true)}>
             Profiel wissen
           </Button>
         </Bar>
