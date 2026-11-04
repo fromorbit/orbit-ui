@@ -4,6 +4,8 @@ import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 
 /** The scopes of the list in Specs, each with its count and its key. */
 const SCOPES: DropdownMenuItem[] = [
+  // Names what is counted, and the radio group under it.
+  { id: 'tasks', label: 'Taken', kind: 'heading' },
   {
     id: 'forYou',
     label: 'Voor jou',
@@ -37,14 +39,15 @@ const SCOPES: DropdownMenuItem[] = [
 ]
 
 /**
- * A choice among scopes, open, each row with its count after its label and its key at the end.
+ * A choice among scopes, open, under the heading that says what is counted; each row with its
+ * count in a column of its own and its key at the end.
  *
  * A story of its own rather than a state of `DropdownMenu`: a page of the gallery holds one open
  * menu at most, and a second `defaultOpen` there would close the one of its `Open` state.
  */
 function Open() {
   return (
-    <div className="h-48 w-64">
+    <div className="h-56 w-64">
       <DropdownMenu
         trigger={<Button>Bereik: Voor jou</Button>}
         label="Bereik"

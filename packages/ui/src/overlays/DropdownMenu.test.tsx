@@ -253,6 +253,11 @@ test('a disabled row with a reason stays in the walk, keeps its reason, and stil
   expect(row).toHaveFocus()
   expect(row).toHaveAttribute('aria-disabled', 'true')
   expect(row).toHaveAccessibleDescription('Hoogstens vijf keer per dag')
+  // In sight under the row, not only in a tooltip: a dimmed row said nothing of what to wait for.
+  const reason = menu.querySelector('[data-nt-menu-reason]')
+  expect(reason).toHaveTextContent('Hoogstens vijf keer per dag')
+  expect(reason).toHaveAttribute('aria-hidden', 'true')
+  expect(row.nextElementSibling).toBe(reason)
   await userEvent.keyboard('{Enter}')
   expect(onSelect).not.toHaveBeenCalled()
   // Radix closes the menu on every choice unless the row's own `onSelect` says otherwise — exactly

@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef } from 'react'
+import { type ReactNode, useEffect, useId, useRef } from 'react'
 import type { Story } from '../gallery/story'
 import { Avatar } from '../primitives/Avatar'
 import { Icon, type IconName } from '../primitives/Icon'
@@ -59,20 +59,41 @@ const FILES: { name: string; icon: IconName; size: string; age: string }[] = [
   { name: 'plattegrond-begane-grond.png', icon: 'image', size: '840 kB', age: 'vorige week' },
 ]
 
-/** The one hint of every way in: the mouse, a finger and the keyboard. */
-const WAYS_IN = 'houd het ingedrukt of druk op Shift+F10.'
+/**
+ * The line above a region that says how its menu opens, in the words of the input at hand: a right
+ * click where there is a pointer, a long press on a phone (below `sm`, or under a coarse pointer),
+ * where a right click does not exist. Each says what the gesture gives ("voor acties"). The keyboard's
+ * way in is said once, on the first state, and on every region as `aria-keyshortcuts`.
+ */
+function Hint({ id, pointer, touch }: { id: string; pointer: string; touch: string }) {
+  return (
+    <p id={id} className="px-3 text-[12px] text-muted">
+      <span className="max-sm:hidden pointer-coarse:hidden">{pointer}</span>
+      <span className="hidden max-sm:inline pointer-coarse:inline">{touch}</span>
+    </p>
+  )
+}
 
 /**
  * A region a right click is meant for, and one quiet line above it that says so: a context menu
  * is out of sight until it opens, so a story of one names the way in. Above rather than under, so
  * the menu that opens over the region never covers its instruction; on the 12px left edge the
- * content of the region starts on.
+ * content of the region starts on. The region gets the id of the line, for its `aria-describedby`.
  */
-function Region({ hint, children }: { hint: string; children: ReactNode }) {
+function Region({
+  pointer,
+  touch,
+  children,
+}: {
+  pointer: string
+  touch: string
+  children: (hintId: string) => ReactNode
+}) {
+  const id = useId()
   return (
     <div className="flex w-full max-w-md flex-col gap-2">
-      <p className="px-3 text-[12px] text-muted">{hint}</p>
-      {children}
+      <Hint id={id} pointer={pointer} touch={touch} />
+      {children(id)}
     </div>
   )
 }
@@ -154,8 +175,11 @@ function Open() {
   return (
     // As tall as the open panel reaches, so the next state starts at the same distance as the rest.
     <div ref={stage} className="flex min-h-58 w-full max-w-md flex-col">
-      <Region hint={`Rechtsklik op een bestand, ${WAYS_IN}`}>
-        <Files />
+      <Region
+        pointer="Rechtsklik op een bestand voor acties, of druk op Shift+F10."
+        touch="Houd een bestand ingedrukt voor acties."
+      >
+        {() => <Files />}
       </Region>
     </div>
   )
@@ -182,26 +206,36 @@ const CANVAS_ITEMS: DropdownMenuItem[] = [
  */
 function WithChoices() {
   return (
-    <Region hint={`Rechtsklik op de tekening, ${WAYS_IN}`}>
-      <ContextMenu label="Tekening" items={CANVAS_ITEMS}>
-        <div
-          // biome-ignore lint/a11y/noNoninteractiveTabindex: the focus target of the context-menu key
-          tabIndex={0}
-          data-nt-story-region
-          className={`relative flex h-32 flex-col items-center justify-center gap-2 rounded-lg bg-surface text-muted data-[state=open]:bg-surface-hover ${FOCUSABLE}`}
-        >
-          <Icon name="image" size="md" />
-          <span className="text-[12px]">plattegrond-begane-grond.png</span>
-          <span className="absolute top-1 right-1">
-            <DropdownMenu
-              trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
-              label="Tekening"
-              items={CANVAS_ITEMS}
-              align="end"
-            />
-          </span>
-        </div>
-      </ContextMenu>
+    <Region
+      pointer="Rechtsklik op de tekening voor acties."
+      touch="Houd de tekening ingedrukt voor acties."
+    >
+      {(hint) => (
+        <ContextMenu label="Tekening" items={CANVAS_ITEMS}>
+          {/* biome-ignore lint/a11y/useSemanticElements: a drawing or a card, not a set of form controls */}
+          <div
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: the focus target of the context-menu key
+            tabIndex={0}
+            role="group"
+            aria-label="Tekening plattegrond-begane-grond.png"
+            aria-describedby={hint}
+            aria-keyshortcuts="Shift+F10"
+            data-nt-story-region
+            className={`relative flex h-32 flex-col items-center justify-center gap-2 rounded-lg bg-surface text-muted data-[state=open]:bg-surface-hover ${FOCUSABLE}`}
+          >
+            <Icon name="image" size="md" />
+            <span className="text-[12px]">plattegrond-begane-grond.png</span>
+            <span className="absolute top-1 right-1">
+              <DropdownMenu
+                trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
+                label="Tekening"
+                items={CANVAS_ITEMS}
+                align="end"
+              />
+            </span>
+          </div>
+        </ContextMenu>
+      )}
     </Region>
   )
 }
@@ -228,34 +262,44 @@ const MEMBER = {
 /** A member of the team, with a head of identity over comfortable rows (the account menu's shape). */
 function WithAHead() {
   return (
-    <Region hint={`Rechtsklik op een teamlid, ${WAYS_IN}`}>
-      <ContextMenu
-        label="Acties voor Robin de Vries"
-        header={MEMBER}
-        density="comfortable"
-        items={MEMBER_ACTIONS}
-      >
-        <div
-          // biome-ignore lint/a11y/noNoninteractiveTabindex: the focus target of the context-menu key
-          tabIndex={0}
-          data-nt-story-region
-          className={`flex h-14 items-center gap-3 rounded-lg bg-surface ps-3 pe-2 data-[state=open]:bg-surface-hover ${FOCUSABLE}`}
+    <Region
+      pointer="Rechtsklik op een teamlid voor acties."
+      touch="Houd een teamlid ingedrukt voor acties."
+    >
+      {(hint) => (
+        <ContextMenu
+          label="Acties voor Robin de Vries"
+          header={MEMBER}
+          density="comfortable"
+          items={MEMBER_ACTIONS}
         >
-          <Avatar name="Robin de Vries" size="md" />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-[13px] font-medium text-fg">Robin de Vries</span>
-            <span className="truncate text-[12px] text-muted">Ontwerper</span>
+          {/* biome-ignore lint/a11y/useSemanticElements: a drawing or a card, not a set of form controls */}
+          <div
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: the focus target of the context-menu key
+            tabIndex={0}
+            role="group"
+            aria-label="Robin de Vries, Ontwerper"
+            aria-describedby={hint}
+            aria-keyshortcuts="Shift+F10"
+            data-nt-story-region
+            className={`flex h-14 items-center gap-3 rounded-lg bg-surface ps-3 pe-2 data-[state=open]:bg-surface-hover ${FOCUSABLE}`}
+          >
+            <Avatar name="Robin de Vries" size="md" />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-[13px] font-medium text-fg">Robin de Vries</span>
+              <span className="truncate text-[12px] text-muted">Ontwerper</span>
+            </div>
+            <DropdownMenu
+              trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
+              label="Acties voor Robin de Vries"
+              header={MEMBER}
+              density="comfortable"
+              items={MEMBER_ACTIONS}
+              align="end"
+            />
           </div>
-          <DropdownMenu
-            trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
-            label="Acties voor Robin de Vries"
-            header={MEMBER}
-            density="comfortable"
-            items={MEMBER_ACTIONS}
-            align="end"
-          />
-        </div>
-      </ContextMenu>
+        </ContextMenu>
+      )}
     </Region>
   )
 }
@@ -266,23 +310,29 @@ function WithAHead() {
  */
 function Disabled() {
   return (
-    <Region hint="Het menu komt terug zodra het uploaden klaar is.">
-      <ContextMenu label="Acties voor gevelaanzicht-noord.pdf" items={FILE_ACTIONS} disabled>
-        {/* `aria-busy` and the progress as a live line: a reader hears why a right click does
-            nothing yet, as a sighted one reads it at the end of the row. */}
-        <div
-          aria-busy="true"
-          className="flex h-9 items-center gap-2 rounded-lg bg-surface px-3 text-[13px] text-secondary"
-        >
-          <span className="flex text-muted">
-            <Icon name="upload" size="sm" />
-          </span>
-          <span className="min-w-0 flex-1 truncate">gevelaanzicht-noord.pdf</span>
-          <span role="status" className="shrink-0 text-[12px] text-muted tabular-nums">
-            Uploaden · 64% · nog geen acties
-          </span>
-        </div>
-      </ContextMenu>
+    <Region
+      pointer="Acties zijn er zodra het uploaden klaar is."
+      touch="Acties zijn er zodra het uploaden klaar is."
+    >
+      {() => (
+        <ContextMenu label="Acties voor gevelaanzicht-noord.pdf" items={FILE_ACTIONS} disabled>
+          {/* `aria-busy` and the progress as a live line: a reader hears why a right click does
+            nothing yet, as a sighted one reads it at the end of the row. Only how far it is: the
+            line above says what comes after, so the name keeps its room on a phone. */}
+          <div
+            aria-busy="true"
+            className="flex h-9 items-center gap-2 rounded-lg bg-surface px-3 text-[13px] text-secondary"
+          >
+            <span className="flex text-muted">
+              <Icon name="upload" size="sm" />
+            </span>
+            <span className="min-w-0 flex-1 truncate">gevelaanzicht-noord.pdf</span>
+            <span role="status" className="shrink-0 text-[12px] text-muted tabular-nums">
+              Uploaden · 64%
+            </span>
+          </div>
+        </ContextMenu>
+      )}
     </Region>
   )
 }

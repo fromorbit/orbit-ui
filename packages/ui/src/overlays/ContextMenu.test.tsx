@@ -227,3 +227,72 @@ test('every region of the story is reached with Tab, and offers its acts on a vi
     unmount()
   }
 })
+
+/** A region that takes the focus, as a drawing or a card does, for the keyboard's way in. */
+function FocusRegion({ onSelect = () => {} }: { onSelect?: (id: string) => void }) {
+  return (
+    <ContextMenu label="Acties voor offerte.pdf" items={items(onSelect)}>
+      {/* biome-ignore lint/a11y/useSemanticElements: a file, not a set of form controls */}
+      <div
+        data-testid="region"
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: the focus target of the keys
+        tabIndex={0}
+        role="group"
+        aria-label="offerte.pdf"
+      >
+        offerte.pdf
+        <input aria-label="Notitie" />
+      </div>
+    </ContextMenu>
+  )
+}
+
+test.each([
+  ['Shift+F10', '{Shift>}{F10}{/Shift}'],
+  ['the context-menu key', '{ContextMenu}'],
+])('%s opens the menu on what holds the focus, on every platform', async (_, keys) => {
+  render(<FocusRegion />)
+  screen.getByTestId('region').focus()
+  await userEvent.keyboard(keys)
+  expect(await screen.findByRole('menu', { name: 'Acties voor offerte.pdf' })).toBeInTheDocument()
+})
+
+test('the keys are left to a field inside the region, for its own menu', async () => {
+  render(<FocusRegion />)
+  screen.getByRole('textbox', { name: 'Notitie' }).focus()
+  await userEvent.keyboard('{Shift>}{F10}{/Shift}')
+  expect(screen.queryByRole('menu')).toBeNull()
+})
+
+test('a scroll that moves the region closes the menu; one elsewhere leaves it open', async () => {
+  render(
+    <div data-testid="scroller">
+      <FileRow />
+      <div data-testid="elsewhere" />
+    </div>,
+  )
+  fireEvent.contextMenu(screen.getByTestId('row'))
+  await screen.findByRole('menu')
+  fireEvent.scroll(screen.getByTestId('elsewhere'))
+  expect(screen.getByRole('menu')).toBeInTheDocument()
+  fireEvent.scroll(screen.getByTestId('scroller'))
+  await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+})
+
+test('the release of the press that opened it chooses nothing', async () => {
+  const onSelect = vi.fn()
+  render(<FileRow onSelect={onSelect} />)
+  fireEvent.contextMenu(screen.getByTestId('row'), { clientX: 40, clientY: 12 })
+  const row = await screen.findByRole('menuitem', { name: 'Archiveren' })
+  fireEvent.pointerUp(row, { clientX: 41, clientY: 13, pointerType: 'mouse' })
+  expect(onSelect).not.toHaveBeenCalled()
+  expect(screen.getByRole('menu')).toBeInTheDocument()
+})
+
+test('the panel slides back inside the window on the side it opened to', async () => {
+  render(<FileRow />)
+  fireEvent.contextMenu(screen.getByTestId('row'))
+  const menu = await screen.findByRole('menu')
+  expect(menu.className).toContain('data-[side=right]:translate-x-[min(0px,')
+  expect(menu.className).toContain('data-[side=left]:translate-x-[max(0px,')
+})

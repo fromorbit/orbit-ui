@@ -75,6 +75,10 @@ export interface DropdownMenuItem {
   /**
    * What choosing this row costs, in a `Tooltip` rather than as a line in the menu: explanation
    * stays out of sight until someone hovers or walks to the row.
+   *
+   * On a `disabled` row it is the reason instead, and in sight: a quiet 12px line under the row
+   * ("Verwijderen kan zodra het opslaan klaar is"), which also describes it (`aria-describedby`).
+   * The row stays a stop of the walk, and choosing it does nothing.
    */
   hint?: string
   /**

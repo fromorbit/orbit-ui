@@ -32,8 +32,11 @@ export interface MenuParts {
   /** The frame of a panel that may use the room Radix measured between it and the window's edge. */
   tallPanel: string
   /**
-   * The cap on a submenu's width: 320px, or the room Radix measured on the side it opens to, so a
+   * The cap on a submenu's width: 256px (a step from its parent, not a second panel twice as
+   * wide), or the room Radix measured on the side it opens to, so a
    * submenu flipped to the left on a phone ends at the window's edge and cuts its labels instead.
+   * When neither side has room for its 160px, it slides back over its parent by what it lacks, so
+   * it stays 8px inside the window (Radix only flips a submenu, it never moves it across).
    */
   subWidth: string
 }
@@ -54,7 +57,8 @@ export const DROPDOWN_PARTS: MenuParts = {
   // The frame of `PANEL` with the height Radix measured instead of its 288px; the submenu's panel
   // is a `SubContent` of the same menu and reads the same variable.
   tallPanel: PANEL.replace('max-h-72', 'max-h-(--radix-dropdown-menu-content-available-height)'),
-  subWidth: 'max-w-[min(20rem,var(--radix-dropdown-menu-content-available-width))]',
+  subWidth:
+    'max-w-[min(16rem,var(--radix-dropdown-menu-content-available-width))] data-[side=right]:translate-x-[min(0px,calc(var(--radix-dropdown-menu-content-available-width)-100%))] data-[side=left]:translate-x-[max(0px,calc(100%-var(--radix-dropdown-menu-content-available-width)))]',
 }
 
 /** The parts of the menu being drawn; a provider of each menu sets its own. */
@@ -91,16 +95,18 @@ const item = cva(
   // our own here, for the same reason `Select`'s `ITEM` has none.
   //
   // A row the keyboard walked to (`focus-visible`: Radix moves the real focus with the walk, and the
-  // browser marks it visible only after a key) also gets an inset 1px ring in `border-focus`, 3:1
-  // or more against the panel in both themes: the tint alone stood at about 1.1:1 in light. A row
-  // under the pointer keeps the tint only.
-  'flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none focus-visible:ring-1 focus-visible:ring-border-focus focus-visible:ring-inset data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
+  // browser marks it visible only after a key) stands on a step more tint, `surface-active` (the
+  // keyboard caret of every list of the family), rather than a ring: a ring drew a framed chip
+  // inside the frame of the panel, and regions are told apart by tint, not frames. A danger row
+  // doubles its own tint the same way (the inset shadow lays `danger-subtle` once more over it).
+  'flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
   {
     variants: {
       tone: {
-        default: 'text-fg data-[highlighted]:bg-surface-hover',
-        danger: 'text-danger data-[highlighted]:bg-danger-subtle',
-        quiet: 'text-secondary data-[highlighted]:bg-surface-hover',
+        default: 'text-fg data-[highlighted]:bg-surface-hover focus-visible:bg-surface-active',
+        danger:
+          'text-danger data-[highlighted]:bg-danger-subtle focus-visible:bg-danger-subtle focus-visible:shadow-[inset_0_0_0_100px_var(--nt-danger-subtle)]',
+        quiet: 'text-secondary data-[highlighted]:bg-surface-hover focus-visible:bg-surface-active',
       },
       density: {
         // 44px under a coarse pointer, a target a finger finds (Fitts).
@@ -470,10 +476,10 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
   // focus walk — so ArrowDown skips straight over it — and sets `pointer-events: none` on it (the
   // `item` class below), so neither a real keyboard walk nor a hover could ever reach the row
   // whose reason they were meant to read. Guarded by hand instead, the same shape `PickTools`'s own
-  // point button already uses: `aria-disabled` for assistive tech, `aria-describedby` at a hidden
-  // sibling (never a child — inside the row it would join the row's own accessible *name*, not
-  // just its description) so the reason reads without an open tooltip, dimmed without Radix's own
-  // hook, and the action itself refused in `onSelect`.
+  // point button already uses: `aria-disabled` for assistive tech, `aria-describedby` at the
+  // quiet line under it (`Reason`, a sibling: inside the row it would join the row's own accessible
+  // *name*, not just its description), dimmed without Radix's own hook, and the action itself
+  // refused in `onSelect`.
   const guarded = row.disabled === true && row.hint !== undefined
   const common = {
     ...(row.disabled === undefined || guarded ? {} : { disabled: row.disabled }),
@@ -503,17 +509,23 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
       <Glyph row={row} checks={checks} />
       <span className="min-w-0 truncate">{row.label}</span>
       {row.count === undefined ? null : (
-        <span data-nt-menu-count className="shrink-0 font-mono text-[11px] text-muted tabular-nums">
+        // A column of its own at the end, right-aligned in tabular figures, so the counts of a menu
+        // stand under each other (5, 24, 41) instead of trailing each label at its own length.
+        <span
+          data-nt-menu-count
+          className="ml-auto min-w-6 shrink-0 ps-4 text-end font-mono text-[11px] text-muted tabular-nums"
+        >
           {row.count}
         </span>
       )}
       {row.shortcut === undefined ? null : (
         // Plain quiet text, right-aligned as in a native menu, no cap around it: a cap per row put
         // three or four frames inside the frame of the panel. Gone under a coarse pointer, where
-        // nobody has the keys (the row's accessible name never held them).
+        // nobody has the keys (the row's accessible name never held them). After a count it
+        // follows it, rather than splitting the free room with it.
         <span
           data-nt-menu-shortcut
-          className="ml-auto flex shrink-0 ps-4 tabular-nums pointer-coarse:hidden"
+          className={`${row.count === undefined ? 'ml-auto ' : ''}flex shrink-0 ps-4 tabular-nums pointer-coarse:hidden`}
         >
           <Kbd tone="quiet" shortcut={row.shortcut} />
         </span>
@@ -538,32 +550,40 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
     ) : (
       <Item {...common}>{content}</Item>
     )
-  const hinted = row.hint === undefined ? element : <Tooltip label={row.hint}>{element}</Tooltip>
-  // The reason, read as the row's description whether or not the tooltip is open — a sibling, not
-  // a child of `element`: inside it the accessible-name algorithm would fold this text into the
-  // row's own name instead of leaving it as a separate description.
-  //
-  // `hidden`, not `sr-only` (review, 3e ronde): `sr-only` keeps the span in the accessibility tree
-  // as ordinary text, so a reader walking the menu in document order would hear it once on its own
-  // and again as the row's `aria-describedby` — and axe reads a bare `<span>` sitting directly in
-  // `role="menu"` as a child without one of the roles a menu requires (`aria-required-children`).
-  // The HTML `hidden` attribute takes the span out of the tree entirely; `aria-describedby` still
-  // reaches its text regardless; that reference is the one thing that does.
-  const reason = guarded ? (
-    <span id={reasonId} hidden>
-      {row.hint}
-    </span>
-  ) : null
-  return row.separated ? (
+  // A guarded row shows its reason in sight (`Reason`, under it); a tooltip would only say it again.
+  const hinted =
+    row.hint === undefined || guarded ? element : <Tooltip label={row.hint}>{element}</Tooltip>
+  return (
     <>
-      <Separator />
-      {reason}
+      {row.separated ? <Separator /> : null}
       {hinted}
+      {guarded ? <Reason id={reasonId} text={row.hint ?? ''} /> : null}
     </>
-  ) : (
-    <>
-      {reason}
-      {hinted}
-    </>
+  )
+}
+
+/**
+ * Why a row is out of reach for now, in a quiet 12px line under it: a dimmed row with its reason
+ * out of sight did not tell a reader what to wait for. Not dimmed with the row, so it stays legible
+ * (`muted`, 5:1 and more on the panel), and on the column of the labels.
+ *
+ * A sibling of the row, never a child (inside it the accessible-name algorithm would fold this into
+ * the row's own name), and `aria-hidden`, like a `Heading`: a text child of `role="menu"` is what
+ * axe reports as `aria-required-children`, and a reader hears it once, as the row's
+ * `aria-describedby`, which reads hidden text.
+ */
+function Reason({ id, text }: { id: string; text: string }) {
+  const lead = useContext(Lead)
+  const wide = useContext(WideLead)
+  const inset = !lead ? 'ps-2' : wide ? 'ps-11.5' : 'ps-7.5'
+  return (
+    <div
+      id={id}
+      data-nt-menu-reason
+      aria-hidden="true"
+      className={`-mt-1 pe-2 pb-1.5 text-[12px] leading-4 text-muted select-none ${inset}`}
+    >
+      {text}
+    </div>
   )
 }
