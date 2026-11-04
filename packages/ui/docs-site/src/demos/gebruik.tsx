@@ -34,7 +34,7 @@ const DAILY = [11, 12, 2, 1, 13, 12, 14, 11, 10, 2, 3, 14, 13, 12, 15, 12, 2, 1,
 const PLAN_HOURS = 250
 const DAYS = 31
 
-/** What the workspace used this month, against September. */
+/** What the workspace used this month, against the same 20 days of September. */
 const KPIS: Figure[] = [
   {
     label: 'Agent-uren',
@@ -43,7 +43,8 @@ const KPIS: Figure[] = [
     // More hours is not good news on its own: at this pace the month ends over the plan.
     tone: 'neutral',
     rising: true,
-    against: 't.o.v. september',
+    against: 't.o.v. 1–20 september',
+    // The first 20 days of each month, so the line compares the same stretch as the delta.
     trail: [131, 138, 129, 146, 152, 149, 160, 182],
   },
   {
@@ -52,7 +53,7 @@ const KPIS: Figure[] = [
     delta: '9',
     tone: 'good',
     rising: true,
-    against: 't.o.v. september',
+    against: 't.o.v. 1–20 september',
     trail: [31, 34, 29, 38, 35, 41, 37, 46],
   },
   {
@@ -61,7 +62,7 @@ const KPIS: Figure[] = [
     delta: '31',
     tone: 'neutral',
     rising: false,
-    against: 't.o.v. september',
+    against: 't.o.v. 1–20 september',
     trail: [204, 196, 188, 181, 172, 166, 159, 128],
   },
   {
@@ -71,7 +72,7 @@ const KPIS: Figure[] = [
     // Normal growth at 37% of the limit: no alarm until it nears the 50 GB.
     tone: 'neutral',
     rising: true,
-    against: 'erbij',
+    against: 't.o.v. 20 september',
     meter: { value: 18.4, max: 50, text: '18,4 van 50 GB', note: '37% van 50 GB' },
   },
 ]
@@ -92,6 +93,11 @@ const HOURS: ChartPoint[] = Array.from({ length: DAYS }, (_, index) => ({
 /** Where the month ends at this pace: 182 hours in 20 days is about 282 by the 31st. */
 const USED = DAILY.reduce((sum, hours) => sum + hours, 0)
 const PROJECTED = Math.round((USED / DAILY.length) * DAYS)
+/** What an agent hour above the plan costs, in cents, excluding VAT. */
+const EXTRA_HOUR = 80
+
+/** A number and its unit, kept on one line. */
+const unit = (value: number, name: string) => `${value.toLocaleString('nl-NL')}\u00a0${name}`
 
 type InvoiceStatus = 'open' | 'paid' | 'failed'
 
@@ -506,7 +512,11 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS.map((kpi) => (
-              <KpiTile key={kpi.label} figure={kpi} period="per maand, de afgelopen 8 maanden" />
+              <KpiTile
+                key={kpi.label}
+                figure={kpi}
+                period="de eerste 20 dagen van elke maand, de afgelopen 8 maanden"
+              />
             ))}
           </div>
           <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(17rem,1fr)_minmax(0,2fr)]">
@@ -518,16 +528,32 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                   label="Agent-uren in oktober, opgeteld per dag"
                   series={[
                     { id: 'used', label: 'Gebruikt' },
-                    { id: 'pace', label: `Op koers voor ${PLAN_HOURS} u`, reference: true },
+                    { id: 'pace', label: 'Tempo van je plan', reference: true },
                   ]}
                   points={HOURS}
-                  limit={{ value: PLAN_HOURS, label: `Plan ${PLAN_HOURS} u` }}
-                  format={(value) => `${value.toLocaleString('nl-NL')} u`}
-                  none="nog geen waarde"
+                  limit={{ value: PLAN_HOURS, label: `Plan ${unit(PLAN_HOURS, 'u')}` }}
+                  forecast={{
+                    series: 'used',
+                    value: PROJECTED,
+                    label: `≈${unit(PROJECTED, 'u')}`,
+                    text: `verwacht eind oktober: ${unit(PROJECTED, 'u')}`,
+                  }}
+                  format={(value) => unit(value, 'u')}
+                  none="nog niet bekend"
+                  keys="Pijltjes links en rechts om de dagen te lezen, Home en End voor de eerste en de laatste"
+                  roleDescription="grafiek"
                 />
-                <p className="m-0 text-[12px] text-muted">
-                  Op dit tempo kom je eind oktober rond {PROJECTED} u uit, {PROJECTED - PLAN_HOURS}{' '}
-                  u boven je plan.
+                <p className="m-0 text-[12px] text-muted leading-relaxed">
+                  Op dit tempo kom je eind oktober rond {unit(PROJECTED, 'u')} uit,{' '}
+                  {unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan. Uren boven je plan kosten{' '}
+                  {euro(EXTRA_HOUR)} per uur, samen ongeveer{' '}
+                  {euro((PROJECTED - PLAN_HOURS) * EXTRA_HOUR)} extra.{' '}
+                  <button
+                    type="button"
+                    className="rounded-sm text-fg underline decoration-border-strong underline-offset-2 outline-focus hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    Plan wijzigen
+                  </button>
                 </p>
               </div>
             </Panel>

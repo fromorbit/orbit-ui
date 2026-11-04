@@ -44,19 +44,31 @@ const KPIS: Record<Period, Omit<Figure, 'against'>[]> = {
   '1': [
     { label: 'Draaiende spaces', value: '9 van 12', delta: '2', tone: 'good', rising: true },
     { label: 'Builds', value: '', delta: '8%', tone: 'good', rising: true },
-    { label: 'Gem. bouwtijd', value: '1 min 42 s', delta: '11 s', tone: 'good', rising: false },
+    {
+      label: 'Gemiddelde bouwtijd',
+      value: '1 min 42 s',
+      delta: '11 s',
+      tone: 'good',
+      rising: false,
+    },
     { label: 'Mislukte starts', value: '2', delta: '1', tone: 'bad', rising: true },
   ],
   '7': [
     { label: 'Draaiende spaces', value: '9 van 12', delta: '3', tone: 'good', rising: true },
     { label: 'Builds', value: '', delta: '12%', tone: 'good', rising: true },
-    { label: 'Gem. bouwtijd', value: '1 min 51 s', delta: '6 s', tone: 'good', rising: false },
+    {
+      label: 'Gemiddelde bouwtijd',
+      value: '1 min 51 s',
+      delta: '6 s',
+      tone: 'good',
+      rising: false,
+    },
     { label: 'Mislukte starts', value: '7', delta: '3', tone: 'good', rising: false },
   ],
   '30': [
     { label: 'Draaiende spaces', value: '9 van 12', delta: '4', tone: 'good', rising: true },
     { label: 'Builds', value: '', delta: '21%', tone: 'good', rising: true },
-    { label: 'Gem. bouwtijd', value: '1 min 58 s', delta: '14 s', tone: 'bad', rising: true },
+    { label: 'Gemiddelde bouwtijd', value: '1 min 58 s', delta: '14 s', tone: 'bad', rising: true },
     { label: 'Mislukte starts', value: '31', delta: '9', tone: 'good', rising: false },
   ],
 }
@@ -83,17 +95,17 @@ const PERIOD_TEXT: Record<Period, string> = {
 const TRAILS: Record<Period, Record<string, readonly number[]>> = {
   '1': {
     'Draaiende spaces': [7, 7, 7, 8, 8, 8, 9, 9],
-    'Gem. bouwtijd': [113, 108, 110, 104, 101, 106, 99, 102],
+    'Gemiddelde bouwtijd': [113, 108, 110, 104, 101, 106, 99, 102],
     'Mislukte starts': [0, 0, 0, 1, 0, 0, 1, 2],
   },
   '7': {
     'Draaiende spaces': [6, 7, 7, 8, 8, 9, 9],
-    'Gem. bouwtijd': [118, 112, 109, 121, 104, 99, 111],
+    'Gemiddelde bouwtijd': [118, 112, 109, 121, 104, 99, 111],
     'Mislukte starts': [2, 1, 0, 2, 1, 1, 0],
   },
   '30': {
     'Draaiende spaces': [5, 5, 6, 6, 7, 7, 8, 8, 9, 9],
-    'Gem. bouwtijd': [104, 108, 111, 106, 113, 117, 115, 119, 121, 118],
+    'Gemiddelde bouwtijd': [104, 108, 111, 106, 113, 117, 115, 119, 121, 118],
     'Mislukte starts': [6, 5, 4, 5, 3, 4, 2, 1, 1, 0],
   },
 }
@@ -174,6 +186,30 @@ function summary(period: Period, points: readonly ChartPoint[]): string {
   return `${failed} van de ${all.toLocaleString('nl-NL')} builds mislukt${where}.`
 }
 
+/** Seconds as the tile writes them: "1 min 51 s". */
+function duration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  return minutes === 0 ? `${rest}\u00a0s` : `${minutes}\u00a0min ${rest}\u00a0s`
+}
+
+/** The made-up builds of the period before, per point: about the share the delta says fewer. */
+function previousBuilds(perPoint: readonly number[], rise: number): number[] {
+  return perPoint.map((value, index) =>
+    Math.max(0, Math.round((value / (1 + rise)) * (1 + Math.sin(index * 2.3) * 0.08))),
+  )
+}
+
+/** The rise of Builds per period, as the share its delta says. */
+const RISE: Record<Period, number> = { '1': 0.08, '7': 0.12, '30': 0.21 }
+
+/** How the plot is read by key, as its description for a screen reader. */
+const KEYS: Record<Period, string> = {
+  '1': 'Pijltjes links en rechts om de uren te lezen, Home en End voor het eerste en het laatste',
+  '7': 'Pijltjes links en rechts om de dagen te lezen, Home en End voor de eerste en de laatste',
+  '30': 'Pijltjes links en rechts om de dagen te lezen, Home en End voor de eerste en de laatste',
+}
+
 /** One space of the made-up web shop: a branch of the app running on its own address. */
 interface Space {
   name: string
@@ -230,8 +266,20 @@ function Overview(): ReactNode {
   const all = perPoint.reduce((sum, value) => sum + value, 0)
   const figure = (kpi: Omit<Figure, 'against'>): Figure =>
     kpi.label === 'Builds'
-      ? { ...kpi, value: all.toLocaleString('nl-NL'), against: AGAINST[period], trail: perPoint }
-      : { ...kpi, against: AGAINST[period], trail: TRAILS[period][kpi.label] ?? [] }
+      ? {
+          ...kpi,
+          value: all.toLocaleString('nl-NL'),
+          against: AGAINST[period],
+          trail: perPoint,
+          // The line follows the day; the delta compares the totals, so the period before is drawn behind it.
+          previous: previousBuilds(perPoint, RISE[period]),
+        }
+      : {
+          ...kpi,
+          against: AGAINST[period],
+          trail: TRAILS[period][kpi.label] ?? [],
+          ...(kpi.label === 'Gemiddelde bouwtijd' ? { unit: duration } : {}),
+        }
   return (
     <AppFrame product="halo" current="dashboard">
       <ScrollArea>
@@ -263,7 +311,7 @@ function Overview(): ReactNode {
             tone="attention"
             action={
               <Button variant="secondary" size="sm">
-                Logboek
+                Andere poort kiezen
               </Button>
             }
           >
@@ -279,7 +327,7 @@ function Overview(): ReactNode {
             meta={period === '1' ? 'per uur' : 'per dag'}
             actions={
               <Button variant="ghost" size="sm">
-                Alle builds
+                Bekijk alle builds
               </Button>
             }
           >
@@ -291,16 +339,23 @@ function Overview(): ReactNode {
               ]}
               points={points}
               format={(value) => value.toLocaleString('nl-NL')}
-              total={(value) => `${value.toLocaleString('nl-NL')} builds`}
+              total={(value) => `${value.toLocaleString('nl-NL')}\u00a0builds`}
               empty="Nog geen builds in deze periode"
               emptyNext="Kies een langere periode of start een build in een space."
+              emptyAction={
+                <Button variant="secondary" size="sm" onClick={() => setPeriod('30')}>
+                  Toon 30 dagen
+                </Button>
+              }
+              keys={KEYS[period]}
+              roleDescription="grafiek"
             />
             <p aria-live="polite" className="m-0 mt-3 text-[12px] text-muted">
               {summary(period, points)}
             </p>
           </Panel>
           <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-            <Panel title="Spaces" meta="6 van 12" flush>
+            <Panel title="Spaces" meta={`${SPACES.length} getoond`} flush>
               <div className="px-2 pb-2">
                 <List label="Spaces">
                   {SPACES.map((space) => (

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { Chart, type ChartPoint, chartTicks, Sparkline, stackHeights } from './Chart'
+import { Chart, type ChartPoint, chartLabelled, chartTicks, Sparkline, stackHeights } from './Chart'
 
 const nl = (value: number) => value.toLocaleString('nl-NL')
 const SERIES = [
@@ -26,9 +26,9 @@ test('counts step by whole numbers', () => {
   expect(chartTicks(33, true)).toEqual([0, 10, 20, 30, 40])
 })
 
-test('a part above zero shows at least 3px, taken from the tallest part', () => {
-  // 30 builds and 1 failure at 4px a build: the failure gets 3px and the 2px gap under it.
-  expect(stackHeights([30, 1], 4)).toEqual([119, 5])
+test('a part above zero shows at least 4px, taken from the tallest part', () => {
+  // 30 builds and 1 failure at 4px a build: the failure gets 4px and the 2px gap under it.
+  expect(stackHeights([30, 1], 4)).toEqual([118, 6])
   expect(stackHeights([30, 10], 4)).toEqual([120, 40])
 })
 
@@ -146,4 +146,62 @@ test('a sparkline is an image named by its label, with a dot on the latest value
   const { container } = render(<Sparkline label="Builds per dag" values={[3, 5, 4, 8]} />)
   expect(screen.getByRole('img', { name: 'Builds per dag' })).toBeInTheDocument()
   expect(container.querySelectorAll('circle')).toHaveLength(1)
+})
+
+test('the labels of the axis keep one rhythm to the last point where a step allows it', () => {
+  // 31 days, a label at least every 4: every 5 ends on the 31st.
+  const box = (index: number) => [index * 20 - 10, index * 20 + 10] as const
+  expect(chartLabelled(31, 4, box, 20)).toEqual([0, 5, 10, 15, 20, 25, 30])
+  // 30 days have no such step: the last is added, and drops the label that crowds it.
+  expect(chartLabelled(30, 4, box, 20)).toEqual([0, 4, 8, 12, 16, 20, 24, 29])
+  expect(chartLabelled(1, 4, box, 20)).toEqual([0])
+})
+
+test('the rows of the table and the readout say the point in full, with the sum of a stack', () => {
+  render(
+    <Chart
+      label="Builds per dag"
+      series={SERIES}
+      points={[{ label: 'do', title: 'donderdag', values: [29, 4] }]}
+      format={nl}
+      total={(value) => `${value} builds`}
+      keys="Pijltjes links en rechts om de dagen te lezen"
+    />,
+  )
+  expect(screen.getByRole('rowheader', { name: 'donderdag' })).toBeInTheDocument()
+  const plot = screen.getByRole('group', { name: 'Builds per dag' })
+  expect(plot).toHaveAccessibleDescription('Pijltjes links en rechts om de dagen te lezen')
+  fireEvent.keyDown(plot, { key: 'Home' })
+  expect(plot.querySelector('[aria-live]')).toHaveTextContent(
+    'donderdag, 33 builds, Geslaagd 29, Mislukt 4',
+  )
+  expect(document.querySelector('[data-nt-chart-tooltip]')).toHaveTextContent(
+    'donderdag · 33 builds',
+  )
+})
+
+test('a forecast carries a line on to the last point and raises the axis to it', () => {
+  const { container } = render(
+    <Chart
+      kind="line"
+      label="Agent-uren"
+      series={[{ id: 'used', label: 'Gebruikt' }]}
+      points={[
+        { label: '1', values: [100] },
+        { label: '2', values: [180] },
+        { label: '3', values: [null] },
+      ]}
+      forecast={{ series: 'used', value: 282, label: '≈282 u', text: 'verwacht: 282 u' }}
+    />,
+  )
+  expect(container.querySelector('[data-nt-chart-forecast]')).not.toBeNull()
+  expect(screen.getByText('≈282 u')).toBeInTheDocument()
+  expect(screen.getByRole('table', { name: 'Agent-uren (verwacht: 282 u)' })).toBeInTheDocument()
+})
+
+test('a sparkline can draw the period before as a faint line behind it', () => {
+  const { container } = render(
+    <Sparkline label="Builds" values={[26, 29, 5]} previous={[23, 27, 6]} />,
+  )
+  expect(container.querySelector('[data-nt-sparkline-previous]')).not.toBeNull()
 })

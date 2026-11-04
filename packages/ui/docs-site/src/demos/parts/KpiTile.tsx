@@ -16,6 +16,13 @@ export interface Figure {
   against?: string
   /** The course of the figure over the period, drawn as a sparkline under it. */
   trail?: readonly number[]
+  /**
+   * The same stretch of the period before, for a figure whose change is between the periods (the
+   * builds of a week): a faint line behind the trail, and the two totals in its words.
+   */
+  previous?: readonly number[]
+  /** A value of the trail in words, with its unit ("1 min 58 s"); a Dutch number without. */
+  unit?: (value: number) => string
   /** How full it is, for a figure with a limit ("18,4 van 50 GB"): a meter instead of a line. */
   meter?: { value: number; max: number; text: string; note?: string }
 }
@@ -29,10 +36,18 @@ const nl = (value: number) => value.toLocaleString('nl-NL')
  * share in words above it.
  */
 export function KpiTile({ figure, period }: { figure: Figure; period: string }): ReactNode {
+  const say = figure.unit ?? nl
   const first = figure.trail?.[0]
   const last = figure.trail?.[figure.trail.length - 1]
+  const sum = (values: readonly number[]) => values.reduce((all, value) => all + value, 0)
+  const totals =
+    figure.previous && figure.trail
+      ? `; ${say(sum(figure.trail))} in totaal, ${figure.against ?? 't.o.v. vorige periode'} ${say(sum(figure.previous))}`
+      : ''
   const course =
-    first === undefined || last === undefined ? '' : `, van ${nl(first)} naar ${nl(last)}`
+    first === undefined || last === undefined
+      ? ''
+      : `, van ${say(first)} naar ${say(last)}${totals}`
   return (
     <StatTile
       label={figure.label}
@@ -63,7 +78,11 @@ export function KpiTile({ figure, period }: { figure: Figure; period: string }):
         </div>
       ) : figure.trail ? (
         <div className="mt-auto">
-          <Sparkline label={`${figure.label}, ${period}${course}`} values={figure.trail} />
+          <Sparkline
+            label={`${figure.label}, ${period}${course}`}
+            values={figure.trail}
+            {...(figure.previous ? { previous: figure.previous } : {})}
+          />
         </div>
       ) : null}
     </StatTile>

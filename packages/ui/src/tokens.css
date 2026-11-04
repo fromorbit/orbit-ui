@@ -72,17 +72,18 @@
   --nt-bubble: rgb(231 233 242 / 0.06);
   /* The plane of a small mark: the letter block of a project, the track of a progress meter. */
   --nt-mark: rgb(231 233 242 / 0.09);
-  /* The marks of a chart (`Chart`, `Sparkline`): Mist at 52%, quieter than the accent fill a bar
-     turns to under the pointer and than the figures above it, so a row of bars is calm and the
-     one being read stands out. 4.5:1 on a card. A line has less mass than a bar and takes the full
+  /* The marks of a chart (`Chart`, `Sparkline`): Mist at 52%, quieter than the accent and than
+     the figures above it, so a row of bars is calm and a status part is the one emphasis. 4.5:1
+     on a card. A line has less mass than a bar and takes the full
      ink. The wash under a line is the mark's ink at 8%; the shapes of a chart that loads are a
      step above the plane of a control. */
   --nt-chart-mark: rgb(231 233 242 / 0.52);
   --nt-chart-line: var(--nt-text);
   --nt-chart-wash: rgb(231 233 242 / 0.08);
   --nt-chart-skeleton: rgb(231 233 242 / 0.12);
-  /* A line to measure against (a plan, a limit): the faint ink, a graphic and never a word. */
-  --nt-chart-reference: var(--nt-text-faint);
+  /* A line to measure against (a plan, a limit): a step above the faint ink, a graphic and never
+     a word; 3.7:1 on a card, with room above the 3:1 of WCAG 1.4.11. */
+  --nt-chart-reference: #737a98;
   /* The plane of the composer, a step above the canvas it lies on: the plane of a card. */
   --nt-composer: #19223f;
   /* The border of a large input surface with the focus in it (the composer, a note in a diff): a
