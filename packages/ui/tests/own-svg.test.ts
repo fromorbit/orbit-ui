@@ -8,6 +8,7 @@ import { read, SRC, sources, stripComments, underSrc } from './guards/source'
  * those is named here with its reason, so a new `<svg>` anywhere else fails.
  */
 const allowed: Record<string, string> = {
+  'patterns/Chart.tsx': 'a chart and a sparkline draw data, not icons',
   'patterns/StatusShape.tsx': 'the status shapes stay our own',
   'patterns/PierreFileIcon.tsx':
     'a file-type glyph per extension from the sprite of the tree; Lucide has none per language',

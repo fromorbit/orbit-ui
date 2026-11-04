@@ -2,6 +2,8 @@ import { type ReactNode, useState } from 'react'
 import {
   Banner,
   Button,
+  Chart,
+  type ChartPoint,
   List,
   ListRow,
   PageHeader,
@@ -15,7 +17,6 @@ import {
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame, HOUR, MINUTE, NOW } from './parts/AppFrame'
-import { type Bar, ChartSketch } from './parts/ChartSketch'
 import { type Figure, KpiTile } from './parts/KpiTile'
 import { Panel } from './parts/Panel'
 
@@ -135,8 +136,34 @@ const KPIS: Record<Period, Figure[]> = {
 
 const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'] as const
 
+/** What a period is called under a sparkline, for a screen reader. */
+const PERIOD_TEXT: Record<Period, string> = {
+  '1': 'per uur, de afgelopen 24 uur',
+  '7': 'per dag, de afgelopen 7 dagen',
+  '30': 'per dag, de afgelopen 30 dagen',
+}
+
+/** The course of the other figures over each period, made up, for the sparklines of the tiles. */
+const TRAILS: Record<Period, Record<string, readonly number[]>> = {
+  '1': {
+    'Draaiende spaces': [7, 7, 7, 8, 8, 8, 9, 9],
+    'Gem. bouwtijd': [113, 108, 110, 104, 101, 106, 99, 102],
+    'Mislukte starts': [0, 0, 0, 1, 0, 0, 1, 2],
+  },
+  '7': {
+    'Draaiende spaces': [6, 7, 7, 8, 8, 9, 9],
+    'Gem. bouwtijd': [118, 112, 109, 121, 104, 99, 111],
+    'Mislukte starts': [2, 1, 0, 2, 1, 1, 0],
+  },
+  '30': {
+    'Draaiende spaces': [5, 5, 6, 6, 7, 7, 8, 8, 9, 9],
+    'Gem. bouwtijd': [104, 108, 111, 106, 113, 117, 115, 119, 121, 118],
+    'Mislukte starts': [6, 5, 4, 5, 3, 4, 2, 1, 1, 0],
+  },
+}
+
 /** A made-up series of builds, per hour, day or day of the month, with the failed ones on top. */
-function builds(period: Period): Bar[] {
+function builds(period: Period): ChartPoint[] {
   const count = period === '1' ? 24 : period === '7' ? 7 : 30
   return Array.from({ length: count }, (_, index) => {
     const label =
@@ -150,7 +177,7 @@ function builds(period: Period): Bar[] {
     const base = period === '1' ? 2 : period === '7' ? 22 : 20
     const value = Math.max(0, Math.round((quiet ? base * 0.25 : base) + wave))
     const failed = index % 5 === 3 ? Math.max(1, Math.round(value / 8)) : 0
-    return { label, value, failed }
+    return { label, values: [value, failed] }
   })
 }
 
@@ -203,6 +230,14 @@ const HOST = [
  */
 function Overview(): ReactNode {
   const [period, setPeriod] = useState<Period>('7')
+  const points = builds(period)
+  const trail = (figure: Figure): Figure => ({
+    ...figure,
+    trail:
+      figure.label === 'Builds'
+        ? points.map((point) => point.values.reduce<number>((sum, value) => sum + (value ?? 0), 0))
+        : (TRAILS[period][figure.label] ?? []),
+  })
   return (
     <AppFrame product="halo" current="dashboard">
       <ScrollArea>
@@ -239,7 +274,7 @@ function Overview(): ReactNode {
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS[period].map((kpi) => (
-              <KpiTile key={kpi.label} figure={kpi} />
+              <KpiTile key={kpi.label} figure={trail(kpi)} period={PERIOD_TEXT[period]} />
             ))}
           </div>
           <Panel
@@ -251,11 +286,15 @@ function Overview(): ReactNode {
               </Button>
             }
           >
-            <ChartSketch
-              bars={builds(period)}
-              legend={{ value: 'Geslaagd', failed: 'Mislukt' }}
-              unit="builds"
-              note="Gestapelde staafgrafiek met as, raster en tooltip per staaf"
+            <Chart
+              label={period === '1' ? 'Builds per uur' : 'Builds per dag'}
+              series={[
+                { id: 'ok', label: 'Geslaagd' },
+                { id: 'failed', label: 'Mislukt', tone: 'danger' },
+              ]}
+              points={points}
+              format={(value) => value.toLocaleString('nl-NL')}
+              empty="Nog geen builds in deze periode"
             />
           </Panel>
           <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">

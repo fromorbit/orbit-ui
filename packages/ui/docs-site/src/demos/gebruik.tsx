@@ -3,6 +3,8 @@ import {
   Banner,
   Button,
   type CardValue,
+  Chart,
+  type ChartPoint,
   CopyButton,
   CreditCardField,
   DataTable,
@@ -21,10 +23,16 @@ import {
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
-import { type Bar, ChartSketch } from './parts/ChartSketch'
 import { type Figure, KpiTile } from './parts/KpiTile'
 import { Panel } from './parts/Panel'
 import { UsagePlanCard } from './parts/UsagePlanCard'
+
+/** Agent hours per day of October so far, made up: quiet in the weekends. 182 in all. */
+const DAILY = [11, 12, 2, 1, 13, 12, 14, 11, 10, 2, 3, 14, 13, 12, 15, 12, 2, 1, 13, 9]
+
+/** The agent hours of the plan per month, and the days of October. */
+const PLAN_HOURS = 250
+const DAYS = 31
 
 /** What the workspace used this month, against September. */
 const KPIS: Figure[] = [
@@ -35,6 +43,7 @@ const KPIS: Figure[] = [
     good: true,
     rising: true,
     against: 't.o.v. september',
+    trail: [131, 138, 129, 146, 152, 149, 160, 182],
   },
   {
     label: 'Reviews',
@@ -43,6 +52,7 @@ const KPIS: Figure[] = [
     good: true,
     rising: true,
     against: 't.o.v. september',
+    trail: [31, 34, 29, 38, 35, 41, 37, 46],
   },
   {
     label: 'Opnames',
@@ -51,6 +61,7 @@ const KPIS: Figure[] = [
     good: true,
     rising: false,
     against: 't.o.v. september',
+    trail: [204, 196, 188, 181, 172, 166, 159, 128],
   },
   {
     label: 'Opslag',
@@ -58,17 +69,26 @@ const KPIS: Figure[] = [
     delta: '2,1 GB',
     good: false,
     rising: true,
-    against: 'van 50 GB',
+    against: 'erbij · 37% van 50 GB',
+    meter: { value: 18.4, max: 50, text: '18,4 van 50 GB' },
   },
 ]
 
-/** Agent hours per day of October so far, made up: quiet in the weekends. */
-const HOURS: Bar[] = Array.from({ length: 20 }, (_, index) => {
-  const day = index + 1
-  const weekend = [3, 4, 10, 11, 17, 18].includes(day)
-  const value = weekend ? 1 + (day % 3) : Math.round(9 + Math.sin(day / 1.8) * 3 + (day % 4))
-  return { label: `${day} okt`, value }
-})
+/**
+ * The agent hours of October added up per day, against the pace that ends the month at the plan's
+ * 250: the days to come have no use yet, the pace runs on to the 31st.
+ */
+const HOURS: ChartPoint[] = Array.from({ length: DAYS }, (_, index) => ({
+  label: `${index + 1} okt`,
+  values: [
+    index < DAILY.length ? DAILY.slice(0, index + 1).reduce((sum, hours) => sum + hours, 0) : null,
+    Math.round((PLAN_HOURS * (index + 1)) / DAYS),
+  ],
+}))
+
+/** Where the month ends at this pace: 182 hours in 20 days is about 282 by the 31st. */
+const USED = DAILY.reduce((sum, hours) => sum + hours, 0)
+const PROJECTED = Math.round((USED / DAILY.length) * DAYS)
 
 type InvoiceStatus = 'open' | 'paid' | 'failed'
 
@@ -483,18 +503,28 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS.map((kpi) => (
-              <KpiTile key={kpi.label} figure={kpi} />
+              <KpiTile key={kpi.label} figure={kpi} period="per maand, de afgelopen 8 maanden" />
             ))}
           </div>
           <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
             <UsagePlanCard />
-            <Panel title="Agent-uren" meta="per dag, deze maand">
-              <ChartSketch
-                bars={HOURS}
-                legend={{ value: 'Agent-uren' }}
-                unit="uur"
-                note="Staafgrafiek met as, raster en tooltip per dag"
-              />
+            <Panel title="Agent-uren" meta="opgeteld, deze maand">
+              <div className="flex flex-col gap-3">
+                <Chart
+                  kind="line"
+                  label="Agent-uren in oktober, opgeteld per dag"
+                  series={[
+                    { id: 'used', label: 'Gebruikt' },
+                    { id: 'pace', label: `Tempo voor ${PLAN_HOURS} u`, reference: true },
+                  ]}
+                  points={HOURS}
+                  format={(value) => `${value.toLocaleString('nl-NL')} u`}
+                />
+                <p className="m-0 text-[12px] text-muted">
+                  Op dit tempo kom je eind oktober rond {PROJECTED} u uit, {PROJECTED - PLAN_HOURS}{' '}
+                  u boven je plan.
+                </p>
+              </div>
             </Panel>
           </div>
           <div className="grid grid-cols-1 items-start gap-5 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
