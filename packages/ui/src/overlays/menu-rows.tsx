@@ -566,8 +566,16 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
       <Item {...common}>{content}</Item>
     )
   // A guarded row shows its reason in sight (`Reason`, under it); a tooltip would only say it again.
+  // The tooltip opens on the far side of the row, past the panel's edge (Radix flips it when the
+  // window has no room there), so it never covers the rows above and below the one it describes.
   const hinted =
-    row.hint === undefined || guarded ? element : <Tooltip label={row.hint}>{element}</Tooltip>
+    row.hint === undefined || guarded ? (
+      element
+    ) : (
+      <Tooltip label={row.hint} side="right">
+        {element}
+      </Tooltip>
+    )
   return (
     <>
       {row.separated ? <Separator /> : null}

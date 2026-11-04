@@ -487,6 +487,10 @@ test('a hint describes its row in a tooltip, not in the menu', async () => {
   expect(screen.queryByText('Wisselen kost de geschiedenis')).toBeNull()
   row.focus()
   await waitFor(() => expect(row).toHaveAccessibleDescription('Wisselen kost de geschiedenis'))
+  // Beside the row, not over the rows above it.
+  expect(await screen.findByRole('tooltip')).toBeInTheDocument()
+  const panel = document.querySelector('[data-nt-layer="passive"][data-side]')
+  expect(panel).toHaveAttribute('data-side', 'right')
 })
 
 test('a row with `checked` is a checkbox item that says whether it is on', async () => {

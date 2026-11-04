@@ -33,8 +33,10 @@ export function TooltipProvider(props: ComponentProps<typeof RadixTooltip.Provid
  * spells its own frame. `max-w-80` is where a long label starts to wrap. Change the material in
  * `panel.ts`, change it here too.
  */
+// No wider than the room Radix measures on its side: a tooltip beside a row (`side="right"`, flipped
+// to the left on a phone) wraps inside the window rather than running past its edge.
 const TOOLTIP_PANEL =
-  'no-drag nt-fade-in z-(--nt-z-popover) flex max-w-80 items-center gap-2 rounded-lg border border-border bg-overlay px-2 py-1 text-[12px] text-fg shadow-menu outline-none'
+  'no-drag nt-fade-in z-(--nt-z-popover) flex max-w-[min(20rem,var(--radix-tooltip-content-available-width))] items-center gap-2 rounded-lg border border-border bg-overlay px-2 py-1 text-[12px] text-fg shadow-menu outline-none'
 
 /** The props of `Tooltip`. */
 export interface TooltipProps {
@@ -69,6 +71,11 @@ export interface TooltipProps {
    * it, where the native view would draw over the tooltip.
    */
   collisionBoundary?: Element | null
+  /**
+   * Where it opens beside its trigger; above by default. A row of a menu opens it on its far side
+   * (`right`), so the tooltip never lies over the rows around the one it describes.
+   */
+  side?: 'top' | 'right' | 'bottom' | 'left'
 }
 
 /**
@@ -112,6 +119,7 @@ export function Tooltip({
   children,
   defaultOpen,
   collisionBoundary,
+  side = 'top',
 }: TooltipProps) {
   const container = usePortalContainer()
   const provided = useContext(Provided)
@@ -120,7 +128,7 @@ export function Tooltip({
       <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
       <RadixTooltip.Portal container={container}>
         <RadixTooltip.Content
-          side="top"
+          side={side}
           sideOffset={4}
           collisionPadding={8}
           {...(collisionBoundary ? { collisionBoundary } : {})}

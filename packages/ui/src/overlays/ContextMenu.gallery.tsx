@@ -253,7 +253,8 @@ function WithChoices() {
             aria-describedby={hint}
             aria-keyshortcuts="Shift+F10"
             data-nt-story-region
-            className={`relative flex h-32 flex-col items-center justify-center gap-2 rounded-lg bg-plane text-muted shadow-plane data-[state=open]:bg-surface-active ${FOCUSABLE}`}
+            // `secondary` while lit, as on a file row: `muted` on the lit plane fell to 4.05:1 in dark.
+            className={`relative flex h-32 flex-col items-center justify-center gap-2 rounded-lg bg-plane text-muted shadow-plane data-[state=open]:bg-surface-active data-[state=open]:text-secondary ${FOCUSABLE}`}
           >
             <Icon name="image" size="md" />
             <span className="text-[12px]">plattegrond-begane-grond.png</span>
@@ -313,12 +314,15 @@ function WithAHead() {
             aria-describedby={hint}
             aria-keyshortcuts="Shift+F10"
             data-nt-story-region
-            className={`flex h-14 items-center gap-3 rounded-lg bg-plane ps-3 pe-3 shadow-plane data-[state=open]:bg-surface-active ${FOCUSABLE}`}
+            className={`group flex h-14 items-center gap-3 rounded-lg bg-plane ps-3 pe-3 shadow-plane data-[state=open]:bg-surface-active ${FOCUSABLE}`}
           >
             <Avatar name="Robin de Vries" size="md" />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-[13px] font-medium text-fg">Robin de Vries</span>
-              <span className="truncate text-[12px] text-muted">Ontwerper · Studio Noord</span>
+              {/* `secondary` while lit: `muted` on the lit card fell to 4.05:1 in dark. */}
+              <span className="truncate text-[12px] text-muted group-data-[state=open]:text-secondary">
+                Ontwerper · Studio Noord
+              </span>
             </div>
             <DropdownMenu
               trigger={
