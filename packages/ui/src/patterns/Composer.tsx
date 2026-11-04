@@ -177,6 +177,7 @@ export function Composer({
           </div>
         ) : null}
         <div className={disabled ? 'opacity-40' : undefined}>
+          {/* Off, no placeholder: a faded "Vraag iets…" under the reason would still invite typing. */}
           <Textarea
             ref={field}
             label={labels.field}
@@ -184,7 +185,7 @@ export function Composer({
             minRows={minRows}
             maxRows={maxRows}
             value={value}
-            {...(placeholder === undefined ? {} : { placeholder })}
+            {...(placeholder === undefined || disabled ? {} : { placeholder })}
             {...(disabled
               ? { 'aria-disabled': true, readOnly: true, 'aria-describedby': reasonId }
               : {})}

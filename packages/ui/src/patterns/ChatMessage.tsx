@@ -45,10 +45,10 @@ export interface ChatMessageProps {
    */
   error?: ReactNode
   /**
-   * The way on after `error`, on the same line: a ghost `Button` with its word, "Opnieuw proberen".
-   * The one next action after a failure is never an unnamed glyph on a row of its own. When the
-   * line is too narrow it wraps under the sentence, its glyph on the text's left edge, never under
-   * the warning sign.
+   * The way on after `error`, on the same line: a framed `secondary` `Button` with its word,
+   * "Opnieuw proberen", so it reads as a button and not as text that floats. The one next action
+   * after a failure is never an unnamed glyph on a row of its own. When the line is too narrow it
+   * wraps under the sentence, its frame on the text's left edge, never under the warning sign.
    */
   errorAction?: ReactNode
 }
@@ -124,15 +124,15 @@ export function ChatMessage({
   const failure =
     error !== undefined ? (
       // Two columns: the sign, and the sentence with its action. The action wraps inside the second
-      // column, and its -8px takes back the ghost's own padding, so a wrapped action's glyph stands
-      // under the first letter of the sentence (Proximity: the failure and its way on stay one).
+      // column, so a wrapped action's frame stands on the left edge of the sentence (Proximity: the
+      // failure and its way on stay one).
       <div id={errorId} role="alert" className="flex items-start gap-2 text-[12px] text-fg">
         <span className="flex h-(--nt-control-sm) shrink-0 items-center text-danger">
           <Icon name="alert-triangle" size="sm" />
         </span>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4">
           <p className="m-0 flex min-h-(--nt-control-sm) min-w-0 items-center">{error}</p>
-          {errorAction !== undefined ? <div className="-ml-2 flex">{errorAction}</div> : null}
+          {errorAction !== undefined ? <div className="flex">{errorAction}</div> : null}
         </div>
       </div>
     ) : null

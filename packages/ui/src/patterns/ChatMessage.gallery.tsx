@@ -93,7 +93,9 @@ export default {
         <ChatMessage from="assistant" label="Opus 5.5" streaming>
           <p className="m-0 flex items-center gap-2 text-muted">
             <Icon name="sparkles" size="sm" tone="faint" />
-            <Shimmer active>Aan het nadenken…</Shimmer>
+            <Shimmer active>Aan het nadenken</Shimmer>
+            {/* After a few seconds the wait counts, so a long one does not look like a hang. */}
+            <span className="text-[11px] tabular-nums">· 8 s</span>
           </p>
         </ChatMessage>
       </Column>
@@ -109,8 +111,8 @@ export default {
       <Column>
         <ChatMessage
           from="assistant"
-          label="Opus 5.5"
-          meta="Opus 5.5 · klaar in 4 s"
+          label="Opus 5.5, 14:05"
+          meta="14:05 · Opus 5.5 · klaar in 4 s"
           actions={<AnswerActions text="iDEAL" />}
         >
           <Prose
@@ -128,7 +130,7 @@ export default {
           label="Opus 5.5"
           error="De verbinding viel weg na 40 seconden. Wat er al stond, blijft staan."
           errorAction={
-            <Button variant="ghost" size="sm">
+            <Button variant="secondary" size="sm">
               <Icon name="rotate-ccw" size="sm" />
               Opnieuw proberen
             </Button>

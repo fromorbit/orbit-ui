@@ -16,27 +16,32 @@ const MODELS: SearchListItem[] = [
   { id: 'haiku', label: 'Haiku 5', detail: 'Kort en goedkoop' },
 ]
 
-/** What the agent may do in this chat: the whole name in the list, a short word in the pill. */
-const ACCESS: (SearchListItem & { short: string })[] = [
-  { id: 'read', label: 'Alleen lezen', short: 'Lezen', detail: 'Leest bestanden, verandert niets' },
-  {
-    id: 'edit',
-    label: 'Mag bewerken',
-    short: 'Mag bewerken',
-    detail: 'Bewerkt bestanden, vraagt voor commando’s',
-  },
-  {
-    id: 'full',
-    label: 'Volledige toegang',
-    short: 'Alles',
-    detail: 'Bewerkt en voert commando’s uit',
-  },
+/** What the agent may do in this chat: in the pill too the whole name, a state and not a verb. */
+const ACCESS: SearchListItem[] = [
+  { id: 'read', label: 'Alleen lezen', detail: 'Leest bestanden, verandert niets' },
+  { id: 'edit', label: 'Mag bewerken', detail: 'Bewerkt bestanden, vraagt voor commando’s' },
+  { id: 'full', label: 'Volledige toegang', detail: 'Bewerkt en voert commando’s uit' },
 ]
+
+/** A pasted stack trace: more lines than the field grows to, so it scrolls inside. */
+const TRACE = [
+  'De betaling met iDEAL faalt sinds vanochtend. Dit staat in het log:',
+  '',
+  'TypeError: Cannot read properties of undefined (reading "status")',
+  '    at verwerkBetaalstatus (src/kassa/betaalmethoden/ideal/verwerkBetaalstatus.ts:42:18)',
+  '    at async webhook (src/kassa/webhook.ts:17:5)',
+  '    at async route (src/server/routes.ts:88:12)',
+  '    at async handle (node_modules/hono/dist/hono-base.js:212:20)',
+  '    at async fetch (src/server/index.ts:9:3)',
+  '',
+  'Kun je uitzoeken waar die status verdwijnt?',
+].join('\n')
 
 /**
  * The tools of Orbit's composer: the round "+", the model and the access level, three quiet
- * controls of one height. The access level keeps a short word at every width: a bare shield would
- * not say whether the agent may only read or may change files.
+ * controls of one height. The access level keeps its whole name at every width: a bare shield would
+ * not say whether the agent may only read or may change files. Both menus put their detail under
+ * the label, where it wraps, so the sentence that explains a choice is never cut off.
  */
 function Tools() {
   const [model, setModel] = useState('opus')
@@ -52,17 +57,20 @@ function Tools() {
         items={MODELS}
         selectedId={model}
         onSelect={setModel}
+        collapse
         searchable={false}
+        layout="stacked"
       />
       <PickerPill
         listLabels={nl.list}
         label="Toegang"
         icon="shield"
-        value={ACCESS.find((item) => item.id === access)?.short ?? ''}
+        value={ACCESS.find((item) => item.id === access)?.label ?? ''}
         items={ACCESS}
         selectedId={access}
         onSelect={setAccess}
         searchable={false}
+        layout="stacked"
       />
     </>
   )
@@ -131,6 +139,7 @@ export default {
         }
       />
     ),
+    'Een lange plak: het veld groeit tot acht regels en scrolt dan': () => <Live initial={TRACE} />,
     'Bezig: Stoppen in plaats van versturen': () => (
       <Live running onStop={() => {}} initial="En daarna de facturen van" />
     ),

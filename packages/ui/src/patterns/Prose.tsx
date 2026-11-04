@@ -529,7 +529,7 @@ const HEADING_SMALL = 'm-0 mt-2 text-[13px] font-medium first:mt-0'
 // `whitespace-normal` undoes the `pre-line` a list inherits from the item it is nested in: a list
 // holds no text of its own, so the newlines to-hast puts between its items are layout only.
 const LIST = 'm-0 whitespace-normal pl-4'
-const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-normal'
+const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-5'
 // A task item carries a checkbox instead of a marker, but keeps the indent of the list it is in,
 // so the boxes line up with the bullets and numbers around them. A hanging indent of the box's
 // width (14px and its 8px margin) lines a wrapped line up with the words, not under the box.
@@ -566,7 +566,7 @@ const components: Options['components'] = {
   // `pre-line`: an agent writes plain lines at least as often as markdown, and markdown itself
   // would fold a single newline into the previous line.
   p: ({ children }) => (
-    <p className="m-0 whitespace-pre-line text-[13px] leading-normal">
+    <p className="m-0 whitespace-pre-line text-[13px] leading-5">
       <Linked>{children}</Linked>
     </p>
   ),
@@ -605,7 +605,7 @@ const components: Options['components'] = {
   // would build strings nobody has asked for.
   pre: ({ children, node }) => <FencedBlock node={node}>{children}</FencedBlock>,
   blockquote: ({ children }) => (
-    <blockquote className="m-0 whitespace-pre-line border-l border-border pl-3 text-[13px] leading-normal text-muted">
+    <blockquote className="m-0 whitespace-pre-line border-l border-border pl-3 text-[13px] leading-5 text-muted">
       {withoutLayoutBreaks(children)}
     </blockquote>
   ),

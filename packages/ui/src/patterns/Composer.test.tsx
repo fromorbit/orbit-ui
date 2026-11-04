@@ -107,6 +107,33 @@ test('a reason turns the field off but keeps it a tab stop that says why', async
   expect(screen.getByText('Model').closest('[inert]')).not.toBeNull()
 })
 
+test('off, the field shows no placeholder that would invite typing', () => {
+  const { rerender } = render(
+    <Composer
+      labels={nl.composer}
+      value=""
+      onValueChange={() => {}}
+      onSend={() => {}}
+      placeholder="Vraag iets…"
+    />,
+  )
+  expect(screen.getByRole('textbox', { name: 'Bericht' })).toHaveAttribute(
+    'placeholder',
+    'Vraag iets…',
+  )
+  rerender(
+    <Composer
+      labels={nl.composer}
+      value=""
+      onValueChange={() => {}}
+      onSend={() => {}}
+      placeholder="Vraag iets…"
+      disabledReason="Kies eerst een project."
+    />,
+  )
+  expect(screen.getByRole('textbox', { name: 'Bericht' })).not.toHaveAttribute('placeholder')
+})
+
 test('Escape in the field stops a running answer', async () => {
   const onStop = vi.fn()
   render(<Live onStop={onStop} running />)
