@@ -5,8 +5,8 @@ import { Button } from '../primitives/Button'
 import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 import { TooltipProvider } from './Tooltip'
 
-// `pencil` is the only icon these rows borrow: `archive` and `trash-2` came into the registry with
-// their real user (a row menu of the app), not with this story. The
+// `pencil`, `archive` and `trash-2` are all icons of the registry with a real user (a row menu of
+// the app). The
 // third row is the guarded form: `disabled` *and* a `hint` together, the
 // combination that keeps a row a real stop of the menu instead of a genuinely disabled one
 // (`BrowserMenu`'s own snapshot row at five attachments) — carried by `Open` below rather than a
@@ -14,22 +14,35 @@ import { TooltipProvider } from './Tooltip'
 // close the first one (`Open`'s own JSDoc). Its `aria-describedby` and the `hidden` span it points
 // at are what axe's per-story sweep (Orbit's end-to-end gallery test, "no accessibility violations per story")
 // reaches this way.
+//
+// An icon on every row and the destructive act last, apart and in `danger`: the shape of the
+// `ContextMenu` that shares this item model, so the two overlays read as one system.
 const ROW_ACTIONS: DropdownMenuItem[] = [
   { id: 'rename', label: 'Hernoemen', icon: 'pencil', onSelect: () => {} },
-  { id: 'archive', label: 'Archiveren', onSelect: () => {} },
+  { id: 'archive', label: 'Archiveren', icon: 'archive', onSelect: () => {} },
   {
     id: 'delete-guarded',
     label: 'Verwijderen',
+    icon: 'trash-2',
+    tone: 'danger',
+    separated: true,
     disabled: true,
-    hint: 'Nog een chat aan het werk',
+    hint: 'Kan zodra de chat klaar is',
     onSelect: () => {},
   },
 ]
 
 const DANGEROUS_ACTIONS: DropdownMenuItem[] = [
   { id: 'rename', label: 'Hernoemen', icon: 'pencil', onSelect: () => {} },
-  { id: 'archive', label: 'Archiveren', onSelect: () => {} },
-  { id: 'delete', label: 'Verwijderen', tone: 'danger', onSelect: () => {} },
+  { id: 'archive', label: 'Archiveren', icon: 'archive', onSelect: () => {} },
+  {
+    id: 'delete',
+    label: 'Verwijderen',
+    icon: 'trash-2',
+    tone: 'danger',
+    separated: true,
+    onSelect: () => {},
+  },
 ]
 
 const MANY_BRANCHES: DropdownMenuItem[] = Array.from({ length: 20 }, (_, index) => ({

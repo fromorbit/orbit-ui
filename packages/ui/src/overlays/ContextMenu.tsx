@@ -2,7 +2,7 @@ import { ContextMenu as RadixContextMenu } from 'radix-ui'
 import type { ReactElement } from 'react'
 import { handBackOnlyLostFocus } from '../primitives/hand-back'
 import type { DropdownMenuHeader, DropdownMenuItem } from './DropdownMenu'
-import { MenuBody, type MenuParts } from './menu-rows'
+import { MENU_WIDTH, MenuBody, type MenuParts } from './menu-rows'
 import { PANEL } from './panel'
 import { usePortalContainer } from './portal'
 
@@ -56,6 +56,7 @@ const CONTEXT_PARTS: MenuParts = {
   SubContent: RadixContextMenu.SubContent,
   Portal: RadixContextMenu.Portal,
   tallPanel: PANEL.replace('max-h-72', 'max-h-(--radix-context-menu-content-available-height)'),
+  subWidth: 'max-w-[min(20rem,var(--radix-context-menu-content-available-width))]',
 }
 
 /**
@@ -95,7 +96,7 @@ export function ContextMenu({
           aria-label={label}
           // Same collision handling as every panel: 8px from the edge of the window.
           collisionPadding={8}
-          className={header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')}
+          className={`${header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')} ${MENU_WIDTH}`}
           // The focus goes back to what held it before the menu, but only when it went down with
           // the menu; one a row has put somewhere on purpose stays there (see `DropdownMenu`).
           onCloseAutoFocus={handBackOnlyLostFocus}

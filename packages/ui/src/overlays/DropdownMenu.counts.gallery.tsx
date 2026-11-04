@@ -45,7 +45,12 @@ const SCOPES: DropdownMenuItem[] = [
 function Open() {
   return (
     <div className="h-48 w-64">
-      <DropdownMenu trigger={<Button>Bereik</Button>} label="Bereik" items={SCOPES} defaultOpen />
+      <DropdownMenu
+        trigger={<Button>Bereik: Voor jou</Button>}
+        label="Bereik"
+        items={SCOPES}
+        defaultOpen
+      />
     </div>
   )
 }

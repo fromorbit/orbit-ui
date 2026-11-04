@@ -10,10 +10,10 @@ function choice(id: string, label: string, group: string, checked: boolean): Dro
 
 /**
  * A quiet heading with a glyph, three choices, a submenu with the rest, a line, a second group
- * of choices, and a submenu that names its value on the right.
+ * of choices under a heading of its own, and a submenu that names its value on the right.
  */
 const ITEMS: DropdownMenuItem[] = [
-  { id: 'heading', label: 'Relay', kind: 'heading', glyph: <Icon name="bot" size="sm" /> },
+  { id: 'heading', label: 'Model', kind: 'heading', glyph: <Icon name="bot" size="sm" /> },
   choice('north', 'Noord 5', 'model', true),
   choice('south', 'Zuid Pro 2', 'model', false),
   choice('east', 'Oost 3', 'model', false),
@@ -23,9 +23,10 @@ const ITEMS: DropdownMenuItem[] = [
     kind: 'submenu',
     items: [choice('west', 'West 1', 'more', false), choice('mid', 'Midden 2', 'more', false)],
   },
-  { ...choice('low', 'Low', 'level', false), separated: true },
-  choice('medium', 'Medium', 'level', true),
-  choice('high', 'High', 'level', false),
+  { id: 'level', label: 'Denkniveau', kind: 'heading', separated: true },
+  choice('low', 'Laag', 'level', false),
+  choice('medium', 'Gemiddeld', 'level', true),
+  choice('high', 'Hoog', 'level', false),
   {
     id: 'agent',
     label: 'Agent',

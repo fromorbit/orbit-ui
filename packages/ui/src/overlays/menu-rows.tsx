@@ -31,6 +31,11 @@ export interface MenuParts {
   Portal: typeof RadixDropdownMenu.Portal
   /** The frame of a panel that may use the room Radix measured between it and the window's edge. */
   tallPanel: string
+  /**
+   * The cap on a submenu's width: 320px, or the room Radix measured on the side it opens to, so a
+   * submenu flipped to the left on a phone ends at the window's edge and cuts its labels instead.
+   */
+  subWidth: string
 }
 
 /** The parts of a `DropdownMenu`. */
@@ -49,6 +54,7 @@ export const DROPDOWN_PARTS: MenuParts = {
   // The frame of `PANEL` with the height Radix measured instead of its 288px; the submenu's panel
   // is a `SubContent` of the same menu and reads the same variable.
   tallPanel: PANEL.replace('max-h-72', 'max-h-(--radix-dropdown-menu-content-available-height)'),
+  subWidth: 'max-w-[min(20rem,var(--radix-dropdown-menu-content-available-width))]',
 }
 
 /** The parts of the menu being drawn; a provider of each menu sets its own. */
@@ -64,11 +70,31 @@ const Density = createContext<'default' | 'comfortable'>('default')
  */
 const Lead = createContext(false)
 
+/**
+ * Whether the lead slot is as wide as the glyph of the head (30px, an `Avatar` of `md`) rather than
+ * an icon's 14px: under a head with a glyph, so the labels of the rows start on the left edge of the
+ * head's own title and every word of the panel stands on one line, the icons centred under the
+ * avatar.
+ */
+const WideLead = createContext(false)
+
+/**
+ * The cap on a menu's width: 320px, or the window less the 8px of collision room on either side.
+ * Without it a long label stretched the panel past the window's edge, and the `truncate` of every
+ * label never had a width to cut at.
+ */
+export const MENU_WIDTH = 'max-w-[min(20rem,calc(100vw-16px))]'
+
 const item = cva(
   // `cursor-default` and `select-none` per Radix's own `MenuItem` (a row is chosen, not read), and
   // `data-[highlighted]` is the roving-focus state Radix moves through the list — no focus ring of
   // our own here, for the same reason `Select`'s `ITEM` has none.
-  'flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
+  //
+  // A row the keyboard walked to (`focus-visible`: Radix moves the real focus with the walk, and the
+  // browser marks it visible only after a key) also gets an inset 1px ring in `border-focus`, 3:1
+  // or more against the panel in both themes: the tint alone stood at about 1.1:1 in light. A row
+  // under the pointer keeps the tint only.
+  'flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none focus-visible:ring-1 focus-visible:ring-border-focus focus-visible:ring-inset data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
   {
     variants: {
       tone: {
@@ -77,8 +103,9 @@ const item = cva(
         quiet: 'text-secondary data-[highlighted]:bg-surface-hover',
       },
       density: {
-        default: 'h-(--nt-control-md)',
-        comfortable: 'h-9',
+        // 44px under a coarse pointer, a target a finger finds (Fitts).
+        default: 'h-(--nt-control-md) pointer-coarse:h-11',
+        comfortable: 'h-9 pointer-coarse:h-11',
       },
     },
     defaultVariants: { tone: 'default', density: 'default' },
@@ -104,21 +131,31 @@ export function MenuBody({ parts, items, checks, density, header }: MenuBodyProp
   return (
     <Parts.Provider value={parts}>
       <Density.Provider value={density}>
-        {header === undefined ? (
-          <Rows items={items} checks={checks} />
-        ) : (
-          <>
-            <Head header={header} id={headId} />
-            <Separator />
-            <Group
-              aria-labelledby={
-                header.detail === undefined ? `${headId}-title` : `${headId}-title ${headId}-detail`
-              }
-            >
-              <Rows items={items} checks={checks} />
-            </Group>
-          </>
-        )}
+        <WideLead.Provider value={header?.glyph !== undefined}>
+          {header === undefined ? (
+            <Rows items={items} checks={checks} />
+          ) : (
+            <>
+              <Head header={header} id={headId} />
+              {/* The line under the head is drawing, not a stop: a reader entering the menu would
+                otherwise hear "separator" before anything else, the head being hidden. */}
+              <div
+                data-nt-menu-head-line
+                aria-hidden="true"
+                className="-mx-1 my-1 h-px bg-border"
+              />
+              <Group
+                aria-labelledby={
+                  header.detail === undefined
+                    ? `${headId}-title`
+                    : `${headId}-title ${headId}-detail`
+                }
+              >
+                <Rows items={items} checks={checks} />
+              </Group>
+            </>
+          )}
+        </WideLead.Provider>
       </Density.Provider>
     </Parts.Provider>
   )
@@ -126,7 +163,9 @@ export function MenuBody({ parts, items, checks, density, header }: MenuBodyProp
 
 /**
  * The head of a menu ({@link DropdownMenuHeader}): the glyph, and beside it the title in `fg` and
- * the detail in `muted` on one left line, 8px from the frame.
+ * the detail in `muted` on one left line, 8px from the frame. The glyph stands in a slot of 30px
+ * with 8px after it, the same slot and gap the rows under it lead with (`WideLead`), so the title
+ * and the labels of the rows share one left edge.
  *
  * `aria-hidden` like a `Heading`, for the same reason (a text child of `role="menu"` is what axe
  * reports as `aria-required-children`); the group under it takes its name from both lines through
@@ -134,8 +173,10 @@ export function MenuBody({ parts, items, checks, density, header }: MenuBodyProp
  */
 function Head({ header, id }: { header: DropdownMenuHeader; id: string }) {
   return (
-    <div data-nt-menu-head aria-hidden="true" className="flex items-center gap-2.5 p-2 select-none">
-      {header.glyph}
+    <div data-nt-menu-head aria-hidden="true" className="flex items-center gap-2 p-2 select-none">
+      {header.glyph === undefined ? null : (
+        <span className="flex w-7.5 shrink-0 justify-center">{header.glyph}</span>
+      )}
       <div className="flex min-w-0 flex-col gap-0.5">
         <span id={`${id}-title`} className="truncate text-[13px] leading-4 font-medium text-fg">
           {header.title}
@@ -162,23 +203,34 @@ function leads(row: DropdownMenuItem, checks: 'start' | 'end'): boolean {
 /** The rows of a menu or a submenu, adjacent radio rows of one group in one `RadioGroup`. */
 function Rows({ items, checks }: { items: readonly DropdownMenuItem[]; checks: 'start' | 'end' }) {
   const { RadioGroup } = useContext(Parts)
-  const lead = items.some((row) => leads(row, checks))
+  const prefix = useId()
+  const wide = useContext(WideLead)
+  const lead = wide || items.some((row) => leads(row, checks))
+  const runs = segments(items)
   return (
     <Lead.Provider value={lead}>
-      {segments(items).map((segment) =>
-        segment.group === null ? (
-          segment.rows.map((row) => <Row key={row.id} row={row} checks={checks} />)
-        ) : (
+      {runs.map((segment, index) => {
+        if (segment.group === null) {
+          return segment.rows.map((row) => (
+            <Row key={row.id} row={row} checks={checks} headingId={`${prefix}-${row.id}`} />
+          ))
+        }
+        // A radio group right under a heading takes its name from it ("Eenheid"), so a reader hears
+        // what is being chosen rather than a bare "group".
+        const before = runs[index - 1]?.rows.at(-1)
+        const named = before !== undefined && kindOf(before) === 'heading'
+        return (
           <RadioGroup
             key={`group-${segment.rows[0]?.id}`}
             value={segment.rows.find((row) => row.checked)?.id ?? ''}
+            {...(named ? { 'aria-labelledby': `${prefix}-${before.id}` } : {})}
           >
             {segment.rows.map((row) => (
               <Row key={row.id} row={row} checks={checks} />
             ))}
           </RadioGroup>
-        ),
-      )}
+        )
+      })}
     </Lead.Provider>
   )
 }
@@ -218,18 +270,26 @@ function isChoice(row: DropdownMenuItem): boolean {
   return kind === 'checkbox' || kind === 'radio'
 }
 
-/** The check of a choice row, shown only while it is on. */
-function Check() {
+/**
+ * The mark of a choice row, shown only while it is on: a check for a switch, a dot for one choice
+ * of a group, so a pair of switches and a single choice never look alike (Law of Similarity).
+ */
+function Check({ radio }: { radio: boolean }) {
   const { ItemIndicator } = useContext(Parts)
+  const wide = useContext(WideLead)
   // The slot keeps its 14px when the row is off, so the labels of a group stay in one column
   // with each other and with the icons of the plain rows.
   return (
     <span
       data-nt-menu-check
-      className="flex size-(--nt-icon-sm) shrink-0 items-center justify-center"
+      className={`flex ${wide ? 'h-(--nt-icon-sm) w-7.5' : 'size-(--nt-icon-sm)'} shrink-0 items-center justify-center`}
     >
       <ItemIndicator className="contents">
-        <Icon name="check" size="sm" />
+        {radio ? (
+          <span data-nt-menu-dot aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+        ) : (
+          <Icon name="check" size="sm" />
+        )}
       </ItemIndicator>
     </span>
   )
@@ -237,7 +297,20 @@ function Check() {
 
 /** The empty lead slot of a row without a glyph, in a panel where other rows have one. */
 function Blank() {
-  return <span data-nt-menu-lead aria-hidden="true" className="size-(--nt-icon-sm) shrink-0" />
+  const wide = useContext(WideLead)
+  return (
+    <span
+      data-nt-menu-lead
+      aria-hidden="true"
+      className={`${wide ? 'h-(--nt-icon-sm) w-7.5' : 'size-(--nt-icon-sm)'} shrink-0`}
+    />
+  )
+}
+
+/** The lead slot under a head: 30px, its glyph centred under the head's avatar. */
+function Wide({ children }: { children: ReactNode }) {
+  const wide = useContext(WideLead)
+  return wide ? <span className="flex w-7.5 shrink-0 justify-center">{children}</span> : children
 }
 
 /**
@@ -247,16 +320,24 @@ function Blank() {
 function Glyph({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end' }) {
   const density = useContext(Density)
   const lead = useContext(Lead)
-  if (row.glyph !== undefined) return row.glyph
-  if (isChoice(row) && checks === 'start') return <Check />
+  if (row.glyph !== undefined) return <Wide>{row.glyph}</Wide>
+  if (isChoice(row) && checks === 'start') return <Check radio={kindOf(row) === 'radio'} />
   if (isChoice(row) || row.icon === undefined) return lead ? <Blank /> : null
-  // In a comfortable menu the icon steps back to `muted` and the words lead (design A).
+  // In a comfortable menu the icon steps back to `muted` and the words lead (design A); a danger
+  // row keeps its icon in its own tone, so the one destructive act is one mark in either density.
   return density === 'comfortable' ? (
-    <span data-nt-menu-icon className="flex text-muted">
-      <Icon name={row.icon} size="sm" />
-    </span>
+    <Wide>
+      <span
+        data-nt-menu-icon
+        className={row.tone === 'danger' ? 'flex text-danger' : 'flex text-muted'}
+      >
+        <Icon name={row.icon} size="sm" />
+      </span>
+    </Wide>
   ) : (
-    <Icon name={row.icon} size="sm" />
+    <Wide>
+      <Icon name={row.icon} size="sm" />
+    </Wide>
   )
 }
 
@@ -273,17 +354,28 @@ function Separator() {
  * `role="menu"` without a role of its own is what axe reports as `aria-required-children` (see the
  * reason span in `Choice`), and what it says is in the trigger's accessible name already.
  */
-function Heading({ row }: { row: DropdownMenuItem }) {
+function Heading({ row, id }: { row: DropdownMenuItem; id: string }) {
+  const lead = useContext(Lead)
   return (
     <>
       {row.separated ? <Separator /> : null}
       <div
+        id={id}
         data-nt-menu-heading
         aria-hidden="true"
         className="flex h-(--nt-control-md) items-center gap-2 px-2 text-[12px] text-muted select-none"
       >
-        {row.glyph ?? (row.icon === undefined ? null : <Icon name={row.icon} size="sm" />)}
-        <span className="truncate">{row.label}</span>
+        {row.glyph !== undefined ? (
+          <Wide>{row.glyph}</Wide>
+        ) : row.icon !== undefined ? (
+          <Wide>
+            <Icon name={row.icon} size="sm" />
+          </Wide>
+        ) : lead ? (
+          // On the column the labels start on, so a heading reads as the name of the rows under it.
+          <Blank />
+        ) : null}
+        <span className="min-w-0 truncate">{row.label}</span>
       </div>
     </>
   )
@@ -297,7 +389,7 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
   const container = usePortalContainer()
   const density = useContext(Density)
   const lead = useContext(Lead)
-  const { Sub, SubTrigger, SubContent, Portal, tallPanel } = useContext(Parts)
+  const { Sub, SubTrigger, SubContent, Portal, tallPanel, subWidth } = useContext(Parts)
   return (
     <>
       {row.separated ? <Separator /> : null}
@@ -307,9 +399,18 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
           {...(row.value === undefined ? {} : { 'aria-label': nameOf(row), textValue: row.label })}
           className={`${item({ tone: 'default', density })} data-[state=open]:bg-surface-hover`}
         >
-          {row.glyph ??
-            (row.icon === undefined ? lead ? <Blank /> : null : <Icon name={row.icon} size="sm" />)}
-          <span className="truncate">{row.label}</span>
+          {row.glyph !== undefined ? (
+            <Wide>{row.glyph}</Wide>
+          ) : row.icon === undefined ? (
+            lead ? (
+              <Blank />
+            ) : null
+          ) : (
+            <Wide>
+              <Icon name={row.icon} size="sm" />
+            </Wide>
+          )}
+          <span className="min-w-0 truncate">{row.label}</span>
           {row.value === undefined ? null : (
             <span
               data-nt-menu-value
@@ -319,7 +420,9 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
               <span className="truncate">{row.value}</span>
             </span>
           )}
-          <span className={row.value === undefined ? 'ml-auto flex ps-4' : 'flex'}>
+          <span
+            className={row.value === undefined ? 'ml-auto flex shrink-0 ps-4' : 'flex shrink-0'}
+          >
             <Icon name="chevron-right" size="sm" tone="faint" />
           </span>
         </SubTrigger>
@@ -331,7 +434,7 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
             aria-labelledby={undefined}
             sideOffset={4}
             collisionPadding={8}
-            className={tallPanel}
+            className={`${tallPanel} ${subWidth}`}
           >
             <Rows items={row.items ?? []} checks={checks} />
           </SubContent>
@@ -342,9 +445,17 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
 }
 
 /** One row of the menu, in whichever Radix form its kind asks for. */
-function Row({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end' }) {
+function Row({
+  row,
+  checks,
+  headingId,
+}: {
+  row: DropdownMenuItem
+  checks: 'start' | 'end'
+  headingId?: string
+}) {
   const kind = kindOf(row)
-  if (kind === 'heading') return <Heading row={row} />
+  if (kind === 'heading') return <Heading row={row} id={headingId ?? row.id} />
   if (kind === 'submenu') return <Submenu row={row} checks={checks} />
   return <Choice row={row} checks={checks} />
 }
@@ -390,21 +501,26 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
   const content: ReactNode = (
     <>
       <Glyph row={row} checks={checks} />
-      <span className="truncate">{row.label}</span>
+      <span className="min-w-0 truncate">{row.label}</span>
       {row.count === undefined ? null : (
-        <span data-nt-menu-count className="font-mono text-[11px] text-muted tabular-nums">
+        <span data-nt-menu-count className="shrink-0 font-mono text-[11px] text-muted tabular-nums">
           {row.count}
         </span>
       )}
       {row.shortcut === undefined ? null : (
-        <span className="ml-auto flex ps-4">
-          {/* One cap around the whole shortcut ("⌘,"), never loose keys (design A). */}
-          <Kbd tone="menu" shortcut={row.shortcut} />
+        // Plain quiet text, right-aligned as in a native menu, no cap around it: a cap per row put
+        // three or four frames inside the frame of the panel. Gone under a coarse pointer, where
+        // nobody has the keys (the row's accessible name never held them).
+        <span
+          data-nt-menu-shortcut
+          className="ml-auto flex shrink-0 ps-4 tabular-nums pointer-coarse:hidden"
+        >
+          <Kbd tone="quiet" shortcut={row.shortcut} />
         </span>
       )}
       {checks === 'end' && isChoice(row) ? (
-        <span className="ml-auto flex ps-4">
-          <Check />
+        <span className="ml-auto flex shrink-0 ps-4">
+          <Check radio={kindOf(row) === 'radio'} />
         </span>
       ) : null}
     </>

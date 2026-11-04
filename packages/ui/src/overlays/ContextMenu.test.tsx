@@ -155,3 +155,75 @@ test('choices, a head and a submenu work as in a DropdownMenu', async () => {
   await userEvent.click(await screen.findByRole('menuitem', { name: 'Archief' }))
   expect(onSelect).toHaveBeenCalledWith('archive')
 })
+
+test('a radio row shows a dot, not the check of a switch, and a heading names its group', async () => {
+  render(
+    <ContextMenu
+      label="Tekening"
+      items={[
+        { id: 'grid', label: 'Raster tonen', checked: true },
+        { id: 'unit', label: 'Eenheid', kind: 'heading', separated: true },
+        { id: 'metre', label: 'Meter', kind: 'radio', group: 'unit', checked: true },
+        { id: 'cm', label: 'Centimeter', kind: 'radio', group: 'unit', checked: false },
+      ]}
+    >
+      <div data-testid="canvas">tekening</div>
+    </ContextMenu>,
+  )
+  fireEvent.contextMenu(screen.getByTestId('canvas'))
+  const menu = await screen.findByRole('menu', { name: 'Tekening' })
+  expect(within(menu).getByRole('group', { name: 'Eenheid' })).toBeInTheDocument()
+  const metre = screen.getByRole('menuitemradio', { name: 'Meter' })
+  expect(metre.querySelector('[data-nt-menu-check] [data-nt-menu-dot]')).not.toBeNull()
+  const grid = screen.getByRole('menuitemcheckbox', { name: 'Raster tonen' })
+  expect(grid.querySelector('[data-nt-menu-check] [data-nt-menu-dot]')).toBeNull()
+  expect(grid.querySelector('[data-nt-menu-check] svg')).not.toBeNull()
+})
+
+test('the panel is capped in width, so a long label is cut off instead of leaving the window', async () => {
+  render(<FileRow />)
+  fireEvent.contextMenu(screen.getByTestId('row'))
+  const menu = await screen.findByRole('menu')
+  expect(menu.className).toContain('max-w-[min(20rem,calc(100vw-16px))]')
+  const label = within(menu).getByText('Hernoemen')
+  expect(label.className).toContain('min-w-0')
+  expect(label.className).toContain('truncate')
+})
+
+test('under a head the danger icon keeps the tone of its row, and the rows lead in the head slot', async () => {
+  render(
+    <ContextMenu
+      label="Acties voor Robin"
+      header={{ title: 'Robin', glyph: <span data-testid="glyph" /> }}
+      density="comfortable"
+      items={[
+        { id: 'profile', label: 'Profiel bekijken', icon: 'user' },
+        { id: 'remove', label: 'Uit het team halen', icon: 'log-out', tone: 'danger' },
+      ]}
+    >
+      <div data-testid="card">Robin</div>
+    </ContextMenu>,
+  )
+  fireEvent.contextMenu(screen.getByTestId('card'))
+  const remove = await screen.findByRole('menuitem', { name: 'Uit het team halen' })
+  expect(remove.querySelector('[data-nt-menu-icon]')?.className).toContain('text-danger')
+  const profile = screen.getByRole('menuitem', { name: 'Profiel bekijken' })
+  expect(profile.querySelector('[data-nt-menu-icon]')?.className).toContain('text-muted')
+  // The icon in the 30px slot of the head's glyph, so title and labels share one left edge.
+  expect(profile.querySelector('[data-nt-menu-icon]')?.parentElement?.className).toContain('w-7.5')
+  expect(screen.getByTestId('glyph').parentElement?.className).toContain('w-7.5')
+})
+
+test('every region of the story is reached with Tab, and offers its acts on a visible ⋯', async () => {
+  const { default: story } = await import('./ContextMenu.gallery')
+  for (const name of ['With choices', 'With a head'] as const) {
+    const State = story.states[name]
+    const { unmount } = render(<State />)
+    const region = document.querySelector<HTMLElement>('[data-nt-story-region]')
+    expect(region).not.toBeNull()
+    await userEvent.tab()
+    expect(region).toHaveFocus()
+    expect(within(region as HTMLElement).getByRole('button', { name: 'Meer' })).toBeInTheDocument()
+    unmount()
+  }
+})

@@ -3,7 +3,7 @@ import type { ReactElement, ReactNode } from 'react'
 import { handBackOnlyLostFocus } from '../primitives/hand-back'
 import type { IconName } from '../primitives/Icon'
 import type { ShortcutLabel } from '../primitives/shortcut'
-import { DROPDOWN_PARTS, MenuBody } from './menu-rows'
+import { DROPDOWN_PARTS, MENU_WIDTH, MenuBody } from './menu-rows'
 import { PANEL } from './panel'
 import { usePortalContainer } from './portal'
 import { Tooltip } from './Tooltip'
@@ -244,7 +244,7 @@ export function DropdownMenu({
           // Same air and collision handling as Popover's panel; see its JSDoc.
           sideOffset={4}
           collisionPadding={8}
-          className={header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')}
+          className={`${header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')} ${MENU_WIDTH}`}
           // Radix hands the focus back to the trigger one task after the menu is gone
           // (`FocusScope` defers it with a `setTimeout`), and by then the focus may be somewhere
           // on purpose: in the address of the tab the panel's `+` → Browser just opened, or — with

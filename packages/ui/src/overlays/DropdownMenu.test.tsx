@@ -605,7 +605,8 @@ test('with checks at the end the check of a choice follows its label', async () 
   await userEvent.click(screen.getByRole('button', { name: 'Model' }))
   const row = await screen.findByRole('menuitemradio', { name: 'Alfa' })
   const check = row.querySelector('[data-nt-menu-check]')
-  expect(check?.querySelector('svg')).not.toBeNull()
+  // A radio row's mark is the dot of one choice, not the check of a switch.
+  expect(check?.querySelector('[data-nt-menu-dot]')).not.toBeNull()
   expect(row.lastElementChild?.contains(check ?? null)).toBe(true)
 })
 
@@ -692,7 +693,7 @@ test('opens from outside when a caller drives it, and reports its closing', asyn
   await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
 })
 
-test('a shortcut stands in one cap at the end of its row', async () => {
+test('a shortcut stands at the end of its row as plain quiet text, without a cap', async () => {
   render(
     <DropdownMenu
       trigger={<Button>Meer</Button>}
@@ -710,11 +711,14 @@ test('a shortcut stands in one cap at the end of its row', async () => {
   )
   await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
   const row = await screen.findByRole('menuitem', { name: 'Instellingen' })
+  // One run of keys in `muted`, as a native menu draws it: no frame around it, nor around a key
+  // (a cap per row put frames inside the frame of the panel).
   const caps = row.querySelectorAll('[data-nt-kbd]')
   expect(caps).toHaveLength(1)
-  expect(caps[0]?.className).toContain('border-border-strong')
-  expect(caps[0]?.className).toContain('rounded-sm')
-  // Both keys inside that one cap, none with a border of its own.
+  expect(caps[0]?.className).not.toContain('border')
+  expect(caps[0]?.className).toContain('text-muted')
+  // Gone under a coarse pointer, where nobody has the keys.
+  expect(row.querySelector('[data-nt-menu-shortcut]')?.className).toContain('pointer-coarse:hidden')
   const keys = [...row.querySelectorAll('kbd')]
   expect(keys).toHaveLength(2)
   expect(keys[1]).toHaveTextContent(',')
@@ -743,8 +747,10 @@ test('a head names the rows under it, without being a row of its own', async () 
   expect(head).toHaveAttribute('aria-hidden', 'true')
   expect(head?.querySelector('[data-testid="glyph"]')).not.toBeNull()
   expect(head?.querySelector('[tabindex]')).toBeNull()
-  // A line under the head, and room for a name beside its glyph.
-  expect(head?.nextElementSibling).toHaveAttribute('role', 'separator')
+  // A line under the head, drawn rather than announced (a reader would hear "separator" first,
+  // the head being hidden), and room for a name beside its glyph.
+  expect(head?.nextElementSibling).toHaveAttribute('aria-hidden', 'true')
+  expect(within(menu).queryByRole('separator')).toBeNull()
   expect(menu.className).toContain('min-w-58')
   // The walk starts at the first row, not at the head.
   await userEvent.keyboard('{ArrowDown}')
