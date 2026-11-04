@@ -20,5 +20,12 @@ export default {
     'With icon and a cross to clear': () => (
       <Input label="Search" icon="search" clearLabel="Wissen" defaultValue="network" />
     ),
+    'With a prefix and a suffix': () => (
+      <div className="flex flex-col gap-2">
+        <Input label="Adres" prefix="https://" suffix=".halo.dev" defaultValue="winkel" />
+        <Input label="Limiet" suffix="MB" defaultValue="512" inputMode="numeric" />
+      </div>
+    ),
+    Invalid: () => <Input label="E-mailadres" aria-invalid defaultValue="noor@" />,
   },
 } satisfies Story

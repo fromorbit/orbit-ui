@@ -78,7 +78,7 @@ test('the chevron is decorative and turns with a transform only', () => {
   expect(slot?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(slot?.className).toContain('group-data-[state=open]:rotate-90')
   expect(slot?.className).toContain('transition-transform')
-  expect(slot?.className).toContain('duration-100')
+  expect(slot?.className).toContain('duration-(--nt-duration-fast)')
   // Reduced motion: the chevron simply stands in its other position, without travelling there.
   expect(slot?.className).toContain('motion-reduce:transition-none')
 })

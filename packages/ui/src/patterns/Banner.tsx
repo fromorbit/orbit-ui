@@ -8,15 +8,15 @@ import { Spinner } from '../primitives/Spinner'
  *
  * `min-h-` rather than `h-`: a banner carries a sentence the caller did not write (a core error, a
  * provider code), and a fixed height would either clip it or force the caller to keep it short.
- * One line lands on exactly 32px, so it still lines up with the controls beside it.
+ * One line lands on exactly 40px (`--nt-control-lg`), so it still lines up with the controls beside it.
  */
 const banner = cva(
-  'flex min-h-(--nt-control-lg) w-full items-center gap-2 rounded-md border px-2 py-1 text-[12px]',
+  'flex min-h-(--nt-control-lg) w-full items-center gap-2 rounded-md px-3 py-1.5 text-[12px]',
   {
     variants: {
       tone: {
-        attention: 'border-attention-border bg-attention-subtle text-attention',
-        danger: 'border-danger-border bg-danger-subtle text-danger',
+        attention: 'bg-attention-subtle text-attention',
+        danger: 'bg-danger-subtle text-danger',
       },
     },
   },

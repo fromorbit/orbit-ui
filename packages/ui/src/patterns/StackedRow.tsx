@@ -13,13 +13,13 @@ const ITEM = 'group/stacked relative m-0 list-none'
  * would leave the current card to the order Tailwind generates them in.
  */
 const ROW = {
-  rest: 'no-drag flex h-18 w-full min-w-0 flex-col rounded-[8px] px-3 py-2.5 text-left outline-focus hover:bg-row-hover focus-visible:outline-2 focus-visible:outline-offset-2',
+  rest: 'no-drag flex h-18 w-full min-w-0 flex-col rounded-md px-3 py-2.5 text-left outline-focus hover:bg-row-hover focus-visible:outline-2 focus-visible:outline-offset-2',
   current:
-    'no-drag flex h-18 w-full min-w-0 flex-col rounded-[8px] bg-row-active px-3 py-2.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+    'no-drag flex h-18 w-full min-w-0 flex-col rounded-md bg-row-active px-3 py-2.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
   restShort:
-    'no-drag flex h-14 w-full min-w-0 flex-col rounded-[8px] px-3 py-2.5 text-left outline-focus hover:bg-row-hover focus-visible:outline-2 focus-visible:outline-offset-2',
+    'no-drag flex h-14 w-full min-w-0 flex-col rounded-md px-3 py-2.5 text-left outline-focus hover:bg-row-hover focus-visible:outline-2 focus-visible:outline-offset-2',
   currentShort:
-    'no-drag flex h-14 w-full min-w-0 flex-col rounded-[8px] bg-row-active px-3 py-2.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+    'no-drag flex h-14 w-full min-w-0 flex-col rounded-md bg-row-active px-3 py-2.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
 } as const
 
 /** A quiet line of 11px on 16: the first and the third. */
@@ -31,8 +31,8 @@ const SMALL_LINE = 'flex h-4 min-w-0 items-center gap-2 text-[11px] leading-4 te
  * `text-secondary` alone was hardly to be seen.
  */
 const TITLE = {
-  bright: 'h-5 min-w-0 truncate text-[14px] leading-5 font-medium text-fg',
-  seen: 'h-5 min-w-0 truncate text-[14px] leading-5 font-normal text-secondary',
+  bright: 'h-5 min-w-0 truncate text-[13px] leading-5 font-medium text-fg',
+  seen: 'h-5 min-w-0 truncate text-[13px] leading-5 font-normal text-secondary',
 } as const
 
 /** The props of `StackedRow`. */

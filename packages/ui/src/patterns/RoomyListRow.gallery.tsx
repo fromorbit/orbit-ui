@@ -13,7 +13,7 @@ export default {
   title: 'Roomy list row',
   states: {
     'A title over one or two lines, and a note': () => (
-      <div className="w-80">
+      <div className="w-full max-w-80">
         <List label="Subagents">
           <RoomyListRow
             title="Finds the discount"
@@ -42,7 +42,7 @@ export default {
     ),
     // The menu of a row stands beside it, quiet until hover or focus: the picture shows its room.
     'With actions beside it, and something under it': () => (
-      <div className="w-80">
+      <div className="w-full max-w-80">
         <List label="Subagents">
           <RoomyListRow
             title="Tests for the cart"

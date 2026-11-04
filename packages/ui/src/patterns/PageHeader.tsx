@@ -77,7 +77,8 @@ export interface PageHeaderProps {
 }
 
 /**
- * The head of a page: an `h1` of 20px/500 in a strip of 40px, one meta line, actions on the right.
+ * The head of a page: an `h1` of 20px in the heading weight (`--nt-font-weight-heading`) in a strip
+ * of 40px, one meta line, actions on the right.
  *
  * An audit of the app once found six pages with six heads: 20px/500 in Settings, a bolder and larger one in
  * Specs, a loose `h1` of 18px in Flow, none in Artifacts, three stacked in Wacht op jou. One
@@ -96,7 +97,7 @@ export function PageHeader({ title, meta, actions, titleId }: PageHeaderProps): 
       <div className="flex h-10 min-w-0 items-center gap-3">
         <h1
           {...(titleId === undefined ? {} : { id: titleId })}
-          className="m-0 min-w-0 truncate text-[20px] leading-7 font-medium text-fg"
+          className="m-0 min-w-0 truncate text-[20px] leading-7 font-heading text-fg"
         >
           {title}
         </h1>

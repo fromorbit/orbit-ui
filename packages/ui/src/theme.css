@@ -14,6 +14,8 @@
 @theme inline {
   --font-sans: var(--nt-font-sans);
   --font-mono: var(--nt-font-mono);
+  /* `font-heading`: the weight of a title (`--nt-font-weight-heading`). */
+  --font-weight-heading: var(--nt-font-weight-heading);
   --color-bg: var(--nt-bg);
   --color-frame: var(--nt-frame);
   --color-canvas: var(--nt-canvas);
@@ -63,6 +65,8 @@
   --color-overlay: var(--nt-overlay-background);
   --color-scrim: var(--nt-scrim);
   --color-focus: var(--nt-focus-ring);
+  /* The product's own colour, only for its mark (`fill-satellite`, `bg-satellite` on a dot). */
+  --color-satellite: var(--nt-satellite);
   --shadow-menu: var(--nt-shadow-menu);
   --radius-sm: var(--nt-radius-sm);
   --radius-md: var(--nt-radius-md);
@@ -104,7 +108,7 @@
 /* Content that unfolds: it fades in where it stands, and never animates its own height. Growing
    would push everything below it down for the length of the animation. */
 .nt-fade-in {
-  animation: nt-fade-in 100ms ease-out;
+  animation: nt-fade-in var(--nt-duration) var(--nt-ease);
 }
 /* A layer only fades in; closing it has nothing to wait for. Radix keeps a closing layer mounted
    while it believes an exit animation runs, and it believes so whenever the panel's animation
@@ -132,6 +136,69 @@
   mask-size: var(--nt-wave-width) 100%;
   mask-repeat: no-repeat;
   animation: nt-wave 2.2s linear infinite;
+}
+
+/* The mark of something that runs (`StatusMark`): a flat shape in its status colour with a soft
+   glow of that colour around it, in a 14px slot, as Halo draws its own (V-691). The outer element
+   holds the slot and picks the colour of its kind (`--c`); the inner one is the shape.
+   `--nt-status-glow` sets the strength of the glow per theme. */
+.nt-status-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 14px;
+  block-size: 14px;
+  vertical-align: middle;
+}
+.nt-status-mark[data-kind="running"] {
+  --c: var(--nt-status-run);
+}
+.nt-status-mark[data-kind="fault"] {
+  --c: var(--nt-status-fail);
+  /* The triangle's glow: its clip-path cuts a box-shadow off, a drop-shadow on the slot follows
+     the clipped outline. */
+  filter: drop-shadow(
+    0 0 calc(4px * var(--nt-status-glow)) color-mix(in srgb, var(--c) 60%, transparent)
+  );
+}
+.nt-status-mark[data-kind="blocked"] {
+  --c: var(--nt-status-block);
+}
+.nt-status-mark[data-kind="stopped"] {
+  --c: var(--nt-status-stop);
+}
+.nt-status-mark-body {
+  display: block;
+  inline-size: 14px;
+  block-size: 14px;
+  background: var(--c);
+  box-shadow: 0 0 calc(6px * var(--nt-status-glow)) calc(1px * var(--nt-status-glow))
+    color-mix(in srgb, var(--c) 55%, transparent);
+}
+.nt-status-mark[data-kind="running"] .nt-status-mark-body {
+  border-radius: 50%;
+}
+/* A square a size smaller, so it weighs the same as the circle beside it. */
+.nt-status-mark[data-kind="stopped"] .nt-status-mark-body {
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: 3px;
+}
+/* A square of 11px turned a quarter: its corners reach the 14px of the others, and its glow is not
+   clipped. */
+.nt-status-mark[data-kind="blocked"] .nt-status-mark-body {
+  inline-size: 11px;
+  block-size: 11px;
+  border-radius: 2px;
+  rotate: 45deg;
+}
+/* A softer triangle: rounded corners, its ink as high as the circle's (0 to 14, the apex of its
+   rounded tip at 0), so it weighs the same and sits on the same line. */
+.nt-status-mark[data-kind="fault"] .nt-status-mark-body {
+  clip-path: path(
+    "M 5.6 0.97 Q 7 -0.97 8.4 0.97 L 13.4 11.83 Q 14.2 14 12.2 14 L 1.8 14 Q -0.2 14 0.6 11.83 Z"
+  );
 }
 
 @keyframes nt-pulse {

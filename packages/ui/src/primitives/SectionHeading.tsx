@@ -17,8 +17,9 @@ export interface SectionHeadingProps {
 }
 
 /**
- * The heading of a group of rows in a list: 11px/500 `muted`, in capitals with a little
- * letter-spacing, 28px high.
+ * The heading of a group of rows in a list: 12px/500 `muted`, in sentence case, 32px high. A label
+ * that whispers: capitals and letter-spacing made every group shout at the same level as the rows
+ * it names (Von Restorff: one emphasis per view, and a heading is not it).
  *
  * For the groups of the Specs list and the sections of a document (Wacht op jou, In uitvoering,
  * Open, Plannen en besluiten, Activiteit) and for the groups of the settings screen
@@ -38,11 +39,11 @@ export function SectionHeading({
   return (
     <Tag
       id={id}
-      className="m-0 flex h-7 min-w-0 items-center gap-2 px-2 text-[11px] font-medium tracking-[0.04em] text-muted uppercase"
+      className="m-0 flex h-8 min-w-0 items-center gap-2 px-2 text-[12px] font-medium text-muted"
     >
       <span className="min-w-0 truncate">{children}</span>
       {count === undefined ? null : (
-        <span className="shrink-0 font-mono tracking-normal">{count}</span>
+        <span className="shrink-0 font-normal tabular-nums">{count}</span>
       )}
       {rule ? (
         <span aria-hidden="true" data-nt-heading-rule className="h-px flex-1 bg-border" />

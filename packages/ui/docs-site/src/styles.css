@@ -1,7 +1,6 @@
-/* The stylesheets of a host, in the order the README prescribes: Tailwind, the tokens, the theme.
-   The fonts are Geist, as in Orbit; `tokens.css` names them as "Geist Variable". */
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+/* The stylesheets of a host, in the order the README prescribes: the fonts, Tailwind, the tokens,
+   the theme. */
+@import "../../src/fonts.css";
 @import "tailwindcss";
 @import "../../src/tokens.css";
 @import "../../src/theme.css";

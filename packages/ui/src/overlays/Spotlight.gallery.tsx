@@ -11,7 +11,7 @@ import { Spotlight } from './Spotlight'
  * image is cropped to the state's own box.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-[48rem]">{children}</div>
+  return <div className="h-[30rem] w-full max-w-[48rem]">{children}</div>
 }
 
 /**

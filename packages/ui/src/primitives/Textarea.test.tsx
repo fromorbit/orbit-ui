@@ -110,3 +110,9 @@ test('a ref points at the native textarea element, not at the wrapper', () => {
   render(<Textarea label="Message" ref={ref} />)
   expect(ref.current).toBeInstanceOf(HTMLTextAreaElement)
 })
+
+test('aria-invalid draws the danger border instead of the plain one', () => {
+  const { container } = render(<Textarea label="Toelichting" aria-invalid />)
+  expect(container.firstElementChild?.className).toContain('border-danger')
+  expect(container.firstElementChild?.className).not.toContain('border-border')
+})

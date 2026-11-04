@@ -14,7 +14,7 @@ import { ConfirmDialog } from './ConfirmDialog'
  * reference too.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-[40rem]">{children}</div>
+  return <div className="h-[30rem] w-full max-w-[40rem]">{children}</div>
 }
 
 /** The plain case: the trigger, and a dialog that is not up yet. */

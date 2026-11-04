@@ -17,7 +17,7 @@ import { Icon, type IconName } from './Icon'
 // a ghost button that stays pressed; the others are a muted word or icon. `md` and `lg` keep their
 // segment at the control height with the frame around it, as the settings rows were drawn.
 const item = cva(
-  'inline-flex items-center gap-1 rounded-sm font-medium text-muted outline-focus transition-colors duration-100 hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 aria-checked:bg-surface-hover aria-checked:text-fg data-nt-unavailable:opacity-40 data-nt-unavailable:hover:text-muted',
+  'inline-flex items-center gap-1 rounded-sm font-medium text-muted outline-focus transition-colors duration-(--nt-duration-fast) hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 aria-checked:bg-surface-hover aria-checked:text-fg data-nt-unavailable:opacity-40 data-nt-unavailable:hover:text-muted',
   {
     variants: {
       size: {

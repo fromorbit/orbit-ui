@@ -20,7 +20,7 @@ export default {
     // In the narrowest docked panel (320px) the count loses its tail before the figures or the
     // button move.
     'In a narrow column': () => (
-      <div className="w-80 bg-canvas p-4">
+      <div className="w-full max-w-80 bg-canvas p-4">
         <SummaryBar
           labels={nl.summary}
           files={1240}

@@ -5,7 +5,7 @@ import { StatusLine } from './StatusLine'
 
 /** The width of the pane a status line sits under, so `meta` has a right edge to sit against. */
 function Pane({ children }: { children: ReactNode }) {
-  return <div className="w-96">{children}</div>
+  return <div className="w-full max-w-96">{children}</div>
 }
 
 /** The three stages of saving, in the order the settings pane runs through them. */

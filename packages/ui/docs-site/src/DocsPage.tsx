@@ -8,6 +8,7 @@ import {
 } from 'react'
 import {
   CopyButton,
+  IconButton,
   OrbitWordmark,
   type Platform,
   PortalContainerProvider,
@@ -16,19 +17,10 @@ import {
   type SearchListItem,
   type SearchListLabels,
   SegmentedControl,
-  Toggle,
   UiProvider,
 } from '../../src'
 import { type Story, stateId, storyId } from '../../src/gallery'
-import {
-  DEMO_PREFIX,
-  DemoNav,
-  DemoStage,
-  demoSlugOf,
-  shownSlug,
-  titleOfSlug,
-} from './demo-kit/DemoViews'
-import { OVERVIEW_SLUG } from './demo-kit/registry'
+import { DEMO_PREFIX, DemoGallery, demoSlugOf } from './demo-kit/DemoViews'
 import { docsShortcuts } from './shortcuts'
 
 /** Prefix of the hash route of one story: `#/primitives-button`. */
@@ -48,6 +40,15 @@ const LIST_LABELS: SearchListLabels = {
 const THEME_OPTIONS = [
   { value: 'dark', label: 'Donker' },
   { value: 'light', label: 'Licht' },
+] as const
+
+/** The products of the family, whose satellite `tokens.css` picks with `data-product`. */
+type Product = 'orbit' | 'halo' | 'fold'
+
+const PRODUCT_OPTIONS = [
+  { value: 'orbit', label: 'Orbit' },
+  { value: 'halo', label: 'Halo' },
+  { value: 'fold', label: 'Fold' },
 ] as const
 
 /** The two halves of the page: one component at a time, or whole screens built from them. */
@@ -83,7 +84,8 @@ function useHash(): string {
 }
 
 /**
- * The framed box one state of a story stands in, which is also the container of its floating
+ * The box one state of a story stands in (no frame: its caption and the space between states
+ * group it, the Law of Proximity), which is also the container of its floating
  * layers.
  *
  * One container per state rather than one for the stage, as Orbit's gallery has: a layer without
@@ -93,7 +95,7 @@ function useHash(): string {
 function StateFrame({ state }: { state: ComponentType }): ReactNode {
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   return (
-    <div ref={setFrame} className="relative rounded-lg border border-border bg-bg p-6">
+    <div ref={setFrame} className="relative py-3">
       <PortalContainerProvider container={frame}>{createElement(state)}</PortalContainerProvider>
     </div>
   )
@@ -112,16 +114,20 @@ export interface DocsPageProps {
  * A copy of the behaviour of Orbit's gallery (`features/gallery`), without its i18n and bridge: the
  * route is the hash (`#/<story-id>`), so a link to one component works on a static host under any
  * path. The theme goes on `<html>` as `data-theme`, which is what `tokens.css` switches on, and to
- * the `UiProvider`, for what reads the theme in code (the diffs of `@pierre/diffs`). The provider
+ * the `UiProvider`, for what reads the theme in code (the diffs of `@pierre/diffs`); the product goes
+ * there as `data-product`, which picks the satellite (the dot beside "UI"). The provider
  * gets `docsShortcuts`, so the key caps of the stories are drawn as Orbit draws them.
  *
- * The second tab, "Demo's", shows whole screens built from the components (`#/demo/<slug>`) and
- * the wishlist of what they lack (`#/demo/ontbrekend`); see `demo-kit/`. Both tabs keep their
- * place in state, so switching back returns to the story or demo that was open.
+ * The second tab, "Demo's", is one page of blocks: whole screens built from the components, each
+ * in a frame of its own, and the wishlist of what they lack; `#/demo/<slug>` scrolls to a block
+ * (see `demo-kit/`). It has no sidebar, so the docs' navigation never stands beside a screen's own.
+ * Both tabs keep their place in state, so switching back returns to the story or demo that was
+ * open. Below 768px the list of components folds behind a button in the header.
  */
 export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const hash = useHash()
   const [theme, setTheme] = useState<Theme>('dark')
+  const [product, setProduct] = useState<Product>('orbit')
   const [platform, setPlatform] = useState<Platform>('mac')
   const shortcuts = useMemo(() => docsShortcuts(platform), [platform])
 
@@ -129,10 +135,13 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  const [showInventory, setShowInventory] = useState(true)
+  useEffect(() => {
+    document.documentElement.dataset.product = product
+  }, [product])
+
+  const [navOpen, setNavOpen] = useState(false)
   const demoSlug = demoSlugOf(hash)
   const mode: Mode = demoSlug === undefined ? 'components' : 'demos'
-  const shownDemo = shownSlug(demoSlug)
 
   const chosenId = idOf(hash)
   const story = stories.find((entry) => storyId(entry) === chosenId) ?? stories[0]
@@ -143,12 +152,16 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const [lastDemo, setLastDemo] = useState<string | undefined>(demoSlug)
   useEffect(() => {
     if (mode === 'components' && chosenId) setLastStory(chosenId)
-    if (mode === 'demos') setLastDemo(shownDemo)
-  }, [mode, chosenId, shownDemo])
+    if (mode === 'demos') setLastDemo(demoSlug === '' ? undefined : demoSlug)
+  }, [mode, chosenId, demoSlug])
 
   const switchMode = (next: Mode) => {
     location.hash =
-      next === 'demos' ? `${DEMO_PREFIX}${lastDemo ?? shownDemo}` : `${PREFIX}${lastStory ?? ''}`
+      next === 'demos'
+        ? lastDemo === undefined
+          ? '#/demo'
+          : `${DEMO_PREFIX}${lastDemo}`
+        : `${PREFIX}${lastStory ?? ''}`
   }
 
   const items = useMemo<SearchListItem[]>(
@@ -165,36 +178,63 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
   return (
     <UiProvider shortcuts={shortcuts} platform={platform} theme={theme} locale="nl-NL">
       <div className="flex h-dvh bg-frame text-fg">
-        <nav
-          aria-label={mode === 'demos' ? "Demo's" : 'Componenten'}
-          className="flex w-64 shrink-0 flex-col border-border border-r"
-        >
-          <div className="flex h-12 shrink-0 items-center gap-2 px-4">
-            <OrbitWordmark className="h-4 text-fg" />
-            <span className="text-[13px] text-muted">UI</span>
-          </div>
-          <div className="min-h-0 flex-1">
-            <ScrollArea>
-              <div className="px-2 pb-2">
-                {mode === 'demos' ? (
-                  <DemoNav current={shownDemo} />
-                ) : (
+        {mode === 'components' && navOpen ? (
+          <button
+            type="button"
+            aria-label="Sluit de lijst"
+            tabIndex={-1}
+            onClick={() => setNavOpen(false)}
+            className="fixed inset-0 z-30 bg-scrim md:hidden"
+          />
+        ) : null}
+        {mode === 'components' ? (
+          <nav
+            aria-label="Componenten"
+            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-none`}
+          >
+            <div className="flex h-12 shrink-0 items-center gap-2 px-4">
+              <OrbitWordmark className="h-4 text-fg" />
+              <span className="text-[13px] text-muted">UI</span>
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
+            </div>
+            <div className="min-h-0 flex-1">
+              <ScrollArea>
+                <div className="px-2 pb-2">
                   <SearchList
                     items={items}
                     selectedId={currentId ?? null}
                     onSelect={(id) => {
+                      setNavOpen(false)
                       location.hash = `${PREFIX}${id}`
                     }}
                     label="Zoek een component"
                     labels={LIST_LABELS}
+                    checkSlot={false}
                   />
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </nav>
+                </div>
+              </ScrollArea>
+            </div>
+          </nav>
+        ) : null}
         <div className="flex min-w-0 flex-1 flex-col bg-canvas">
-          <header className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
+          <header className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-border border-b px-3 py-2 sm:px-4">
+            {mode === 'components' ? (
+              <div className="md:hidden">
+                <IconButton
+                  icon="panel-left"
+                  size="sm"
+                  label="Componenten"
+                  aria-expanded={navOpen}
+                  onClick={() => setNavOpen((open) => !open)}
+                />
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 pr-1">
+                <OrbitWordmark className="h-4 text-fg" />
+                <span className="text-[13px] text-muted">UI</span>
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
+              </div>
+            )}
             <SegmentedControl<Mode>
               label="Weergave"
               size="sm"
@@ -202,22 +242,22 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
               options={MODE_OPTIONS}
               onValueChange={switchMode}
             />
-            <div className="flex-1" />
-            {mode === 'demos' && shownDemo !== OVERVIEW_SLUG ? (
-              <Toggle
-                icon="panel-right"
-                label="Gebruikt en ontbreekt"
+            <div className="hidden flex-1 sm:block" />
+            <div className="hidden lg:block">
+              <SegmentedControl<Platform>
+                label="Platform"
                 size="sm"
-                pressed={showInventory}
-                onPressedChange={setShowInventory}
+                value={platform}
+                options={PLATFORM_OPTIONS}
+                onValueChange={setPlatform}
               />
-            ) : null}
-            <SegmentedControl<Platform>
-              label="Platform"
+            </div>
+            <SegmentedControl<Product>
+              label="Product"
               size="sm"
-              value={platform}
-              options={PLATFORM_OPTIONS}
-              onValueChange={setPlatform}
+              value={product}
+              options={PRODUCT_OPTIONS}
+              onValueChange={setProduct}
             />
             <SegmentedControl<Theme>
               label="Thema"
@@ -229,11 +269,10 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
           </header>
           {mode === 'demos' ? (
             <main
-              key={shownDemo}
-              aria-label={titleOfSlug(shownDemo)}
-              className="relative min-h-0 flex-1 overflow-hidden"
+              aria-label="Demo's"
+              className="relative min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
             >
-              <DemoStage slug={shownDemo} showInventory={showInventory} stories={stories} />
+              <DemoGallery slug={demoSlug} stories={stories} />
             </main>
           ) : (
             <main
@@ -245,7 +284,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
               className="relative min-h-0 flex-1 overflow-y-auto outline-focus [scrollbar-gutter:stable] focus-visible:-outline-offset-2 focus-visible:outline-2"
             >
               {story ? (
-                <article className="max-w-4xl p-8">
+                <article className="max-w-4xl p-4 sm:p-8">
                   <div className="mb-6 flex items-center gap-2">
                     <div className="min-w-0">
                       <p className="m-0 text-[11px] text-muted">{story.group}</p>
@@ -265,7 +304,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                       key={caption}
                       data-docs-state={stateId(caption)}
                       aria-label={caption}
-                      className="mb-8"
+                      className="mb-10"
                     >
                       <p className="m-0 mb-2 text-[12px] text-muted">{caption}</p>
                       <StateFrame state={state} />

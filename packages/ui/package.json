@@ -1,6 +1,6 @@
 {
   "name": "@fromorbit/ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The interface building blocks of Orbit: primitives, overlays, patterns and the design tokens.",
   "type": "module",
   "sideEffects": [
@@ -29,6 +29,9 @@
     "./theme.css": {
       "default": "./dist/theme.css"
     },
+    "./fonts.css": {
+      "default": "./dist/fonts.css"
+    },
     "./gallery": {
       "types": "./dist/gallery/index.d.ts",
       "import": "./dist/gallery/index.js",
@@ -51,13 +54,15 @@
     "test:watch": "vitest",
     "test:consumer": "vitest run --config vitest.consumer.config.ts",
     "check": "bun run typecheck && bun run lint && bun run test",
-    "build": "tsup && tsc -p tsconfig.build.json && node ../../scripts/dts-extensions.mjs && cp src/tokens.css src/theme.css dist/",
+    "build": "tsup && tsc -p tsconfig.build.json && node ../../scripts/dts-extensions.mjs && cp src/tokens.css src/theme.css src/fonts.css dist/",
     "gallery": "vite --config docs-site/vite.config.ts",
     "gallery:build": "vite build --config docs-site/vite.config.ts",
     "gallery:publish": "sh scripts/publish-docs.sh",
     "verify": "node ../../scripts/verify-dist.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/outfit": "^5.3.0",
+    "@fontsource/dm-mono": "^5.3.0",
     "class-variance-authority": "^0.7.1"
   },
   "peerDependencies": {
@@ -79,8 +84,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
-    "@fontsource-variable/geist": "^5.3.0",
-    "@fontsource-variable/geist-mono": "^5.3.0",
     "@fromorbit/doc-view": "workspace:*",
     "@pierre/diffs": "^1.4.3",
     "@pierre/trees": "^1.0.0-beta.6",

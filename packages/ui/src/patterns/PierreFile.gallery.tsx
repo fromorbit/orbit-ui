@@ -36,17 +36,17 @@ export default {
   title: 'PierreFile',
   states: {
     File: () => (
-      <div className="h-64 w-[36rem]">
+      <div className="h-64 w-full max-w-[36rem]">
         <PierreFile text={sourceFile} path="src/winkelmand/totaal.ts" />
       </div>
     ),
     'File at a line': () => (
-      <div className="h-64 w-[36rem]">
+      <div className="h-64 w-full max-w-[36rem]">
         <PierreFile text={sourceFile} path="src/winkelmand/totaal.ts" line={18} />
       </div>
     ),
     'Wrapped lines': () => (
-      <div className="h-64 w-[36rem]">
+      <div className="h-64 w-full max-w-[36rem]">
         <PierreFile text={wideFile} path="src/winkelmand/totaal.ts" line={7} wrap />
       </div>
     ),

@@ -17,7 +17,7 @@ function Stage({ children }: { children: ReactNode }) {
   return (
     <div
       ref={setBox}
-      className="relative h-52 w-96 transform-gpu overflow-hidden rounded-md border border-border bg-bg"
+      className="relative h-52 w-full max-w-96 transform-gpu overflow-hidden rounded-md border border-border bg-bg"
     >
       <PortalContainerProvider container={box}>{children}</PortalContainerProvider>
     </div>

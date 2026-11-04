@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { render, screen } from '@testing-library/react'
@@ -52,6 +53,18 @@ describe('the built package', () => {
 
   test('ships the design tokens', () => {
     expect(readFileSync(join(root, 'dist', 'tokens.css'), 'utf8')).toContain('--nt-accent')
+  })
+
+  test('ships the fonts, whose faces resolve from the package itself', () => {
+    // Without its comments: the example of how a host loads the stylesheets is not an import.
+    const fonts = readFileSync(join(root, 'dist', 'fonts.css'), 'utf8').replace(
+      /\/\*[\s\S]*?\*\//g,
+      '',
+    )
+    const specifiers = [...fonts.matchAll(/@import\s+"([^"]+)"/g)].map((match) => match[1] ?? '')
+    expect(specifiers.length).toBeGreaterThan(0)
+    const fromDist = createRequire(join(root, 'dist', 'fonts.css'))
+    for (const specifier of specifiers) expect(fromDist.resolve(specifier)).toMatch(/\.css$/)
   })
 
   test('ships the theme: the Tailwind names of the tokens and the classes of the components', () => {

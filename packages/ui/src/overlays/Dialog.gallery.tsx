@@ -11,7 +11,7 @@ import { Dialog } from './Dialog'
  * image. The dimmed overlay is part of the reference too.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-[48rem]">{children}</div>
+  return <div className="h-[30rem] w-full max-w-[48rem]">{children}</div>
 }
 
 /**

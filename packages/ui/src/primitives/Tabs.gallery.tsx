@@ -101,7 +101,7 @@ export default {
     // Windows lays its window controls. Switch the platform to win32 to see the room it keeps at
     // its end; six pages then shrink to their cut titles instead of running under that room.
     'Title bar strip': () => (
-      <div className="h-32 w-[360px] border border-border">
+      <div className="h-32 w-full max-w-[360px] border border-border">
         <Tabs
           label="Panel sections"
           orientation="horizontal"

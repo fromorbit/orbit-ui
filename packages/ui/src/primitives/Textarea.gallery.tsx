@@ -22,7 +22,7 @@ export default {
     // so the field itself brings none of its own.
     'Bare inside a surface': () => (
       // Narrower than the widest state above, so adding this one leaves their references alone.
-      <div className="w-80 rounded-lg border border-border bg-surface p-2 focus-within:border-border-focus">
+      <div className="w-full max-w-80 rounded-lg border border-border bg-surface p-2 focus-within:border-border-focus">
         <Textarea label="Message" variant="bare" placeholder="Send a message" />
       </div>
     ),

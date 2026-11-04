@@ -49,13 +49,13 @@ test('the label is muted, the value in text; the label keeps one width', () => {
   expect(screen.getByText('Sanne Visser').className).toContain('text-fg')
 })
 
-test('a hairline separates the groups, and none stands above the first', () => {
+test('space separates the groups, not a line, and none stands above the first', () => {
   render(<PropertyList label="Eigenschappen" groups={groups} />)
   const sections = [...document.querySelectorAll('[data-nt-property-group]')]
   expect(sections).toHaveLength(3)
   for (const section of sections) {
-    expect(section.className).toContain('border-t')
-    expect(section.className).toContain('border-border')
-    expect(section.className).toContain('first:border-t-0')
+    expect(section.className).not.toContain('border')
+    expect(section.className).toContain('pt-4')
+    expect(section.className).toContain('first:pt-0')
   }
 })

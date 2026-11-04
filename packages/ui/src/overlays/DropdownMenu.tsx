@@ -154,7 +154,7 @@ export interface DropdownMenuProps {
    */
   header?: DropdownMenuHeader
   /**
-   * `comfortable` gives the rows 30px instead of the 28px of a control, with their icons in
+   * `comfortable` gives the rows 36px instead of the 32px of a control, with their icons in
    * `muted` so the words lead: a short menu of places to go (the account menu, design A) rather
    * than the dense actions of a row. `default` is every other menu.
    */
@@ -180,7 +180,7 @@ const item = cva(
       },
       density: {
         default: 'h-(--nt-control-md)',
-        comfortable: 'h-[30px]',
+        comfortable: 'h-9',
       },
     },
     defaultVariants: { tone: 'default', density: 'default' },

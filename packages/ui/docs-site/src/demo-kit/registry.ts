@@ -4,14 +4,17 @@ import type { Demo, DemoModule } from './types'
 
 /** The order of the list; each slug is a file `demos/<slug>.tsx`. */
 const ORDER = [
-  'dashboard',
-  'cms',
-  'betalingen',
+  'review',
+  'trail',
   'chat',
+  'dashboard',
+  'apps',
+  'inloggen',
+  'taken',
+  'branches',
+  'gebruik',
   'instellingen',
   'team',
-  'taken',
-  'inloggen',
 ] as const
 
 const modules = import.meta.glob<{ default: DemoModule }>('../demos/*.tsx', { eager: true })
@@ -35,6 +38,11 @@ export const DEMOS: readonly Demo[] = ORDER.map((slug) => {
   if (!module) throw new Error(`No demo file for ${slug}`)
   return { slug, ...module.default }
 })
+
+/** The source of a demo's own file, as the code view of its block shows it. */
+export function sourceOf(slug: string): string {
+  return sources[`../demos/${slug}.tsx`] ?? ''
+}
 
 /** The slug of the page that bundles what is missing: `#/demo/ontbrekend`. */
 export const OVERVIEW_SLUG = 'ontbrekend'

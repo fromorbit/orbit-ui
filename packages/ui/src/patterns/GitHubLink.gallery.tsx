@@ -10,7 +10,7 @@ export default {
   title: 'GitHubLink',
   states: {
     'In a sentence': () => (
-      <p className="w-96 text-[13px] leading-normal">
+      <p className="w-full max-w-96 text-[13px] leading-normal">
         Merged in{' '}
         <GitHubLink
           label="Pull request of issue 394"

@@ -17,7 +17,7 @@ import { Tooltip, TooltipProvider } from './Tooltip'
 function Stage({ children }: { children: ReactNode }) {
   return (
     <TooltipProvider>
-      <div className="flex w-[480px] justify-center pt-10">{children}</div>
+      <div className="flex w-full max-w-[480px] justify-center pt-10">{children}</div>
     </TooltipProvider>
   )
 }

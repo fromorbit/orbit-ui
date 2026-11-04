@@ -7,14 +7,14 @@ import { Icon, type IconName } from './Icon'
  * hover lights it.
  */
 const PILL =
-  'no-drag inline-flex h-(--nt-control-md) min-w-0 max-w-full items-center gap-1.5 rounded-full border border-border-strong bg-pill ps-2.5 pe-2 text-[12px] font-medium whitespace-nowrap text-secondary outline-focus transition-[background-color] duration-100 hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
+  'no-drag inline-flex h-(--nt-control-md) min-w-0 max-w-full items-center gap-1.5 rounded-full border border-border-strong bg-pill ps-2.5 pe-2 text-[12px] font-medium whitespace-nowrap text-secondary outline-focus transition-[background-color] duration-(--nt-duration-fast) hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
 
 /**
  * The quiet pill: the same box with a transparent border, so its size never changes, and no plane
  * until hover or an open menu. `text-muted` at rest, one step below the framed pill's tone.
  */
 const QUIET =
-  'no-drag inline-flex h-(--nt-control-md) min-w-0 max-w-full items-center gap-1.5 rounded-full border border-transparent bg-transparent ps-2.5 pe-2 text-[12px] font-medium whitespace-nowrap text-muted outline-focus transition-[background-color] duration-100 hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
+  'no-drag inline-flex h-(--nt-control-md) min-w-0 max-w-full items-center gap-1.5 rounded-full border border-transparent bg-transparent ps-2.5 pe-2 text-[12px] font-medium whitespace-nowrap text-muted outline-focus transition-[background-color] duration-(--nt-duration-fast) hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
 
 /**
  * The container width below which a collapsing pill falls back to its icon: 588px of toolbar.
@@ -33,11 +33,11 @@ export const COLLAPSE_BELOW = '@max-[588px]/toolbar:sr-only'
  * one more thing to read in a row that should only say what matters.
  */
 const BARE =
-  'no-drag inline-flex size-(--nt-control-md) shrink-0 items-center justify-center rounded-full border border-border-strong bg-pill text-secondary outline-focus transition-[background-color] duration-100 hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
+  'no-drag inline-flex size-(--nt-control-md) shrink-0 items-center justify-center rounded-full border border-border-strong bg-pill text-secondary outline-focus transition-[background-color] duration-(--nt-duration-fast) hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
 
 /** `BARE` without border and plane at rest, for a chat that has started (see `quiet`). */
 const BARE_QUIET =
-  'no-drag inline-flex size-(--nt-control-md) shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-muted outline-focus transition-[background-color] duration-100 hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
+  'no-drag inline-flex size-(--nt-control-md) shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-muted outline-focus transition-[background-color] duration-(--nt-duration-fast) hover:bg-pill-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 aria-expanded:bg-pill-hover aria-expanded:text-fg disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-40'
 
 /** `BARE` as text: nothing to press. */
 const BARE_TEXT =

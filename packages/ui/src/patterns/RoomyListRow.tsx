@@ -96,8 +96,8 @@ export function RoomyListRow({
         {actions ? (
           // Over the right end of the first line, not beside it: at rest it takes no room from the
           // title and the detail, and in sight it covers the detail on the row's own hover colour.
-          // Level with that line: 10px of padding plus the 20px line, around a control of 28px.
-          <span className="no-drag absolute end-0 top-[6px] flex items-center rounded-md bg-surface opacity-0 group-focus-within/roomy:opacity-100 group-hover/roomy:opacity-100 has-[[data-state=open]]:opacity-100">
+          // Level with that line: 10px of padding plus the 20px line, around a control of 32px (`md`).
+          <span className="no-drag absolute end-0 top-1 flex items-center rounded-md bg-surface opacity-0 group-focus-within/roomy:opacity-100 group-hover/roomy:opacity-100 has-[[data-state=open]]:opacity-100">
             {actions}
           </span>
         ) : null}

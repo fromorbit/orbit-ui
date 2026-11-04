@@ -126,7 +126,7 @@ export default {
       </Card>
     ),
     'Narrow: the control moves under the label': () => (
-      <Card width="w-[400px]">
+      <Card width="w-full max-w-[400px]">
         <ChoiceRow description="The default for a new chat" modified onReset={() => undefined} />
       </Card>
     ),

@@ -77,7 +77,7 @@ export default {
       />
     ),
     Long: () => (
-      <div className="w-96">
+      <div className="w-full max-w-96">
         <PierreDiff
           diff={long}
           path="/work/lezer/src/generated.ts"

@@ -84,7 +84,7 @@ const button = cva(
   // button taller — it spills out of it, over whatever stands below.
   // The dimming of `aria-disabled` sits in each variant rather than here: `idle` must stay at full
   // strength, and a base class cannot be taken back by a variant without a class-merging tool.
-  'no-drag relative inline-flex items-center whitespace-nowrap rounded-md font-medium outline-focus transition-[filter,background-color] duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none aria-disabled:hover:filter-none',
+  'no-drag relative inline-flex items-center whitespace-nowrap rounded-md font-medium outline-focus transition-[filter,background-color] duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none aria-disabled:hover:filter-none',
   {
     variants: {
       variant: {
@@ -128,13 +128,13 @@ const button = cva(
     },
     compoundVariants: [
       { size: 'xs', rowInset: false, class: 'px-1.5' },
-      { size: 'sm', rowInset: false, class: 'px-2' },
+      { size: 'sm', rowInset: false, class: 'px-2.5' },
       { size: 'md', rowInset: false, class: 'px-3' },
-      { size: 'lg', rowInset: false, class: 'px-3.5' },
+      { size: 'lg', rowInset: false, class: 'px-4' },
       { size: 'xs', rowInset: true, class: 'ps-2 pe-1.5' },
-      { size: 'sm', rowInset: true, class: 'ps-2 pe-2' },
+      { size: 'sm', rowInset: true, class: 'ps-2 pe-2.5' },
       { size: 'md', rowInset: true, class: 'ps-2 pe-3' },
-      { size: 'lg', rowInset: true, class: 'ps-2 pe-3.5' },
+      { size: 'lg', rowInset: true, class: 'ps-2 pe-4' },
     ],
     defaultVariants: {
       variant: 'secondary',

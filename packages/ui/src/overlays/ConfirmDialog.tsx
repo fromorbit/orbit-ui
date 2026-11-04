@@ -81,19 +81,19 @@ export function ConfirmDialog({
       <RadixAlertDialog.Portal container={container}>
         <RadixAlertDialog.Overlay className="no-drag fixed inset-0 z-(--nt-z-popover) bg-scrim" />
         <RadixAlertDialog.Content
-          className={`${PANEL} fixed top-1/2 left-1/2 w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 p-4`}
+          className={`${PANEL} fixed top-1/2 left-1/2 w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 p-5`}
           // Without a body there is no description; Radix is told so rather than pointing at none.
           {...(body === undefined ? { 'aria-describedby': undefined } : {})}
         >
-          <RadixAlertDialog.Title className="m-0 font-medium text-fg">
+          <RadixAlertDialog.Title className="m-0 text-[15px] leading-6 font-heading text-fg">
             {title}
           </RadixAlertDialog.Title>
           {body === undefined ? null : (
-            <RadixAlertDialog.Description className="mt-1.5 text-[12px] text-muted">
+            <RadixAlertDialog.Description className="mt-1 text-[12px] text-muted">
               {body}
             </RadixAlertDialog.Description>
           )}
-          <div className="mt-4 flex justify-end gap-2">
+          <div className="mt-5 flex justify-end gap-2">
             <RadixAlertDialog.Cancel asChild>
               <Button variant="secondary">{cancelLabel}</Button>
             </RadixAlertDialog.Cancel>

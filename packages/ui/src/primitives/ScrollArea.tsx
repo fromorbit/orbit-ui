@@ -57,7 +57,7 @@ export function ScrollArea({ label, children }: ScrollAreaProps) {
         orientation="vertical"
         className="flex w-2 touch-none select-none p-0.5"
       >
-        <RadixScrollArea.Thumb className="flex-1 rounded-full bg-border transition-colors duration-100 hover:bg-muted" />
+        <RadixScrollArea.Thumb className="flex-1 rounded-full bg-border transition-colors duration-(--nt-duration-fast) hover:bg-muted" />
       </RadixScrollArea.Scrollbar>
     </RadixScrollArea.Root>
   )

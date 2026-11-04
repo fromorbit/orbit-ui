@@ -14,6 +14,7 @@ import {
   BookOpen,
   Bot,
   Brain,
+  Calendar,
   Camera,
   Check,
   CheckCheck,
@@ -104,6 +105,7 @@ import {
   Terminal,
   Trash2,
   Undo2,
+  Upload,
   User,
   Users,
   WrapText,
@@ -172,6 +174,10 @@ const registry = {
   'archive-restore': ArchiveRestore,
   // Definitively removing something, distinct from `x` (which only closes or dismisses).
   'trash-2': Trash2,
+  // A day to choose: the trigger of `DatePicker`.
+  calendar: Calendar,
+  // Files to send: the sign of `FileDrop`.
+  upload: Upload,
   // A rectangle whose right-hand column is filled: the window with its right panel out. The same
   // sign every editor uses for a side panel, so the button needs no word beside it.
   'panel-right': PanelRight,

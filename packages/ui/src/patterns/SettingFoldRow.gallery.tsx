@@ -31,7 +31,7 @@ function ProgramRow() {
 function Agents({ open }: { open: boolean }) {
   return (
     <TooltipProvider>
-      <div className="flex w-[560px] flex-col gap-6">
+      <div className="flex w-full max-w-[560px] flex-col gap-6">
         <SettingsGroup title="Agents">
           <SettingFoldRow
             label="Nova"

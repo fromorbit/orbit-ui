@@ -122,15 +122,15 @@ test('rowInset starts the content 8px in, like a list row, and keeps the end pad
   )
   const classes = screen.getByRole('button', { name: 'Ga' }).className.split(' ')
   expect(classes).toContain('ps-2')
-  expect(classes).toContain('pe-3.5')
+  expect(classes).toContain('pe-4')
   // Never both: with no class-merging tool the winner would depend on Tailwind's output order.
-  expect(classes).not.toContain('px-3.5')
+  expect(classes).not.toContain('px-4')
 })
 
 test('without rowInset a size keeps its even horizontal padding', () => {
   render(<Button size="lg">Ga</Button>)
   const classes = screen.getByRole('button', { name: 'Ga' }).className.split(' ')
-  expect(classes).toContain('px-3.5')
+  expect(classes).toContain('px-4')
   expect(classes).not.toContain('ps-2')
 })
 

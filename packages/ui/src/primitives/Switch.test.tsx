@@ -91,6 +91,6 @@ test('the thumb slides, and stands still when motion is reduced', () => {
   )
   const thumb = container.querySelector('button > span')
   expect(thumb?.className).toContain('transition-transform')
-  expect(thumb?.className).toContain('duration-100')
+  expect(thumb?.className).toContain('duration-(--nt-duration-fast)')
   expect(thumb?.className).toContain('motion-reduce:transition-none')
 })

@@ -373,7 +373,7 @@ function MarkdownFence({ code }: { code: () => string }) {
   const labels = useProseLabels()
   return (
     <div data-nt-code-block data-nt-markdown-fence className="group/code relative">
-      <div className="rounded-md border border-border bg-surface p-3">
+      <div className="rounded-md bg-surface p-3">
         <DocumentView markdown={code()} document={FENCE_DOCUMENT} labels={labels} />
       </div>
       <div data-nt-code-copy className={CODE_COPY}>
@@ -433,14 +433,14 @@ function TableRegion({ children }: { children: ReactNode }) {
 // A block that can scroll sideways, focusable so the keyboard reaches its overflow too.
 const SCROLLS =
   'no-drag overflow-x-auto outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
-const CODE_REGION = `${SCROLLS} rounded-md border border-border bg-surface p-3 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)`
+const CODE_REGION = `${SCROLLS} rounded-md bg-surface p-3 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)`
 // Quiet until you go there: 100 ms is the shortest step the guidelines allow, and under reduced
 // motion there is no step at all. Opacity only, so nothing moves when it appears — and no reach
 // while it is invisible, or it would swallow a selection drag that starts at the right end of the
 // first line. Focus is unaffected: `pointer-events` says nothing about the keyboard, and landing
 // on the button is itself what makes the block show it.
 const CODE_COPY =
-  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-100 ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto motion-reduce:transition-none'
+  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto motion-reduce:transition-none'
 // The thumb of a code block stays visible at rest, so a line that runs on past the edge says so;
 // the rest of the app shows its scrollbars only while they are pointed at (index.css).
 const CODE_REGION_WRAPPED =
@@ -457,8 +457,9 @@ const HEADING_SMALL = 'm-0 mt-2 text-[13px] font-medium first:mt-0'
 const LIST = 'm-0 whitespace-normal pl-4'
 const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-normal'
 // A task item carries a checkbox instead of a marker, but keeps the indent of the list it is in,
-// so the boxes line up with the bullets and numbers around them.
-const TASK_ITEM = `${ITEM} list-none`
+// so the boxes line up with the bullets and numbers around them. A hanging indent of the box's
+// width (14px and its 8px margin) lines a wrapped line up with the words, not under the box.
+const TASK_ITEM = `${ITEM} list-none pl-[22px] -indent-[22px]`
 
 /** A heading on the chat's capped scale. */
 function Heading({ level, children }: { level: 1 | 2 | 3 | 4 | 5 | 6; children: ReactNode }) {
@@ -537,12 +538,12 @@ const components: Options['components'] = {
   hr: () => <Separator />,
   table: ({ children }) => <TableRegion>{children}</TableRegion>,
   th: ({ children }) => (
-    <th className="border border-border px-2 py-1 text-left font-medium">
+    <th className="border-b border-border px-3 py-1.5 text-left font-medium text-muted first:ps-0">
       <Linked>{children}</Linked>
     </th>
   ),
   td: ({ children }) => (
-    <td className="border border-border px-2 py-1">
+    <td className="border-b border-border px-3 py-1.5 first:ps-0">
       <Linked>{children}</Linked>
     </td>
   ),

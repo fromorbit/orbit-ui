@@ -59,7 +59,7 @@ export function FileLink({ text, path, line, column, label, onOpen }: FileLinkPr
       aria-label={label}
       title={title}
       onClick={open}
-      className="inline cursor-pointer rounded-sm px-1 py-0.5 font-mono text-[12px] text-fg outline-focus box-decoration-clone transition-colors duration-100 hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
+      className="inline cursor-pointer rounded-sm px-1 py-0.5 font-mono text-[12px] text-fg outline-focus box-decoration-clone transition-colors duration-(--nt-duration-fast) hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
     >
       <span className="mr-1 inline-flex translate-y-[2px] text-fg">
         <PierreFileIcon path={path} />

@@ -41,11 +41,11 @@ export function Switch({
       checked={checked}
       disabled={disabled}
       onCheckedChange={onCheckedChange}
-      className="no-drag relative h-[18px] w-8 shrink-0 rounded-full bg-border-focus outline-focus transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:bg-accent"
+      className="no-drag relative h-[18px] w-8 shrink-0 rounded-full bg-border-focus outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:bg-accent"
     >
       {/* The thumb is the one thing here that really travels, so reduced motion puts it in its
           other position without the slide — the same rule as the chevron of a Collapsible. */}
-      <RadixSwitch.Thumb className="block size-3.5 translate-x-0.5 rounded-full bg-accent-fg ring-1 ring-border-strong transition-transform duration-100 motion-reduce:transition-none data-[state=checked]:translate-x-4" />
+      <RadixSwitch.Thumb className="block size-3.5 translate-x-0.5 rounded-full bg-accent-fg ring-1 ring-border-strong transition-transform duration-(--nt-duration-fast) motion-reduce:transition-none data-[state=checked]:translate-x-4" />
     </RadixSwitch.Root>
   )
 }

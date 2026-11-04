@@ -3,24 +3,23 @@ import type { ReactNode } from 'react'
 import { Icon, type IconName } from './Icon'
 
 /**
- * `success` is a tint only (no `-subtle` token exists for it, unlike `attention` and `danger`),
- * used for a single confirmed state such as an authenticated provider.
+ * A tag is a tinted plane without a frame. `success` is the exception: its words alone, in the
+ * success colour inside a hairline, used for a single confirmed state such as an authenticated
+ * provider. No plane, because the deep green of light falls under AA on any tint (4.2:1 on the
+ * frame), and no `-subtle` token exists for it, unlike `attention` and `danger`.
  */
-const tag = cva(
-  'inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[11px] font-medium',
-  {
-    variants: {
-      tone: {
-        neutral: 'border-border bg-surface text-fg',
-        success: 'border-border text-success',
-        attention: 'border-attention-border bg-attention-subtle text-fg',
-        danger: 'border-danger-border bg-danger-subtle text-fg',
-      },
-      mono: { true: 'font-mono' },
+const tag = cva('inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-medium', {
+  variants: {
+    tone: {
+      neutral: 'bg-surface-hover text-fg',
+      success: 'border border-border text-success',
+      attention: 'bg-attention-subtle text-fg',
+      danger: 'bg-danger-subtle text-fg',
     },
-    defaultVariants: { tone: 'neutral' },
+    mono: { true: 'font-mono' },
   },
-)
+  defaultVariants: { tone: 'neutral' },
+})
 
 /** The props of `Tag`. */
 export interface TagProps {

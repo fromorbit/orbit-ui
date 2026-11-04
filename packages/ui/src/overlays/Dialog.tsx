@@ -131,9 +131,11 @@ export function Dialog({
           onPointerDownOutside={(event) => event.preventDefault()}
           onInteractOutside={(event) => event.preventDefault()}
         >
-          <div className="flex shrink-0 items-start gap-2 px-4 pt-3.5 pb-2">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <RadixDialog.Title className="m-0 font-medium text-fg">{title}</RadixDialog.Title>
+          <div className="flex shrink-0 items-start gap-2 px-5 pt-5 pb-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <RadixDialog.Title className="m-0 text-[15px] leading-6 font-heading text-fg">
+                {title}
+              </RadixDialog.Title>
               {description === undefined ? null : (
                 <RadixDialog.Description className="m-0 text-[12px] text-muted">
                   {description}
@@ -141,22 +143,22 @@ export function Dialog({
               )}
             </div>
             {/* Room for the close button, which comes last in the focus order (below). */}
-            <span aria-hidden="true" className="size-6 shrink-0" />
+            <span aria-hidden="true" className="size-7 shrink-0" />
           </div>
-          <div ref={body} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3">
+          <div ref={body} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
             {children}
           </div>
           {footer === undefined ? null : (
             <div
               ref={footerRef}
-              className="flex shrink-0 items-center justify-end gap-2 border-border border-t px-4 py-2.5"
+              className="flex shrink-0 items-center justify-end gap-2 px-5 pt-2 pb-5"
             >
               {footer}
             </div>
           )}
           {/* Last in the DOM, so Tab from the panel reaches what there is to answer first; drawn
           top right, where a close button is looked for. */}
-          <div className="absolute top-3.5 right-4">
+          <div className="absolute top-4 right-4">
             {/* The name of the cross as a tooltip too, as on every icon button. */}
             <Tooltip label={closeLabel}>
               <RadixDialog.Close asChild>

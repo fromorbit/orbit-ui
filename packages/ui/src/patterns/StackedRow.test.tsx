@@ -23,7 +23,7 @@ test('is a list row of three lines: 16, 20 and 16px, 72px in all', () => {
   const button = screen.getByRole('button')
   expect(button).toHaveAttribute('data-nt-list-row')
   expect(button.className.split(' ')).toEqual(
-    expect.arrayContaining(['h-18', 'px-3', 'py-2.5', 'rounded-[8px]']),
+    expect.arrayContaining(['h-18', 'px-3', 'py-2.5', 'rounded-md']),
   )
   const lines = [...button.querySelectorAll('[data-nt-stacked-line]')]
   expect(lines.map((line) => line.getAttribute('data-nt-stacked-line'))).toEqual([
@@ -34,7 +34,7 @@ test('is a list row of three lines: 16, 20 and 16px, 72px in all', () => {
   expect(lines[0]?.className).toContain('h-4')
   expect(lines[0]?.className).toContain('text-[11px]')
   expect(lines[1]?.className).toContain('h-5')
-  expect(lines[1]?.className).toContain('text-[14px]')
+  expect(lines[1]?.className).toContain('text-[13px]')
   expect(lines[1]?.className).toContain('font-medium')
   expect(lines[2]?.className).toContain('h-4')
   expect(lines[2]?.className).toContain('text-[11px]')

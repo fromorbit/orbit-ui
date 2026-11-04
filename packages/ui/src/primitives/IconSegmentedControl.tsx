@@ -11,7 +11,7 @@ import { Icon, type IconName } from './Icon'
  * need a `data-disabled` on the root for.
  */
 const item = cva(
-  'inline-flex items-center justify-center rounded-sm text-muted outline-focus transition-colors duration-100 hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 disabled:pointer-events-none disabled:opacity-40 data-[state=on]:bg-surface-hover data-[state=on]:text-fg',
+  'inline-flex items-center justify-center rounded-sm text-muted outline-focus transition-colors duration-(--nt-duration-fast) hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 disabled:pointer-events-none disabled:opacity-40 data-[state=on]:bg-surface-hover data-[state=on]:text-fg',
   {
     variants: {
       size: {

@@ -5,7 +5,7 @@ import { Banner } from './Banner'
 
 /** The width of the panel a banner spans in the app, so wrapping happens here as it does there. */
 function Panel({ children }: { children: ReactNode }) {
-  return <div className="w-96">{children}</div>
+  return <div className="w-full max-w-96">{children}</div>
 }
 
 /**

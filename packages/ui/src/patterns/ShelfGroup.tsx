@@ -80,7 +80,7 @@ export function ShelfGroup({
       >
         <span className="min-w-0 flex-1 truncate">{text(title, count)}</span>
         <span
-          className={`flex shrink-0 transition-transform duration-100 ease-out motion-reduce:transition-none ${
+          className={`flex shrink-0 transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
             open ? 'rotate-180' : ''
           }`}
         >

@@ -168,3 +168,22 @@ test('trailing content stands inside the frame, after the text', () => {
   const { container } = render(<Input label="Sleutel" trailing={<span data-testid="end" />} />)
   expect(container.firstElementChild?.lastElementChild).toBe(screen.getByTestId('end'))
 })
+
+test('a prefix and a suffix stand in the frame and describe the field', () => {
+  render(<Input label="Adres" prefix="https://" suffix=".halo.dev" aria-describedby="eigen" />)
+  const field = screen.getByRole('textbox', { name: 'Adres' })
+  const ids = field.getAttribute('aria-describedby')?.split(' ') ?? []
+  expect(ids[0]).toBe('eigen')
+  expect(ids).toHaveLength(3)
+  expect(document.getElementById(ids[1] ?? '')).toHaveTextContent('https://')
+  expect(document.getElementById(ids[2] ?? '')).toHaveTextContent('.halo.dev')
+})
+
+test('aria-invalid draws the danger border instead of the plain one', () => {
+  const { container, rerender } = render(<Input label="E-mailadres" aria-invalid />)
+  expect(container.firstElementChild?.className).toContain('border-danger')
+  expect(container.firstElementChild?.className).not.toContain('border-border')
+  rerender(<Input label="E-mailadres" />)
+  expect(container.firstElementChild?.className).toContain('border-border')
+  expect(container.firstElementChild?.className).not.toContain('border-danger')
+})

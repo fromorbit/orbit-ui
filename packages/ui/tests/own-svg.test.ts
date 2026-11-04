@@ -16,6 +16,7 @@ const allowed: Record<string, string> = {
   'patterns/Chip.gallery.tsx': 'thumbnails of a page as data, not icons',
   'primitives/BrandIcon.tsx':
     "the marks of an agent's maker and GitHub's; Lucide draws no logos, and may not",
+  'primitives/OrbitSymbol.tsx': 'the orbit and satellite of the brand assets alone; a logo',
   'primitives/OrbitWordmark.tsx': "the app's own wordmark, copied from the brand assets; a logo",
 }
 

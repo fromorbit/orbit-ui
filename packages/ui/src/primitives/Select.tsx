@@ -6,10 +6,16 @@ import { handBackOnlyLostFocus } from './hand-back'
 import { Icon } from './Icon'
 
 const trigger = cva(
-  'no-drag inline-flex max-w-56 items-center gap-1.5 rounded-md border border-border bg-surface px-2 text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
+  'no-drag inline-flex items-center gap-1.5 rounded-md border bg-surface px-2 text-fg outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
   {
-    variants: { size: controlSize },
-    defaultVariants: { size: 'md' },
+    variants: {
+      size: controlSize,
+      // The border of a choice that failed its check, as on `Input`.
+      invalid: { true: 'border-danger', false: 'border-border' },
+      // The whole width of a form column, as `Combobox` and `DatePicker` take it.
+      block: { true: 'w-full min-w-0 justify-between', false: 'max-w-56' },
+    },
+    defaultVariants: { size: 'md', invalid: false, block: false },
   },
 )
 
@@ -17,7 +23,7 @@ const trigger = cva(
  * One option in the popup: a row you click, so it is as tall as the `md` trigger that opened it.
  *
  * The height comes from `controlHeight.md` rather than from a hand-written `h-7`, which happened to
- * be the same 28px: move `--nt-control-md` and the popup would silently stay behind. No focus ring
+ * be the same height: move `--nt-control-md` and the popup would silently stay behind. No focus ring
  * here — Radix moves a `data-highlighted` state through the list, and the browser's own outline on
  * top of that would draw a second selection.
  */
@@ -40,6 +46,14 @@ export interface SelectProps<T extends string> {
   'aria-labelledby'?: string | undefined
   /** Set by `Field`, pointing at its description or error text. */
   'aria-describedby'?: string | undefined
+  /** Set by `FormField` when the choice failed its check: a danger border and `aria-invalid`. */
+  'aria-invalid'?: boolean | undefined
+  /** Set by `FormField` when a choice is required. */
+  'aria-required'?: boolean | undefined
+  /** The trigger's id, so a `<label for>` of `FormField` focuses it. */
+  id?: string | undefined
+  /** The whole width of its column, as in a form; otherwise at most 14rem. */
+  block?: boolean
 }
 
 /**
@@ -61,6 +75,10 @@ export function Select<T extends string>({
   onValueChange,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
+  'aria-required': ariaRequired,
+  id,
+  block,
 }: SelectProps<T>) {
   return (
     <RadixSelect.Root
@@ -72,7 +90,10 @@ export function Select<T extends string>({
         aria-label={label}
         aria-labelledby={ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
-        className={trigger({ size })}
+        aria-invalid={ariaInvalid}
+        aria-required={ariaRequired}
+        id={id}
+        className={trigger({ size, invalid: ariaInvalid === true, block: block === true })}
       >
         <span className="truncate">
           <RadixSelect.Value />

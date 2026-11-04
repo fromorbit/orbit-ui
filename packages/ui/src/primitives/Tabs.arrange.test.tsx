@@ -29,7 +29,7 @@ test('an arranged list and panel stand where the caller places them', async () =
   expect(body).toHaveTextContent('Inhoud B')
 })
 
-test('an arranged list has the 32px rows of a column', () => {
+test('an arranged list has the 36px rows of a column, as a List', () => {
   render(
     <Tabs
       label="Onderdelen"
@@ -42,5 +42,5 @@ test('an arranged list has the 32px rows of a column', () => {
       )}
     />,
   )
-  expect(screen.getByRole('tab', { name: 'Uiterlijk' }).className).toContain('--nt-control-lg')
+  expect(screen.getByRole('tab', { name: 'Uiterlijk' }).className.split(' ')).toContain('h-9')
 })
