@@ -13,7 +13,7 @@ const KINDS: readonly ChoiceCardItem[] = [
     title: 'Terminal',
     shortcut: 'panel.start.terminal',
     disabled: true,
-    reason: 'Coming later',
+    reason: 'Komt later',
   },
   {
     id: 'files',
@@ -21,7 +21,7 @@ const KINDS: readonly ChoiceCardItem[] = [
     title: 'Files',
     shortcut: 'panel.start.files',
     disabled: true,
-    reason: 'Coming later',
+    reason: 'Komt later',
   },
 ]
 
@@ -29,7 +29,7 @@ function InPanel({ width }: { width: number }) {
   return (
     <TooltipProvider>
       <div className="px-3" style={{ width }}>
-        <ChoiceCards label="Open a tab" items={KINDS} onChoose={() => {}} />
+        <ChoiceCards label="Open een tabblad" items={KINDS} onChoose={() => {}} />
       </div>
     </TooltipProvider>
   )

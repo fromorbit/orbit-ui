@@ -177,7 +177,7 @@ const ACTIVITY = [
 function rowStatus(spec: Spec) {
   const state = STATES[spec.state]
   return spec.state === 'building'
-    ? { marker: <StatusMark kind="running" />, status: state.label }
+    ? { marker: <StatusMark kind="running" size="sm" />, status: state.label }
     : { kind: state.kind, status: state.label }
 }
 
@@ -245,7 +245,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 {
                   label: 'Branch',
                   value: (
-                    <span className="flex min-w-0">
+                    <span className="flex min-w-0 items-center gap-1.5 font-mono">
                       <StackedRowBranch name={spec.branch} worktree />
                     </span>
                   ),

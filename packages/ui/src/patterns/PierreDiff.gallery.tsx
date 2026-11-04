@@ -19,7 +19,7 @@ const removed = [
 ].join('\n')
 
 const mixed = [
-  '@@ -1,4 +1,5 @@',
+  '@@ -1,3 +1,4 @@',
   ' export function greet(name: string): string {',
   "-  return 'Hi'",
   "+  if (!name) return 'Hi, stranger'",
@@ -33,7 +33,7 @@ const mixed = [
 const mixedLine3 = '  return `Hi, ${name}`'
 
 const long = [
-  '@@ -1,1 +1,30 @@',
+  '@@ -0,0 +1,30 @@',
   ...Array.from({ length: 30 }, (_, i) => `+export const line${i + 1} = ${i + 1}`),
 ].join('\n')
 

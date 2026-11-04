@@ -48,43 +48,43 @@ export default {
       <Column>
         <List label="Runs">
           <ListRow
-            title="Refactor the transport"
+            title="Transport herschrijven"
             kind="running"
-            status="Running"
+            status="Loopt"
             meta={<RelativeTime labels={nl.time} at={now - 5 * minute} now={now} />}
           />
           <ListRow
-            title="Add the approval card"
+            title="Akkoordkaart toevoegen"
             kind="attention"
-            status="Awaiting approval"
+            status="Wacht op akkoord"
             meta={<RelativeTime labels={nl.time} at={now - 2 * hour} now={now} />}
           />
           <ListRow
-            title="Upgrade the provider SDK"
+            title="Provider-SDK bijwerken"
             kind="failed"
-            status="Failed"
+            status="Mislukt"
             meta={<RelativeTime labels={nl.time} at={now - 26 * hour} now={now} />}
           />
           <ListRow
-            title="Write the release notes"
+            title="Releasenotes schrijven"
             kind="queued"
-            status="Queued"
+            status="In de wachtrij"
             meta={<RelativeTime labels={nl.time} at={now - 8 * 24 * hour} now={now} />}
           />
           <ListRow
-            title="Ship the status icons"
+            title="Statusiconen uitleveren"
             kind="done"
-            status="Done"
+            status="Klaar"
             meta={<RelativeTime labels={nl.time} at={now - 3 * 24 * hour} now={now} />}
           />
           <ListRow
-            title="Rename the transport port"
+            title="Transportpoort hernoemen"
             kind="interrupted"
-            status="Interrupted"
+            status="Onderbroken"
             meta={<RelativeTime labels={nl.time} at={now - 5 * 24 * hour} now={now} />}
           />
           <ListRow
-            title="No status at all"
+            title="Zonder status"
             meta={<RelativeTime labels={nl.time} at={now - 30_000} now={now} />}
           />
         </List>
@@ -93,8 +93,8 @@ export default {
     'Status as the only detail': () => (
       <Column>
         <List label="Runs">
-          <ListRow title="Refactor the transport" kind="running" status="Running" />
-          <ListRow title="Write the release notes" kind="queued" status="Queued" />
+          <ListRow title="Transport herschrijven" kind="running" status="Loopt" />
+          <ListRow title="Releasenotes schrijven" kind="queued" status="In de wachtrij" />
         </List>
       </Column>
     ),
@@ -104,17 +104,17 @@ export default {
         <Column>
           <List label="Runs">
             <ListRow
-              title="The selected row"
+              title="De gekozen rij"
               current={current === 'a'}
               onClick={() => setCurrent('a')}
               meta={<RelativeTime labels={nl.time} at={now - 5 * minute} now={now} />}
             />
             <ListRow
-              title="A row with a title far too long to fit inside this column"
+              title="Een rij met een titel die veel te lang is voor deze kolom"
               current={current === 'b'}
               onClick={() => setCurrent('b')}
               kind="running"
-              status="Running"
+              status="Loopt"
               meta={<RelativeTime labels={nl.time} at={now - hour} now={now} />}
             />
           </List>
@@ -123,30 +123,30 @@ export default {
     },
     'Two groups (the arrows run through both)': () => (
       <Column>
-        <List label="Chats">
+        <List label="Gesprekken">
           <Group heading="nt-agent">
             <ListRow
-              title="Refactor the transport"
+              title="Transport herschrijven"
               kind="running"
-              status="Running"
+              status="Loopt"
               meta={<RelativeTime labels={nl.time} at={now - 5 * minute} now={now} />}
             />
             <ListRow
-              title="Add the approval card"
+              title="Akkoordkaart toevoegen"
               kind="done"
-              status="Done"
+              status="Klaar"
               meta={<RelativeTime labels={nl.time} at={now - 2 * hour} now={now} />}
             />
           </Group>
-          <Group heading="webshop">
+          <Group heading="webwinkel">
             <ListRow
-              title="Fix the checkout"
+              title="Afrekenen repareren"
               kind="failed"
-              status="Failed"
+              status="Mislukt"
               meta={<RelativeTime labels={nl.time} at={now - 26 * hour} now={now} />}
             />
             <ListRow
-              title="Update the price rules"
+              title="Prijsregels bijwerken"
               meta={<RelativeTime labels={nl.time} at={now - 8 * 24 * hour} now={now} />}
             />
           </Group>
@@ -158,43 +158,43 @@ export default {
       const [open, setOpen] = useState({ agent: true, shop: false })
       return (
         <Column>
-          <List label="Chats">
+          <List label="Gesprekken">
             <ListGroup
               heading="nt-agent"
               count={2}
-              label="nt-agent, 2 chats"
+              label="nt-agent, 2 gesprekken"
               open={open.agent}
               onOpenChange={(agent) => setOpen((value) => ({ ...value, agent }))}
             >
               <ListRow
-                title="Refactor the transport"
+                title="Transport herschrijven"
                 kind="running"
-                status="Running"
+                status="Loopt"
                 marker="shape"
                 emphasis="strong"
                 current
                 meta={<RelativeTime labels={nl.time} at={now - 5 * minute} now={now} />}
               />
               <ListRow
-                title="Add the approval card"
+                title="Akkoordkaart toevoegen"
                 kind="done"
-                status="Done"
+                status="Klaar"
                 marker="shape"
                 emphasis="strong"
                 meta={<RelativeTime labels={nl.time} at={now - 2 * hour} now={now} />}
               />
             </ListGroup>
             <ListGroup
-              heading="webshop"
+              heading="webwinkel"
               count={1}
-              label="webshop, 1 chat"
+              label="webwinkel, 1 gesprek"
               open={open.shop}
               onOpenChange={(shop) => setOpen((value) => ({ ...value, shop }))}
             >
               <ListRow
-                title="Fix the checkout"
+                title="Afrekenen repareren"
                 kind="failed"
-                status="Failed"
+                status="Mislukt"
                 marker="shape"
                 emphasis="strong"
                 meta={<RelativeTime labels={nl.time} at={now - 26 * hour} now={now} />}
@@ -207,30 +207,30 @@ export default {
     // Last, so it moves no reference image above it.
     'Two lines: where and how much': () => (
       <Column>
-        <List label="Chats">
+        <List label="Gesprekken">
           <ListRow
-            title="Refactor the transport"
+            title="Transport herschrijven"
             kind="running"
-            status="Running"
+            status="Loopt"
             marker="shape"
             emphasis="strong"
             current
             meta={<RelativeTime labels={nl.time} at={now - 5 * minute} now={now} />}
             subline={{
-              content: <span className="min-w-0 flex-1 truncate">nt/refactor-the-transport</span>,
-              label: 'nt/refactor-the-transport',
+              content: <span className="min-w-0 flex-1 truncate">nt/transport-herschrijven</span>,
+              label: 'nt/transport-herschrijven',
             }}
           />
           <ListRow
-            title="Add the approval card"
+            title="Akkoordkaart toevoegen"
             kind="done"
-            status="Done"
+            status="Klaar"
             marker="shape"
             emphasis="strong"
             meta={<RelativeTime labels={nl.time} at={now - 2 * hour} now={now} />}
             subline={{
-              content: <span className="min-w-0 flex-1 truncate">project folder</span>,
-              label: 'project folder',
+              content: <span className="min-w-0 flex-1 truncate">projectmap</span>,
+              label: 'projectmap',
             }}
           />
         </List>
@@ -240,24 +240,24 @@ export default {
       // `px-2`: the chevron needs the 8px gutter left of the row, as in the sidebar's column.
       <Column>
         <div className="px-2">
-          <List label="Chats">
+          <List label="Gesprekken">
             <ListRow
-              title="Shopping cart"
+              title="Winkelmand"
               kind="done"
-              status="Done"
+              status="Klaar"
               marker="shape"
               emphasis="strong"
               meta={<RelativeTime labels={nl.time} at={now - 5 * minute} now={now} />}
-              fold={{ open: true, label: 'Subagents of Shopping cart', onToggle() {} }}
+              fold={{ open: true, label: 'Subagents van Winkelmand', onToggle() {} }}
             />
             <li className="m-0 list-none">
               {/* biome-ignore lint/a11y/useSemanticElements: a fieldset is for forms; these are the rows under one row, a named group in a list. */}
-              <div role="group" aria-label="Subagents of Shopping cart">
+              <div role="group" aria-label="Subagents van Winkelmand">
                 <ul className="m-0 ms-4 flex list-none flex-col gap-1 border-s border-border p-0 ps-1">
                   <ListRow
-                    title="Tests for the cart"
+                    title="Tests voor de winkelmand"
                     kind="running"
-                    status="Running"
+                    status="Loopt"
                     marker="shape"
                     emphasis="strong"
                     meta={<RelativeTime labels={nl.time} at={now - 2 * minute} now={now} />}
@@ -266,24 +266,24 @@ export default {
               </div>
             </li>
             <ListRow
-              title="Login screen"
+              title="Inlogscherm"
               kind="attention"
-              status="Done, 1 subagent waits for you"
+              status="Klaar, 1 subagent wacht op jou"
               marker="shape"
               emphasis="strong"
               meta={<RelativeTime labels={nl.time} at={now - hour} now={now} />}
-              fold={{ open: false, label: 'Subagents of Login screen', onToggle() {} }}
+              fold={{ open: false, label: 'Subagents van Inlogscherm', onToggle() {} }}
             />
             {/* Current: the chevron on the row's left edge, over the rounded end of its fill. */}
             <ListRow
-              title="Payment page"
+              title="Betaalpagina"
               kind="running"
-              status="Running"
+              status="Loopt"
               marker="shape"
               emphasis="strong"
               current
               meta={<RelativeTime labels={nl.time} at={now - 20 * minute} now={now} />}
-              fold={{ open: false, label: 'Subagents of Payment page', onToggle() {} }}
+              fold={{ open: false, label: 'Subagents van Betaalpagina', onToggle() {} }}
             />
           </List>
         </div>
@@ -293,16 +293,11 @@ export default {
     // nothing at the right, and the number under the pointer.
     'Dense rows': () => (
       <Column>
-        <List label="Documents">
+        <List label="Documenten">
+          <ListRow title="Retour zonder account" status="Spec, in review" dense meta="Review" />
           <ListRow
-            title="Returns without an account"
-            status="Spec, In review"
-            dense
-            meta="Review"
-          />
-          <ListRow
-            title="Stock per shop"
-            status="Spec, Draft"
+            title="Voorraad per winkel"
+            status="Spec, concept"
             dense
             meta={false}
             hoverMeta="SPEC-4"
@@ -315,10 +310,10 @@ export default {
     'Compact rows and a detail for the pointer': () => (
       <Column>
         <List label="Plan">
-          <ListRow title="Checkout plan" status="Plan, Active" meta="1/3" hoverMeta="PLAN-9" />
-          <ListRow title="The basket" status="Done" meta={false} compact />
-          <ListRow title="The payment gateway" status="Busy" meta={false} compact />
-          <ListRow title="Stock per shop" status="Spec, Draft" hoverMeta="SPEC-4" />
+          <ListRow title="Plan afrekenen" status="Plan, actief" meta="1/3" hoverMeta="PLAN-9" />
+          <ListRow title="De winkelmand" status="Klaar" meta={false} compact />
+          <ListRow title="De betaalkoppeling" status="Bezig" meta={false} compact />
+          <ListRow title="Voorraad per winkel" status="Spec, concept" hoverMeta="SPEC-4" />
         </List>
       </Column>
     ),

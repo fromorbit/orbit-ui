@@ -10,7 +10,7 @@ export default {
   states: {
     'In a sentence': () => (
       <p className="w-96 text-[13px]">
-        I looked at{' '}
+        Ik keek naar{' '}
         <FileLink
           label="Open src/winkelmand/totaal.ts, regel 42"
           text="src/winkelmand/totaal.ts:42"
@@ -18,20 +18,20 @@ export default {
           line={42}
           onOpen={() => {}}
         />{' '}
-        and at{' '}
+        en naar{' '}
         <FileLink label="Open README.md" text="README.md" path="README.md" onOpen={() => {}} />.
       </p>
     ),
     'A long path that breaks': () => (
       <p className="w-64 text-[13px]">
-        See{' '}
+        Zie{' '}
         <FileLink
           label="Open packages/webwinkel/src/features/winkelmand/berekening/totaal.test.ts"
           text="packages/webwinkel/src/features/winkelmand/berekening/totaal.test.ts"
           path="packages/webwinkel/src/features/winkelmand/berekening/totaal.test.ts"
           onOpen={() => {}}
         />{' '}
-        for the tests.
+        voor de tests.
       </p>
     ),
   },

@@ -6,7 +6,7 @@ function GhostToggle() {
   const [pressed, setPressed] = useState(false)
   return (
     <Button variant="ghost" aria-pressed={pressed} onClick={() => setPressed((value) => !value)}>
-      Toggle
+      Vastzetten
     </Button>
   )
 }
@@ -17,42 +17,42 @@ export default {
   states: {
     Variants: () => (
       <div className="flex gap-2">
-        <Button variant="primary">Send</Button>
-        <Button>Cancel</Button>
-        <Button variant="ghost">Ghost</Button>
+        <Button variant="primary">Versturen</Button>
+        <Button>Annuleren</Button>
+        <Button variant="ghost">Overslaan</Button>
       </div>
     ),
     Sizes: () => (
       <div className="flex items-center gap-2">
-        <Button size="xs">Tiny</Button>
-        <Button size="sm">Small</Button>
-        <Button>Medium</Button>
-        <Button size="lg">Large</Button>
+        <Button size="xs">Heel klein</Button>
+        <Button size="sm">Klein</Button>
+        <Button>Middel</Button>
+        <Button size="lg">Groot</Button>
       </div>
     ),
     Disabled: () => (
       <div className="flex gap-2">
         <Button variant="primary" disabled>
-          Send
+          Versturen
         </Button>
-        <Button disabled>Cancel</Button>
+        <Button disabled>Annuleren</Button>
       </div>
     ),
     Loading: () => (
       // Each pair shares a label, variant and size: at rest next to loading, so the equal width
       // is visible rather than just asserted.
       <div className="flex gap-2">
-        <Button variant="primary">Send</Button>
+        <Button variant="primary">Versturen</Button>
         <Button variant="primary" loading>
-          Send
+          Versturen
         </Button>
-        <Button>Cancel</Button>
-        <Button loading>Cancel</Button>
+        <Button>Annuleren</Button>
+        <Button loading>Annuleren</Button>
       </div>
     ),
     Block: () => (
       <div className="w-48">
-        <Button block>New chat</Button>
+        <Button block>Nieuw gesprek</Button>
       </div>
     ),
     'Long label': () => (
@@ -60,8 +60,8 @@ export default {
       // ellipsis instead of wrapping over the row below, and the one that sizes to its content
       // stays a single line and simply grows past the column.
       <div className="flex w-48 flex-col items-start gap-2">
-        <Button block>Start a chat about the checkout</Button>
-        <Button>Start a chat about the checkout</Button>
+        <Button block>Begin een gesprek over het afrekenen</Button>
+        <Button>Begin een gesprek over het afrekenen</Button>
       </div>
     ),
     Shrink: () => (
@@ -71,12 +71,12 @@ export default {
       // is what a toolbar of pills used to do to the send button beside them.
       <div className="flex w-64 flex-col gap-2">
         <div className="flex min-w-0 gap-2 rounded-md border border-border p-1">
-          <Button shrink>Start a chat about the checkout</Button>
-          <Button variant="primary">Send</Button>
+          <Button shrink>Begin een gesprek over het afrekenen</Button>
+          <Button variant="primary">Versturen</Button>
         </div>
         <div className="flex min-w-0 gap-2 rounded-md border border-border p-1">
-          <Button>Start a chat about the checkout</Button>
-          <Button variant="primary">Send</Button>
+          <Button>Begin een gesprek over het afrekenen</Button>
+          <Button variant="primary">Versturen</Button>
         </div>
       </div>
     ),
@@ -88,17 +88,17 @@ export default {
     'With a key': () => (
       <div className="flex max-w-64 flex-wrap items-center gap-2">
         <Button variant="primary" shortcut="Enter">
-          Send
+          Versturen
         </Button>
         <Button variant="primary" shortcut="⌘Enter">
-          Queue
+          In de wachtrij
         </Button>
-        <Button shortcut="⌘O">Open</Button>
+        <Button shortcut="⌘O">Openen</Button>
         <Button variant="ghost" shortcut="⇧Enter">
-          New line
+          Nieuwe regel
         </Button>
         <Button variant="primary" shortcut="Enter" aria-disabled="true">
-          Send
+          Versturen
         </Button>
       </div>
     ),

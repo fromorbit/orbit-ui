@@ -261,16 +261,16 @@ export function MissingOverview(): ReactNode {
     >
       <div className="flex flex-col gap-1 px-1">
         <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
-          Overzicht ontbrekend
+          Wensenlijst
         </h2>
-        {entries.length === 0 ? null : (
-          <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
-            {`${entries.length === 1 ? '1 component ontbreekt' : `${entries.length} componenten ontbreken`} in ${DEMOS.length} demo's. Bovenaan staat wat de meeste schermen missen: dat bouwen we het eerst.`}
-          </p>
-        )}
+        <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
+          {entries.length === 0
+            ? 'Wat een demo mist, tekent hij na en zet hij hier op de lijst.'
+            : `${entries.length === 1 ? '1 component ontbreekt' : `${entries.length} componenten ontbreken`} in ${DEMOS.length} demo's. Bovenaan staat wat de meeste schermen missen: dat bouwen we het eerst.`}
+        </p>
       </div>
       {entries.length === 0 ? (
-        <div className="rounded-lg bg-overlay">
+        <div className="rounded-xl bg-surface py-4">
           <EmptyState
             icon="check-circle"
             title="Er ontbreekt niets"

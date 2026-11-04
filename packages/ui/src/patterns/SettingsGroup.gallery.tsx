@@ -32,9 +32,9 @@ export default {
     'Heading and rows': () => (
       <TooltipProvider>
         <div className="w-full max-w-[560px]">
-          <SettingsGroup title="New chats">
-            <Row label="Network access" description="The default for a new chat" />
-            <Row label="Worktree per chat" />
+          <SettingsGroup title="Nieuwe gesprekken">
+            <Row label="Netwerktoegang" description="De standaard voor een nieuw gesprek" />
+            <Row label="Worktree per gesprek" />
           </SettingsGroup>
         </div>
       </TooltipProvider>
@@ -43,14 +43,14 @@ export default {
       <TooltipProvider>
         <div className="w-full max-w-[560px]">
           <SettingsGroup
-            title="Extensions"
+            title="Extensies"
             action={
               <Button size="sm" variant="secondary">
-                Add…
+                Toevoegen…
               </Button>
             }
           >
-            <Row label="Extensions" />
+            <Row label="Extensies" />
           </SettingsGroup>
         </div>
       </TooltipProvider>
@@ -58,10 +58,10 @@ export default {
     'Empty: only the heading and its action': () => (
       <div className="w-full max-w-[560px]">
         <SettingsGroup
-          title="Extensions"
+          title="Extensies"
           action={
             <Button size="sm" variant="secondary">
-              Add…
+              Toevoegen…
             </Button>
           }
         >
@@ -72,11 +72,11 @@ export default {
     'Two groups, stacked': () => (
       <TooltipProvider>
         <div className="flex w-full max-w-[560px] flex-col gap-6">
-          <SettingsGroup title="New chats">
-            <Row label="Network access" />
+          <SettingsGroup title="Nieuwe gesprekken">
+            <Row label="Netwerktoegang" />
           </SettingsGroup>
           <SettingsGroup title="Git">
-            <Row label="Worktree per chat" />
+            <Row label="Worktree per gesprek" />
           </SettingsGroup>
         </div>
       </TooltipProvider>

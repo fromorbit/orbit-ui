@@ -13,12 +13,12 @@ export default {
         <CiteRow
           icon="alert-triangle"
           tone="attention"
-          label="Goal is missing"
-          description="Why this is needed is written nowhere"
+          label="Het doel ontbreekt"
+          description="Nergens staat waarom dit nodig is"
         />
         <CiteRow
           icon="check-circle"
-          label="A card of 25 on a basket of 40 leaves 15 to pay, and a wrong code is refused"
+          label="Een bon van 25 op een mand van 40 laat 15 te betalen, en een verkeerde code wordt geweigerd"
           description="14 criteria"
           onJump={jump}
         />
@@ -28,12 +28,12 @@ export default {
       <div className="flex w-full max-w-[400px] flex-col gap-1.5">
         <CiteRow
           framed
-          label="A card is valid for a year"
-          description="Otherwise: valid forever"
-          tag="High impact"
+          label="Een bon is een jaar geldig"
+          description="Anders: altijd geldig"
+          tag="Grote impact"
           onJump={jump}
         />
-        <CiteRow framed label="You log in yourself" description="Otherwise: in the app" />
+        <CiteRow framed label="Je logt zelf in" description="Anders: in de app" />
       </div>
     ),
   },

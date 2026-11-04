@@ -6,33 +6,31 @@ export default {
   group: 'patterns',
   title: 'ErrorState',
   states: {
-    'With a code': () => (
-      <ErrorState title="The run could not be started" code="provider_unavailable" />
-    ),
+    'With a code': () => <ErrorState title="De run kon niet starten" code="provider_unavailable" />,
     'With an action': () => (
       <ErrorState
-        title="The run could not be started"
+        title="De run kon niet starten"
         code="provider_unavailable"
         action={
           <Button size="sm" variant="secondary">
-            Try again
+            Opnieuw proberen
           </Button>
         }
       />
     ),
     'Compact (inside a list or a popover)': () => (
       <div className="w-full max-w-72">
-        <ErrorState size="sm" title="Could not load the runs" code="core_unreachable" />
+        <ErrorState size="sm" title="De runs laden niet" code="core_unreachable" />
       </div>
     ),
     'Compact with an action': () => (
       <div className="w-full max-w-72">
         <ErrorState
           size="sm"
-          title="Could not load the runs"
+          title="De runs laden niet"
           action={
             <Button size="sm" variant="ghost">
-              Retry
+              Opnieuw
             </Button>
           }
         />
@@ -45,7 +43,7 @@ export default {
     "With the provider's own words": () => (
       <div className="w-full max-w-72">
         <ErrorState
-          title="Something went wrong in the backend."
+          title="Er ging iets mis in de backend."
           code="authentication_failed"
           detail="OAuth token expired. Run `claude login` to sign in again."
         />
@@ -55,7 +53,7 @@ export default {
       <div className="w-full max-w-72">
         <ErrorState
           size="sm"
-          title="Something went wrong in the backend."
+          title="Er ging iets mis in de backend."
           code="billing_error"
           detail="Credit balance is too low to run this model."
         />

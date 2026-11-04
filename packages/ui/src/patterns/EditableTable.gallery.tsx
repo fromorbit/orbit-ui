@@ -39,14 +39,14 @@ function Statuses({ initial, maxRows }: { initial: Status[]; maxRows?: number })
     <TooltipProvider>
       <div className="w-full max-w-[480px]">
         <EditableTable<Status>
-          label="Statuses of a spec"
+          label="Statussen van een spec"
           labels={nl.editableTable}
           rows={rows}
           rowKey={(row) => String(row.id)}
           rowLabel={(row) => row.name || '…'}
           minRows={1}
           {...(maxRows !== undefined ? { maxRows } : {})}
-          addLabel="Add status"
+          addLabel="Status toevoegen"
           columns={[
             {
               id: 'name',

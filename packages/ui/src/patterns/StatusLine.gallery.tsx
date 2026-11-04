@@ -10,9 +10,9 @@ function Pane({ children }: { children: ReactNode }) {
 
 /** The three stages of saving, in the order the settings pane runs through them. */
 const stages = [
-  { tone: 'muted', busy: true, text: 'Saving…' },
-  { tone: 'success', busy: false, text: 'Saved' },
-  { tone: 'danger', busy: false, text: 'Could not save' },
+  { tone: 'muted', busy: true, text: 'Opslaan…' },
+  { tone: 'success', busy: false, text: 'Opgeslagen' },
+  { tone: 'danger', busy: false, text: 'Niet opgeslagen' },
 ] as const
 
 /**
@@ -30,7 +30,7 @@ function Changing() {
     <Pane>
       <div className="flex items-center gap-3">
         <Button size="sm" variant="secondary" onClick={() => setStep(step + 1)}>
-          Next stage
+          Volgende stap
         </Button>
         <StatusLine tone={stage.tone} busy={stage.busy}>
           {stage.text}
@@ -46,28 +46,28 @@ export default {
   states: {
     Muted: () => (
       <Pane>
-        <StatusLine>Ready</StatusLine>
+        <StatusLine>Klaar</StatusLine>
       </Pane>
     ),
     Busy: () => (
       <Pane>
-        <StatusLine busy>Saving…</StatusLine>
+        <StatusLine busy>Opslaan…</StatusLine>
       </Pane>
     ),
     Success: () => (
       <Pane>
-        <StatusLine tone="success">Saved</StatusLine>
+        <StatusLine tone="success">Opgeslagen</StatusLine>
       </Pane>
     ),
     Danger: () => (
       <Pane>
-        <StatusLine tone="danger">Could not save</StatusLine>
+        <StatusLine tone="danger">Niet opgeslagen</StatusLine>
       </Pane>
     ),
     'Busy with meta (above the composer)': () => (
       <Pane>
         <StatusLine busy meta="3,4k tokens">
-          Working · reading translate.ts
+          Bezig · leest translate.ts
         </StatusLine>
       </Pane>
     ),

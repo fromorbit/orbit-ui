@@ -21,26 +21,26 @@ export default {
   states: {
     Attention: () => (
       <Panel>
-        <Banner tone="attention">Core is restarting</Banner>
+        <Banner tone="attention">Core start opnieuw</Banner>
       </Panel>
     ),
     'Attention, busy': () => (
       <Panel>
         <Banner tone="attention" busy>
-          Core is restarting
+          Core start opnieuw
         </Banner>
       </Panel>
     ),
     'Attention, announced elsewhere': () => (
       <Panel>
         <Banner tone="attention" announce={false}>
-          Core is restarting
+          Core start opnieuw
         </Banner>
       </Panel>
     ),
     Danger: () => (
       <Panel>
-        <Banner tone="danger">The command could not be sent</Banner>
+        <Banner tone="danger">Het commando is niet verstuurd</Banner>
       </Panel>
     ),
     'Danger with an action': () => (
@@ -49,11 +49,11 @@ export default {
           tone="danger"
           action={
             <Button size="sm" variant="secondary">
-              Try again
+              Opnieuw proberen
             </Button>
           }
         >
-          The command could not be sent
+          Het commando is niet verstuurd
         </Banner>
       </Panel>
     ),
@@ -63,11 +63,11 @@ export default {
           tone="danger"
           action={
             <Button size="sm" variant="secondary">
-              Try again
+              Opnieuw proberen
             </Button>
           }
         >
-          The run could not be started because the provider did not answer within thirty seconds
+          De run kon niet starten, omdat de provider binnen dertig seconden niet antwoordde
         </Banner>
       </Panel>
     ),

@@ -40,7 +40,7 @@ function HeldStill({ answer }: { answer: () => Promise<void> }) {
   }, [answer])
   return (
     <div ref={holder}>
-      <CopyButton {...nl.copy} text="Held still by the gallery" />
+      <CopyButton {...nl.copy} text="Vastgehouden door de galerij" />
     </div>
   )
 }
@@ -52,7 +52,7 @@ export default {
   group: 'patterns',
   title: 'CopyButton',
   states: {
-    Idle: () => <CopyButton {...nl.copy} text="Plain text for the clipboard" />,
+    Idle: () => <CopyButton {...nl.copy} text="Gewone tekst voor het klembord" />,
     Confirmed: () => <HeldStill answer={accepts} />,
     // A refusal is a warning sign in the danger colour, and the hidden region says the word: the
     // two together, because a status may never be carried by colour on its own.
@@ -80,7 +80,7 @@ export default {
         <p className="m-0 text-[13px] leading-normal">Yes, that is what the log says.</p>
         <div className="flex h-6 items-center gap-2 text-[11px] text-muted">
           <time className="tabular-nums">14:32</time>
-          <CopyButton {...nl.copy} text="Yes, that is what the log says." />
+          <CopyButton {...nl.copy} text="Ja, dat staat in het logboek." />
         </div>
       </div>
     ),

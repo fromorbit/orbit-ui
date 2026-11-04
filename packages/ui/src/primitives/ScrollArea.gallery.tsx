@@ -67,7 +67,7 @@ export default {
       // The fixed height lives here, in the story: `ScrollArea` itself only fills whatever box
       // it is given.
       <div className="h-48 w-64 rounded-md border border-border bg-surface">
-        <ScrollArea label="Rows">
+        <ScrollArea label="Rijen">
           <Rows />
         </ScrollArea>
       </div>
@@ -95,7 +95,7 @@ export default {
       // (8px, the same thumb, no track, no arrows). Point at either to see its thumb.
       <div className="flex flex-col gap-4">
         <div className="h-48 w-64 rounded-md border border-border bg-surface">
-          <ScrollArea label="Rows in a ScrollArea">
+          <ScrollArea label="Rijen in een ScrollArea">
             <Rows />
           </ScrollArea>
         </div>

@@ -29,7 +29,7 @@ const chats: Chat[] = [
     title: 'Zoekfilter herbouwen',
     branch: 'nt/zoekfilter-server',
     worktree: true,
-    status: ['running', 'Running'],
+    status: ['running', 'Loopt'],
   },
   {
     project: 'boekhoud-api',
@@ -37,7 +37,7 @@ const chats: Chat[] = [
     title: 'Facturen importeren',
     branch: 'nt/import-facturen',
     worktree: true,
-    status: ['attention', 'Waiting for you'],
+    status: ['attention', 'Wacht op jou'],
   },
   {
     project: 'interne-tools',
@@ -45,7 +45,7 @@ const chats: Chat[] = [
     title: 'Slack-meldingen bundelen',
     branch: 'main',
     worktree: false,
-    status: ['running', 'Running'],
+    status: ['running', 'Loopt'],
   },
   {
     project: 'webshop',
@@ -63,7 +63,7 @@ const chats: Chat[] = [
     title: 'Checkout-test repareren',
     branch: 'main',
     worktree: false,
-    status: ['failed', 'Failed'],
+    status: ['failed', 'Mislukt'],
   },
   {
     project: 'docs-site',
@@ -79,7 +79,7 @@ const chats: Chat[] = [
     title: 'CI-cache verkleinen',
     branch: 'main',
     worktree: false,
-    status: ['queued', 'Queued'],
+    status: ['queued', 'In de wachtrij'],
     seen: true,
   },
 ]
@@ -184,9 +184,9 @@ export default {
     'Unseen, seen and current': () => (
       <ChatList
         items={[
-          { ...(chats[5] as Chat), title: 'Chosen', seen: true },
-          { ...(chats[5] as Chat), title: 'Unseen: news since you looked', seen: false },
-          { ...(chats[5] as Chat), title: 'Seen: nothing new', seen: true },
+          { ...(chats[5] as Chat), title: 'Gekozen', seen: true },
+          { ...(chats[5] as Chat), title: 'Ongezien: nieuws sinds je keek', seen: false },
+          { ...(chats[5] as Chat), title: 'Gezien: niets nieuws', seen: true },
         ]}
       />
     ),
@@ -204,7 +204,7 @@ export default {
             title: 'Een titel die veel langer is dan de kolom',
             branch: 'nt/een-branch-met-een-hele-lange-naam',
             worktree: true,
-            status: ['attention', 'Waiting for you'],
+            status: ['attention', 'Wacht op jou'],
             pinned: true,
             pr: '#1024',
           },

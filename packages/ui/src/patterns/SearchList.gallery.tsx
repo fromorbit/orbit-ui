@@ -20,20 +20,25 @@ const MODELS: SearchListItem[] = [
 
 /** The four access levels, with the kind of sentence a stacked row exists for. */
 const LEVELS: SearchListItem[] = [
-  { id: 'manual', label: 'Manual', icon: 'hand', detail: 'Asks before commands and file changes.' },
+  {
+    id: 'manual',
+    label: 'Handmatig',
+    icon: 'hand',
+    detail: 'Vraagt het voor commando’s en wijzigingen in bestanden.',
+  },
   {
     id: 'edits',
-    label: 'Edits',
+    label: 'Bewerken',
     icon: 'pencil',
-    detail: 'Edits files in the project without asking; asks for everything else.',
+    detail: 'Bewerkt bestanden in het project zonder te vragen; vraagt het voor de rest.',
   },
   {
     id: 'auto',
-    label: 'Automatic',
+    label: 'Automatisch',
     icon: 'sparkles',
-    detail: 'The agent judges for itself which routine actions need no question.',
+    detail: 'De agent beoordeelt zelf welke routinestappen geen vraag nodig hebben.',
   },
-  { id: 'full', label: 'Full access', icon: 'shield-off', detail: 'Asks nothing.' },
+  { id: 'full', label: 'Volledig', icon: 'shield-off', detail: 'Vraagt niets.' },
 ]
 
 /**
@@ -45,19 +50,19 @@ const LEVELS: SearchListItem[] = [
  * on is what keeps the "nothing muted on the active fill" walk honest about a badge.
  */
 const SETTINGS: SearchListItem[] = [
-  { id: 'effort-low', label: 'Low', group: 'Reasoning', selected: false },
-  { id: 'effort-medium', label: 'Medium', group: 'Reasoning', selected: true, tag: 'Default' },
-  { id: 'effort-high', label: 'High', group: 'Reasoning', selected: false },
-  { id: 'window-base', label: 'Base', group: 'Context', selected: false, tag: 'Default' },
-  { id: 'window-wide', label: 'Wide', group: 'Context', selected: true },
+  { id: 'effort-low', label: 'Laag', group: 'Redeneren', selected: false },
+  { id: 'effort-medium', label: 'Middel', group: 'Redeneren', selected: true, tag: 'Standaard' },
+  { id: 'effort-high', label: 'Hoog', group: 'Redeneren', selected: false },
+  { id: 'window-base', label: 'Basis', group: 'Context', selected: false, tag: 'Standaard' },
+  { id: 'window-wide', label: 'Ruim', group: 'Context', selected: true },
 ]
 
 const GROUPED: SearchListItem[] = [
   { id: 'nt', label: 'nt-agent', group: 'Recent' },
   { id: 'ds', label: 'design system', group: 'Recent' },
-  { id: 'shop', label: 'webshop', group: 'All projects' },
-  { id: 'docs', label: 'docs', group: 'All projects' },
-  { id: 'scratch', label: 'scratch', group: 'All projects' },
+  { id: 'shop', label: 'webwinkel', group: 'Alle projecten' },
+  { id: 'docs', label: 'docs', group: 'Alle projecten' },
+  { id: 'scratch', label: 'kladblok', group: 'Alle projecten' },
 ]
 
 /**
@@ -163,8 +168,8 @@ function Projects() {
           items={WORKSPACES}
           selectedId="ds"
           onSelect={() => {}}
-          label="Projects"
-          action={{ label: 'Add folder…', icon: 'plus', shortcut: '⌘O', onRun: () => {} }}
+          label="Projecten"
+          action={{ label: 'Map toevoegen…', icon: 'plus', shortcut: '⌘O', onRun: () => {} }}
         />
       </Panel>
     </div>
@@ -191,7 +196,7 @@ function Searched({ query, items }: { query: string; items: SearchListItem[] }) 
   return (
     <div ref={box}>
       <Panel>
-        <SearchList labels={nl.list} items={items} onSelect={() => {}} label="Projects" />
+        <SearchList labels={nl.list} items={items} onSelect={() => {}} label="Projecten" />
       </Panel>
     </div>
   )
@@ -214,8 +219,8 @@ function ActionWalked() {
           items={PROJECTS}
           selectedId="nt"
           onSelect={() => {}}
-          label="Projects"
-          action={{ label: 'Add folder…', icon: 'plus', shortcut: '⌘O', onRun: () => {} }}
+          label="Projecten"
+          action={{ label: 'Map toevoegen…', icon: 'plus', shortcut: '⌘O', onRun: () => {} }}
         />
       </Panel>
     </div>
@@ -233,9 +238,9 @@ function WithAction({ busy }: { busy: boolean }) {
           items={PROJECTS.slice(0, 3)}
           selectedId="nt"
           onSelect={() => {}}
-          label="Projects"
+          label="Projecten"
           action={{
-            label: 'Add folder…',
+            label: 'Map toevoegen…',
             icon: 'plus',
             shortcut: '⌘O',
             busy,
@@ -257,32 +262,32 @@ function WithAction({ busy }: { busy: boolean }) {
 const COMMANDS: SearchListItem[] = [
   {
     id: 'chat',
-    label: 'First measurement',
-    group: 'Chats',
+    label: 'Eerste meting',
+    group: 'Gesprekken',
     icon: 'message-circle',
-    detail: 'webshop',
-    ranges: [[0, 5]],
+    detail: 'webwinkel',
+    ranges: [[0, 6]],
   },
   {
     id: 'new',
-    label: 'New chat',
-    group: 'Commands',
+    label: 'Nieuw gesprek',
+    group: 'Opdrachten',
     icon: 'command',
     shortcut: 'chat.new',
-    ranges: [[4, 5]],
+    ranges: [[6, 7]],
   },
   {
     id: 'panel',
-    label: 'Panel',
-    group: 'Commands',
+    label: 'Paneel',
+    group: 'Opdrachten',
     icon: 'command',
     shortcut: 'panel.toggle',
     ranges: [[0, 1]],
   },
   {
     id: 'sidebar',
-    label: 'Sidebar',
-    group: 'Commands',
+    label: 'Zijbalk',
+    group: 'Opdrachten',
     icon: 'command',
     shortcut: 'sidebar.toggle',
   },
@@ -292,7 +297,7 @@ export default {
   group: 'patterns',
   title: 'SearchList',
   states: {
-    'With a search field': () => <Chosen items={PROJECTS} label="Projects" />,
+    'With a search field': () => <Chosen items={PROJECTS} label="Projecten" />,
     // The panel a reader really opens: the caret is already in the field, a row is already active,
     // and neither of those two facts paints a frame anywhere.
     'Projects, with the focus in the field': Projects,
@@ -323,7 +328,7 @@ export default {
     ),
     Groups: () => (
       <Panel>
-        <SearchList labels={nl.list} items={GROUPED} onSelect={() => {}} label="Projects" />
+        <SearchList labels={nl.list} items={GROUPED} onSelect={() => {}} label="Projecten" />
       </Panel>
     ),
     'Paths as detail': () => (
@@ -333,7 +338,7 @@ export default {
           items={WITH_PATHS}
           selectedId="ds"
           onSelect={() => {}}
-          label="Projects"
+          label="Projecten"
         />
       </Panel>
     ),
@@ -344,14 +349,14 @@ export default {
           labels={nl.list}
           items={[]}
           onSelect={() => {}}
-          label="Projects"
+          label="Projecten"
           state="loading"
         />
       </Panel>
     ),
     'Nothing to choose': () => (
       <Panel>
-        <SearchList labels={nl.list} items={[]} onSelect={() => {}} label="Projects" />
+        <SearchList labels={nl.list} items={[]} onSelect={() => {}} label="Projecten" />
       </Panel>
     ),
     'No results': () => <Searched query="kubernetes" items={PROJECTS} />,
@@ -361,7 +366,7 @@ export default {
           labels={nl.list}
           items={PROJECTS}
           onSelect={() => {}}
-          label="Projects"
+          label="Projecten"
           state="error"
         />
       </Panel>
@@ -380,7 +385,7 @@ export default {
           checkSlot={false}
           scroll
           onSelect={() => {}}
-          label="Search"
+          label="Zoeken"
         />
       </Panel>
     ),
@@ -395,7 +400,7 @@ export default {
           onSelect={() => {}}
           label="Model"
           searchable={false}
-          notice="This agent cannot do Sonnet; this is the closest it can."
+          notice="Deze agent kan geen Sonnet; dit komt er het dichtst bij."
         />
       </Panel>
     ),

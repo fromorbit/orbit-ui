@@ -9,10 +9,10 @@ export default {
   title: 'Field',
   states: {
     'Label only': () => (
-      <Field label="Network access">
+      <Field label="Netwerktoegang">
         {({ labelId, describedById }) => (
           <Switch
-            label="Network access"
+            label="Netwerktoegang"
             aria-labelledby={labelId}
             aria-describedby={describedById}
             checked
@@ -22,10 +22,10 @@ export default {
       </Field>
     ),
     'With description': () => (
-      <Field label="Concurrent runs" description="How many turns may run at the same time.">
+      <Field label="Runs tegelijk" description="Hoeveel beurten tegelijk mogen lopen.">
         {({ labelId, describedById }) => (
           <NumberField
-            label="Concurrent runs"
+            label="Runs tegelijk"
             aria-labelledby={labelId}
             aria-describedby={describedById}
             value={4}
@@ -37,10 +37,10 @@ export default {
       </Field>
     ),
     'With a SegmentedControl': () => (
-      <Field label="Density" description="How much air a list row gets.">
+      <Field label="Dichtheid" description="Hoeveel lucht een rij in een lijst krijgt.">
         {({ labelId, describedById }) => (
           <SegmentedControl
-            label="Density"
+            label="Dichtheid"
             aria-labelledby={labelId}
             aria-describedby={describedById}
             value="compact"
@@ -56,10 +56,10 @@ export default {
     // The bare button, without the Tooltip a caller wraps it in (`primitives/` may not import
     // `overlays/`): see `features/settings/SettingRow.gallery.tsx` for the wrapped, hoverable one.
     'With a hint, unwrapped': () => (
-      <Field label="History" hint="Per project profile">
+      <Field label="Geschiedenis" hint="Per projectprofiel">
         {({ labelId, describedById }) => (
           <NumberField
-            label="History"
+            label="Geschiedenis"
             aria-labelledby={labelId}
             aria-describedby={describedById}
             value={500}
@@ -72,13 +72,13 @@ export default {
     ),
     'With error': () => (
       <Field
-        label="Approval timeout"
-        description="How long an approval may wait before it times out."
-        error="Could not be saved."
+        label="Wachttijd voor akkoord"
+        description="Hoe lang een akkoord mag wachten voordat het verloopt."
+        error="Niet opgeslagen."
       >
         {({ labelId, describedById }) => (
           <NumberField
-            label="Approval timeout"
+            label="Wachttijd voor akkoord"
             aria-labelledby={labelId}
             aria-describedby={describedById}
             value={15}

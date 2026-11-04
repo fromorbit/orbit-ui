@@ -83,7 +83,7 @@ function SpecProperties() {
                 label: 'Acceptance',
                 value: (
                   <>
-                    <span>9 of 12 criteria</span>
+                    <span>9 van 12 criteria</span>
                     <span className="flex">
                       <ProgressMeter
                         valueText={(value, max) => `${value} van ${max}`}
@@ -114,10 +114,13 @@ export default {
     'A long value': () => (
       <div className="w-80 bg-canvas p-3">
         <PropertyList
-          label="Properties"
+          label="Eigenschappen"
           groups={[
             [
-              { label: 'Owner', value: 'Someone with a name much longer than the column is wide' },
+              {
+                label: 'Eigenaar',
+                value: 'Iemand met een naam die veel langer is dan de kolom breed is',
+              },
               { label: 'Project', value: 'boekhoud-api' },
             ],
           ]}

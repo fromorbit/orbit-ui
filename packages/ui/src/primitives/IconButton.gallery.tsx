@@ -7,8 +7,8 @@ export default {
   states: {
     Variants: () => (
       <div className="flex gap-2">
-        <IconButton icon="plus" label="Add" variant="primary" />
-        <IconButton icon="settings" label="Settings" variant="secondary" />
+        <IconButton icon="plus" label="Toevoegen" variant="primary" />
+        <IconButton icon="settings" label="Instellingen" variant="secondary" />
         <IconButton icon="x" label="Close" variant="ghost" />
       </div>
     ),
@@ -33,18 +33,18 @@ export default {
     'Plain, beside a pressed ghost': () => (
       <div className="flex gap-2">
         <IconButton icon="panel-left" label="Sidebar" aria-pressed />
-        <IconButton icon="plus" label="Add" variant="plain" />
-        <IconButton icon="settings" label="Settings" variant="plain" />
+        <IconButton icon="plus" label="Toevoegen" variant="plain" />
+        <IconButton icon="settings" label="Instellingen" variant="plain" />
       </div>
     ),
     // The "+" of the composer: a 28px circle in the strong border, the glyph muted;
     // beside it the square ghost it is otherwise, to show only the shape and the border differ.
     'Round and outlined': () => (
       <div className="flex items-center gap-2">
-        <IconButton icon="plus" label="Add" shape="round" outlined />
-        <IconButton icon="plus" label="Add" shape="round" />
-        <IconButton icon="plus" label="Add" outlined />
-        <IconButton icon="plus" label="Add" />
+        <IconButton icon="plus" label="Toevoegen" shape="round" outlined />
+        <IconButton icon="plus" label="Toevoegen" shape="round" />
+        <IconButton icon="plus" label="Toevoegen" outlined />
+        <IconButton icon="plus" label="Toevoegen" />
       </div>
     ),
   },

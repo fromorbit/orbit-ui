@@ -2,8 +2,8 @@ import type { Story } from '../gallery/story'
 import { Select } from './Select'
 
 const options = [
-  { value: 'a', label: 'Project A' },
-  { value: 'b', label: 'Project B' },
+  { value: 'a', label: 'Webwinkel' },
+  { value: 'b', label: 'Nieuwsbrief' },
 ]
 
 export default {

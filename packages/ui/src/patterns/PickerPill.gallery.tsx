@@ -55,7 +55,7 @@ function Project({ action }: { action?: boolean }) {
       {...(action
         ? {
             action: {
-              label: 'Add folder…',
+              label: 'Map toevoegen…',
               icon: 'plus',
               shortcut: '⌘O',
               busy,
@@ -147,7 +147,7 @@ function Tight() {
         <PickerPill
           listLabels={nl.list}
           label="Agent"
-          value="An agent with a long name"
+          value="Een agent met een lange naam"
           items={AGENTS}
           selectedId="claude"
           onSelect={() => {}}
@@ -157,7 +157,7 @@ function Tight() {
         <PickerPill
           listLabels={nl.list}
           label="Model"
-          value="A model with a long label"
+          value="Een model met een lang label"
           items={MODELS}
           selectedId="large"
           onSelect={() => {}}

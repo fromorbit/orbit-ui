@@ -23,9 +23,9 @@ function Stage({ children }: { children: ReactNode }) {
 function Content() {
   return (
     <div className="flex flex-col gap-1">
-      <Input label="Search" placeholder="Search" icon="search" variant="bare" />
+      <Input label="Zoeken" placeholder="Zoek" icon="search" variant="bare" />
       <div aria-hidden="true" className="h-px bg-border" />
-      {['First measurement', 'Shopping cart totals', 'New chat'].map((line) => (
+      {['Eerste meting', 'Totalen van de winkelmand', 'Nieuw gesprek'].map((line) => (
         <p key={line} className="m-0 flex h-(--nt-control-md) items-center px-2 text-[12px]">
           {line}
         </p>
@@ -44,7 +44,7 @@ function Open() {
   const [open, setOpen] = useState(true)
   return (
     <Stage>
-      <Spotlight open={open} onOpenChange={setOpen} label="Search">
+      <Spotlight open={open} onOpenChange={setOpen} label="Zoeken">
         <Content />
       </Spotlight>
     </Stage>
@@ -56,8 +56,8 @@ function Closed() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Search</Button>
-      <Spotlight open={open} onOpenChange={setOpen} label="Search">
+      <Button onClick={() => setOpen(true)}>Zoeken</Button>
+      <Spotlight open={open} onOpenChange={setOpen} label="Zoeken">
         <Content />
       </Spotlight>
     </>
