@@ -14,6 +14,7 @@ import {
   ProgressMeter,
   ScrollArea,
   Select,
+  StatusMark,
   StepChips,
   Switch,
 } from '../../../src'
@@ -230,7 +231,7 @@ const PHASES = [
   { id: 'ophalen', label: 'Ophalen', state: 'done', stateLabel: 'klaar' },
   { id: 'installeren', label: 'Installeren', state: 'done', stateLabel: 'klaar' },
   { id: 'starten', label: 'Starten', state: 'done', stateLabel: 'klaar' },
-  { id: 'reviewen', label: 'Reviewen', state: 'done', stateLabel: 'klaar' },
+  { id: 'reviewen', label: 'Beoordelen', state: 'done', stateLabel: 'klaar' },
 ] as const
 
 const SUMMARY =
@@ -243,14 +244,16 @@ const FINDINGS: Finding[] = [
     detail:
       'Na het kiezen van een bank blijft de kassa op ‘Bezig met betalen…’ staan en verschijnt na twintig seconden ‘Er ging iets mis’. POST /api/betalingen antwoordt met 500.',
     url: '/kassa',
+    step: 14,
     screenshot: 'fout',
   },
   {
     severity: 'problem',
-    title: 'Totaalbedrag is erg klein',
+    title: 'Totaalbedrag is te klein om te lezen',
     detail:
-      'Het totaal onder de bankkeuze staat in 10px; elders op de kassa is het 16px. Op een telefoon is het nauwelijks te lezen.',
+      'Het totaal onder de bankkeuze staat in 10 px; elders op de kassa is het 16 px. Op een telefoon is het nauwelijks te lezen.',
     url: '/kassa',
+    step: 9,
     screenshot: 'klein',
   },
   {
@@ -259,11 +262,13 @@ const FINDINGS: Finding[] = [
     detail:
       'Het keuzemenu voor de bank heeft geen zichtbaar label; een schermlezer noemt het alleen ‘keuzelijst’.',
     url: '/kassa',
+    step: 8,
   },
   {
     severity: 'note',
     title: 'Spelling van iDEAL',
     detail: 'De knop zegt ‘Betaal met iDeal’; de merknaam is ‘iDEAL’, in hoofdletters.',
+    step: 6,
   },
 ]
 
@@ -439,82 +444,111 @@ function Stacks(): ReactNode {
   )
 }
 
-/** The report of the review agent: its phases, the summary, the findings and the verdict. */
-function Report(): ReactNode {
+/**
+ * The verdict that goes to GitHub, and the one filled button of the report. A region by its
+ * tint, no frame: danger while it asks for changes, quiet as a remark.
+ */
+function Verdict(): ReactNode {
   const [asComment, setAsComment] = useState(false)
   return (
-    <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,1fr)_19rem]">
-      <div className="flex min-w-0 flex-col gap-6">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <StepChips
-            label="Fases van de review"
-            steps={PHASES}
-            selected="reviewen"
-            onSelect={() => {}}
-          />
-          <span className="text-[12px] text-muted">6 min · 23 stappen · 2 schermafbeeldingen</span>
+    <Panel title="Oordeel">
+      <div className="flex flex-col gap-4">
+        <div
+          className={`flex items-start gap-2.5 rounded-md px-3 py-2.5 ${asComment ? 'bg-surface' : 'bg-danger-subtle'}`}
+        >
+          <span className={`flex h-5 items-center ${asComment ? 'text-muted' : 'text-danger'}`}>
+            <Icon name={asComment ? 'message-square' : 'octagon-alert'} size="sm" />
+          </span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="font-medium text-[13px] text-fg leading-5">
+              {asComment ? 'Alleen een opmerking' : 'Vraagt om wijzigingen'}
+            </span>
+            <span className="text-[12px] text-secondary leading-4">
+              {asComment
+                ? 'Het verslag komt als opmerking; de pull request blijft open voor samenvoegen.'
+                : 'Er is een blokkade. Orbit Review keurt nooit zelf goed; dat doe jij.'}
+            </span>
+          </div>
         </div>
+        <div className="flex items-start justify-between gap-3">
+          <span className="flex min-w-0 flex-col gap-0.5" aria-hidden="true">
+            <span className="text-[13px] text-fg leading-5">Alleen als opmerking</span>
+            <span className="text-[12px] text-muted leading-4">
+              Plaatst het verslag zonder om wijzigingen te vragen.
+            </span>
+          </span>
+          <span className="flex h-5 items-center">
+            <Switch
+              label="Alleen als opmerking: plaatst het verslag zonder om wijzigingen te vragen"
+              checked={asComment}
+              onCheckedChange={setAsComment}
+            />
+          </span>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button variant="primary">
+            <BrandIcon brand="github" size="sm" />
+            Verslag op GitHub plaatsen
+          </Button>
+          <span className="text-center text-[12px] text-muted">2 schermafbeeldingen gaan mee</span>
+        </div>
+      </div>
+    </Panel>
+  )
+}
+
+/**
+ * The report of the review agent: its phases, the summary, the verdict, the findings and the
+ * earlier runs. In that order in the source, which is the order of a narrow screen, so the verdict
+ * and its one action stand above the findings there; on a wide one the verdict takes a column of
+ * its own and stays in sight while the findings scroll.
+ */
+function Report(): ReactNode {
+  return (
+    <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="flex min-w-0 flex-col gap-2 @5xl:col-start-1">
+        <StepChips
+          label="Fases van de review"
+          steps={PHASES}
+          selected="reviewen"
+          onSelect={() => {}}
+        />
+        <span className="text-[12px] text-muted">6 min · 23 stappen · 2 schermafbeeldingen</span>
+      </div>
+      <div className="min-w-0 @5xl:col-start-1">
         <Panel title="Samenvatting">
-          <p className="m-0 text-[13px] text-fg leading-relaxed">{SUMMARY}</p>
+          <p className="m-0 text-[13px] text-fg leading-5">{SUMMARY}</p>
         </Panel>
+      </div>
+      <aside
+        aria-label="Oordeel"
+        className="min-w-0 self-start @5xl:sticky @5xl:top-5 @5xl:col-start-2 @5xl:row-span-4 @5xl:row-start-1"
+      >
+        <Verdict />
+      </aside>
+      <div className="min-w-0 @5xl:col-start-1">
         <ReviewFindings findings={FINDINGS} />
       </div>
-      <aside className="flex min-w-0 flex-col gap-6">
-        <Panel title="Oordeel">
-          <div className="flex flex-col gap-4">
-            {/* A region by its tint, no frame: danger while it asks for changes, quiet as a remark. */}
-            <div
-              className={`flex items-start gap-2.5 rounded-md px-3 py-2.5 ${asComment ? 'bg-surface' : 'bg-danger-subtle'}`}
-            >
-              <span className={`flex h-5 items-center ${asComment ? 'text-muted' : 'text-danger'}`}>
-                <Icon name={asComment ? 'message-square' : 'octagon-alert'} size="sm" />
-              </span>
-              <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="font-medium text-[13px] text-fg leading-5">
-                  {asComment ? 'Alleen een opmerking' : 'Vraagt om wijzigingen'}
-                </span>
-                <span className="text-[12px] text-secondary leading-snug">
-                  {asComment
-                    ? 'Het verslag komt als opmerking; de pull request blijft open voor samenvoegen.'
-                    : 'Er is een blokkerende bevinding. Een review keurt nooit zelf goed.'}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[13px] text-fg" aria-hidden="true">
-                Alleen als opmerking
-              </span>
-              <Switch
-                label="Alleen als opmerking"
-                checked={asComment}
-                onCheckedChange={setAsComment}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button variant="primary">
-                <BrandIcon brand="github" size="sm" />
-                Plaats op GitHub
-              </Button>
-              <span className="text-center text-[12px] text-muted">
-                2 schermafbeeldingen gaan mee
-              </span>
-            </div>
-          </div>
-        </Panel>
+      <div className="min-w-0 @5xl:col-start-1">
         <Panel title="Eerdere reviews" flush>
           <div className="px-2 pb-2">
             <List label="Eerdere reviews">
               <ListRow
                 title="Gisteren, 16:40"
-                kind="failed"
+                marker={<StatusMark kind="fault" />}
                 status="Mislukt"
                 meta="Docker startte niet"
               />
-              <ListRow title="Maandag, 10:12" kind="done" status="Klaar" meta="3 bevindingen" />
+              <ListRow
+                title="Maandag, 10:12"
+                marker={<StatusMark kind="running" />}
+                status="Klaar"
+                meta="3 bevindingen"
+              />
             </List>
           </div>
         </Panel>
-      </aside>
+      </div>
     </div>
   )
 }
@@ -566,10 +600,13 @@ function CodeReview({ variant = 'stapels' }: DemoScreenProps): ReactNode {
                   count={false}
                 />
               </span>
-              {/* One filled button per view: on the report, posting it is the main action. */}
-              <Button variant={variant === 'verslag' ? 'secondary' : 'primary'} size="sm">
-                Review afronden
-              </Button>
+              {/* One finishing step per view: your own pass over the stacks here; on the report,
+                  placing it on GitHub, in the verdict, is the only one. */}
+              {variant === 'verslag' ? null : (
+                <Button variant="primary" size="sm">
+                  Mijn review afronden
+                </Button>
+              )}
             </div>
           </header>
           {variant === 'verslag' ? <Report /> : <Stacks />}

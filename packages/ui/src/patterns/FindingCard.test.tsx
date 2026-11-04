@@ -3,22 +3,32 @@ import { expect, test } from 'vitest'
 import { Button } from '../primitives/Button'
 import { FindingCard } from './FindingCard'
 
-test('a finding is an article named by its title, with its weight and place in words', () => {
+test('a finding is an article named by its weight and title, described by its place', () => {
   render(
     <FindingCard
       severity="blocking"
-      severityLabel="Blokkerend"
+      severityLabel="Blokkade"
       title="Betalen met iDEAL loopt vast"
       location="/kassa"
+      locationLabel="pagina"
     >
       De server antwoordt met 500.
     </FindingCard>,
   )
-  const card = screen.getByRole('article', { name: 'Betalen met iDEAL loopt vast' })
+  const card = screen.getByRole('article', { name: 'Blokkade: Betalen met iDEAL loopt vast' })
   expect(card).toHaveAttribute('data-severity', 'blocking')
-  expect(card).toHaveTextContent('Blokkerend')
-  expect(card).toHaveTextContent('/kassa')
+  expect(card).toHaveAccessibleDescription('pagina /kassa')
   expect(card).toHaveTextContent('De server antwoordt met 500.')
+})
+
+test('a long place keeps its file and line in sight and carries the whole as its title', () => {
+  const place = 'packages/server/src/authentication/providers/oidc.ts:123'
+  render(<FindingCard severity="problem" severityLabel="Probleem" title="Token" location={place} />)
+  const line = screen.getByTitle(place)
+  expect(within(line).getByText('oidc.ts:123')).toBeInTheDocument()
+  expect(within(line).getByText('packages/server/src/authentication/providers/')).toHaveClass(
+    'truncate',
+  )
 })
 
 test('the title is a heading of the given level', () => {
@@ -38,12 +48,14 @@ test('media and actions go inside the card', () => {
       actions={<Button variant="ghost">Negeer</Button>}
     />,
   )
-  const card = screen.getByRole('article', { name: 'Klein totaal' })
+  const card = screen.getByRole('article', { name: 'Probleem: Klein totaal' })
   expect(within(card).getByRole('img', { name: 'Schermafbeelding' })).toBeInTheDocument()
   expect(within(card).getByRole('button', { name: 'Negeer' })).toBeInTheDocument()
 })
 
-test('without a place there is no separator', () => {
+test('without a place there is no separator and no description', () => {
   render(<FindingCard severity="note" severityLabel="Opmerking" title="Spelling" />)
-  expect(screen.getByRole('article', { name: 'Spelling' })).not.toHaveTextContent('·')
+  const card = screen.getByRole('article', { name: 'Opmerking: Spelling' })
+  expect(card).not.toHaveTextContent('·')
+  expect(card).not.toHaveAttribute('aria-describedby')
 })

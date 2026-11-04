@@ -13,6 +13,9 @@ import type { FindingSeverity, SeverityBarLabels } from '../patterns/SeverityBar
 import type { SummaryBarLabels } from '../patterns/SummaryBar'
 import type { SecretFieldLabels } from '../primitives/SecretField'
 
+/** A count in Dutch figures: 1.204, with a point between the thousands. */
+const dutchCount = (count: number): string => count.toLocaleString('nl-NL')
+
 /**
  * Dutch words for the library's own tests and gallery stories: the components hold no text of
  * their own, so a story or a test hands them these.
@@ -134,13 +137,13 @@ export const nl = {
     },
   } satisfies CreditCardFieldLabels,
   severity: {
-    blocking: (count) => `${count} blokkerend`,
-    problem: (count) => (count === 1 ? '1 probleem' : `${count} problemen`),
-    note: (count) => (count === 1 ? '1 opmerking' : `${count} opmerkingen`),
-    none: 'Geen bevindingen',
+    blocking: (count) => (count === 1 ? '1 blokkade' : `${dutchCount(count)} blokkades`),
+    problem: (count) => (count === 1 ? '1 probleem' : `${dutchCount(count)} problemen`),
+    note: (count) => (count === 1 ? '1 opmerking' : `${dutchCount(count)} opmerkingen`),
+    none: 'Geen bevindingen; niets houdt de merge tegen',
   } satisfies SeverityBarLabels,
   severityWord: {
-    blocking: 'Blokkerend',
+    blocking: 'Blokkade',
     problem: 'Probleem',
     note: 'Opmerking',
   } satisfies Record<FindingSeverity, string>,

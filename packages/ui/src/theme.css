@@ -60,6 +60,7 @@
   --color-success: var(--nt-success);
   --color-attention-subtle: var(--nt-attention-subtle);
   --color-attention-border: var(--nt-attention-border);
+  --color-attention-fill: var(--nt-attention-fill);
   --color-danger-subtle: var(--nt-danger-subtle);
   --color-danger-border: var(--nt-danger-border);
   --color-overlay: var(--nt-overlay-background);
@@ -237,6 +238,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Every transition reads the motion tokens, so collapsing them stills hover and press too. */
+  :root {
+    --nt-duration-fast: 0ms;
+    --nt-duration: 0ms;
+  }
   /* A spinner keeps signalling "busy" without motion: a calm fade instead of a spin. */
   .nt-spin {
     animation: nt-pulse 1.6s ease-out infinite;
