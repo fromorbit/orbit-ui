@@ -82,9 +82,11 @@ function Summary({ count, names }: { count: string; names: string }) {
   )
 }
 
-const short = <Summary count="6 steps" names="read, bash ×5" />
+const short = <Summary count="6 stappen" names="read, bash ×5" />
 
-const long = <Summary count="12 steps" names="read ×4, bash ×3, grep, edit ×2, write, todo_write" />
+const long = (
+  <Summary count="12 stappen" names="read ×4, bash ×3, grep, edit ×2, write, todo_write" />
+)
 
 export default {
   group: 'primitives',

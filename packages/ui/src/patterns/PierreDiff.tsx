@@ -55,6 +55,21 @@ export interface PierreDiffProps {
 const TIGHT_BOTTOM = '[data-code] { padding-bottom: 0; overflow-x: auto; scrollbar-gutter: auto; }'
 
 /**
+ * Stacked, the code does not scroll itself: it overflows into the named block around it, which
+ * scrolls and is the one tab stop (as `FILE_CSS` does for a file). Otherwise Chrome makes the
+ * scrolling code a tab stop of its own inside the library's shadow root, without a name or a
+ * visible ring. `contain: none` because paint containment would clip what overflows.
+ */
+const STACKED_SCROLL = '[data-code] { overflow: visible; contain: none; }'
+
+/**
+ * Side by side each half scrolls on its own, so each is a tab stop: it gets the ring of the kit,
+ * drawn inward. Its name is set from outside (`useNamedHalves`).
+ */
+const HALF_FOCUS =
+  '[data-code]:focus-visible { outline: 2px solid var(--nt-focus-ring); outline-offset: -2px; }'
+
+/**
  * The ground of a diff from the app's own token, `--nt-diff-bg`, rather than the library theme's
  * white and near-black: in light the white code area stood out as a block against the canvas,
  * so the token lies a shade under the canvas in both themes. The library resolves
@@ -137,6 +152,48 @@ const DIFF_STYLE = {
 } as CSSProperties
 
 /** One of the styles above in a theme: the library's `light-dark()` colours pick the same one. */
+/**
+ * Gives each scrolling half of a side-by-side diff a name and a stable tab stop: the halves live in
+ * the library's shadow root, where Chrome would make a scroller focusable without a name. Read
+ * again whenever the library redraws its shadow tree.
+ */
+function useNamedHalves(
+  box: { current: HTMLElement | null },
+  enabled: boolean,
+  name: string,
+): void {
+  useEffect(() => {
+    const root = box.current
+    if (!enabled || !root) return
+    const watched = new Map<ShadowRoot, MutationObserver>()
+    const label = (shadow: ShadowRoot) => {
+      for (const half of shadow.querySelectorAll<HTMLElement>('[data-code]')) {
+        if (half.getAttribute('aria-label') === name) continue
+        half.setAttribute('tabindex', '0')
+        half.setAttribute('role', 'region')
+        half.setAttribute('aria-label', name)
+      }
+    }
+    const attach = () => {
+      for (const host of root.querySelectorAll('*')) {
+        const shadow = host.shadowRoot
+        if (!shadow || watched.has(shadow)) continue
+        label(shadow)
+        const observer = new MutationObserver(() => label(shadow))
+        observer.observe(shadow, { childList: true, subtree: true })
+        watched.set(shadow, observer)
+      }
+    }
+    attach()
+    const light = new MutationObserver(attach)
+    light.observe(root, { childList: true, subtree: true })
+    return () => {
+      light.disconnect()
+      for (const observer of watched.values()) observer.disconnect()
+    }
+  }, [box, enabled, name])
+}
+
 function withTheme(style: CSSProperties, theme: Theme): CSSProperties {
   return { ...style, colorScheme: theme }
 }
@@ -183,6 +240,9 @@ export function PierreDiff({
   selection,
 }: PierreDiffProps) {
   const ready = useHighlighterFor(path)
+  const box = useRef<HTMLDivElement>(null)
+  const stacked = view.style === 'stacked'
+  useNamedHalves(box, ready && !stacked, path)
   const theme = useUiTheme()
   const patch = useMemo(() => {
     const source = view.ignoreWhitespace ? ignoreWhitespace(diff) : diff
@@ -227,7 +287,7 @@ export function PierreDiff({
       diffIndicators: 'classic' as const,
       preferredHighlighter: 'shiki-js' as const,
       disableFileHeader: true,
-      unsafeCSS: `${TIGHT_BOTTOM} ${DIFF_GROUND}`,
+      unsafeCSS: `${TIGHT_BOTTOM} ${DIFF_GROUND} ${view.style === 'stacked' ? STACKED_SCROLL : HALF_FOCUS}`,
       ...(selectable
         ? {
             enableLineSelection: true,
@@ -280,8 +340,15 @@ export function PierreDiff({
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: a named group beside the file it describes, not a form.
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: a diff can scroll sideways, and WCAG 2.1.1 (axe: scrollable-region-focusable) wants the keyboard to reach that overflow too.
-    <div role="group" aria-label={path} tabIndex={0} className={className} style={style}>
+    <div
+      ref={box}
+      role="group"
+      aria-label={path}
+      // Stacked, this block scrolls and is the stop; side by side each half is (`useNamedHalves`).
+      tabIndex={stacked ? 0 : -1}
+      className={className}
+      style={style}
+    >
       {ready ? (
         <PatchDiff
           patch={patch}

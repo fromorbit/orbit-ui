@@ -207,8 +207,8 @@ function BranchCard({
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex min-w-0 items-center gap-2">
-          <span className="flex min-w-0 flex-1 items-center font-mono text-[13px] text-fg">
-            <StackedRowBranch name={branch.name} worktree={branch.worktree} />
+          <span className="flex min-w-0 flex-1 items-center gap-1.5 font-mono text-[13px] text-fg">
+            <BranchName branch={branch} />
           </span>
           <Tag {...(fate.tone === undefined ? {} : { tone: fate.tone })}>{fate.label}</Tag>
         </span>
@@ -223,6 +223,19 @@ function BranchCard({
   )
 }
 
+/**
+ * The name of a branch with the slot of its worktree glyph kept on every row, so the mono names of
+ * a column share one left edge whether a branch has a worktree or not.
+ */
+function BranchName({ branch }: { branch: Branch }): ReactNode {
+  return (
+    <>
+      {branch.worktree ? null : <span aria-hidden="true" className="w-3 shrink-0" />}
+      <StackedRowBranch name={branch.name} worktree={branch.worktree} />
+    </>
+  )
+}
+
 /** The columns: the branch with its last commit, how far it is from main, its fate, its menu. */
 const COLUMNS: DataTableColumn<Branch>[] = [
   {
@@ -231,8 +244,8 @@ const COLUMNS: DataTableColumn<Branch>[] = [
     sortValue: (branch) => branch.name,
     cell: (branch) => (
       <div className="flex min-w-0 flex-col gap-1">
-        <span className="flex min-w-0 items-center gap-2 font-mono text-[13px] text-fg">
-          <StackedRowBranch name={branch.name} worktree={branch.worktree} />
+        <span className="flex min-w-0 items-center gap-1.5 font-mono text-[13px] text-fg">
+          <BranchName branch={branch} />
           {branch.pr === undefined ? null : (
             <span className="hidden text-[12px] text-accent-text @xl:inline">{branch.pr}</span>
           )}
@@ -263,7 +276,7 @@ const COLUMNS: DataTableColumn<Branch>[] = [
   },
   {
     id: 'fate',
-    header: 'Staat',
+    header: 'Status',
     sortValue: (branch) => FATES[branch.fate].label,
     cell: (branch) => {
       const fate = FATES[branch.fate]
@@ -296,16 +309,15 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
   return (
     <AppFrame product="orbit" current="branches">
       <ScrollArea>
-        {/* Room under the table for the bar of a selection, so it never covers the last row. */}
-        <div
-          className={`mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 pt-5 @3xl:px-8 @3xl:pt-7 ${selected.length > 0 ? 'pb-24' : 'pb-5 @3xl:pb-7'}`}
-        >
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
           {/* No act in the head: the bar under a selection is the one place to clean up from. */}
           <PageHeader
             title="Branches"
             meta={`${REPO} · ${BRANCHES.length} branches · ${BRANCHES.filter((b) => b.worktree).length} worktrees`}
           />
-          <div className="grid grid-cols-2 gap-3 @xl:grid-cols-3">
+          {/* Three tiles in one row at every width: the figure on top and its words under it,
+              side by side only where a tile is wide enough to keep its words whole. */}
+          <div className="grid grid-cols-3 gap-2 @xl:gap-3">
             {[
               { label: 'Samengevoegd', short: 'kunnen weg', value: '3', note: 'kunnen weg' },
               {
@@ -323,12 +335,12 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
             ].map((fact) => (
               <div
                 key={fact.label}
-                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay px-3 py-2.5 last:col-span-2 @xl:last:col-span-1 @3xl:flex-row @3xl:items-baseline @3xl:gap-2 @3xl:px-4 @3xl:py-3"
+                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay px-3 py-2.5 @3xl:px-4 @3xl:py-3 @5xl:flex-row @5xl:items-baseline @5xl:gap-2"
               >
                 <span className="whitespace-nowrap font-heading text-[20px] text-fg tabular-nums">
                   {fact.value}
                 </span>
-                <span className="min-w-0 truncate text-[12px] text-muted @3xl:text-[12px]">
+                <span className="min-w-0 text-[12px] text-muted">
                   <span className="@3xl:hidden">{fact.short}</span>
                   <span className="hidden @3xl:inline">{`${fact.label.toLowerCase()} · ${fact.note}`}</span>
                 </span>
@@ -376,12 +388,15 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
           </Panel>
         </div>
       </ScrollArea>
+      {/* Docked under the list rather than floating over it: the bar takes its own strip, so no
+          row is ever hidden behind the one action that matters. */}
       {selected.length > 0 ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4">
-          <div className="pointer-events-auto flex items-center gap-3 rounded-lg border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
-            <span className="text-[13px] text-fg tabular-nums">{`${selected.length} geselecteerd`}</span>
+        <div className="flex shrink-0 justify-center px-4 pt-2 pb-4">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
+            <span className="whitespace-nowrap text-[13px] text-fg tabular-nums">{`${selected.length} geselecteerd`}</span>
             <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
-              Selectie opheffen
+              <span className="@md:hidden">Opheffen</span>
+              <span className="hidden @md:inline">Selectie opheffen</span>
             </Button>
             <Button variant="primary" size="sm" onClick={() => setAsking(true)}>
               Opruimen…
@@ -396,7 +411,9 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
           selected.length === 1 ? '1 branch opruimen?' : `${selected.length} branches opruimen?`
         }
         body={`${selected.length === 1 ? 'De branch' : 'De branches'} ${listed(selected)} ${selected.length === 1 ? 'gaat' : 'gaan'} weg, lokaal en op GitHub, en ${worktrees === 1 ? 'één worktree' : `${worktrees} worktrees`} met ${worktrees === 1 ? 'zijn' : 'hun'} map. Wat samengevoegd is, staat al in main. Dit kun je niet ongedaan maken.`}
-        confirmLabel="Opruimen"
+        confirmLabel={
+          selected.length === 1 ? '1 branch verwijderen' : `${selected.length} branches verwijderen`
+        }
         cancelLabel="Annuleren"
         tone="danger"
         onConfirm={() => {

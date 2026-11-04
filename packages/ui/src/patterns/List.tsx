@@ -309,12 +309,13 @@ export function ListRow({
         // gutter, its right half in the row's own padding before the glyph, so the glyph and the
         // title stay where every other row has them. Centred on the gutter alone, the 16px button
         // reached 4px past it, and a column that clips at its edge (the sidebar's scroll area)
-        // cut the chevron off. The button is as wide as its 12px glyph and the box
-        // around it lets the pointer through: either one wider took the last pixels of the row's
-        // padding, where a click belongs to the row.
+        // cut the chevron off. The glyph is 12px; the button around it is the 24px square of
+        // the smallest target (WCAG 2.5.8), centred on the same edge, so it takes 12px of the
+        // gutter and 12px of the row's padding before the glyph, and the box around it lets the
+        // pointer through.
         <span
           data-nt-list-fold
-          className="no-drag pointer-events-none absolute top-0 -left-2 flex h-9 w-4 items-center justify-center"
+          className="no-drag pointer-events-none absolute top-0 -left-3 flex h-9 w-6 items-center justify-center"
         >
           <button
             type="button"
@@ -322,7 +323,7 @@ export function ListRow({
             aria-label={fold.label}
             {...(fold.keys ? { tabIndex: -1 } : {})}
             onClick={fold.onToggle}
-            className="pointer-events-auto flex h-4 w-3 shrink-0 items-center justify-center rounded-sm text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-1"
+            className="pointer-events-auto flex size-6 shrink-0 items-center justify-center rounded-sm text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2"
           >
             <span
               className={`flex transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${

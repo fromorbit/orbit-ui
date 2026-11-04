@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react'
+import { LayerStage } from '../gallery/layer-stage'
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
 import { Dialog } from './Dialog'
@@ -11,7 +12,13 @@ import { Dialog } from './Dialog'
  * image. The dimmed overlay is part of the reference too.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-full max-w-[48rem]">{children}</div>
+  // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
+  // this box, and the gallery around it stays in reach.
+  return (
+    <div className="w-full max-w-[48rem]">
+      <LayerStage height={480}>{children}</LayerStage>
+    </div>
+  )
 }
 
 /**
@@ -31,6 +38,9 @@ function Open() {
         title="Plan ter goedkeuring"
         description="Stap 1 van 2"
         closeLabel="Later"
+        // The panel takes the focus, not "Blijf plannen": an open story shows no ring beside the
+        // one filled button (one emphasis); Tab still goes on into the body and the footer.
+        initialFocus="panel"
         footer={
           <>
             <Button variant="secondary">Blijf plannen</Button>

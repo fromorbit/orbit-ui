@@ -67,7 +67,7 @@ const FILES: { name: string; icon: IconName; size: string; age: string }[] = [
  */
 function Hint({ id, pointer, touch }: { id: string; pointer: string; touch: string }) {
   return (
-    <p id={id} className="px-3 text-[12px] text-muted">
+    <p id={id} className="m-0 text-[12px] text-muted">
       <span className="max-sm:hidden pointer-coarse:hidden">{pointer}</span>
       <span className="hidden max-sm:inline pointer-coarse:inline">{touch}</span>
     </p>

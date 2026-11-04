@@ -17,7 +17,7 @@ const ACP_MAKERS = BRANDS.filter((brand) => !['anthropic', 'openai', 'github'].i
 
 export default {
   group: 'primitives',
-  title: 'Brand Icon',
+  title: 'BrandIcon',
   states: {
     Merktekens: () => (
       // Both marks and the neutral glyph of an agent without a brand, in the tone of the text.

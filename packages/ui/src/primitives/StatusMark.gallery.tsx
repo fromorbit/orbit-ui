@@ -60,9 +60,11 @@ export default {
       </div>
     ),
     'In een lijst en een rij filters': () => <Sampler />,
-    // The light palette on its own element: the glow there is 0.22 of the dark one.
+    // The light palette on its own element: the glow there is 0.22 of the dark one. On the sunken
+    // surface of Paper rather than its canvas, so the sample is a region of its own on a light
+    // page too, not the page itself set in by 16px.
     'Op Papier': () => (
-      <div data-theme="light" className="rounded-lg bg-canvas p-4">
+      <div data-theme="light" className="rounded-lg bg-surface p-4">
         <Sampler />
       </div>
     ),

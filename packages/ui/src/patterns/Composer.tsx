@@ -245,7 +245,7 @@ export function Composer({
         </div>
       </div>
       {!disabled && footer !== undefined ? (
-        <div className="flex min-h-6 items-center gap-2 px-3 text-[12px] text-muted">{footer}</div>
+        <div className="flex min-h-6 items-center gap-2 text-[12px] text-muted">{footer}</div>
       ) : null}
     </div>
   )

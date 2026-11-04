@@ -9,15 +9,14 @@ export default {
     'Met een code': () => (
       <div className="w-full max-w-96">
         <ErrorState
-          title="De run kon niet starten: de provider antwoordt niet. Probeer het over een minuut opnieuw."
+          title="De taak kon niet starten: de AI-dienst reageert niet. Probeer het over een minuut opnieuw."
           code="provider_unavailable"
         />
       </div>
     ),
     'Met een actie': () => (
       <ErrorState
-        title="De run kon niet starten: de provider antwoordt niet."
-        code="provider_unavailable"
+        title="De taak kon niet starten: de AI-dienst reageert niet."
         action={
           <Button size="sm" variant="secondary">
             Opnieuw proberen
@@ -27,14 +26,14 @@ export default {
     ),
     'Compact (in een lijst of popover)': () => (
       <div className="w-full max-w-72">
-        <ErrorState size="sm" title="De runs laden niet" code="core_unreachable" />
+        <ErrorState size="sm" title="De taken laden niet" code="core_unreachable" />
       </div>
     ),
     'Compact met een actie': () => (
       <div className="w-full max-w-72">
         <ErrorState
           size="sm"
-          title="De runs laden niet"
+          title="De taken laden niet"
           action={
             <Button size="sm" variant="ghost">
               Opnieuw proberen

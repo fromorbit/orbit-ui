@@ -98,7 +98,7 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
         <Wide>
           <Button variant="secondary" size="lg">
             <BrandIcon brand="github" />
-            Doorgaan met GitHub
+            Inloggen met GitHub
           </Button>
         </Wide>
       </div>
@@ -287,12 +287,22 @@ function Login({ variant = 'standaard' }: DemoScreenProps): ReactNode {
           <div className="flex min-h-full flex-col px-5 py-5 @xl:px-10">
             <div className="flex items-center justify-between gap-3 text-[12px]">
               <OrbitWordmark className="h-4 text-fg @4xl:invisible" />
-              <span className="text-muted">
-                Nog geen account?{' '}
-                <a href="#/demo/inloggen" className={LINK}>
-                  Aanmelden
-                </a>
-              </span>
+              {/* Once logged in, the way out fits the step, not the way in. */}
+              {variant === 'werkruimte' ? (
+                <span className="text-muted">
+                  Niet jij?{' '}
+                  <a href="#/demo/inloggen" className={LINK}>
+                    Uitloggen
+                  </a>
+                </span>
+              ) : (
+                <span className="text-muted">
+                  Nog geen account?{' '}
+                  <a href="#/demo/inloggen" className={LINK}>
+                    Aanmelden
+                  </a>
+                </span>
+              )}
             </div>
             <div className="mx-auto flex w-full max-w-[380px] flex-1 flex-col justify-center gap-6 py-10">
               {variant === 'code' ? (

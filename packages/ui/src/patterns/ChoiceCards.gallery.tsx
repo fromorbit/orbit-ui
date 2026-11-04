@@ -4,9 +4,9 @@ import { type ChoiceCardItem, ChoiceCards } from './ChoiceCards'
 
 /** The kinds of an empty panel: five cards, two of them not available yet. */
 const KINDS: readonly ChoiceCardItem[] = [
-  { id: 'changes', icon: 'file-diff', title: 'Changes', shortcut: 'panel.start.changes' },
+  { id: 'changes', icon: 'file-diff', title: 'Wijzigingen', shortcut: 'panel.start.changes' },
   { id: 'browser', icon: 'globe', title: 'Browser', shortcut: 'panel.start.browser' },
-  { id: 'subagents', icon: 'bot', title: 'Subagents', shortcut: 'panel.start.subagents' },
+  { id: 'subagents', icon: 'bot', title: 'Subagenten', shortcut: 'panel.start.subagents' },
   {
     id: 'terminal',
     icon: 'terminal',
@@ -18,7 +18,7 @@ const KINDS: readonly ChoiceCardItem[] = [
   {
     id: 'files',
     icon: 'folder',
-    title: 'Files',
+    title: 'Bestanden',
     shortcut: 'panel.start.files',
     disabled: true,
     reason: 'Komt later',

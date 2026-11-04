@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react'
+import { LayerStage } from '../gallery/layer-stage'
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
 import { Input } from '../primitives/Input'
@@ -11,7 +12,13 @@ import { Spotlight } from './Spotlight'
  * image is cropped to the state's own box.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-full max-w-[48rem]">{children}</div>
+  // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
+  // this box, and the gallery around it stays in reach.
+  return (
+    <div className="w-full max-w-[48rem]">
+      <LayerStage height={480}>{children}</LayerStage>
+    </div>
+  )
 }
 
 /**

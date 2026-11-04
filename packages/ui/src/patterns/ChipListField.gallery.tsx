@@ -18,7 +18,7 @@ function Live({
   const [value, setValue] = useState<readonly string[]>(initial)
   return (
     <TooltipProvider>
-      <div className="flex w-full max-w-[360px] justify-end">
+      <div className="flex w-full max-w-[360px]">
         <ChipListField
           labels={nl.chipList}
           label="Hosts"
@@ -26,7 +26,9 @@ function Live({
           maxItems={maxItems}
           maxLength={60}
           {...(minItems !== undefined ? { minItems } : {})}
-          check={(item) => (refuse && item.includes(' ') ? 'No spaces in a host' : undefined)}
+          check={(item) =>
+            refuse && item.includes(' ') ? 'Een host heeft geen spaties' : undefined
+          }
           onChange={(next) => setValue(next)}
         />
       </div>

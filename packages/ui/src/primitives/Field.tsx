@@ -82,7 +82,7 @@ export function Field({
             which carries the hint text) into whatever `aria-labelledby` points at, so putting the
             id on the paragraph would silently turn "Geschiedenis" into "Geschiedenis Per
             projectprofiel" for the control this row names. */}
-        <p className="m-0 flex items-center gap-1 text-fg">
+        <p className="m-0 flex items-center gap-1 text-[13px] text-fg">
           <span id={labelId}>
             {labelContent === undefined ? (
               label

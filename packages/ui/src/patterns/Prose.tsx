@@ -672,9 +672,12 @@ function DocumentView({
     () => (code: () => string) => <CopyButton text={code} {...copy} />,
     [copy],
   )
-  // A long line of code scrolls inside its own block, never the page around the document.
+  // A long line of code scrolls inside its own block, never the page around the document. The
+  // block that scrolls is the named, focusable region of `DocProse` ("Codeblok"), not the `pre`
+  // in it, so the keyboard reaches the overflow (axe: scrollable-region-focusable) and the ring of
+  // the kit shows where it is.
   return (
-    <div className="min-w-0 [&_pre]:max-w-full [&_pre]:overflow-x-auto">
+    <div className="min-w-0 [&_[data-nt-code-block]>[role=group]]:max-w-full [&_[data-nt-code-block]>[role=group]]:overflow-x-auto [&_[data-nt-code-block]>[role=group]]:outline-focus [&_[data-nt-code-block]>[role=group]:focus-visible]:outline-2 [&_[data-nt-code-block]>[role=group]:focus-visible]:outline-offset-2">
       <DocProse markdown={markdown} labels={labels} renderCopy={renderCopy} {...document} />
     </div>
   )

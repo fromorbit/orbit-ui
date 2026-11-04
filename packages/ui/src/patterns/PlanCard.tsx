@@ -15,7 +15,7 @@ export interface PlanFeature {
   label: string
   /**
    * A quiet figure at the end of the line, already formatted and readable on its own:
-   * "182 u gebruikt", "18,4 GB gebruikt". A screen reader hears it after a comma.
+   * "182 van 250 u", "18,4 van 50 GB". A screen reader hears it after a comma.
    */
   detail?: string
 }
@@ -41,7 +41,7 @@ export interface PlanCardProps {
   features?: readonly (string | PlanFeature)[]
   /**
    * The plan the workspace is on now, among other plans: the card is lifted to the plane of a card
-   * with the accent's subtle tint over it, in either plane and theme, and its heading carries a tag,
+   * with the neutral tint of a lit row over it, in either plane and theme, and its heading carries a tag,
    * so it reads "Team, Huidig plan". A plan that stands alone compares to nothing: leave it out.
    */
   current?: boolean
@@ -76,11 +76,11 @@ const REST: Record<PlanCardPlane, string> = {
 }
 
 /**
- * The plane of the current plan on either plane: the opaque plane of a card with the accent's
- * subtle tint laid over it as an image. A lift in both themes (white with a violet breath on Paper,
- * a lighter blue on Midnight), never the grey of a pressed card.
+ * The plane of the current plan on either plane: the opaque plane of a card with the neutral tint
+ * of a lit row laid over it as an image. Violet stays for links and focus; the tag in the heading
+ * is the one signal of "you are here", the tint only lifts the card a step from its neighbours.
  */
-const CURRENT = 'bg-overlay bg-linear-to-b from-accent-subtle to-accent-subtle'
+const CURRENT = 'bg-overlay bg-linear-to-b from-row-active to-row-active'
 
 /**
  * The quiet words of a card (the period, a figure, the summary): `muted` at rest; on the tint of
@@ -106,10 +106,10 @@ function describedAction(action: ReactNode, nameId: string): ReactNode {
  * and who it is for; the features with what the caller adds; the foot — with the lines of a row
  * 8px apart (Proximity). The name is the 15px/600 of a card, the price the 20px of a figure with
  * tabular digits, its period a muted 12px beside it, so the eye goes name, price, what you get
- * (Serial Position). The current plan is marked by the accent's subtle tint over the plane of a
+ * (Serial Position). The current plan is marked by the neutral tint of a lit row over the plane of a
  * card (Common Region) and by the tag in its heading, never by a frame or a filled button (Von
  * Restorff, one emphasis per view). The heading row is 28px with or without the tag, so names and
- * prices of plans side by side stand on one line. A feature can carry a figure at its end ("182 u gebruikt"), so the card can say what
+ * prices of plans side by side stand on one line. A feature can carry a figure at its end ("182 van 250 u"), so the card can say what
  * of the plan is used without a second widget.
  *
  * The card fills its cell and pins the foot to the bottom. In `PlanCards` its three rows are the

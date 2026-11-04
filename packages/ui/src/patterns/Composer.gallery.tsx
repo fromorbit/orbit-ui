@@ -22,7 +22,7 @@ const ACCESS: (SearchListItem & { short: string })[] = [
   {
     id: 'edit',
     label: 'Mag bewerken',
-    short: 'Bewerken',
+    short: 'Mag bewerken',
     detail: 'Bewerkt bestanden, vraagt voor commando’s',
   },
   {

@@ -17,19 +17,24 @@ test('a file link is a button named after the path and the line', () => {
       />
     </p>,
   )
-  const link = screen.getByRole('button', { name: 'Open src/winkelmand/totaal.ts, regel 42' })
+  const link = screen.getByRole('button', {
+    name: 'src/winkelmand/totaal.ts:42',
+    description: 'Open src/winkelmand/totaal.ts, regel 42',
+  })
   expect(link).toHaveAttribute('title', 'src/winkelmand/totaal.ts:42')
   // The text is the agent's own, and nothing else: copying it gives what was written.
   expect(link.textContent).toBe('src/winkelmand/totaal.ts:42')
   expect(link.querySelector('[data-nt-file-icon]')).not.toBeNull()
   render(<FileLink label="Open src/app.ts" text="src/app.ts" path="src/app.ts" onOpen={() => {}} />)
-  expect(screen.getByRole('button', { name: 'Open src/app.ts' })).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', { name: 'src/app.ts', description: 'Open src/app.ts' }),
+  ).toBeInTheDocument()
 })
 
 test('it has room on both sides and a quiet surface on hover, never an underline', () => {
   // Classes, because happy-dom computes no layout: the look itself is the gallery's reference.
   render(<FileLink label="Open src/app.ts" text="src/app.ts" path="src/app.ts" onOpen={() => {}} />)
-  const link = screen.getByRole('button', { name: 'Open src/app.ts' })
+  const link = screen.getByRole('button', { name: 'src/app.ts', description: 'Open src/app.ts' })
   expect(link.className).toMatch(/(^| )px-1( |$)/)
   expect(link.className).toMatch(/(^| )hover:bg-surface-active( |$)/)
   expect(link.className).toMatch(/(^| )rounded-sm( |$)/)
@@ -46,7 +51,7 @@ test('it reports the modifier of the click', async () => {
       wrapper: uiWrapper({ platform: 'windows' }),
     },
   )
-  const link = screen.getByRole('button', { name: 'Open src/app.ts' })
+  const link = screen.getByRole('button', { name: 'src/app.ts', description: 'Open src/app.ts' })
   await userEvent.click(link)
   // The platform's own modifier: ⌘ on macOS, Ctrl elsewhere.
   fireEvent.click(link, { ctrlKey: true })
@@ -58,7 +63,7 @@ test('it reports the modifier of the click', async () => {
   render(<FileLink label="Open src/app.ts" text="src/app.ts" path="src/app.ts" onOpen={onOpen} />, {
     wrapper: uiWrapper({ platform: 'mac' }),
   })
-  const mac = screen.getByRole('button', { name: 'Open src/app.ts' })
+  const mac = screen.getByRole('button', { name: 'src/app.ts', description: 'Open src/app.ts' })
   fireEvent.click(mac, { metaKey: true })
   fireEvent.click(mac, { ctrlKey: true })
   expect(onOpen.mock.calls.map(([event]) => event.modifier)).toEqual([true, false])

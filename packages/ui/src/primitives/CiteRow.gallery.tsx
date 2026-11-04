@@ -9,7 +9,12 @@ export default {
   states: {
     Rijen: () => (
       <div className="flex w-full max-w-[400px] flex-col">
-        <CiteRow icon="check" tone="success" label="Gift cards sit beside cash" onJump={jump} />
+        <CiteRow
+          icon="check"
+          tone="success"
+          label="Cadeaubonnen staan naast contant"
+          onJump={jump}
+        />
         <CiteRow
           icon="alert-triangle"
           tone="attention"

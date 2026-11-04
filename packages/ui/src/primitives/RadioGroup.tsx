@@ -54,7 +54,7 @@ export function RadioGroup({
       onValueChange={onValueChange}
       // Dimmed on the group, not per option: the same reasoning as `SegmentedControl` — an option
       // dimmed on its own would leave the checked one looking live while its neighbours did not.
-      className="no-drag flex flex-col gap-0.5 data-disabled:opacity-40"
+      className="no-drag flex flex-col gap-0.5 text-[13px] data-disabled:opacity-40"
     >
       {options.map((option) => (
         <RadioGroupOptionRow key={option.id} option={option} />

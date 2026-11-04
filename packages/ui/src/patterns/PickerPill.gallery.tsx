@@ -16,13 +16,13 @@ const PROJECTS: SearchListItem[] = [
 
 const AGENTS: SearchListItem[] = [
   { id: 'claude', label: 'Claude Code' },
-  { id: 'fake', label: 'Fake agent' },
+  { id: 'fake', label: 'Testagent' },
 ]
 
 const MODELS: SearchListItem[] = [
   { id: 'default', label: 'Standaard' },
-  { id: 'small', label: 'Fake klein' },
-  { id: 'large', label: 'Fake groot' },
+  { id: 'small', label: 'Test klein' },
+  { id: 'large', label: 'Test groot' },
 ]
 
 /**
@@ -206,7 +206,7 @@ function ChatPills() {
       <PickerPill
         listLabels={nl.list}
         label="Model"
-        value="Fake agent · Fake groot"
+        value="Testagent · Test groot"
         items={MODELS}
         selectedId="large"
         onSelect={() => {}}
@@ -433,7 +433,7 @@ export default {
       <PickerPill
         listLabels={nl.list}
         label="Model"
-        value="Fake groot"
+        value="Test groot"
         items={MODELS}
         selectedId="large"
         onSelect={() => {}}

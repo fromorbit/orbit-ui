@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
 import {
   Avatar,
   Button,
@@ -190,7 +190,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
   const state = STATES[spec.state]
   const [met, all] = spec.criteria
   return (
-    <div className="hidden w-[420px] shrink-0 flex-col border-border border-l bg-bg @5xl:flex">
+    <div className="hidden w-[360px] shrink-0 flex-col border-border border-l bg-bg @4xl:flex @5xl:w-[420px]">
       <PanelTabHeader
         title={<span className="font-mono text-[12px] text-muted">{spec.id}</span>}
         actions={
@@ -269,10 +269,11 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                   ),
                 },
                 {
-                  label: 'Deadline',
+                  label: 'Uiterlijk klaar',
                   value: (
                     <DatePicker
-                      label="Deadline"
+                      label="Uiterlijk klaar"
+                      quiet
                       placeholder="Kies een datum"
                       labels={{ previousMonth: 'Vorige maand', nextMonth: 'Volgende maand' }}
                       today="2026-10-28"
@@ -331,6 +332,26 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
   )
 }
 
+/** The width of the frame from which the detail stands beside the list: `@4xl`, 56rem. */
+const BESIDE = 56 * 16
+
+/**
+ * Whether the frame around `ref` is wide enough for the detail beside the list. A row is only
+ * marked as chosen while its detail is in sight; narrower, the list stands alone and no row
+ * claims a selection that shows nothing.
+ */
+function useBeside(ref: RefObject<HTMLElement | null>): boolean {
+  const [beside, setBeside] = useState(true)
+  useEffect(() => {
+    const frame = ref.current?.closest<HTMLElement>('.\\@container')
+    if (!frame || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => setBeside(frame.clientWidth >= BESIDE))
+    observer.observe(frame)
+    return () => observer.disconnect()
+  }, [ref])
+  return beside
+}
+
 /**
  * Orbit's specs: what waits for your review on top, what an agent is building now, and what is
  * planned; the chosen spec beside the list with its gate, criteria and activity.
@@ -343,6 +364,8 @@ function Specs(): ReactNode {
     view === 'open' ? spec.state !== 'done' : spec.owner === ME || spec.reviewer === ME,
   )
   const spec = SPECS.find((entry) => entry.id === chosen)
+  const row = useRef<HTMLDivElement>(null)
+  const beside = useBeside(row)
   return (
     <AppFrame product="orbit" current="specs">
       <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
@@ -365,8 +388,10 @@ function Specs(): ReactNode {
           Nieuwe spec
         </Button>
       </div>
-      <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1">
+      <div ref={row} className="flex min-h-0 flex-1">
+        {/* Its own container: beside the detail the list is narrow on any window, so its meta
+            answers to the list's width and the titles keep their room. */}
+        <div className="@container/list min-w-0 flex-1">
           <ScrollArea>
             <div className="mx-auto max-w-5xl px-3 py-3 @3xl:px-5">
               <List label="Specs">
@@ -387,13 +412,13 @@ function Specs(): ReactNode {
                           key={entry.id}
                           title={entry.title}
                           {...rowStatus(entry)}
-                          current={entry.id === chosen}
+                          current={beside && entry.id === chosen}
                           emphasis="strong"
                           onClick={() => setChosen(entry.id)}
                           meta={
                             <span className="flex items-center gap-3">
                               {entry.criteria[1] > 0 ? (
-                                <span className="hidden @2xl:inline-flex">
+                                <span className="hidden @xl/list:inline-flex">
                                   <ProgressMeter
                                     value={entry.criteria[0]}
                                     max={entry.criteria[1]}
@@ -402,7 +427,7 @@ function Specs(): ReactNode {
                                   />
                                 </span>
                               ) : null}
-                              <span className="hidden w-16 font-mono text-[11px] text-muted @xl:inline">
+                              <span className="hidden w-16 font-mono text-[11px] text-muted @md/list:inline">
                                 {entry.id}
                               </span>
                               <Avatar name={entry.owner} size="sm" />
@@ -426,7 +451,7 @@ function Specs(): ReactNode {
 export default {
   title: 'Specs',
   description:
-    'De specs van Orbit: bovenaan wat op jouw akkoord wacht, dan wat een agent nu bouwt en wat gepland is. Naast de lijst de gekozen spec met zijn akkoord, criteria en activiteit.',
+    'De specs van Orbit: bovenaan wat op jouw akkoord wacht, dan wat een agent nu bouwt en wat gepland is. Op een breed scherm staat naast de lijst de gekozen spec, met zijn akkoord, criteria en activiteit.',
   icon: 'clipboard-list',
   product: 'orbit',
   Screen: Specs,

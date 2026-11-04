@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LayerStage } from '../gallery/layer-stage'
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
 import { Sheet } from './Sheet'
@@ -38,7 +39,12 @@ export default {
   group: 'overlays',
   title: 'Sheet',
   states: {
-    'Van rechts': () => <Details initial />,
+    // Open in a box of its own and not modal (`LayerStage`), so the gallery stays in reach.
+    'Van rechts': () => (
+      <LayerStage height={480}>
+        <Details initial />
+      </LayerStage>
+    ),
     'Van links': () => <Details side="start" />,
   },
 } satisfies Story

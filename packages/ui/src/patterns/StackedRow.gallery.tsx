@@ -179,7 +179,7 @@ export default {
   states: {
     // The column of the sidebar: the first chat chosen (the soft card, no hairline beside it), a busy
     // arc, an amber outline, a pinned chat with its PR, a failure, and seen titles a step back.
-    'De gesprekkenlijst van ontwerp 6c': () => <ChatList items={chats} />,
+    'De gesprekkenlijst': () => <ChatList items={chats} />,
     // Unseen (bright), seen (secondary) and chosen (bright on the card), one after the other.
     'Ongezien, gezien en huidig': () => (
       <ChatList

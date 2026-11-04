@@ -176,7 +176,7 @@ function Picker({ query = '' }: { query?: string }) {
 
 export default {
   group: 'patterns',
-  title: 'SearchList, 29 models',
+  title: 'SearchList, 29 modellen',
   states: {
     // The walk starts on the model in force, a favourite: its trailing words and its filled star
     // stand on the active fill, where nothing may be muted.

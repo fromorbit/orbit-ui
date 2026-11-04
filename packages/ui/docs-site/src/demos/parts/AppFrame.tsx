@@ -38,6 +38,19 @@ export const MINUTE = 60_000
 export const HOUR = 60 * MINUTE
 export const DAY = 24 * HOUR
 
+/**
+ * How long ago, in words as a sentence has them: "2 uur geleden", "gisteren". The short units of
+ * `RelativeTime` ("2 u") are for narrow table cells; running text spells them out.
+ */
+export function ago(ms: number): string {
+  if (ms < HOUR) return `${Math.max(1, Math.round(ms / MINUTE))} min geleden`
+  if (ms < DAY) return `${Math.round(ms / HOUR)} uur geleden`
+  const days = Math.round(ms / DAY)
+  if (days === 1) return 'gisteren'
+  if (days === 2) return 'eergisteren'
+  return `${days} dagen geleden`
+}
+
 /** One place in an app's sidebar; `demo` is the slug of the demo that shows it, if one does. */
 export interface Place {
   id: string
@@ -100,8 +113,11 @@ const PLACE =
  * never hides where the reader is.
  */
 function Places({ places, current }: { places: readonly Place[]; current: string }): ReactNode {
+  // Named after the open place, so the sidebars of the demos on one page are told apart
+  // (axe: landmark-unique) and the name says where the reader is.
+  const here = places.find((place) => place.id === current)?.label
   return (
-    <nav aria-label="Navigatie">
+    <nav aria-label={here === undefined ? 'Navigatie' : `Navigatie, ${here}`}>
       <ul className="m-0 flex list-none flex-col gap-px p-0">
         {places.map((place) => {
           const here = place.id === current

@@ -68,8 +68,9 @@ function Open() {
       >
         <Rows names={PROJECTS} />
       </Popover>
-      <p data-nt-popover-behind className="mt-3 text-[12px] text-muted">
-        Text that the panel covers: a layer is opaque, never a hole in the window material.
+      {/* Narrower than the panel, so the open panel hides all of it: a layer is opaque. */}
+      <p data-nt-popover-behind className="mt-3 max-w-40 text-[12px] text-muted">
+        Deze tekst ligt onder het paneel.
       </p>
     </Stage>
   )
@@ -123,9 +124,9 @@ function BesideAField() {
       <Popover trigger={<Button>Model</Button>} label="Model">
         <Rows names={MODELS} />
       </Popover>
-      <p className="m-0 text-[12px] text-muted">
-        Unclaimed Escapes — bubble: <span data-nt-escape-count>{bubbled}</span>, capture:{' '}
-        <span data-nt-escape-capture-count>{captured}</span>
+      <p className="m-0 text-[11px] text-muted">
+        Escape die het paneel liet gaan: <span data-nt-escape-count>{bubbled}</span> op het venster,{' '}
+        <span data-nt-escape-capture-count>{captured}</span> vooraf
       </p>
     </div>
   )

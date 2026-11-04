@@ -18,7 +18,7 @@ import {
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
-import { AppFrame, DAY, HOUR, MINUTE, NOW } from './parts/AppFrame'
+import { AppFrame, ago, DAY, HOUR, MINUTE, NOW } from './parts/AppFrame'
 
 type Filter = 'all' | 'running' | 'fault' | 'stopped'
 
@@ -168,7 +168,7 @@ function SpaceName({ space }: { space: Space }): ReactNode {
 const COLUMNS: DataTableColumn<Space>[] = [
   {
     id: 'space',
-    header: 'Space',
+    header: 'App en branch',
     sortValue: (space) => `${space.app}/${space.branch}`,
     cell: (space) => (
       <div className="flex min-w-0 flex-col gap-0.5">
@@ -202,7 +202,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
   },
   {
     id: 'deployed',
-    header: 'Laatste deploy',
+    header: 'Laatst uitgerold',
     hideBelow: 'lg',
     sortValue: (space) => -space.deployed,
     cell: (space) => (
@@ -244,9 +244,7 @@ function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
               <SpaceName space={space} />
               <span className="truncate font-mono text-[11px] text-muted">{space.host}</span>
               <span className="text-[12px] text-secondary">
-                {space.status} · deploy{' '}
-                <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />{' '}
-                geleden
+                {`${space.status} · uitgerold ${ago(space.deployed)}`}
               </span>
             </div>
             <RowMenu space={space} />

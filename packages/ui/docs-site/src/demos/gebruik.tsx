@@ -639,10 +639,10 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                   'Onbeperkt gesprekken en specs',
                   {
                     label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
-                    detail: `${unit(USED, 'u')} gebruikt`,
+                    detail: `${USED.toLocaleString('nl-NL')} van ${unit(PLAN_HOURS, 'u')}`,
                   },
-                  { label: 'Orbit Review op 10 repositories', detail: '7 in gebruik' },
-                  { label: '50 GB opslag voor opnames', detail: '18,4\u00a0GB' },
+                  { label: 'Orbit Review op 10 repositories', detail: '7 van 10' },
+                  { label: '50 GB opslag voor opnames', detail: '18,4 van 50\u00a0GB' },
                 ]}
                 action={
                   <Button variant="secondary" size="sm">

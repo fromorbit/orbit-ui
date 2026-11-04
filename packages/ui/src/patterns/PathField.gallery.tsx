@@ -28,7 +28,7 @@ export default {
   states: {
     'Niet gekozen': () => <Live initial={null} />,
     'Een placeholder die zegt wat leeg betekent': () => (
-      <Live initial={null} placeholder="From PATH" />
+      <Live initial={null} placeholder="Uit je PATH" />
     ),
     Gekozen: () => <Live initial="/work/shop" />,
     'Een lang pad in een smalle rij': () => (

@@ -1,7 +1,7 @@
 import { Dialog as RadixDialog } from 'radix-ui'
 import { type ReactNode, useRef } from 'react'
 import { SPOTLIGHT_PANEL } from './panel'
-import { usePortalContainer } from './portal'
+import { useContainedLayers, usePortalContainer } from './portal'
 
 /** The props of `Spotlight`. */
 export interface SpotlightProps {
@@ -38,22 +38,35 @@ export interface SpotlightProps {
  */
 export function Spotlight({ open, onOpenChange, onClosed, label, children }: SpotlightProps) {
   const container = usePortalContainer()
+  const contained = useContainedLayers()
   const panel = useRef<HTMLDivElement>(null)
   /** Where the focus was when the layer opened, to hand it back on closing. */
   const cameFrom = useRef<HTMLElement | null>(null)
 
   return (
-    <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
+    <RadixDialog.Root open={open} onOpenChange={onOpenChange} modal={!contained}>
       <RadixDialog.Portal container={container}>
-        <RadixDialog.Overlay
-          data-nt-spotlight-overlay
-          className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim"
-        />
+        {/* Radix draws no overlay for a layer that is not modal; a contained one keeps its scrim,
+            over its container only. */}
+        {contained ? (
+          <div
+            aria-hidden="true"
+            data-nt-spotlight-overlay
+            className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim"
+          />
+        ) : (
+          <RadixDialog.Overlay
+            data-nt-spotlight-overlay
+            className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim"
+          />
+        )}
         <RadixDialog.Content
           ref={panel}
           className={SPOTLIGHT_PANEL}
           data-nt-layer="modal"
           aria-describedby={undefined}
+          // Contained in a showcase, a click on the page around it is not meant for the layer.
+          {...(contained ? { onInteractOutside: (event: Event) => event.preventDefault() } : {})}
           onOpenAutoFocus={(event) => {
             const active = document.activeElement
             cameFrom.current = active instanceof HTMLElement ? active : null

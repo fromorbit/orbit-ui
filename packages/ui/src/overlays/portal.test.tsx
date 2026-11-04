@@ -136,3 +136,46 @@ test.each(layers)('every layer lands in the portal container: %s', async (_name,
     host.remove()
   }
 })
+
+test.each([
+  [
+    'Dialog',
+    <Dialog key="d" open onOpenChange={() => {}} title="Plan" closeLabel="Sluiten">
+      <p>Inhoud</p>
+    </Dialog>,
+    'dialog',
+  ],
+  [
+    'ConfirmDialog',
+    <ConfirmDialog
+      key="c"
+      open
+      onOpenChange={() => {}}
+      title="Uitloggen"
+      confirmLabel="Uitloggen"
+      cancelLabel="Annuleren"
+      onConfirm={() => {}}
+    />,
+    'alertdialog',
+  ],
+] as const)('a contained %s stays in its box and leaves the page usable', (_name, layer, role) => {
+  const box = document.createElement('div')
+  document.body.append(box)
+  render(
+    <>
+      <button type="button">Thema</button>
+      <PortalContainerProvider container={box} contained>
+        {layer}
+      </PortalContainerProvider>
+    </>,
+  )
+  const panel = screen.getByRole(role)
+  expect(box.contains(panel)).toBe(true)
+  // Not modal: nothing outside is hidden from a screen reader or made unclickable.
+  const outside = screen.getByRole('button', { name: 'Thema' })
+  expect(outside.closest('[aria-hidden="true"]')).toBeNull()
+  expect(document.body.style.pointerEvents).not.toBe('none')
+  // Its scrim covers the box only.
+  expect(box.querySelector('.bg-scrim')).not.toBeNull()
+  box.remove()
+})

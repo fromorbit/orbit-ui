@@ -252,12 +252,15 @@ function ComboboxFrame({
 }) {
   const container = usePortalContainer()
   const invalid = props['aria-invalid'] === true
+  const labelId = useId()
+  const valueId = useId()
   return (
     <RadixPopover.Root open={open} onOpenChange={onOpenChange}>
+      {/* Named by the label and then what it shows ("Regio Zürich"), so a screen reader hears the
+          choice and a voice user can say the words in sight (label in name, WCAG 2.5.3). */}
       <RadixPopover.Trigger
         type="button"
-        aria-label={props.label}
-        aria-labelledby={props['aria-labelledby']}
+        aria-labelledby={`${props['aria-labelledby'] ?? labelId} ${valueId}`}
         aria-describedby={props['aria-describedby']}
         aria-invalid={props['aria-invalid']}
         aria-required={props['aria-required']}
@@ -266,7 +269,15 @@ function ComboboxFrame({
         disabled={props.disabled}
         className={trigger({ size: props.size, invalid, block: props.block === true })}
       >
-        <span className={`min-w-0 flex-1 truncate ${empty ? 'text-muted' : 'text-fg'}`}>
+        {props['aria-labelledby'] === undefined ? (
+          <span id={labelId} className="sr-only">
+            {props.label}
+          </span>
+        ) : null}
+        <span
+          id={valueId}
+          className={`min-w-0 flex-1 truncate ${empty ? 'text-muted' : 'text-fg'}`}
+        >
           {shown}
         </span>
         <span className="shrink-0 text-muted">

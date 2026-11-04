@@ -50,7 +50,7 @@ function Steps({ start }: { start: boolean }) {
               <span className="flex text-muted">
                 <Icon name="check" size="sm" />
               </span>
-              <span className="shrink-0">2 steps</span>
+              <span className="shrink-0">2 stappen</span>
               <span className="min-w-0 truncate font-mono text-muted">read, bash</span>
             </span>
           }
@@ -71,7 +71,7 @@ function Technical() {
     <Rail line="hidden">
       <div className="flex flex-col gap-0.5">
         <RailInset>
-          <p className="m-0 text-[11px] text-muted">2 technical events · status, limit</p>
+          <p className="m-0 text-[11px] text-muted">2 technische gebeurtenissen · status, limiet</p>
         </RailInset>
       </div>
     </Rail>

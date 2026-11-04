@@ -106,7 +106,8 @@ test('the current plan is lifted the same way on either plane; every alternative
   )
   const team = screen.getByRole('article', { name: /^Team\W+Huidig plan$/ })
   expect(team.className).toContain('bg-overlay')
-  expect(team.className).toContain('from-accent-subtle')
+  expect(team.className).toContain('from-row-active')
+  expect(team.className).not.toContain('accent')
   expect(screen.getByRole('article', { name: 'Bedrijf' }).className).toMatch(/\bbg-surface\b/)
   expect(screen.getByRole('article', { name: 'Solo' }).className).toMatch(/\bbg-overlay\b/)
   expect(screen.getByRole('article', { name: 'Solo' }).className).not.toContain('accent')
@@ -212,8 +213,8 @@ describe.each([
   const planes = {
     'overlay at rest': [layer(c('--nt-overlay-background')), '--nt-text-muted'],
     'surface at rest': [layer(c('--nt-canvas'), c('--nt-surface')), '--nt-text-muted'],
-    // The current plan lies on the plane of a card with the accent's tint, on either plane.
-    current: [layer(c('--nt-overlay-background'), c('--nt-accent-subtle')), '--nt-text-secondary'],
+    // The current plan lies on the plane of a card with the tint of a lit row, on either plane.
+    current: [layer(c('--nt-overlay-background'), c('--nt-row-active')), '--nt-text-secondary'],
   } as const
   test.each(Object.entries(planes))('%s', (_plane, [ground, text]) => {
     expect(contrast(layer(c(text)), ground)).toBeGreaterThanOrEqual(4.5)

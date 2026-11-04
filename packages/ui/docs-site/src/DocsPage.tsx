@@ -4,6 +4,7 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
@@ -183,6 +184,21 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const chosenId = idOf(hash)
   const story = stories.find((entry) => storyId(entry) === chosenId) ?? stories[0]
   const currentId = story ? storyId(story) : undefined
+  // A story opens at its title. A state that takes the focus as it mounts (an active tab, a
+  // field) or a layer that opens would scroll the stage down to itself, and the reader would land
+  // mid-page; the stage goes back to the top once the states have settled, keeping their focus.
+  const stage = useRef<HTMLElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new story is what resets the stage.
+  useEffect(() => {
+    const top = () => stage.current?.scrollTo?.({ top: 0 })
+    top()
+    const frame = requestAnimationFrame(top)
+    const later = setTimeout(top, 150)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(later)
+    }
+  }, [currentId])
 
   // Where each tab was, so the tabs return to it rather than to its first entry.
   const [lastStory, setLastStory] = useState<string | undefined>(chosenId)
@@ -307,9 +323,13 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                     <button
                       type="button"
                       aria-label={`Product: ${PRODUCT_OPTIONS.find((option) => option.value === product)?.label ?? ''}`}
-                      className="flex size-7 items-center justify-center rounded-md text-muted outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[12px] text-secondary outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
-                      <span aria-hidden="true" className="size-2 rounded-full bg-satellite" />
+                      {/* The satellite beside the product's name, never on its own. */}
+                      <span aria-hidden="true">
+                        {PRODUCT_OPTIONS.find((option) => option.value === product)?.label ?? ''}
+                      </span>
+                      <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
                     </button>
                   }
                   items={PRODUCT_OPTIONS.map((option) => ({
@@ -340,6 +360,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
             </main>
           ) : (
             <main
+              ref={stage}
               key={currentId ?? 'empty'}
               // The stage scrolls, so the keyboard needs a stop on it (axe scrollable-region-focusable).
               // biome-ignore lint/a11y/noNoninteractiveTabindex: WCAG 2.1.1, the keyboard reaches what scrolls.

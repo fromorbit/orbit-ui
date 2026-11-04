@@ -15,10 +15,14 @@ const NOW = new Date(2026, 10, 3)
 function Demo({ initial, showErrors = false }: { initial: CardValue; showErrors?: boolean }) {
   const [value, setValue] = useState(initial)
   return (
-    <div className="flex flex-col gap-4">
-      <Banner tone="attention" announce={false}>
-        Demo met testnummers: er wordt niets betaald of verstuurd.
-      </Banner>
+    // As wide as the form and no wider: the banner takes the column's width rather than setting
+    // it (`w-0 min-w-full`), so the note and the fields read as one block.
+    <div className="grid w-fit max-w-full gap-4">
+      <div className="w-0 min-w-full">
+        <Banner tone="attention" announce={false}>
+          Demo met testnummers: er wordt niets betaald of verstuurd.
+        </Banner>
+      </div>
       <CreditCardField
         value={value}
         onValueChange={setValue}

@@ -60,6 +60,6 @@ function Open() {
 
 export default {
   group: 'overlays',
-  title: 'DropdownMenu with counts',
+  title: 'DropdownMenu, met aantallen',
   states: { Open: Open },
 } satisfies Story

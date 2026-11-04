@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 import { Popover as RadixPopover } from 'radix-ui'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Calendar, type CalendarLabels, type IsoDate } from '../primitives/Calendar'
 import type { ControlSize } from '../primitives/control-size'
 import { controlSize } from '../primitives/control-size'
@@ -28,6 +28,11 @@ export interface DatePickerProps {
   disabled?: boolean
   /** `true` for a trigger as wide as its column, as in a form. */
   block?: boolean
+  /**
+   * `true` for a value in a list of properties: plain text at rest, the field's frame only on
+   * hover, focus or while open, so it reads like the values beside it (Similarity).
+   */
+  quiet?: boolean
   /** Set by `FormField` or `Field`: the visible label wins over `label`. */
   'aria-labelledby'?: string | undefined
   'aria-describedby'?: string | undefined
@@ -37,14 +42,24 @@ export interface DatePickerProps {
 }
 
 const trigger = cva(
-  'no-drag inline-flex items-center gap-1.5 rounded-md border bg-surface px-2 text-left outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
+  'no-drag inline-flex items-center gap-1.5 rounded-md border px-2 text-left outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40',
   {
     variants: {
       size: controlSize,
-      invalid: { true: 'border-danger', false: 'border-border' },
+      invalid: { true: 'border-danger', false: '' },
       block: { true: 'w-full min-w-0', false: 'min-w-40' },
+      quiet: { true: '-ms-2 bg-transparent', false: 'bg-surface' },
     },
-    defaultVariants: { size: 'md', invalid: false, block: false },
+    compoundVariants: [
+      { invalid: false, quiet: false, class: 'border-border' },
+      {
+        invalid: false,
+        quiet: true,
+        class:
+          'border-transparent hover:border-border focus-visible:border-border data-[state=open]:border-border',
+      },
+    ],
+    defaultVariants: { size: 'md', invalid: false, block: false, quiet: false },
   },
 )
 
@@ -75,6 +90,7 @@ export function DatePicker({
   size,
   disabled,
   block = false,
+  quiet = false,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
   'aria-invalid': ariaInvalid,
@@ -84,6 +100,8 @@ export function DatePicker({
   const { locale } = useUi()
   const container = usePortalContainer()
   const [open, setOpen] = useState(false)
+  const labelId = useId()
+  const valueId = useId()
   const shown =
     value === null
       ? placeholder
@@ -92,22 +110,31 @@ export function DatePicker({
         )
   return (
     <RadixPopover.Root open={open} onOpenChange={setOpen}>
+      {/* Named by the label and then the day it shows ("Deadline 31 okt 2026"), so a screen
+          reader hears the choice and a voice user can say the words in sight (WCAG 2.5.3). */}
       <RadixPopover.Trigger
         type="button"
-        aria-label={label}
-        aria-labelledby={ariaLabelledBy}
+        aria-labelledby={`${ariaLabelledBy ?? labelId} ${valueId}`}
         aria-describedby={ariaDescribedBy}
         aria-invalid={ariaInvalid}
         aria-required={ariaRequired}
         aria-haspopup="dialog"
         id={id}
         disabled={disabled}
-        className={trigger({ size, invalid: ariaInvalid === true, block })}
+        className={trigger({ size, invalid: ariaInvalid === true, block, quiet })}
       >
+        {ariaLabelledBy === undefined ? (
+          <span id={labelId} className="sr-only">
+            {label}
+          </span>
+        ) : null}
         <span className="shrink-0 text-muted">
           <Icon name="calendar" size="sm" />
         </span>
-        <span className={`min-w-0 flex-1 truncate ${value === null ? 'text-muted' : 'text-fg'}`}>
+        <span
+          id={valueId}
+          className={`min-w-0 flex-1 truncate ${value === null ? 'text-muted' : 'text-fg'}`}
+        >
           {shown}
         </span>
       </RadixPopover.Trigger>

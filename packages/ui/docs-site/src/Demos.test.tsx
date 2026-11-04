@@ -94,6 +94,18 @@ describe('the demos tab', () => {
     expect(blockOf(slug).querySelector('[data-demo]')?.getAttribute('data-demo')).toBe(slug)
   })
 
+  test('puts the focus on the heading of the block the hash names, so Tab goes on in it', () => {
+    goTo('#/demo/team')
+    render(<DocsPage stories={stories} />)
+    expect(document.activeElement).toBe(
+      within(blockOf('team')).getByRole('heading', { level: 2, name: 'Team en rechten' }),
+    )
+    goTo('#/demo/branches')
+    expect(document.activeElement).toBe(
+      within(blockOf('branches')).getByRole('heading', { level: 2, name: 'Branches opruimen' }),
+    )
+  })
+
   test('returns to the block that was open after a visit to the components', async () => {
     goTo('#/demo/specs')
     render(<DocsPage stories={stories} />)

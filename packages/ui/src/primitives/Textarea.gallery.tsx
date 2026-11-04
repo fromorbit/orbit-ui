@@ -10,11 +10,13 @@ export default {
     'Groeit met de inhoud': () => (
       <Textarea label="Bericht" defaultValue={'Eerste regel\nTweede regel\nDerde regel'} />
     ),
-    'Scrolt voorbij maxRows': () => (
+    'Scrolt na drie regels': () => (
       <Textarea
         label="Bericht"
         maxRows={3}
-        defaultValue={'One\nTwo\nThree\nFour\nFive\nSix\nSeven'}
+        defaultValue={
+          'Eerste regel\nTweede regel\nDerde regel\nVierde regel\nVijfde regel\nZesde regel\nZevende regel'
+        }
       />
     ),
     Uitgeschakeld: () => (
@@ -25,7 +27,7 @@ export default {
     'Kaal in een vlak': () => (
       // Narrower than the widest state above, so adding this one leaves their references alone.
       <div className="w-full max-w-80 rounded-lg border border-border bg-surface p-2 focus-within:border-border-focus">
-        <Textarea label="Bericht" variant="bare" placeholder="Send a message" />
+        <Textarea label="Bericht" variant="bare" placeholder="Schrijf een bericht…" />
       </div>
     ),
     // Same md Input next to a one-row Textarea, to prove they line up: see the height assertion

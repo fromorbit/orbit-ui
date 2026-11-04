@@ -3,7 +3,7 @@ import { Button } from './Button'
 import { ScrollArea } from './ScrollArea'
 
 /** More rows than fit in the fixed-height container below, so the scrollbar is always visible. */
-const rows = Array.from({ length: 30 }, (_, index) => `Row ${index + 1}`)
+const rows = Array.from({ length: 30 }, (_, index) => `Regel ${index + 1}`)
 
 function Rows() {
   return (
@@ -45,10 +45,10 @@ function TruncatingRows() {
   return (
     <div className="flex flex-col p-1">
       <div className="truncate px-2 text-[13px] text-fg">
-        A line of text far too long to fit inside this narrow column
+        Een regel tekst die veel te lang is voor deze smalle kolom
       </div>
       <div className="truncate px-2 text-[13px] text-muted">
-        And a second one, just as long, that has to end in an ellipsis
+        En nog een, net zo lang, die op een beletselteken moet eindigen
       </div>
       {rows.map((row) => (
         <Button key={row} variant="ghost" size="sm" block onClick={() => {}}>

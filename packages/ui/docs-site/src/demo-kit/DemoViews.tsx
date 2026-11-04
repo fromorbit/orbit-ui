@@ -191,7 +191,12 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
       <header className="flex flex-wrap items-end gap-x-6 gap-y-3 px-1">
         <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1">
           <div className="flex items-center gap-2.5">
-            <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
+            <h2
+              id={titleId}
+              tabIndex={-1}
+              data-demo-heading
+              className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em] outline-none"
+            >
               {demo.title}
             </h2>
             <span data-product={product} className="flex items-center gap-1.5">
@@ -261,10 +266,17 @@ export function MissingOverview(): ReactNode {
     <section
       id={blockId(OVERVIEW_SLUG)}
       aria-labelledby={titleId}
-      className="flex scroll-mt-20 flex-col gap-4"
+      // As tall as the window under the strip: the last block of the page can still scroll to
+      // the top, so a link to the wishlist opens on the wishlist and not on the end of Team.
+      className="flex min-h-[calc(100dvh-5rem)] scroll-mt-20 flex-col gap-4"
     >
       <div className="flex flex-col gap-1 px-1">
-        <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
+        <h2
+          id={titleId}
+          tabIndex={-1}
+          data-demo-heading
+          className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em] outline-none"
+        >
           Wensenlijst
         </h2>
         <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
@@ -352,9 +364,13 @@ export function DemoGallery({
 }): ReactNode {
   const [marks, setMarks] = useState(true)
   const target = slug === undefined || slug === '' ? undefined : shownSlug(slug)
+  // The page scrolls to the chosen block and the focus goes to its heading, so the next Tab
+  // continues in that demo rather than at the top of the page (a hash change moves no focus).
   useEffect(() => {
     if (target === undefined) return
-    document.getElementById(blockId(target))?.scrollIntoView?.({ block: 'start' })
+    const block = document.getElementById(blockId(target))
+    block?.scrollIntoView?.({ block: 'start' })
+    block?.querySelector<HTMLElement>('[data-demo-heading]')?.focus({ preventScroll: true })
   }, [target])
   const missingCount = missingOverview().length
   // On a narrow window the strip scrolls sideways: the chip of the block in view is brought into
@@ -396,13 +412,13 @@ export function DemoGallery({
         </div>
         <nav
           aria-label="Naar een demo"
-          className="sticky top-0 z-20 -mx-4 -my-8 flex items-center gap-3 border-border border-b bg-canvas/90 px-4 py-2.5 backdrop-blur-md sm:-mx-8 sm:px-8"
+          className="sticky top-0 z-20 -mx-4 -my-8 flex items-center gap-3 border-border border-b bg-canvas/90 px-4 py-1.5 backdrop-blur-md sm:-mx-8 sm:px-8"
         >
           {/* Wraps on a wide window, so every chip is in sight; scrolls on a narrow one, with a fade
               at the end that says there is more. */}
           <ul
             ref={strip}
-            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto p-0 pr-8 xl:pr-0 [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
+            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto px-0.5 py-1 pr-8 xl:pr-0 [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
           >
             {JUMPS.map((jump) => (
               <li key={jump.slug} className="shrink-0">

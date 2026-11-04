@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react'
+import { LayerStage } from '../gallery/layer-stage'
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -14,7 +15,13 @@ import { ConfirmDialog } from './ConfirmDialog'
  * reference too.
  */
 function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-full max-w-[40rem]">{children}</div>
+  // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
+  // this box, and the gallery around it stays in reach.
+  return (
+    <div className="w-full max-w-[40rem]">
+      <LayerStage height={480}>{children}</LayerStage>
+    </div>
+  )
 }
 
 /** The plain case: the trigger, and a dialog that is not up yet. */

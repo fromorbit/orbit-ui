@@ -10,11 +10,11 @@ import { RoomyListRow } from './RoomyListRow'
  */
 export default {
   group: 'patterns',
-  title: 'Roomy list row',
+  title: 'RoomyListRow',
   states: {
     'Een titel over een of twee regels, en een notitie': () => (
       <div className="w-full max-w-80">
-        <List label="Subagents">
+        <List label="Subagenten">
           <RoomyListRow
             title="Zoekt de korting"
             kind="done"
@@ -48,7 +48,7 @@ export default {
     // The menu of a row stands beside it, quiet until hover or focus: the picture shows its room.
     'Met acties ernaast en iets eronder': () => (
       <div className="w-full max-w-80">
-        <List label="Subagents">
+        <List label="Subagenten">
           <RoomyListRow
             title="Tests voor de winkelmand"
             kind="running"

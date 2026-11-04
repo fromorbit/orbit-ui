@@ -13,7 +13,7 @@ export default {
     ),
     Bezig: () => (
       <div className="flex items-center gap-2 text-[12px] text-muted">
-        <Shimmer active={true}>Fetching a very long imaginary changelog</Shimmer>
+        <Shimmer active={true}>Een heel lange verzonnen wijzigingslijst ophalen</Shimmer>
       </div>
     ),
     'Bezig over een icoon': () => (
@@ -23,7 +23,7 @@ export default {
         <Shimmer active={true}>
           <span className="flex items-center gap-2">
             <Icon name="file-text" size="sm" />
-            Reading three imaginary files
+            Drie verzonnen bestanden lezen
           </span>
         </Shimmer>
       </div>

@@ -34,8 +34,8 @@ function Shelf({ initial }: { initial: boolean }) {
           />
         </List>
       </div>
-      <List label="Settled">
-        <ShelfGroup text={nl.shelf} title="Settled" count={143} open={open} onOpenChange={setOpen}>
+      <List label="Afgerond">
+        <ShelfGroup text={nl.shelf} title="Afgerond" count={143} open={open} onOpenChange={setOpen}>
           {settled.map((chat) => (
             <StackedRow
               key={chat.title}

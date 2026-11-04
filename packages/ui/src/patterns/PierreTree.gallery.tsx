@@ -58,8 +58,9 @@ export default {
     // `patterns-pierretree--file-icons-beside-their-names` its own reference image when this state
     // stood before it — a state earlier on the page never moves once captured, whatever is added
     // below it.
-    werkmap: () => (
-      <div className="h-[400px] w-72 border border-border">
+    Werkmap: () => (
+      // A tinted plane, not a frame: the region reads by its tint, as every region of the kit.
+      <div className="h-[280px] w-72 overflow-hidden rounded-lg bg-surface">
         <PierreTree
           entries={workDirectory}
           onSelect={() => {}}

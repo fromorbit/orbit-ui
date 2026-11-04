@@ -149,7 +149,7 @@ export default {
       <div className="h-64">
         <Tabs
           label="Onderdelen van de instellingen"
-          before={<Input label="Search" placeholder="Search" icon="search" size="sm" />}
+          before={<Input label="Zoeken" placeholder="Zoeken" icon="search" size="sm" />}
           tabs={[
             { ...appearanceTab, count: 3 },
             { ...agentsTab, count: 1 },

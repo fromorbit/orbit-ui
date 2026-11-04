@@ -15,7 +15,7 @@ export default {
       <EmptyState
         icon="message-circle"
         title="Nog geen gesprekken"
-        description="Begin er een en hij staat hier, per project."
+        description="Start een gesprek; het staat dan hier bij je project."
         action={
           <Button variant="primary" size="sm">
             Nieuw gesprek

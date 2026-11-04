@@ -140,7 +140,8 @@ function Repository(): ReactNode {
   const [verdict, setVerdict] = useState('changes')
   return (
     <>
-      {/* One state, one mark: amber here and on the Omgeving row below, the same words in both. */}
+      {/* One state, said once: the banner carries the words and the action; the Omgeving row below
+          only lists the tools when it is opened, so the warning does not stand twice. */}
       <Banner
         tone="attention"
         action={
@@ -163,11 +164,7 @@ function Repository(): ReactNode {
             </div>
           )}
         </SettingRow>
-        <SettingFoldRow
-          label="Omgeving"
-          description="Wat Review op deze machine nodig heeft"
-          status={{ tone: 'attention', label: 'Docker draait niet' }}
-        >
+        <SettingFoldRow label="Omgeving" description="Wat Review op deze machine nodig heeft">
           <List label="Omgeving">
             {TOOLS.map((tool) => (
               <ListRow key={tool.name} title={tool.name} kind={tool.kind} status={tool.status} />
@@ -359,7 +356,7 @@ function Account(): ReactNode {
       <SettingsGroup title="Beveiliging">
         <SwitchSetting
           label="Tweestapsverificatie"
-          description="Een code uit je app bij elke nieuwe inlog"
+          description="Een code uit je authenticator-app bij elke nieuwe aanmelding"
           initial
         />
         <SettingRow labels={labels} label="API-sleutel" description="Voor de Orbit-CLI en je CI">
@@ -498,7 +495,7 @@ function Subscription(): ReactNode {
           current
           currentLabel="Huidig plan"
           plane="surface"
-          summary="6 leden · vast € 174,24 per maand incl. btw"
+          summary="6 leden: € 174,24 per maand incl. btw"
           action={
             <Button variant="secondary" size="sm">
               Plan wijzigen

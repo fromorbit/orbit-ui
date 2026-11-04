@@ -3,7 +3,7 @@ import { type ReactNode, type RefObject, useRef } from 'react'
 import { focusHeldElsewhere } from '../primitives/hand-back'
 import { IconButton } from '../primitives/IconButton'
 import { DIALOG_PANEL, WIDE_DIALOG_PANEL } from './panel'
-import { usePortalContainer } from './portal'
+import { useContainedLayers, usePortalContainer } from './portal'
 import { Tooltip } from './Tooltip'
 
 /** The props of `Dialog`. */
@@ -82,6 +82,7 @@ export function Dialog({
   size = 'default',
 }: DialogProps) {
   const container = usePortalContainer()
+  const contained = useContainedLayers()
   const body = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -89,9 +90,15 @@ export function Dialog({
   const cameFrom = useRef<HTMLElement | null>(null)
 
   return (
-    <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
+    <RadixDialog.Root open={open} onOpenChange={onOpenChange} modal={!contained}>
       <RadixDialog.Portal container={container}>
-        <RadixDialog.Overlay className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim" />
+        {/* Radix draws no overlay for a layer that is not modal; a contained one keeps its scrim,
+            over its container only. */}
+        {contained ? (
+          <div aria-hidden="true" className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim" />
+        ) : (
+          <RadixDialog.Overlay className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim" />
+        )}
         <RadixDialog.Content
           ref={panel}
           className={size === 'wide' ? WIDE_DIALOG_PANEL : DIALOG_PANEL}

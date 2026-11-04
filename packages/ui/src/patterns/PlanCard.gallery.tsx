@@ -34,7 +34,7 @@ const TEAM_CURRENT = {
   features: TEAM,
   current: true,
   currentLabel: 'Huidig plan',
-  summary: '6 leden · vast € 174,24 per maand incl. btw',
+  summary: '6 leden: € 174,24 per maand incl. btw',
 } as const
 
 const toBedrijf = (
@@ -49,7 +49,7 @@ const changePlan = (
   </Button>
 )
 
-/** The current plan: lifted by the accent's tint and its tag. */
+/** The current plan: lifted by the tint of a lit row and marked by its tag. */
 function Current() {
   return (
     <div className="w-full max-w-sm">
@@ -71,11 +71,11 @@ function WithUsage() {
         period="per lid per maand, excl. btw"
         features={[
           'Onbeperkt gesprekken en specs',
-          { label: '250 agent-uren per maand', detail: '182 u gebruikt' },
-          { label: 'Orbit Review op 10 repositories', detail: '7 in gebruik' },
-          { label: '50 GB opslag voor opnames', detail: '18,4 GB' },
+          { label: '250 agent-uren per maand', detail: '182 van 250 u' },
+          { label: 'Orbit Review op 10 repositories', detail: '7 van 10' },
+          { label: '50 GB opslag voor opnames', detail: '18,4 van 50 GB' },
         ]}
-        summary="6 leden · vast € 174,24 per maand incl. btw"
+        summary="6 leden: € 174,24 per maand incl. btw"
         action={changePlan}
       />
     </div>
@@ -131,7 +131,7 @@ function LongName() {
         features={['Alles van Bedrijf', 'Een eigen omgeving in de EU', 'Een vaste contactpersoon']}
         current
         currentLabel="Huidig plan"
-        summary="40 leden · vast € 15.100,80 per jaar incl. btw"
+        summary="40 leden: € 15.100,80 per jaar incl. btw"
         action={changePlan}
       />
     </div>
