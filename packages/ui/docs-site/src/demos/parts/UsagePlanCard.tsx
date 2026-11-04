@@ -11,8 +11,10 @@ export function UsagePlanCard(): ReactNode {
           <span className="font-medium text-[13px] text-fg">Team</span>
           <Tag tone="success">Huidig plan</Tag>
         </div>
-        <p className="m-0 flex items-baseline gap-1.5">
-          <span className="font-heading text-[20px] text-fg leading-none tabular-nums">€ 24</span>
+        <p className="m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+          <span className="whitespace-nowrap font-heading text-[20px] text-fg leading-none tabular-nums">
+            € 24
+          </span>
           <span className="text-[12px] text-muted">per lid per maand, excl. btw</span>
         </p>
         <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px] text-secondary">

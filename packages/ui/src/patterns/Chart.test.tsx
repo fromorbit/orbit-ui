@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { Chart, type ChartPoint, chartTicks, Sparkline } from './Chart'
+import { Chart, type ChartPoint, chartTicks, Sparkline, stackHeights } from './Chart'
 
 const nl = (value: number) => value.toLocaleString('nl-NL')
 const SERIES = [
@@ -20,6 +20,18 @@ test('the grid steps by 1, 2, 2.5 or 5 times a power of ten, from zero past the 
   expect(chartTicks(0)).toEqual([0, 1])
 })
 
+test('counts step by whole numbers', () => {
+  expect(chartTicks(9, true)).toEqual([0, 5, 10])
+  expect(chartTicks(3, true)).toEqual([0, 1, 2, 3])
+  expect(chartTicks(33, true)).toEqual([0, 10, 20, 30, 40])
+})
+
+test('a part above zero shows at least 3px, taken from the tallest part', () => {
+  // 30 builds and 1 failure at 4px a build: the failure gets 3px and the 2px gap under it.
+  expect(stackHeights([30, 1], 4)).toEqual([119, 5])
+  expect(stackHeights([30, 10], 4)).toEqual([120, 40])
+})
+
 test('a screen reader gets the values as a table named by the label', () => {
   render(<Chart label="Builds per dag" series={SERIES} points={POINTS} format={nl} />)
   const table = screen.getByRole('table', { name: 'Builds per dag' })
@@ -27,7 +39,7 @@ test('a screen reader gets the values as a table named by the label', () => {
     within(table)
       .getAllByRole('row')
       .map((row) => row.textContent),
-  ).toEqual(['GeslaagdMislukt', 'ma260', 'di1.2044', 'wo30'])
+  ).toEqual(['GeslaagdMislukt', 'ma260', 'di1.2044', 'wo30–'])
 })
 
 test('two series have a legend; one series does not, its title names it', () => {
@@ -46,7 +58,7 @@ test('a stacked bar draws a part per value above zero, the failed one on top', (
 
 test('the pointer over a bar shows its values in a tooltip', () => {
   const { container } = render(<Chart label="Builds" series={SERIES} points={POINTS} format={nl} />)
-  const plot = container.querySelector<HTMLElement>('[data-nt-chart] > div.flex > div.flex-1')
+  const plot = container.querySelector<HTMLElement>('[data-nt-chart-plot]')
   if (!plot) throw new Error('no plot')
   plot.getBoundingClientRect = () => ({ left: 0, width: 300 }) as DOMRect
   fireEvent.pointerMove(plot, { clientX: 150 })
@@ -54,6 +66,32 @@ test('the pointer over a bar shows its values in a tooltip', () => {
     'diGeslaagd1.204Mislukt4',
   )
   fireEvent.pointerLeave(plot)
+  expect(container.querySelector('[data-nt-chart-tooltip]')).toBeNull()
+})
+
+test('the plot is one tab stop: the arrow keys read the points, Escape closes', () => {
+  render(<Chart label="Builds" series={SERIES} points={POINTS} format={nl} />)
+  const plot = screen.getByRole('group', { name: 'Builds' })
+  expect(plot).toHaveAttribute('tabindex', '0')
+  fireEvent.keyDown(plot, { key: 'Home' })
+  const tooltip = () => document.querySelector('[data-nt-chart-tooltip]')
+  expect(tooltip()).toHaveTextContent('maGeslaagd26')
+  fireEvent.keyDown(plot, { key: 'ArrowRight' })
+  expect(tooltip()).toHaveTextContent('diGeslaagd1.204Mislukt4')
+  expect(plot.querySelector('[aria-live]')).toHaveTextContent('di, Geslaagd 1.204, Mislukt 4')
+  fireEvent.keyDown(plot, { key: 'Escape' })
+  expect(tooltip()).toBeNull()
+})
+
+test('a tap reads a point, a second tap on it closes it', () => {
+  const { container } = render(<Chart label="Builds" series={SERIES} points={POINTS} format={nl} />)
+  const plot = container.querySelector<HTMLElement>('[data-nt-chart-plot]')
+  if (!plot) throw new Error('no plot')
+  plot.getBoundingClientRect = () => ({ left: 0, width: 300 }) as DOMRect
+  fireEvent.pointerDown(plot, { clientX: 20, pointerType: 'touch' })
+  fireEvent.pointerLeave(plot, { pointerType: 'touch' })
+  expect(container.querySelector('[data-nt-chart-tooltip]')).toHaveTextContent('ma')
+  fireEvent.pointerDown(plot, { clientX: 20, pointerType: 'touch' })
   expect(container.querySelector('[data-nt-chart-tooltip]')).toBeNull()
 })
 
@@ -88,16 +126,20 @@ test('while loading the figure is busy and says so, without a grid of values', (
   expect(container.querySelector('[data-nt-chart-bar]')).toBeNull()
 })
 
-test('with only zeros the plot holds one sentence', () => {
-  render(
+test('with only zeros the plot holds one sentence and the next step, without a legend', () => {
+  const { container } = render(
     <Chart
       label="Builds"
       series={SERIES}
       points={[{ label: 'ma', values: [0, 0] }]}
       empty="Nog geen builds in deze periode"
+      emptyNext="Kies een langere periode."
     />,
   )
-  expect(screen.getByText('Nog geen builds in deze periode')).toBeInTheDocument()
+  expect(screen.getByText('Nog geen builds in deze periode')).toBeVisible()
+  expect(screen.getByText('Kies een langere periode.')).toBeInTheDocument()
+  expect(screen.getByText('Nog geen builds in deze periode').closest('[aria-hidden]')).toBeNull()
+  expect(container.querySelector('ul')).toBeNull()
 })
 
 test('a sparkline is an image named by its label, with a dot on the latest value', () => {

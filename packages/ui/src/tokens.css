@@ -72,12 +72,16 @@
   --nt-bubble: rgb(231 233 242 / 0.06);
   /* The plane of a small mark: the letter block of a project, the track of a progress meter. */
   --nt-mark: rgb(231 233 242 / 0.09);
-  /* The marks of a chart (`Chart`, `Sparkline`): Mist at 62%, quieter than the accent fill a bar
-     turns to under the pointer, so a row of bars is calm and the one being read stands out. 5.7:1
-     on a card. The wash under a line is the same ink at 8%. */
-  --nt-chart-mark: rgb(231 233 242 / 0.62);
+  /* The marks of a chart (`Chart`, `Sparkline`): Mist at 52%, quieter than the accent fill a bar
+     turns to under the pointer and than the figures above it, so a row of bars is calm and the
+     one being read stands out. 4.5:1 on a card. A line has less mass than a bar and takes the full
+     ink. The wash under a line is the mark's ink at 8%; the shapes of a chart that loads are a
+     step above the plane of a control. */
+  --nt-chart-mark: rgb(231 233 242 / 0.52);
+  --nt-chart-line: var(--nt-text);
   --nt-chart-wash: rgb(231 233 242 / 0.08);
-  /* A line to measure against (a plan): the faint ink, a graphic and never a word. */
+  --nt-chart-skeleton: rgb(231 233 242 / 0.12);
+  /* A line to measure against (a plan, a limit): the faint ink, a graphic and never a word. */
   --nt-chart-reference: var(--nt-text-faint);
   /* The plane of the composer, a step above the canvas it lies on: the plane of a card. */
   --nt-composer: #19223f;
@@ -335,9 +339,11 @@
   --nt-pill-hover: rgb(17 25 54 / 0.06);
   --nt-bubble: rgb(17 25 54 / 0.04);
   --nt-mark: rgb(17 25 54 / 0.07);
-  /* Midnight at 70% on white: 6.0:1, the same quiet step below the accent as in dark. */
-  --nt-chart-mark: rgb(17 25 54 / 0.7);
+  /* Midnight at 56% on white: 4.0:1, the same quiet step below the accent as in dark. */
+  --nt-chart-mark: rgb(17 25 54 / 0.56);
+  --nt-chart-line: var(--nt-text);
   --nt-chart-wash: rgb(17 25 54 / 0.06);
+  --nt-chart-skeleton: rgb(17 25 54 / 0.1);
   --nt-chart-reference: var(--nt-text-faint);
   /* The composer lies a step above the canvas: white. */
   --nt-composer: #ffffff;

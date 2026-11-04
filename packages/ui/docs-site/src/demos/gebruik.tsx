@@ -40,7 +40,8 @@ const KPIS: Figure[] = [
     label: 'Agent-uren',
     value: '182 u',
     delta: '14%',
-    good: true,
+    // More hours is not good news on its own: at this pace the month ends over the plan.
+    tone: 'neutral',
     rising: true,
     against: 't.o.v. september',
     trail: [131, 138, 129, 146, 152, 149, 160, 182],
@@ -49,7 +50,7 @@ const KPIS: Figure[] = [
     label: 'Reviews',
     value: '46',
     delta: '9',
-    good: true,
+    tone: 'good',
     rising: true,
     against: 't.o.v. september',
     trail: [31, 34, 29, 38, 35, 41, 37, 46],
@@ -58,7 +59,7 @@ const KPIS: Figure[] = [
     label: 'Opnames',
     value: '128',
     delta: '31',
-    good: true,
+    tone: 'neutral',
     rising: false,
     against: 't.o.v. september',
     trail: [204, 196, 188, 181, 172, 166, 159, 128],
@@ -67,10 +68,11 @@ const KPIS: Figure[] = [
     label: 'Opslag',
     value: '18,4 GB',
     delta: '2,1 GB',
-    good: false,
+    // Normal growth at 37% of the limit: no alarm until it nears the 50 GB.
+    tone: 'neutral',
     rising: true,
-    against: 'erbij · 37% van 50 GB',
-    meter: { value: 18.4, max: 50, text: '18,4 van 50 GB' },
+    against: 'erbij',
+    meter: { value: 18.4, max: 50, text: '18,4 van 50 GB', note: '37% van 50 GB' },
   },
 ]
 
@@ -80,6 +82,7 @@ const KPIS: Figure[] = [
  */
 const HOURS: ChartPoint[] = Array.from({ length: DAYS }, (_, index) => ({
   label: `${index + 1} okt`,
+  title: `${index + 1} oktober`,
   values: [
     index < DAILY.length ? DAILY.slice(0, index + 1).reduce((sum, hours) => sum + hours, 0) : null,
     Math.round((PLAN_HOURS * (index + 1)) / DAYS),
@@ -506,7 +509,7 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               <KpiTile key={kpi.label} figure={kpi} period="per maand, de afgelopen 8 maanden" />
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(17rem,1fr)_minmax(0,2fr)]">
             <UsagePlanCard />
             <Panel title="Agent-uren" meta="opgeteld, deze maand">
               <div className="flex flex-col gap-3">
@@ -515,10 +518,12 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                   label="Agent-uren in oktober, opgeteld per dag"
                   series={[
                     { id: 'used', label: 'Gebruikt' },
-                    { id: 'pace', label: `Tempo voor ${PLAN_HOURS} u`, reference: true },
+                    { id: 'pace', label: `Op koers voor ${PLAN_HOURS} u`, reference: true },
                   ]}
                   points={HOURS}
+                  limit={{ value: PLAN_HOURS, label: `Plan ${PLAN_HOURS} u` }}
                   format={(value) => `${value.toLocaleString('nl-NL')} u`}
+                  none="nog geen waarde"
                 />
                 <p className="m-0 text-[12px] text-muted">
                   Op dit tempo kom je eind oktober rond {PROJECTED} u uit, {PROJECTED - PLAN_HOURS}{' '}

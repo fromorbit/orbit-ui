@@ -23,7 +23,8 @@ export interface StatTileProps {
  * A group named by its label, so a screen reader that jumps through a row of tiles hears "Actieve
  * spaces, 1.284, 12% gestegen, t.o.v. vorige week" for each. The figure takes the heading weight
  * and tabular digits, so a row of tiles lines its numbers up. Several tiles stand in a grid the
- * caller lays out; a tile fills its cell.
+ * caller lays out; a tile fills its cell. In a narrow tile the comparison wraps under the trend
+ * rather than being cut: the words that explain the number stay whole.
  */
 export function StatTile({ label, value, trend, comparison, aside, children }: StatTileProps) {
   const labelId = useId()
@@ -45,11 +46,9 @@ export function StatTile({ label, value, trend, comparison, aside, children }: S
         {value}
       </p>
       {trend !== undefined || comparison !== undefined ? (
-        <p className="m-0 flex min-w-0 items-center gap-1.5 text-[12px]">
+        <p className="m-0 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[12px]">
           {trend}
-          {comparison === undefined ? null : (
-            <span className="truncate text-muted">{comparison}</span>
-          )}
+          {comparison === undefined ? null : <span className="text-muted">{comparison}</span>}
         </p>
       ) : null}
       {children}

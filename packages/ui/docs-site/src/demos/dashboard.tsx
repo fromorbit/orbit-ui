@@ -4,6 +4,7 @@ import {
   Button,
   Chart,
   type ChartPoint,
+  IconButton,
   List,
   ListRow,
   PageHeader,
@@ -28,113 +29,48 @@ const PERIODS = [
   { value: '30', label: '30 dagen' },
 ] as const
 
-/** Made-up figures per period: label, value and change against the period before. */
-const KPIS: Record<Period, Figure[]> = {
+/** What a figure is compared with, per period. */
+const AGAINST: Record<Period, string> = {
+  '1': 't.o.v. gisteren',
+  '7': 't.o.v. vorige week',
+  '30': 't.o.v. 30 dagen ervoor',
+}
+
+/**
+ * Made-up figures per period: label, value and change against the period before. The value of
+ * Builds is left out here: it is the sum of the chart under the tiles, so the two always agree.
+ */
+const KPIS: Record<Period, Omit<Figure, 'against'>[]> = {
   '1': [
-    {
-      label: 'Draaiende spaces',
-      value: '9 van 12',
-      delta: '2',
-      good: true,
-      rising: true,
-      against: 't.o.v. gisteren',
-    },
-    {
-      label: 'Builds',
-      value: '23',
-      delta: '8%',
-      good: true,
-      rising: true,
-      against: 't.o.v. gisteren',
-    },
-    {
-      label: 'Gem. bouwtijd',
-      value: '1 m 42 s',
-      delta: '11 s',
-      good: true,
-      rising: false,
-      against: 't.o.v. gisteren',
-    },
-    {
-      label: 'Mislukte starts',
-      value: '2',
-      delta: '1',
-      good: false,
-      rising: true,
-      against: 't.o.v. gisteren',
-    },
+    { label: 'Draaiende spaces', value: '9 van 12', delta: '2', tone: 'good', rising: true },
+    { label: 'Builds', value: '', delta: '8%', tone: 'good', rising: true },
+    { label: 'Gem. bouwtijd', value: '1 min 42 s', delta: '11 s', tone: 'good', rising: false },
+    { label: 'Mislukte starts', value: '2', delta: '1', tone: 'bad', rising: true },
   ],
   '7': [
-    {
-      label: 'Draaiende spaces',
-      value: '9 van 12',
-      delta: '3',
-      good: true,
-      rising: true,
-      against: 't.o.v. vorige week',
-    },
-    {
-      label: 'Builds',
-      value: '148',
-      delta: '12%',
-      good: true,
-      rising: true,
-      against: 't.o.v. vorige week',
-    },
-    {
-      label: 'Gem. bouwtijd',
-      value: '1 m 51 s',
-      delta: '6 s',
-      good: true,
-      rising: false,
-      against: 't.o.v. vorige week',
-    },
-    {
-      label: 'Mislukte starts',
-      value: '7',
-      delta: '3',
-      good: true,
-      rising: false,
-      against: 't.o.v. vorige week',
-    },
+    { label: 'Draaiende spaces', value: '9 van 12', delta: '3', tone: 'good', rising: true },
+    { label: 'Builds', value: '', delta: '12%', tone: 'good', rising: true },
+    { label: 'Gem. bouwtijd', value: '1 min 51 s', delta: '6 s', tone: 'good', rising: false },
+    { label: 'Mislukte starts', value: '7', delta: '3', tone: 'good', rising: false },
   ],
   '30': [
-    {
-      label: 'Draaiende spaces',
-      value: '9 van 12',
-      delta: '4',
-      good: true,
-      rising: true,
-      against: 't.o.v. september',
-    },
-    {
-      label: 'Builds',
-      value: '612',
-      delta: '21%',
-      good: true,
-      rising: true,
-      against: 't.o.v. september',
-    },
-    {
-      label: 'Gem. bouwtijd',
-      value: '1 m 58 s',
-      delta: '14 s',
-      good: false,
-      rising: true,
-      against: 't.o.v. september',
-    },
-    {
-      label: 'Mislukte starts',
-      value: '31',
-      delta: '9',
-      good: true,
-      rising: false,
-      against: 't.o.v. september',
-    },
+    { label: 'Draaiende spaces', value: '9 van 12', delta: '4', tone: 'good', rising: true },
+    { label: 'Builds', value: '', delta: '21%', tone: 'good', rising: true },
+    { label: 'Gem. bouwtijd', value: '1 min 58 s', delta: '14 s', tone: 'bad', rising: true },
+    { label: 'Mislukte starts', value: '31', delta: '9', tone: 'good', rising: false },
   ],
 }
 
 const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'] as const
+const WEEKDAY_NAMES = [
+  'maandag',
+  'dinsdag',
+  'woensdag',
+  'donderdag',
+  'vrijdag',
+  'zaterdag',
+  'zondag',
+] as const
 
 /** What a period is called under a sparkline, for a screen reader. */
 const PERIOD_TEXT: Record<Period, string> = {
@@ -162,23 +98,80 @@ const TRAILS: Record<Period, Record<string, readonly number[]>> = {
   },
 }
 
-/** A made-up series of builds, per hour, day or day of the month, with the failed ones on top. */
+/** Builds per hour of a working day: quiet at night, busy from nine to six. */
+const HOURLY = [0, 0, 0, 0, 0, 0, 1, 2, 4, 7, 9, 8, 5, 8, 9, 8, 7, 5, 3, 2, 1, 1, 0, 0]
+/** The failed ones among them: one late in the morning, one in the afternoon. */
+const HOURLY_FAILED: Record<number, number> = { 11: 1, 15: 1 }
+
+/** Builds per day of the past week, quiet in the weekend, with a bad Thursday. */
+const DAILY = [26, 29, 30, 29, 27, 8, 5]
+const DAILY_FAILED = [0, 0, 0, 4, 0, 1, 0]
+
+const MONTHS = [
+  'januari',
+  'februari',
+  'maart',
+  'april',
+  'mei',
+  'juni',
+  'juli',
+  'augustus',
+  'september',
+  'oktober',
+  'november',
+  'december',
+] as const
+const DAY = 24 * HOUR
+
+/** A made-up series of builds, per hour, day or day of the past 30, with the failed ones on top. */
 function builds(period: Period): ChartPoint[] {
-  const count = period === '1' ? 24 : period === '7' ? 7 : 30
-  return Array.from({ length: count }, (_, index) => {
-    const label =
-      period === '1'
-        ? `${String(index).padStart(2, '0')}:00`
-        : period === '7'
-          ? (WEEKDAYS[index] ?? '')
-          : `${index + 1} okt`
-    const quiet = period === '1' ? index < 7 || index > 20 : period === '30' && index % 7 >= 5
-    const wave = Math.sin(index / 1.7) * 5 + Math.cos(index / 3.1) * 4
-    const base = period === '1' ? 2 : period === '7' ? 22 : 20
-    const value = Math.max(0, Math.round((quiet ? base * 0.25 : base) + wave))
-    const failed = index % 5 === 3 ? Math.max(1, Math.round(value / 8)) : 0
-    return { label, values: [value, failed] }
+  if (period === '1') {
+    return HOURLY.map((value, hour) => {
+      const label = `${String(hour).padStart(2, '0')}:00`
+      return { label, values: [value, HOURLY_FAILED[hour] ?? 0] }
+    })
+  }
+  if (period === '7') {
+    return DAILY.map((value, index) => ({
+      label: WEEKDAYS[index] ?? '',
+      title: WEEKDAY_NAMES[index] ?? '',
+      values: [value, DAILY_FAILED[index] ?? 0],
+    }))
+  }
+  // The 30 days up to today, quiet in the weekends, a failure every few days.
+  return Array.from({ length: 30 }, (_, index) => {
+    const date = new Date(NOW - (29 - index) * DAY)
+    const weekday = (date.getUTCDay() + 6) % 7
+    const wave = Math.sin(index / 1.7) * 4 + Math.cos(index / 3.1) * 3
+    const value = Math.max(1, Math.round((weekday >= 5 ? 5 : 20) + (weekday >= 5 ? 0 : wave)))
+    const failed = index % 5 === 3 && weekday < 5 ? Math.max(1, Math.round(value / 8)) : 0
+    const month = MONTHS[date.getUTCMonth()] ?? ''
+    return {
+      label: `${date.getUTCDate()} ${month.slice(0, 3)}`,
+      title: `${WEEKDAY_NAMES[weekday] ?? ''} ${date.getUTCDate()} ${month}`,
+      values: [value, failed],
+    }
   })
+}
+
+/** The builds and the failed ones of a series, and where most of them failed, in one sentence. */
+function summary(period: Period, points: readonly ChartPoint[]): string {
+  const all = points.reduce(
+    (sum, point) => sum + (point.values[0] ?? 0) + (point.values[1] ?? 0),
+    0,
+  )
+  const failed = points.reduce((sum, point) => sum + (point.values[1] ?? 0), 0)
+  const worst = points.reduce<ChartPoint | undefined>(
+    (best, point) => ((point.values[1] ?? 0) > (best?.values[1] ?? 0) ? point : best),
+    undefined,
+  )
+  const where =
+    worst === undefined || failed < 2
+      ? ''
+      : period === '1'
+        ? `, de meeste om ${worst.label}`
+        : `, de meeste op ${worst.title ?? worst.label}`
+  return `${failed} van de ${all.toLocaleString('nl-NL')} builds mislukt${where}.`
 }
 
 /** One space of the made-up web shop: a branch of the app running on its own address. */
@@ -231,13 +224,14 @@ const HOST = [
 function Overview(): ReactNode {
   const [period, setPeriod] = useState<Period>('7')
   const points = builds(period)
-  const trail = (figure: Figure): Figure => ({
-    ...figure,
-    trail:
-      figure.label === 'Builds'
-        ? points.map((point) => point.values.reduce<number>((sum, value) => sum + (value ?? 0), 0))
-        : (TRAILS[period][figure.label] ?? []),
-  })
+  const perPoint = points.map((point) =>
+    point.values.reduce<number>((sum, value) => sum + (value ?? 0), 0),
+  )
+  const all = perPoint.reduce((sum, value) => sum + value, 0)
+  const figure = (kpi: Omit<Figure, 'against'>): Figure =>
+    kpi.label === 'Builds'
+      ? { ...kpi, value: all.toLocaleString('nl-NL'), against: AGAINST[period], trail: perPoint }
+      : { ...kpi, against: AGAINST[period], trail: TRAILS[period][kpi.label] ?? [] }
   return (
     <AppFrame product="halo" current="dashboard">
       <ScrollArea>
@@ -259,6 +253,9 @@ function Overview(): ReactNode {
                     Nieuwe space
                   </Button>
                 </div>
+                <div className="@xl:hidden">
+                  <IconButton icon="plus" variant="primary" size="sm" label="Nieuwe space" />
+                </div>
               </>
             }
           />
@@ -274,7 +271,7 @@ function Overview(): ReactNode {
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS[period].map((kpi) => (
-              <KpiTile key={kpi.label} figure={trail(kpi)} period={PERIOD_TEXT[period]} />
+              <KpiTile key={kpi.label} figure={figure(kpi)} period={PERIOD_TEXT[period]} />
             ))}
           </div>
           <Panel
@@ -294,8 +291,13 @@ function Overview(): ReactNode {
               ]}
               points={points}
               format={(value) => value.toLocaleString('nl-NL')}
+              total={(value) => `${value.toLocaleString('nl-NL')} builds`}
               empty="Nog geen builds in deze periode"
+              emptyNext="Kies een langere periode of start een build in een space."
             />
+            <p aria-live="polite" className="m-0 mt-3 text-[12px] text-muted">
+              {summary(period, points)}
+            </p>
           </Panel>
           <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             <Panel title="Spaces" meta="6 van 12" flush>
