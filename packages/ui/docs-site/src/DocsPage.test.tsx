@@ -1,8 +1,11 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test } from 'vitest'
+import packageJson from '../../package.json'
 import { stories, storyId } from '../../src/gallery'
 import { DocsPage } from './DocsPage'
+import { DEMOS } from './demo-kit/registry'
+import { INSTALL, VERSION } from './Home'
 
 /** Puts `hash` in the address bar and tells the page, as a click on a link would. */
 function goTo(hash: string): void {
@@ -27,6 +30,7 @@ describe('the docs page', () => {
   })
 
   test('lists one item per story of the library', () => {
+    goTo('#/primitives-button')
     render(<DocsPage stories={stories} />)
     const list = screen.getByRole('listbox', { name: 'Zoek een component' })
     const titles = within(list)
@@ -57,6 +61,7 @@ describe('the docs page', () => {
   })
 
   test('writes the chosen story into the hash', async () => {
+    goTo('#/primitives-button')
     render(<DocsPage stories={stories} />)
     await userEvent.click(screen.getByRole('option', { name: 'Switch' }))
     expect(location.hash).toBe(`#/${storyId({ group: 'primitives', title: 'Switch' })}`)
@@ -77,6 +82,7 @@ describe('the docs page', () => {
   })
 
   test('folds the list behind a button of the header for a narrow screen', async () => {
+    goTo('#/primitives-button')
     render(<DocsPage stories={stories} />)
     const button = screen.getByRole('button', { name: 'Componenten' })
     expect(button).toHaveAttribute('aria-expanded', 'false')
@@ -84,5 +90,64 @@ describe('the docs page', () => {
     expect(button).toHaveAttribute('aria-expanded', 'true')
     await userEvent.click(screen.getByRole('option', { name: 'Switch' }))
     expect(button).toHaveAttribute('aria-expanded', 'false')
+  })
+})
+
+describe('the home page', () => {
+  test.each(['', '#', '#/'])('opens at the root (%j), not on a component', (hash) => {
+    goTo(hash)
+    render(<DocsPage stories={stories} />)
+    const home = screen.getByRole('main', { name: 'Start' })
+    expect(within(home).getByRole('heading', { level: 1, name: 'Orbit UI' })).toBeInTheDocument()
+    expect(screen.queryByRole('listbox', { name: 'Zoek een component' })).toBeNull()
+    expect(screen.getByRole('radio', { name: 'Start' })).toBeChecked()
+  })
+
+  test('shows the version of the package and the install line', () => {
+    render(<DocsPage stories={stories} />)
+    expect(VERSION).toBe(packageJson.version)
+    const home = screen.getByRole('main', { name: 'Start' })
+    expect(home.textContent).toContain(VERSION)
+    expect(within(home).getAllByText(INSTALL).length).toBeGreaterThan(0)
+    expect(home.textContent).toContain('@fromorbit:registry=https://npm.pkg.github.com')
+  })
+
+  test('draws live components and demos, each linking to its page', () => {
+    render(<DocsPage stories={stories} />)
+    const mosaic = screen.getByRole('region', { name: 'Voorbeelden' })
+    expect(within(mosaic).getByRole('radiogroup', { name: 'Periode' })).toBeInTheDocument()
+    expect(within(mosaic).getByRole('link', { name: /StatTile/ })).toHaveAttribute(
+      'href',
+      `#/${storyId({ group: 'patterns', title: 'StatTile' })}`,
+    )
+    for (const slug of ['dashboard', 'inloggen', 'review']) {
+      const demo = DEMOS.find((entry) => entry.slug === slug)
+      expect(
+        within(mosaic).getByRole('link', { name: new RegExp(demo?.title ?? slug) }),
+      ).toHaveAttribute('href', `#/demo/${slug}`)
+      expect(mosaic.querySelector(`[data-demo="${slug}"]`)?.closest('[inert]')).not.toBeNull()
+    }
+  })
+
+  test('leads to the components and the demos with its two actions', async () => {
+    render(<DocsPage stories={stories} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Componenten' }))
+    expect(screen.getByRole('listbox', { name: 'Zoek een component' })).toBeInTheDocument()
+    const first = stories[0]
+    expect(first && location.hash).toBe(first && `#/${storyId(first)}`)
+    goTo('#/')
+    await userEvent.click(screen.getByRole('button', { name: "Demo's" }))
+    expect(location.hash).toBe('#/demo')
+  })
+
+  test('returns home from the name of the site', async () => {
+    goTo('#/primitives-button')
+    render(<DocsPage stories={stories} />)
+    expect(screen.getByRole('link', { name: 'Orbit UI, naar de start' })).toHaveAttribute(
+      'href',
+      '#/',
+    )
+    await userEvent.click(screen.getByRole('radio', { name: 'Start' }))
+    expect(screen.getByRole('main', { name: 'Start' })).toBeInTheDocument()
   })
 })
