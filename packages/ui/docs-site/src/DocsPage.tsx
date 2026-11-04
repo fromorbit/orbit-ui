@@ -21,6 +21,7 @@ import {
 } from '../../src'
 import { type Story, stateId, storyId } from '../../src/gallery'
 import { DEMO_PREFIX, DemoGallery, demoSlugOf } from './demo-kit/DemoViews'
+import { Home } from './Home'
 import { docsShortcuts } from './shortcuts'
 
 /** Prefix of the hash route of one story: `#/primitives-button`. */
@@ -51,10 +52,11 @@ const PRODUCT_OPTIONS = [
   { value: 'fold', label: 'Fold' },
 ] as const
 
-/** The two halves of the page: one component at a time, or whole screens built from them. */
-type Mode = 'components' | 'demos'
+/** The parts of the page: the start, one component at a time, or whole screens built from them. */
+type Mode = 'home' | 'components' | 'demos'
 
 const MODE_OPTIONS = [
+  { value: 'home', label: 'Start' },
   { value: 'components', label: 'Componenten' },
   { value: 'demos', label: "Demo's" },
 ] as const
@@ -64,6 +66,11 @@ const PLATFORM_OPTIONS = [
   { value: 'mac', label: 'macOS' },
   { value: 'windows', label: 'Windows' },
 ] as const
+
+/** Whether a hash is the root of the site, which opens the home page: none, `#` or `#/`. */
+export function isHomeHash(hash: string): boolean {
+  return hash === '' || hash === '#' || hash === PREFIX
+}
 
 /** The story id in a hash, or undefined for a hash that names none. */
 function idOf(hash: string): string | undefined {
@@ -101,6 +108,21 @@ function StateFrame({ state }: { state: ComponentType }): ReactNode {
   )
 }
 
+/** The name of the site, the satellite beside it, as a link to the home page. */
+function HomeLink(): ReactNode {
+  return (
+    <a
+      href={PREFIX}
+      aria-label="Orbit UI, naar de start"
+      className="flex items-center gap-2 rounded-sm text-fg no-underline outline-focus focus-visible:outline-2 focus-visible:outline-offset-4"
+    >
+      <OrbitWordmark className="h-4 text-fg" />
+      <span className="text-[13px] text-muted">UI</span>
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
+    </a>
+  )
+}
+
 /** The props of {@link DocsPage}. */
 export interface DocsPageProps {
   /** The catalogue to show: the library's `stories`, sorted by group and title. */
@@ -118,7 +140,8 @@ export interface DocsPageProps {
  * there as `data-product`, which picks the satellite (the dot beside "UI"). The provider
  * gets `docsShortcuts`, so the key caps of the stories are drawn as Orbit draws them.
  *
- * The second tab, "Demo's", is one page of blocks: whole screens built from the components, each
+ * The root (`#/`, or no hash) opens the home page (`Home`): what the library is, the install line,
+ * a mosaic of live components and demos, and the ways in. The third tab, "Demo's", is one page of blocks: whole screens built from the components, each
  * in a frame of its own, and the wishlist of what they lack; `#/demo/<slug>` scrolls to a block
  * (see `demo-kit/`). It has no sidebar, so the docs' navigation never stands beside a screen's own.
  * Both tabs keep their place in state, so switching back returns to the story or demo that was
@@ -141,7 +164,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
 
   const [navOpen, setNavOpen] = useState(false)
   const demoSlug = demoSlugOf(hash)
-  const mode: Mode = demoSlug === undefined ? 'components' : 'demos'
+  const mode: Mode = isHomeHash(hash) ? 'home' : demoSlug === undefined ? 'components' : 'demos'
 
   const chosenId = idOf(hash)
   const story = stories.find((entry) => storyId(entry) === chosenId) ?? stories[0]
@@ -157,11 +180,13 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
 
   const switchMode = (next: Mode) => {
     location.hash =
-      next === 'demos'
-        ? lastDemo === undefined
-          ? '#/demo'
-          : `${DEMO_PREFIX}${lastDemo}`
-        : `${PREFIX}${lastStory ?? ''}`
+      next === 'home'
+        ? PREFIX
+        : next === 'demos'
+          ? lastDemo === undefined
+            ? '#/demo'
+            : `${DEMO_PREFIX}${lastDemo}`
+          : `${PREFIX}${lastStory ?? (stories[0] ? storyId(stories[0]) : '')}`
   }
 
   const items = useMemo<SearchListItem[]>(
@@ -192,10 +217,8 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
             aria-label="Componenten"
             className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-none`}
           >
-            <div className="flex h-12 shrink-0 items-center gap-2 px-4">
-              <OrbitWordmark className="h-4 text-fg" />
-              <span className="text-[13px] text-muted">UI</span>
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
+            <div className="flex h-12 shrink-0 items-center px-4">
+              <HomeLink />
             </div>
             <div className="min-h-0 flex-1">
               <ScrollArea>
@@ -229,10 +252,8 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                 />
               </div>
             ) : (
-              <div className="flex items-center gap-2 pr-1">
-                <OrbitWordmark className="h-4 text-fg" />
-                <span className="text-[13px] text-muted">UI</span>
-                <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
+              <div className="flex items-center pr-1">
+                <HomeLink />
               </div>
             )}
             <SegmentedControl<Mode>
@@ -267,7 +288,14 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
               onValueChange={setTheme}
             />
           </header>
-          {mode === 'demos' ? (
+          {mode === 'home' ? (
+            <main
+              aria-label="Start"
+              className="relative min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+            >
+              <Home stories={stories} />
+            </main>
+          ) : mode === 'demos' ? (
             <main
               aria-label="Demo's"
               className="relative min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
