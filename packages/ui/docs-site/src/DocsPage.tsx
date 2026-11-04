@@ -306,7 +306,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                       aria-label={caption}
                       className="mb-10"
                     >
-                      <p className="m-0 mb-2 text-[12px] text-muted">{caption}</p>
+                      <h2 className="m-0 mb-2 font-normal text-[12px] text-muted">{caption}</h2>
                       <StateFrame state={state} />
                     </section>
                   ))}

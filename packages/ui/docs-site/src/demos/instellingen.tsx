@@ -46,7 +46,7 @@ const SECTIONS: readonly (SearchListItem & { id: Section })[] = [
   { id: 'repository', label: 'Repository', icon: 'folder-git-2' },
   { id: 'account', label: 'Account', icon: 'user' },
   { id: 'meldingen', label: 'Meldingen', icon: 'bell' },
-  { id: 'abonnement', label: 'Abonnement', icon: 'sliders-horizontal' },
+  { id: 'abonnement', label: 'Plan en betaling', icon: 'sliders-horizontal' },
 ]
 
 /** The intro under the title of every section. */
@@ -62,7 +62,11 @@ const INTRO: Record<Section, string> = {
  * `Select` grows (`max-w-56`).
  */
 function Wide({ children }: { children: ReactNode }): ReactNode {
-  return <div className="w-56 max-w-full *:w-full *:*:w-full *:text-left">{children}</div>
+  return (
+    <div className="w-56 max-w-full @max-[30rem]:w-full *:w-full *:*:w-full *:text-left">
+      {children}
+    </div>
+  )
 }
 
 /** A setting row around a switch that really switches. */
@@ -152,7 +156,7 @@ function Repository(): ReactNode {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="font-mono text-[12px] text-secondary">{REPO}</span>
               <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
-                <StatusMark kind="running" />
+                <StatusMark kind="running" size="sm" />
                 Gekoppeld
               </span>
             </div>
@@ -202,7 +206,7 @@ function Repository(): ReactNode {
           description="Een goedkeuring plaatst Review nooit"
         >
           {({ labelId }) => (
-            <div className="w-56 max-w-full">
+            <div className="w-56 max-w-full @max-[30rem]:w-full">
               <Select
                 label="Bij een blokkerende bevinding"
                 aria-labelledby={labelId}
@@ -455,15 +459,29 @@ function Notifications(): ReactNode {
   )
 }
 
+/** The one way to pay the open invoice now, named as on Gebruik. */
+const PAY_NOW = 'Nu betalen met iDEAL'
+
 /**
- * The plan the workspace is on beside the one above it, then how it is paid: two plans rather than
- * a table of every plan, so the choice stays small, and the whole of the usage on its own page.
- * The plans lie on the tint of the settings groups under them, so the column speaks one region
- * language; the failed direct debit is said here as on Gebruik, with the step that settles it.
+ * The failed direct debit first, as on Gebruik, with the one step that settles it; then the plan
+ * the workspace is on beside the one above it, and how it is paid: two plans rather than a table of
+ * every plan, so the choice stays small, and the whole of the usage on its own page. The plans lie
+ * on the tint of the settings groups under them, so the column speaks one region language.
  */
 function Subscription(): ReactNode {
   return (
     <>
+      <Banner
+        tone="danger"
+        action={
+          <Button variant="primary" size="sm">
+            {PAY_NOW}
+          </Button>
+        }
+      >
+        De incasso van € 174,24 voor september is mislukt: onvoldoende saldo. We proberen het op 24
+        oktober opnieuw.
+      </Banner>
       <PlanCards label="Plannen">
         <PlanCard
           name="Team"
@@ -479,7 +497,12 @@ function Subscription(): ReactNode {
           current
           currentLabel="Huidig plan"
           plane="surface"
-          summary="6 leden · € 174,24 per maand incl. btw"
+          summary="6 leden · vast € 174,24 per maand incl. btw"
+          action={
+            <Button variant="secondary" size="sm">
+              Plan wijzigen
+            </Button>
+          }
         />
         <PlanCard
           name="Bedrijf"
@@ -508,16 +531,11 @@ function Subscription(): ReactNode {
           label="Betaalwijze"
           description="SEPA-incasso, NL •••• 4021 · nieuwe poging 24 okt"
         >
-          {({ describedById }) => (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
-                <StatusMark kind="fault" />
-                Incasso mislukt
-              </span>
-              <Button variant="primary" size="sm" aria-describedby={describedById}>
-                Nu betalen
-              </Button>
-            </div>
+          {() => (
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+              <StatusMark kind="fault" />
+              Incasso mislukt
+            </span>
           )}
         </SettingRow>
         <SettingRow
@@ -616,7 +634,7 @@ export default {
   variants: [
     { value: 'repository', label: 'Repository' },
     { value: 'account', label: 'Account' },
-    { value: 'abonnement', label: 'Abonnement' },
+    { value: 'abonnement', label: 'Plan en betaling' },
   ],
   Screen: Settings,
 } satisfies DemoModule

@@ -270,7 +270,7 @@ export function SettingRow({
           </span>
         )}
       </div>
-      <div className="flex max-w-full shrink-0 items-center gap-2">
+      <div className="flex max-w-full shrink-0 items-center gap-2 @max-[30rem]:self-stretch">
         {modified && onReset && reason === undefined ? (
           // Under the label (a narrow row) the control starts on the label's edge; reset follows it.
           <span
@@ -288,7 +288,7 @@ export function SettingRow({
             </Tooltip>
           </span>
         ) : null}
-        <div ref={controlRef} className="flex max-w-full items-center gap-2">
+        <div ref={controlRef} className="flex max-w-full items-center gap-2 @max-[30rem]:flex-1">
           {children({
             labelId,
             describedById: describedBy.length === 0 ? undefined : describedBy.join(' '),

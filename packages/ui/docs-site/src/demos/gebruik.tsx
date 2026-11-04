@@ -44,7 +44,7 @@ const KPIS: Figure[] = [
     // More hours is not good news on its own: at this pace the month ends over the plan.
     tone: 'neutral',
     rising: true,
-    against: 'tegenover 1–20 september',
+    against: 'tegenover 1–20 sep',
     // The first 20 days of each month, so the line compares the same stretch as the delta.
     trail: [131, 138, 129, 146, 152, 149, 160, 182],
   },
@@ -55,7 +55,7 @@ const KPIS: Figure[] = [
     // Every chip stays neutral: the change is news, whether it is good depends on the reader.
     tone: 'neutral',
     rising: true,
-    against: 'tegenover 1–20 september',
+    against: 'tegenover 1–20 sep',
     trail: [31, 34, 29, 38, 35, 41, 37, 46],
   },
   {
@@ -64,7 +64,7 @@ const KPIS: Figure[] = [
     delta: '31',
     tone: 'neutral',
     rising: false,
-    against: 'tegenover 1–20 september',
+    against: 'tegenover 1–20 sep',
     trail: [204, 196, 188, 181, 172, 166, 159, 128],
   },
   {
@@ -74,7 +74,7 @@ const KPIS: Figure[] = [
     // Normal growth at 37% of the limit: no alarm until it nears the 50 GB.
     tone: 'neutral',
     rising: true,
-    against: 'tegenover 20 september',
+    against: 'tegenover 20 sep',
     meter: { value: 18.4, max: 50, text: '18,4 van 50 GB', note: '37% van 50 GB' },
   },
 ]
@@ -101,6 +101,9 @@ const EXTRA_HOUR = 80
 const PLAN_NET = 6 * 2_400
 const EXTRA_NET = (PROJECTED - PLAN_HOURS) * EXTRA_HOUR
 
+/** The open invoice of September: six members, incl. VAT, in cents. */
+const OPEN_GROSS = Math.round(6 * 2_400 * 1.21)
+
 /** A number and its unit, kept on one line. */
 const unit = (value: number, name: string) => `${value.toLocaleString('nl-NL')}\u00a0${name}`
 
@@ -112,11 +115,14 @@ const STATUS: Record<InvoiceStatus, { label: string; kind: StatusMarkKind }> = {
   failed: { label: 'Mislukt', kind: 'fault' },
 }
 
-/** The mark and the word of an invoice's status. */
+/**
+ * The mark and the word of an invoice's status. Paid is the norm of the column, so its mark is the
+ * quiet size; the failed one keeps the full mark and stands out alone (Von Restorff).
+ */
 function InvoiceState({ status }: { status: InvoiceStatus }): ReactNode {
   return (
     <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
-      <StatusMark kind={STATUS[status].kind} />
+      <StatusMark kind={STATUS[status].kind} size={status === 'paid' ? 'sm' : 'md'} />
       {STATUS[status].label}
     </span>
   )
@@ -129,6 +135,8 @@ interface Step {
   at: string
   note?: string
   tone?: 'danger' | 'muted'
+  /** The step the reader can take here instead of waiting: the one pay action of the page. */
+  pay?: boolean
 }
 
 /** One invoice of the made-up workspace. */
@@ -169,8 +177,8 @@ const INVOICES: readonly Invoice[] = [
         icon: 'rotate-cw',
         label: 'Nieuwe poging',
         at: '24 okt',
-        note: 'Of betaal nu met iDEAL',
         tone: 'muted',
+        pay: true,
       },
     ],
   },
@@ -349,6 +357,9 @@ function InvoiceTable({
   )
 }
 
+/** The one way to pay the open invoice now, named the same wherever it stands. */
+const PAY_NOW = 'Nu betalen met iDEAL'
+
 /** What happened to an invoice, step by step. */
 function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
   return (
@@ -366,6 +377,13 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
             <span className="text-[12px] text-muted">
               {step.note === undefined ? step.at : `${step.at} · ${step.note}`}
             </span>
+            {step.pay ? (
+              <span className="mt-2 flex">
+                <Button variant="secondary" size="sm">
+                  {PAY_NOW}
+                </Button>
+              </span>
+            ) : null}
           </span>
         </TimelineItem>
       ))}
@@ -377,6 +395,7 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
 function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
   return (
     <Panel
+      headingLevel={2}
       title={invoice.number}
       meta={invoice.period}
       actions={<IconButton icon="arrow-down" size="sm" label="Download als pdf" />}
@@ -431,7 +450,7 @@ function PaymentMethod(): ReactNode {
   const [submitted, setSubmitted] = useState(false)
   return (
     <section id={PAYMENT_ID} className="scroll-mt-4">
-      <Panel title="Betaalwijze" meta="hoe Zilverberg betaalt">
+      <Panel headingLevel={2} title="Betaalwijze" meta="hoe Zilverberg betaalt">
         <div className="flex max-w-xl flex-col gap-6">
           <div className="flex flex-col gap-2">
             <PropertyList
@@ -458,10 +477,24 @@ function PaymentMethod(): ReactNode {
               De open factuur van september schrijven we dan meteen af.
             </p>
           </div>
+          <section aria-labelledby="eenmalig-ideal" className="flex flex-col gap-2">
+            <h3 id="eenmalig-ideal" className="m-0 font-medium text-[13px] text-fg">
+              Eenmalig met iDEAL
+            </h3>
+            <p className="m-0 text-[12px] text-muted leading-relaxed">
+              Betaal de open factuur van september ({euro(OPEN_GROSS)}) nu via je eigen bank. De
+              incasso blijft voor de volgende facturen.
+            </p>
+            <span className="flex">
+              <Button variant="secondary" size="sm">
+                {PAY_NOW}
+              </Button>
+            </span>
+          </section>
           <section aria-labelledby="kaart-toevoegen" className="flex max-w-md flex-col gap-3">
-            <h4 id="kaart-toevoegen" className="m-0 font-medium text-[13px] text-fg">
+            <h3 id="kaart-toevoegen" className="m-0 font-medium text-[13px] text-fg">
               Kaart toevoegen
-            </h4>
+            </h3>
             <Form
               label="Kaart toevoegen"
               onSubmit={() => setSubmitted(true)}
@@ -502,21 +535,28 @@ function About({ children }: { children: ReactNode }): ReactNode {
  * the figures in a column at the end like the use of the plan above it.
  */
 function NextInvoice(): ReactNode {
-  const rows: { label: string; value: ReactNode }[] = [
+  const net = PLAN_NET + EXTRA_NET
+  const total = Math.round(net * 1.21)
+  const rows: { label: string; value: ReactNode; sum?: boolean }[] = [
     { label: 'Plan, 6 leden', value: euro(PLAN_NET) },
     {
       label: `${unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan`,
       value: <About>{euro(EXTRA_NET)}</About>,
     },
+    { label: 'Excl. btw', value: <About>{euro(net)}</About>, sum: true },
+    { label: 'Btw 21%', value: <About>{euro(total - net)}</About> },
   ]
   return (
     <section aria-labelledby="volgende-factuur" className="flex flex-col gap-2">
-      <h4 id="volgende-factuur" className="m-0 font-normal text-[12px] text-muted">
+      <h3 id="volgende-factuur" className="m-0 font-normal text-[12px] text-muted">
         Volgende factuur, 1 november
-      </h4>
+      </h3>
       <dl className="m-0 flex flex-col gap-2 text-[13px] leading-5">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-3">
+          <div
+            key={row.label}
+            className={`flex items-baseline justify-between gap-3 ${row.sum ? 'border-border border-t pt-2' : ''}`}
+          >
             <dt className="text-secondary">{row.label}</dt>
             <dd className="m-0 text-secondary tabular-nums">{row.value}</dd>
           </div>
@@ -524,7 +564,7 @@ function NextInvoice(): ReactNode {
         <div className="flex items-baseline justify-between gap-3">
           <dt className="font-medium text-fg">Verwacht, incl. btw</dt>
           <dd className="m-0 font-medium text-fg tabular-nums">
-            <About>{euro(Math.round((PLAN_NET + EXTRA_NET) * 1.21))}</About>
+            <About>{euro(total)}</About>
           </dd>
         </div>
       </dl>
@@ -566,12 +606,13 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                   Factuur bekijken
                 </Button>
                 <Button variant="primary" size="sm">
-                  Nu betalen met iDEAL
+                  {PAY_NOW}
                 </Button>
               </div>
             }
           >
-            De incasso van september is mislukt. We proberen het op 24 oktober opnieuw.
+            De incasso van {euro(OPEN_GROSS)} voor september is mislukt: onvoldoende saldo. We
+            proberen het op 24 oktober opnieuw.
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS.map((kpi) => (
@@ -582,38 +623,48 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               />
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(17rem,1fr)_minmax(0,2fr)]">
-            <PlanCard
-              name="Team"
-              price="€ 24"
-              period="per lid per maand, excl. btw"
-              features={[
-                'Onbeperkt gesprekken en specs',
-                {
-                  label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
-                  detail: `${unit(USED, 'u')} gebruikt`,
-                },
-                { label: 'Orbit Review op 10 repositories', detail: '7 gebruikt' },
-                { label: '50 GB opslag voor opnames', detail: '18,4\u00a0GB gebruikt' },
-              ]}
-              current
-              currentLabel="Huidig plan"
-              action={
-                <Button variant="secondary" size="sm">
-                  Plan wijzigen
-                </Button>
-              }
-            >
-              <NextInvoice />
-            </PlanCard>
-            <Panel title="Agent-uren" meta="opgeteld, deze maand">
+          {/* The plan beside the chart once both have room; each card keeps its own height. Stacked,
+              the plan keeps the width of a card (30rem), so its figures stay near their lines. */}
+          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(20rem,1fr)_minmax(0,2fr)]">
+            {/* The one plan of the page: on the plane of every card beside it, no tag, as there
+                is nothing to compare it to. */}
+            <div className="w-full max-w-[30rem] @5xl:max-w-none">
+              <PlanCard
+                name="Team"
+                price="€ 24"
+                period="per lid per maand, excl. btw"
+                description="Het plan van Zilverberg, voor 6 leden."
+                headingLevel={2}
+                features={[
+                  'Onbeperkt gesprekken en specs',
+                  {
+                    label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
+                    detail: `${unit(USED, 'u')} gebruikt`,
+                  },
+                  { label: 'Orbit Review op 10 repositories', detail: '7 in gebruik' },
+                  { label: '50 GB opslag voor opnames', detail: '18,4\u00a0GB' },
+                ]}
+                action={
+                  <Button variant="secondary" size="sm">
+                    Plan wijzigen
+                  </Button>
+                }
+              >
+                <NextInvoice />
+              </PlanCard>
+            </div>
+            <Panel headingLevel={2} title="Agent-uren" meta="opgeteld, deze maand">
               <div className="flex flex-col gap-3">
                 <Chart
                   kind="line"
                   label="Agent-uren in oktober, opgeteld per dag"
                   series={[
                     { id: 'used', label: 'Gebruikt' },
-                    { id: 'pace', label: 'Tempo van je plan', reference: true },
+                    {
+                      id: 'pace',
+                      label: `Op koers voor ${unit(PLAN_HOURS, 'u')}`,
+                      reference: true,
+                    },
                   ]}
                   points={HOURS}
                   limit={{ value: PLAN_HOURS, label: `Plan ${unit(PLAN_HOURS, 'u')}` }}
@@ -636,8 +687,12 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               </div>
             </Panel>
           </div>
-          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+          {/* Wide, the list and the payment method stand in the first column and the opened invoice
+              beside both, so neither column ends in an empty field; narrow, the invoice follows
+              its list. */}
+          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] @5xl:grid-rows-[auto_1fr]">
             <Panel
+              headingLevel={2}
               title="Facturen"
               meta={`${INVOICES.length} van 10`}
               actions={
@@ -649,9 +704,15 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
             >
               <InvoiceTable selected={selected} onSelect={setSelected} />
             </Panel>
-            {invoice ? <InvoiceDetail invoice={invoice} /> : null}
+            {invoice ? (
+              <div className="min-w-0 @5xl:sticky @5xl:top-4 @5xl:col-start-2 @5xl:row-span-2 @5xl:row-start-1">
+                <InvoiceDetail invoice={invoice} />
+              </div>
+            ) : null}
+            <div className="min-w-0 @5xl:col-start-1 @5xl:row-start-2">
+              <PaymentMethod />
+            </div>
           </div>
-          <PaymentMethod />
         </div>
       </ScrollArea>
     </AppFrame>

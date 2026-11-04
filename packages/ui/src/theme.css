@@ -202,6 +202,34 @@
   );
 }
 
+/* The quiet size: the shape at 8px (the square 7, the diamond 6) with a softer glow, in the same
+   14px slot, for the state that is the norm in its column. */
+.nt-status-mark[data-size="sm"] .nt-status-mark-body {
+  inline-size: 8px;
+  block-size: 8px;
+  box-shadow: 0 0 calc(3px * var(--nt-status-glow)) 0 color-mix(in srgb, var(--c) 40%, transparent);
+}
+.nt-status-mark[data-size="sm"][data-kind="stopped"] .nt-status-mark-body {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 2px;
+}
+.nt-status-mark[data-size="sm"][data-kind="blocked"] .nt-status-mark-body {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 1px;
+}
+.nt-status-mark[data-size="sm"][data-kind="fault"] .nt-status-mark-body {
+  clip-path: path(
+    "M 3.2 0.55 Q 4 -0.55 4.8 0.55 L 7.66 6.76 Q 8.11 8 6.97 8 L 1.03 8 Q -0.11 8 0.34 6.76 Z"
+  );
+}
+.nt-status-mark[data-size="sm"][data-kind="fault"] {
+  filter: drop-shadow(
+    0 0 calc(2px * var(--nt-status-glow)) color-mix(in srgb, var(--c) 40%, transparent)
+  );
+}
+
 @keyframes nt-pulse {
   50% {
     opacity: 0.35;

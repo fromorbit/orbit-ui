@@ -64,7 +64,7 @@ const RIGHTS = [
   'Overnemen in main',
   'Reviews plaatsen',
   'Leden uitnodigen',
-  'Abonnement wijzigen',
+  'Plan wijzigen',
 ] as const
 
 /** Who may do what by default: rows are rights, columns roles. */

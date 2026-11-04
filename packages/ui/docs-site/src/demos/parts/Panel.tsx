@@ -10,6 +10,8 @@ export interface PanelProps {
   actions?: ReactNode
   /** No inner padding, for a list or a table that runs to the card's edges. */
   flush?: boolean
+  /** The level of its heading in the outline of the page: 3 under a section, 2 right under the page title. */
+  headingLevel?: 2 | 3
   /** The layout of the card in its parent: a grid span, a height. */
   className?: string
   children: ReactNode
@@ -24,19 +26,21 @@ export function Panel({
   meta,
   actions,
   flush = false,
+  headingLevel = 3,
   className,
   children,
 }: PanelProps): ReactNode {
   const id = useId()
+  const Heading = headingLevel === 2 ? 'h2' : 'h3'
   return (
     <section
       aria-labelledby={id}
       className={`flex min-w-0 flex-col rounded-lg bg-overlay ${className ?? ''}`}
     >
       <header className="flex min-h-11 items-center gap-2 px-4 pt-1">
-        <h3 id={id} className="m-0 font-medium text-[13px] text-fg">
+        <Heading id={id} className="m-0 font-medium text-[13px] text-fg">
           {title}
-        </h3>
+        </Heading>
         {meta === undefined ? null : <span className="text-[12px] text-muted">{meta}</span>}
         {actions === undefined ? null : (
           <div className="ml-auto flex items-center gap-1.5">{actions}</div>

@@ -40,8 +40,9 @@ export interface PlanCardProps {
   /** What the plan holds, one line each, each after a check. */
   features?: readonly (string | PlanFeature)[]
   /**
-   * The plan the workspace is on now: a stronger tint of its plane, and a tag in its heading, so
-   * the heading reads "Team, Huidig plan".
+   * The plan the workspace is on now, among other plans: the card is lifted to the plane of a card
+   * with the accent's subtle tint over it, in either plane and theme, and its heading carries a tag,
+   * so it reads "Team, Huidig plan". A plan that stands alone compares to nothing: leave it out.
    */
   current?: boolean
   /** The words of that tag: "Huidig plan". Required to mark the current plan. */
@@ -68,15 +69,24 @@ function featureOf(feature: string | PlanFeature): PlanFeature {
   return typeof feature === 'string' ? { label: feature } : feature
 }
 
-/** The tint of a card per plane, and the stronger one of the current plan. */
-const PLANE: Record<PlanCardPlane, { rest: string; current: string }> = {
-  // The opaque plane of a card, with the active tint laid over it as an image.
-  overlay: {
-    rest: 'bg-overlay',
-    current: 'bg-overlay bg-linear-to-b from-surface-hover to-surface-hover',
-  },
-  surface: { rest: 'bg-surface', current: 'bg-surface-active' },
+/** The plane of a plan at rest: every alternative on one quiet surface. */
+const REST: Record<PlanCardPlane, string> = {
+  overlay: 'bg-overlay',
+  surface: 'bg-surface',
 }
+
+/**
+ * The plane of the current plan on either plane: the opaque plane of a card with the accent's
+ * subtle tint laid over it as an image. A lift in both themes (white with a violet breath on Paper,
+ * a lighter blue on Midnight), never the grey of a pressed card.
+ */
+const CURRENT = 'bg-overlay bg-linear-to-b from-accent-subtle to-accent-subtle'
+
+/**
+ * The quiet words of a card (the period, a figure, the summary): `muted` at rest; on the tint of
+ * the current plan `secondary`, as `muted` falls under 4.5:1 there in dark.
+ */
+const quiet = (current: boolean) => (current ? 'text-secondary' : 'text-muted')
 
 /** The action with the plan's name as its description, unless it brings one of its own. */
 function describedAction(action: ReactNode, nameId: string): ReactNode {
@@ -96,15 +106,19 @@ function describedAction(action: ReactNode, nameId: string): ReactNode {
  * and who it is for; the features with what the caller adds; the foot — with the lines of a row
  * 8px apart (Proximity). The name is the 15px/600 of a card, the price the 20px of a figure with
  * tabular digits, its period a muted 12px beside it, so the eye goes name, price, what you get
- * (Serial Position). The current plan is marked by a stronger tint of its plane (Common Region)
- * and by the tag in its heading, never by a frame or a filled button (Von Restorff, one emphasis
- * per view). A feature can carry a figure at its end ("182 u gebruikt"), so the card can say what
+ * (Serial Position). The current plan is marked by the accent's subtle tint over the plane of a
+ * card (Common Region) and by the tag in its heading, never by a frame or a filled button (Von
+ * Restorff, one emphasis per view). The heading row is 28px with or without the tag, so names and
+ * prices of plans side by side stand on one line. A feature can carry a figure at its end ("182 u gebruikt"), so the card can say what
  * of the plan is used without a second widget.
  *
  * The card fills its cell and pins the foot to the bottom. In `PlanCards` its three rows are the
  * rows of the list (`subgrid`), so the features of every plan start on one line and the feet line
- * up, whatever the descriptions hold. The action stays at the end of the foot at every width, also
- * once it wraps under the summary, and grows to 40px under a coarse pointer (Fitts).
+ * up, whatever the descriptions hold. The foot has one rule per width of the card: from 22rem of
+ * content the summary and the action share a row, narrower the summary stands on its own line and
+ * the action under it at the end. Stacked, the summary keeps the top of the foot and the action
+ * its bottom, so beside other plans the summaries share a line and so do the actions. The action grows to 40px under a
+ * coarse pointer (Fitts).
  */
 export function PlanCard({
   name,
@@ -130,28 +144,34 @@ export function PlanCard({
       aria-labelledby={nameId}
       data-nt-plan-card
       {...(current ? { 'data-current': '' } : {})}
-      className={`grid h-full min-w-0 gap-6 rounded-lg p-4 forced-colors:border forced-colors:border-[CanvasText] ${rows} in-data-nt-plan-cards:row-span-3 in-data-nt-plan-cards:grid-rows-subgrid ${current ? PLANE[plane].current : PLANE[plane].rest}`}
+      className={`grid h-full min-w-0 gap-6 rounded-lg p-4 forced-colors:border forced-colors:border-[CanvasText] ${rows} in-data-nt-plan-cards:row-span-3 in-data-nt-plan-cards:grid-rows-subgrid ${current ? CURRENT : REST[plane]}`}
     >
       <div className="flex flex-col gap-2">
+        {/* 28px with or without the tag (the tag's own line is 16px), so the name and the price
+            of the current plan stand on the line of the plans beside it. */}
+        {/* Marked, the heading is named "Team, Huidig plan" as one string: a hidden comma between
+            the flex items was read with a space before it. The visible words start the name. */}
         <Heading
           id={nameId}
-          className="m-0 flex min-h-6 flex-wrap items-center gap-x-2 gap-y-1 font-heading text-[15px] text-fg leading-6"
+          {...(marked ? { 'aria-label': `${name}, ${currentLabel}` } : {})}
+          className="m-0 flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1 font-heading text-[15px] text-fg leading-6"
         >
-          {name}
+          <span>{name}</span>
           {marked ? (
-            <>
-              <span className="sr-only">, </span>
+            <span className="flex leading-4">
               <Tag tone="neutral" icon="check">
                 {currentLabel}
               </Tag>
-            </>
+            </span>
           ) : null}
         </Heading>
         <p className="m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
           <span className="whitespace-nowrap font-heading text-[20px] text-fg tabular-nums leading-7">
             {price}
           </span>
-          {period === undefined ? null : <span className="text-[12px] text-muted">{period}</span>}
+          {period === undefined ? null : (
+            <span className={`text-[12px] ${quiet(current)}`}>{period}</span>
+          )}
         </p>
         {description === undefined ? null : (
           <p className="m-0 text-[12px] text-secondary leading-5">{description}</p>
@@ -167,7 +187,7 @@ export function PlanCard({
                 </span>
                 <span className="min-w-0 flex-1 text-secondary">{label}</span>
                 {detail === undefined ? null : (
-                  <span className="shrink-0 text-[12px] text-muted tabular-nums">
+                  <span className={`shrink-0 text-[12px] tabular-nums ${quiet(current)}`}>
                     <span className="sr-only">, </span>
                     {detail}
                   </span>
@@ -179,15 +199,25 @@ export function PlanCard({
         {children}
       </div>
       {hasFoot ? (
-        <div className="flex min-h-(--nt-control-sm) flex-wrap items-center gap-x-3 gap-y-2 self-end">
-          {summary === undefined ? null : (
-            <p className="m-0 min-w-0 text-[12px] text-muted">{summary}</p>
-          )}
-          {action === undefined ? null : (
-            <span className="ml-auto flex pointer-coarse:[&_button]:h-(--nt-control-lg)">
-              {describedAction(action, nameId)}
-            </span>
-          )}
+        // The foot measures its own width: a container on the card itself would contain its layout,
+        // and a contained grid cannot be a subgrid.
+        // Stacked, the summary keeps the top of the foot and the action its bottom, so beside other
+        // plans both stand on one line whatever wraps.
+        <div className="@container min-w-0">
+          <div className="flex h-full flex-col items-end justify-between gap-2 @[22rem]:h-auto @[22rem]:min-h-(--nt-control-sm) @[22rem]:flex-row @[22rem]:items-center @[22rem]:gap-3">
+            {summary === undefined ? null : (
+              <p
+                className={`m-0 min-w-0 self-stretch text-[12px] leading-5 @[22rem]:flex-1 @[22rem]:self-auto ${quiet(current)}`}
+              >
+                {summary}
+              </p>
+            )}
+            {action === undefined ? null : (
+              <span className="flex shrink-0 @[22rem]:ml-auto pointer-coarse:[&_button]:h-(--nt-control-lg)">
+                {describedAction(action, nameId)}
+              </span>
+            )}
+          </div>
         </div>
       ) : null}
     </article>
