@@ -1,5 +1,6 @@
 import comboboxStory from '../overlays/Combobox.gallery'
 import confirmDialogStory from '../overlays/ConfirmDialog.gallery'
+import contextMenuStory from '../overlays/ContextMenu.gallery'
 import datePickerStory from '../overlays/DatePicker.gallery'
 import dialogStory from '../overlays/Dialog.gallery'
 import dropdownMenuCountsStory from '../overlays/DropdownMenu.counts.gallery'
@@ -137,6 +138,7 @@ export { collectStories, type Story, stateId, storyId } from './story'
  */
 export const stories: Story[] = collectStories([
   confirmDialogStory,
+  contextMenuStory,
   dialogStory,
   dropdownMenuCountsStory,
   dropdownMenuStory,

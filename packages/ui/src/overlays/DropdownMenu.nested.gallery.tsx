@@ -19,7 +19,7 @@ const ITEMS: DropdownMenuItem[] = [
   choice('east', 'Oost 3', 'model', false),
   {
     id: 'more',
-    label: 'More',
+    label: 'Meer modellen',
     kind: 'submenu',
     items: [choice('west', 'West 1', 'more', false), choice('mid', 'Midden 2', 'more', false)],
   },

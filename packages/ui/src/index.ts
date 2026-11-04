@@ -10,6 +10,7 @@
 
 export * from './overlays/Combobox'
 export * from './overlays/ConfirmDialog'
+export * from './overlays/ContextMenu'
 export * from './overlays/DatePicker'
 export * from './overlays/Dialog'
 export * from './overlays/DropdownMenu'

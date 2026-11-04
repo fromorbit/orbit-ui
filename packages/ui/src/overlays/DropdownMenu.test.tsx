@@ -794,3 +794,28 @@ test('a menu without a head or density keeps its rows and frame', async () => {
   expect(screen.queryByRole('group')).toBeNull()
   expect(screen.getByRole('menu').className).toContain('min-w-40')
 })
+
+test('a row without an icon among rows with one keeps an empty slot, so the labels line up', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Meer</Button>}
+      label="Rijacties"
+      items={[
+        { id: 'rename', label: 'Hernoemen', icon: 'pencil', onSelect: () => {} },
+        { id: 'archive', label: 'Archiveren', onSelect: () => {} },
+      ]}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const archive = await screen.findByRole('menuitem', { name: 'Archiveren' })
+  expect(archive.querySelector('[data-nt-menu-lead]')).toHaveAttribute('aria-hidden', 'true')
+  expect(
+    screen.getByRole('menuitem', { name: 'Hernoemen' }).querySelector('[data-nt-menu-lead]'),
+  ).toBeNull()
+})
+
+test('a menu of rows without icons keeps no empty slot', async () => {
+  await open()
+  const archive = screen.getByRole('menuitem', { name: 'Archiveren' })
+  expect(archive.querySelector('[data-nt-menu-lead]')).toBeNull()
+})
