@@ -626,7 +626,8 @@ export function Chart({
                 x2={width}
                 y1={Math.round(y(tick)) + 0.5}
                 y2={Math.round(y(tick)) + 0.5}
-                stroke={tick === 0 ? 'var(--nt-border-strong)' : 'var(--nt-border)'}
+                stroke="var(--nt-border-strong)"
+                strokeDasharray={tick === 0 ? undefined : '2 3'}
                 shapeRendering="crispEdges"
               />
             ))}

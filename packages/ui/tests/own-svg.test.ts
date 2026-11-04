@@ -9,6 +9,7 @@ import { read, SRC, sources, stripComments, underSrc } from './guards/source'
  */
 const allowed: Record<string, string> = {
   'patterns/Chart.tsx': 'a chart and a sparkline draw data, not icons',
+  'patterns/ChartFigure.tsx': 'a chart described as data draws data, not icons',
   'patterns/StatusShape.tsx': 'the status shapes stay our own',
   'patterns/Scrubber.tsx':
     'the marks of a timeline are status shapes, each cut out of its plane so it reads on the played part',

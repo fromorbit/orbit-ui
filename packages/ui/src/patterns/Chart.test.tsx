@@ -205,3 +205,16 @@ test('a sparkline can draw the period before as a faint line behind it', () => {
   )
   expect(container.querySelector('[data-nt-sparkline-previous]')).not.toBeNull()
 })
+
+test('the grid is dashed and the baseline solid, the look of the desktop chart', () => {
+  const { container } = render(
+    <Chart label="Builds per dag" series={SERIES} points={POINTS} format={nl} />,
+  )
+  const grid = [...container.querySelectorAll('svg line')].filter(
+    (line) => !line.hasAttribute('data-nt-chart-limit'),
+  )
+  const solid = grid.filter((line) => !line.hasAttribute('stroke-dasharray'))
+  expect(solid).toHaveLength(1)
+  expect(grid.length).toBeGreaterThan(2)
+  for (const line of grid) expect(line).toHaveAttribute('stroke', 'var(--nt-border-strong)')
+})

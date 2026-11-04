@@ -13,6 +13,7 @@ import toastStory from '../overlays/Toast.gallery'
 import tooltipStory from '../overlays/Tooltip.gallery'
 import bannerStory from '../patterns/Banner.gallery'
 import chartStory from '../patterns/Chart.gallery'
+import chartFigureStory from '../patterns/ChartFigure.gallery'
 import chatMessageStory from '../patterns/ChatMessage.gallery'
 import chipStory from '../patterns/Chip.gallery'
 import chipListFieldStory from '../patterns/ChipListField.gallery'
@@ -149,6 +150,7 @@ export const stories: Story[] = collectStories([
   tooltipStory,
   bannerStory,
   chartStory,
+  chartFigureStory,
   chatMessageStory,
   chipStory,
   chipListFieldStory,

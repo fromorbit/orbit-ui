@@ -1,4 +1,5 @@
 import type { ComboboxLabels } from '../overlays/Combobox'
+import type { ChartFigureLabels } from '../patterns/ChartFigure'
 import type { ChipListFieldLabels } from '../patterns/ChipListField'
 import type { ComposerLabels } from '../patterns/Composer'
 import type { CopyButtonLabels } from '../patterns/CopyButton'
@@ -144,6 +145,24 @@ export const nl = {
     note: (count) => (count === 1 ? '1 opmerking' : `${dutchCount(count)} opmerkingen`),
     none: 'Geen bevindingen; niets houdt het samenvoegen tegen',
   } satisfies SeverityBarLabels,
+  chartFigure: {
+    label: (title) => `Grafiek ${title}`,
+    untitled: 'zonder titel',
+    types: {
+      bar: 'staafdiagram',
+      line: 'lijndiagram',
+      area: 'vlakdiagram',
+      pie: 'taartdiagram',
+      scatter: 'spreidingsdiagram',
+    },
+    loading: 'Gegevens laden…',
+    empty: 'Deze grafiek heeft geen gegevens om te tonen',
+    hidden: (count, max) =>
+      `${count === 1 ? '1 reeks' : `${dutchCount(count)} reeksen`} niet getoond: meer dan ${max} reeksen lezen niet`,
+    rest: 'Overig',
+    legend: 'Legenda',
+    dataTable: 'Gegevens van de grafiek',
+  } satisfies ChartFigureLabels,
   severityWord: {
     blocking: 'Blokkade',
     problem: 'Probleem',
