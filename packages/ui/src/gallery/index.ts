@@ -47,6 +47,7 @@ import proseStory from '../patterns/Prose.gallery'
 import railStory from '../patterns/Rail.gallery'
 import relativeTimeStory from '../patterns/RelativeTime.gallery'
 import roomyListRowStory from '../patterns/RoomyListRow.gallery'
+import scrubberStory from '../patterns/Scrubber.gallery'
 import searchListStory from '../patterns/SearchList.gallery'
 import searchListModelsStory from '../patterns/SearchList.models.gallery'
 import selectionBarStory from '../patterns/SelectionBar.gallery'
@@ -177,6 +178,7 @@ export const stories: Story[] = collectStories([
   railStory,
   relativeTimeStory,
   roomyListRowStory,
+  scrubberStory,
   searchListStory,
   searchListModelsStory,
   selectionBarStory,

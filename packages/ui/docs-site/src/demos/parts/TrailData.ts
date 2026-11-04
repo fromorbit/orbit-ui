@@ -1,3 +1,5 @@
+import type { ScrubberKind, ScrubberMarker } from '../../../../src'
+
 /**
  * The made-up recording the trail demo replays: a customer of the web shop who tries to pay at
  * the checkout twice and gets a server error both times. Times are seconds from the start.
@@ -12,6 +14,17 @@ export interface TrailEvent {
   kind: TrailEventKind
   title: string
   detail?: string
+}
+
+/**
+ * How each kind stands on the timeline: a shape per kind, and red only for what went wrong. A
+ * navigation is a quiet bar rather than violet, which is for links and focus.
+ */
+export const TRAIL_KINDS: Record<TrailEventKind, ScrubberKind> = {
+  klik: { label: 'Klik', shape: 'dot' },
+  navigatie: { label: 'Navigatie', shape: 'bar' },
+  fout: { label: 'Fout', shape: 'diamond', tone: 'danger' },
+  verzoek: { label: 'Mislukt verzoek', shape: 'ring', tone: 'danger' },
 }
 
 /** One line of the browser's console. */
@@ -61,6 +74,16 @@ export const EVENTS: TrailEvent[] = [
   { at: 20.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: '500 · 241 ms' },
   { at: 23.0, kind: 'navigatie', title: 'Opent /', detail: 'verlaat de kassa' },
 ]
+
+/** The events as markers on the timeline, named by what happened. */
+export const MARKERS: ScrubberMarker<TrailEventKind>[] = EVENTS.map((event) => ({
+  at: event.at,
+  kind: event.kind,
+  label: event.detail === undefined ? event.title : `${event.title} · ${event.detail}`,
+}))
+
+/** The moments the player can skip between with "Vorige fout" and "Volgende fout". */
+export const ERRORS = EVENTS.filter((event) => event.kind === 'fout').map((event) => event.at)
 
 export const CONSOLE: ConsoleLine[] = [
   { at: 0.2, level: 'info', text: 'Webwinkel 4.2.0 gestart' },

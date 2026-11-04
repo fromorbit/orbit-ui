@@ -1,5 +1,6 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
+  adjacentMarker,
   Button,
   DataTable,
   type DataTableColumn,
@@ -11,6 +12,7 @@ import {
   PropertyList,
   RoomyListRow,
   ScrollArea,
+  Scrubber,
   SegmentedControl,
   Tabs,
   Tag,
@@ -25,16 +27,18 @@ import {
   type ConsoleLine,
   clock,
   DURATION,
+  ERRORS,
   EVENTS,
+  MARKERS,
   NETWORK,
   type NetworkRequest,
   POSITION,
   RECORDINGS,
   stamp,
+  TRAIL_KINDS,
   type TrailEventKind,
 } from './parts/TrailData'
 import { TrailReplay } from './parts/TrailReplay'
-import { TrailScrubber } from './parts/TrailScrubber'
 
 type Speed = '1' | '2' | '4'
 
@@ -59,18 +63,24 @@ const LEVEL_LOOK: Record<ConsoleLine['level'], { icon: IconName; row: string; te
   error: { icon: 'octagon-alert', row: 'bg-danger-subtle', text: 'text-danger' },
 }
 
+/** How close, in seconds, the playhead must be to count as standing on an event. */
+const ON = 0.05
+
 /**
- * What happened in the recording, as a timeline: what went wrong in red, the line the player is at
- * in full strength, and what the player has not reached yet as a dashed round.
+ * What happened in the recording, as a timeline that follows the playhead: what went wrong in
+ * red, the last event the player passed in full strength, and what it has not reached yet as a
+ * dashed round.
  */
-function Events(): ReactNode {
+function Events({ position }: { position: number }): ReactNode {
+  const passed = EVENTS.filter((event) => event.at <= position + ON)
+  const last = passed.at(-1)
   return (
     <div className="px-4 py-4">
       <Timeline label="Gebeurtenissen">
         {EVENTS.map((event) => {
           const look = EVENT_LOOK[event.kind]
-          const here = event.at === POSITION
-          const ahead = event.at > POSITION
+          const here = event === last
+          const ahead = event.at > position + ON
           const wrong = event.kind === 'fout' || event.kind === 'verzoek'
           return (
             <TimelineItem
@@ -226,11 +236,28 @@ function Trail(): ReactNode {
   const [speed, setSpeed] = useState<Speed>('1')
   const [tab, setTab] = useState('gebeurtenissen')
   const [current, setCurrent] = useState('r1')
-  const errors = EVENTS.filter((event) => event.kind === 'fout').length
+  const [position, setPosition] = useState(POSITION)
+  const [playing, setPlaying] = useState(false)
+  const errors = ERRORS.length
+  const reached = ERRORS.filter((at) => at <= position + ON).length
+  const previous = adjacentMarker(MARKERS, position, 'previous', ['fout'], ON)
+  const next = adjacentMarker(MARKERS, position, 'next', ['fout'], ON)
+  const seek = (seconds: number) => setPosition(Math.min(Math.max(seconds, 0), DURATION))
+  useEffect(() => {
+    if (!playing) return
+    const tick = window.setInterval(() => {
+      setPosition((now) => {
+        const later = Math.min(now + 0.1 * Number(speed), DURATION)
+        if (later >= DURATION) setPlaying(false)
+        return later
+      })
+    }, 100)
+    return () => window.clearInterval(tick)
+  }, [playing, speed])
   return (
     <AppFrame product="halo" current="trail">
       <ScrollArea>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 @3xl:px-8 @3xl:py-8">
           <PageHeader
             title="Kassa betaalt niet"
             meta="webwinkel · main · bewaard tot 3 nov"
@@ -247,34 +274,83 @@ function Trail(): ReactNode {
               </>
             }
           />
-          <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="flex min-w-0 flex-col gap-5">
+          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="flex min-w-0 flex-col gap-6">
               <section
                 aria-label="Speler"
-                className="flex flex-col gap-3 rounded-lg bg-overlay p-3 @3xl:p-4"
+                className="flex flex-col gap-4 rounded-lg bg-overlay p-3 @3xl:p-4"
               >
-                <TrailReplay />
-                <TrailScrubber events={EVENTS} duration={DURATION} position={POSITION} />
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                  <IconButton icon="rotate-ccw" size="sm" label="5 seconden terug" />
-                  <Button variant="primary" size="sm">
-                    Afspelen
-                  </Button>
-                  <IconButton icon="rotate-cw" size="sm" label="5 seconden vooruit" />
-                  <span className="px-1 font-mono text-[12px] text-secondary tabular-nums">
-                    {`${clock(POSITION)} / ${clock(DURATION)}`}
-                  </span>
-                  <div className="ml-auto flex items-center gap-2">
-                    <SegmentedControl<Speed>
-                      label="Snelheid"
+                <TrailReplay position={position} />
+                <div className="flex flex-col gap-2">
+                  <Scrubber
+                    label="Afspeelpositie"
+                    duration={DURATION}
+                    value={position}
+                    step={0.5}
+                    onValueChange={(seconds) => {
+                      setPlaying(false)
+                      seek(seconds)
+                    }}
+                    markers={MARKERS}
+                    kinds={TRAIL_KINDS}
+                    formatTime={clock}
+                    valueText={(seconds) => `${clock(seconds)} van ${clock(DURATION)}`}
+                    legendLabel="Markeringen"
+                  />
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+                    <IconButton
+                      icon="rotate-ccw"
                       size="sm"
-                      value={speed}
-                      options={SPEEDS}
-                      onValueChange={setSpeed}
+                      label="5 seconden terug"
+                      onClick={() => seek(position - 5)}
                     />
-                    <IconButton icon="chevron-left" size="sm" label="Vorige fout" />
-                    <span className="hidden text-[12px] text-muted @lg:inline">{`Fout 1 van ${errors}`}</span>
-                    <IconButton icon="chevron-right" size="sm" label="Volgende fout" />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        if (!playing && position >= DURATION) seek(0)
+                        setPlaying(!playing)
+                      }}
+                    >
+                      {playing ? 'Pauzeren' : 'Afspelen'}
+                    </Button>
+                    <IconButton
+                      icon="rotate-cw"
+                      size="sm"
+                      label="5 seconden vooruit"
+                      onClick={() => seek(position + 5)}
+                    />
+                    <span className="px-1 font-mono text-[12px] text-secondary tabular-nums">
+                      {`${clock(position)} / ${clock(DURATION)}`}
+                    </span>
+                    <div className="ml-auto flex items-center gap-2">
+                      <SegmentedControl<Speed>
+                        label="Snelheid"
+                        size="sm"
+                        value={speed}
+                        options={SPEEDS}
+                        onValueChange={setSpeed}
+                      />
+                      <div className="flex items-center">
+                        <IconButton
+                          icon="chevron-left"
+                          size="sm"
+                          label="Vorige fout"
+                          disabled={previous === undefined}
+                          onClick={() => previous && seek(previous.at)}
+                        />
+                        <span className="min-w-20 text-center text-[12px] text-secondary tabular-nums">
+                          {reached === 0 ? `${errors} fouten` : `Fout ${reached} van ${errors}`}
+                        </span>
+                        <IconButton
+                          icon="chevron-right"
+                          size="sm"
+                          label="Volgende fout"
+                          disabled={next === undefined}
+                          onClick={() => next && seek(next.at)}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -292,7 +368,7 @@ function Trail(): ReactNode {
                       id: 'gebeurtenissen',
                       label: 'Gebeurtenissen',
                       count: EVENTS.length,
-                      content: <Events />,
+                      content: <Events position={position} />,
                     },
                     {
                       id: 'console',
@@ -310,7 +386,7 @@ function Trail(): ReactNode {
                 />
               </section>
             </div>
-            <aside className="flex min-w-0 flex-col gap-5">
+            <aside className="flex min-w-0 flex-col gap-6">
               <Panel title="Details">
                 <PropertyList
                   label="Details van de opname"

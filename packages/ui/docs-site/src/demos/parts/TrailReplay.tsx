@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Icon } from '../../../../src'
+import { clock, EVENTS } from './TrailData'
 
 /** The order on the page that was recorded. */
 const LINES = [
@@ -8,16 +9,24 @@ const LINES = [
   { name: 'Filterhouder', note: 'porselein', price: '€ 17,00' },
 ] as const
 
+/** The first click on Betalen and the first error, from the recording. */
+const PAY =
+  EVENTS.find((event) => event.kind === 'klik' && event.title === 'Klikt op Betalen')?.at ?? 0
+const ERROR = EVENTS.find((event) => event.kind === 'fout')?.at ?? 0
+
 /**
- * The recorded page at the moment of the first error: the checkout of the web shop with its
- * order, the payment by iDEAL and the message the customer got. A drawing from the tokens, as a
- * replay shows the page in its own styles; the click that caused it is ringed.
+ * The recorded page at `position`: the checkout of the web shop with its order and the payment by
+ * iDEAL. Once the customer has pressed Betalen the button is ringed with the pointer on it, and
+ * from the first error on the message the customer got stands under it. A drawing from the
+ * tokens, as a replay shows the page in its own styles.
  */
-export function TrailReplay(): ReactNode {
+export function TrailReplay({ position }: { position: number }): ReactNode {
+  const clicked = position >= PAY
+  const failed = position >= ERROR
   return (
     <div
       role="img"
-      aria-label="De kassa van de webwinkel op 0:14, met de melding: Er ging iets mis, het betalen lukt nu niet"
+      aria-label={`De kassa van de webwinkel op ${clock(position)}${failed ? ', met de melding: Er ging iets mis, het betalen lukt nu niet' : ''}`}
       className="flex flex-col overflow-hidden rounded-lg border border-border bg-canvas"
     >
       <div className="flex h-8 shrink-0 items-center gap-2 border-border border-b bg-frame px-3">
@@ -73,12 +82,18 @@ export function TrailReplay(): ReactNode {
             </span>
             <span className="relative flex h-8 items-center justify-center rounded-md bg-accent font-medium text-[12px] text-accent-fg">
               Betalen
-              <span className="absolute -inset-1.5 rounded-lg border-2 border-danger/70" />
-              <span className="absolute -right-1 -bottom-2 text-fg">
-                <Icon name="mouse-pointer-click" size="sm" />
-              </span>
+              {clicked ? (
+                <>
+                  <span className="absolute -inset-1.5 rounded-lg border-2 border-danger/70" />
+                  <span className="absolute -right-1 -bottom-2 text-fg">
+                    <Icon name="mouse-pointer-click" size="sm" />
+                  </span>
+                </>
+              ) : null}
             </span>
-            <span className="flex items-start gap-2 rounded-md border border-danger-border bg-danger-subtle px-2.5 py-2 text-[12px] text-danger">
+            <span
+              className={`flex items-start gap-2 rounded-md border border-danger-border bg-danger-subtle px-2.5 py-2 text-[12px] text-danger ${failed ? '' : 'invisible'}`}
+            >
               <Icon name="alert-triangle" size="sm" />
               <span className="flex flex-col">
                 <span className="font-medium">Er ging iets mis…</span>

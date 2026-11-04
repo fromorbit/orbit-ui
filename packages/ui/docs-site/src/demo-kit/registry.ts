@@ -71,13 +71,19 @@ function filesOf(slug: string): string[] {
   return seen
 }
 
+/**
+ * Two names in the order of the alphabet. Typed on `string`, because the names of the wishlist
+ * may be none at all (`never`) once the library has every piece.
+ */
+const byName = (a: string, b: string) => a.localeCompare(b)
+
 /** The components one demo uses and the ones it misses, derived from its source. */
 export function inventoryOf(slug: string): DemoInventory {
   const files = filesOf(slug).map((key) => sources[key] ?? '')
   const used = [...new Set(files.flatMap(libraryImports))].sort((a, b) => a.localeCompare(b))
   const missing = [...new Set(files.flatMap(missingNames))]
     .filter((name): name is MissingName => name in MISSING)
-    .sort((a, b) => a.localeCompare(b))
+    .sort(byName)
   return { used, missing }
 }
 
@@ -97,5 +103,5 @@ export function missingOverview(): MissingEntry[] {
       reason: MISSING[name],
       demos: DEMOS.filter((demo) => inventoryOf(demo.slug).missing.includes(name)),
     }))
-    .sort((a, b) => b.demos.length - a.demos.length || a.name.localeCompare(b.name))
+    .sort((a, b) => b.demos.length - a.demos.length || byName(a.name, b.name))
 }

@@ -1,5 +1,13 @@
 import { createElement, type ReactNode, useEffect, useId, useState } from 'react'
-import { Icon, PortalContainerProvider, Prose, SegmentedControl, Switch, Tag } from '../../../src'
+import {
+  EmptyState,
+  Icon,
+  PortalContainerProvider,
+  Prose,
+  SegmentedControl,
+  Switch,
+  Tag,
+} from '../../../src'
 import { galleryLabels, type Story, storyId } from '../../../src/gallery'
 import { MISSING, MissingMarks } from './Missing'
 import {
@@ -238,7 +246,8 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
 /**
  * The wishlist: every component a demo had to mark as missing, why it is wanted, and where.
  *
- * Sorted by the number of demos that miss it, so the first card is the one to build first.
+ * Sorted by the number of demos that miss it, so the first card is the one to build first. When
+ * nothing is missing any more it says so in one calm line, the good end of the list (Peak–End).
  */
 export function MissingOverview(): ReactNode {
   const entries = missingOverview()
@@ -254,50 +263,64 @@ export function MissingOverview(): ReactNode {
         <h2 id={titleId} className="m-0 font-heading text-[20px] text-fg tracking-[-0.01em]">
           Overzicht ontbrekend
         </h2>
-        <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
-          {`${entries.length} componenten ontbreken in ${DEMOS.length} demo's. Bovenaan staat wat de meeste schermen missen: dat bouwen we het eerst.`}
-        </p>
+        {entries.length === 0 ? null : (
+          <p className="m-0 max-w-2xl text-[13px] text-secondary leading-relaxed">
+            {`${entries.length === 1 ? '1 component ontbreekt' : `${entries.length} componenten ontbreken`} in ${DEMOS.length} demo's. Bovenaan staat wat de meeste schermen missen: dat bouwen we het eerst.`}
+          </p>
+        )}
       </div>
-      <ul
-        id={listId}
-        aria-label="Ontbrekende componenten"
-        className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 xl:grid-cols-3"
-      >
-        {entries.map((entry, index) => (
-          <li
-            key={entry.name}
-            aria-labelledby={`${listId}-${entry.name}`}
-            className="flex flex-col gap-2 rounded-lg bg-overlay p-4"
-          >
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] text-muted tabular-nums">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <h3
-                id={`${listId}-${entry.name}`}
-                className="m-0 font-medium font-mono text-[13px] text-accent-text"
-              >
-                {entry.name}
-              </h3>
-              <span className="ml-auto">
-                <Tag>{entry.demos.length === 1 ? '1 demo' : `${entry.demos.length} demo's`}</Tag>
-              </span>
-            </div>
-            <p className="m-0 flex-1 text-[13px] text-secondary leading-relaxed">{entry.reason}</p>
-            <p className="m-0 flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
-              {entry.demos.map((demo) => (
-                <a
-                  key={demo.slug}
-                  href={`${DEMO_PREFIX}${demo.slug}`}
-                  className="rounded-sm text-muted no-underline outline-focus hover:text-fg hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+      {entries.length === 0 ? (
+        <div className="rounded-lg bg-overlay">
+          <EmptyState
+            icon="check-circle"
+            title="Er ontbreekt niets"
+            description={`Alle ${DEMOS.length} demo's zijn gebouwd uit de componenten van de bibliotheek.`}
+          />
+        </div>
+      ) : (
+        <ul
+          id={listId}
+          aria-label="Ontbrekende componenten"
+          className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 xl:grid-cols-3"
+        >
+          {entries.map((entry, index) => (
+            <li
+              key={entry.name}
+              aria-labelledby={`${listId}-${entry.name}`}
+              className="flex flex-col gap-2 rounded-lg bg-overlay p-4"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-muted tabular-nums">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3
+                  id={`${listId}-${entry.name}`}
+                  className="m-0 font-medium font-mono text-[13px] text-accent-text"
                 >
-                  {demo.title}
-                </a>
-              ))}
-            </p>
-          </li>
-        ))}
-      </ul>
+                  {entry.name}
+                </h3>
+                <span className="ml-auto">
+                  <Tag>{entry.demos.length === 1 ? '1 demo' : `${entry.demos.length} demo's`}</Tag>
+                </span>
+              </div>
+              <p className="m-0 flex-1 text-[13px] text-secondary leading-relaxed">
+                {entry.reason}
+              </p>
+              <p className="m-0 flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
+                {entry.demos.map((demo) => (
+                  <a
+                    key={demo.slug}
+                    href={`${DEMO_PREFIX}${demo.slug}`}
+                    className="rounded-sm text-muted no-underline outline-focus hover:text-fg hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    {demo.title}
+                  </a>
+                ))}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
@@ -350,7 +373,7 @@ export function DemoGallery({
               Hele schermen uit de Orbit-familie
             </h1>
             <p className="m-0 text-(--nt-brand-mist) text-[15px] leading-relaxed opacity-85">
-              {`${DEMOS.length} schermen van Orbit en Halo, gebouwd uit de componenten van deze bibliotheek. Elk scherm past zich aan zijn breedte aan en de code staat ernaast. Wat nog ontbreekt is nagetekend en gemarkeerd: ${missingCount} componenten op de wensenlijst.`}
+              {`${DEMOS.length} schermen van Orbit en Halo, gebouwd uit de componenten van deze bibliotheek. Elk scherm past zich aan zijn breedte aan en de code staat ernaast.${missingCount === 0 ? '' : ` Wat nog ontbreekt is nagetekend en gemarkeerd: ${missingCount === 1 ? '1 component' : `${missingCount} componenten`} op de wensenlijst.`}`}
             </p>
           </div>
         </div>
@@ -372,12 +395,14 @@ export function DemoGallery({
               </li>
             ))}
           </ul>
-          <div className="flex shrink-0 items-center gap-2 border-border border-l pl-3 text-[12px] text-secondary">
-            <Switch label="Markeer ontbrekend" checked={marks} onCheckedChange={setMarks} />
-            <span aria-hidden="true" className="hidden sm:inline">
-              Markeer ontbrekend
-            </span>
-          </div>
+          {missingCount === 0 ? null : (
+            <div className="flex shrink-0 items-center gap-2 border-border border-l pl-3 text-[12px] text-secondary">
+              <Switch label="Markeer ontbrekend" checked={marks} onCheckedChange={setMarks} />
+              <span aria-hidden="true" className="hidden sm:inline">
+                Markeer ontbrekend
+              </span>
+            </div>
+          )}
         </nav>
         {DEMOS.map((demo) => (
           <DemoBlock key={demo.slug} demo={demo} stories={stories} />

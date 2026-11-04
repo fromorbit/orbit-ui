@@ -109,24 +109,26 @@ describe('the demos tab', () => {
     expect(screen.getByRole('radio', { name: 'Componenten' })).toBeChecked()
   })
 
-  test('shows what a demo uses and what it misses, from its source', () => {
-    // The opname still draws its Scrubber as missing, so both lists are there.
-    goTo('#/demo/trail')
+  test.each(SLUGS)('shows what %s uses and what it misses, from its source', (slug) => {
+    goTo(`#/demo/${slug}`)
     render(<DocsPage stories={stories} />)
-    const block = blockOf('trail')
-    const inventory = inventoryOf('trail')
+    const block = blockOf(slug)
+    const inventory = inventoryOf(slug)
     const used = within(block).getByRole('list', { name: 'Gebruikt' })
-    const missing = within(block).getByRole('list', { name: 'Ontbreekt' })
     expect(
       within(used)
         .getAllByRole('listitem')
         .map((item) => item.textContent),
     ).toEqual(inventory.used)
-    expect(
-      within(missing)
-        .getAllByRole('listitem')
-        .map((item) => item.textContent),
-    ).toEqual(inventory.missing)
+    // A demo that misses nothing has no empty "Ontbreekt" line under it.
+    const missing = within(block).queryByRole('list', { name: 'Ontbreekt' })
+    if (inventory.missing.length === 0) expect(missing).toBeNull()
+    else
+      expect(
+        within(missing ?? block)
+          .getAllByRole('listitem')
+          .map((item) => item.textContent),
+      ).toEqual(inventory.missing)
   })
 
   test('shows the source of a demo in its code view', async () => {
@@ -149,12 +151,19 @@ describe('the demos tab', () => {
     expect(frame?.className).toContain('w-[390px]')
   })
 
-  test('switches the marks of what is missing off and on', async () => {
+  test('offers the switch of the marks only while something is missing', async () => {
     goTo('#/demo')
     render(<DocsPage stories={stories} />)
+    const toggle = screen.queryByRole('switch', { name: 'Markeer ontbrekend' })
+    if (missingOverview().length === 0) {
+      // Nothing left to mark: a switch that changes nothing would be one choice too many.
+      expect(toggle).toBeNull()
+      expect(document.querySelectorAll('[data-missing]')).toHaveLength(0)
+      return
+    }
     const marked = () => document.querySelectorAll('[data-missing][title]').length
     expect(marked()).toBeGreaterThan(0)
-    await userEvent.click(screen.getByRole('switch', { name: 'Markeer ontbrekend' }))
+    if (toggle) await userEvent.click(toggle)
     expect(marked()).toBe(0)
     // The placeholders stay, so the lists still match the screens.
     expect(document.querySelectorAll('[data-missing]').length).toBeGreaterThan(0)
@@ -197,12 +206,18 @@ describe('every demo', () => {
 })
 
 describe('the overview of what is missing', () => {
-  test('names every Missing of every demo, with the demos it stands in', () => {
+  test('names every Missing of every demo, with the demos it stands in, or that none is left', () => {
     goTo('#/demo/ontbrekend')
     render(<DocsPage stories={stories} />)
     expect(scrolled).toContain('demo-ontbrekend')
-    const overview = screen.getByRole('list', { name: 'Ontbrekende componenten' })
     const everyName = new Set(DEMOS.flatMap((demo) => inventoryOf(demo.slug).missing))
+    if (everyName.size === 0) {
+      // The good end of the wishlist: one calm line instead of an empty list.
+      expect(screen.queryByRole('list', { name: 'Ontbrekende componenten' })).toBeNull()
+      expect(document.getElementById('demo-ontbrekend')).toHaveTextContent('Er ontbreekt niets')
+      return
+    }
+    const overview = screen.getByRole('list', { name: 'Ontbrekende componenten' })
     for (const name of everyName) {
       const row = within(overview).getByRole('listitem', { name })
       const demos = DEMOS.filter((demo) => inventoryOf(demo.slug).missing.includes(name))

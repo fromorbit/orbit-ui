@@ -7,10 +7,7 @@ import { createContext, type ReactNode, useContext } from 'react'
  * The names are the type of `Missing`'s `name`, so a demo cannot invent one that the wishlist does
  * not explain; which demos use a name is read from their sources (`registry.ts`), never kept here.
  */
-export const MISSING = {
-  Scrubber:
-    'De tijdlijn van een opname: afspeelpositie, slepen en markeringen per gebeurtenis (klik, navigatie, fout).',
-} as const
+export const MISSING = {} as const satisfies Record<string, string>
 
 /** The name of one missing component. */
 export type MissingName = keyof typeof MISSING
