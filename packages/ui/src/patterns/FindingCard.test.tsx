@@ -21,13 +21,13 @@ test('a finding is an article named by its weight and title, described by its pl
   expect(card).toHaveTextContent('De server antwoordt met 500.')
 })
 
-test('a long place keeps its file and line in sight and carries the whole as its title', () => {
+test('a long place is cut in the middle on a wide card, keeps its file and line, carries the whole as its title', () => {
   const place = 'packages/server/src/authentication/providers/oidc.ts:123'
   render(<FindingCard severity="problem" severityLabel="Probleem" title="Token" location={place} />)
   const line = screen.getByTitle(place)
   expect(within(line).getByText('oidc.ts:123')).toBeInTheDocument()
   expect(within(line).getByText('packages/server/src/authentication/providers/')).toHaveClass(
-    'truncate',
+    '@lg:truncate',
   )
 })
 
@@ -45,12 +45,12 @@ test('media and actions go inside the card', () => {
       severityLabel="Probleem"
       title="Klein totaal"
       media={<div role="img" aria-label="Schermafbeelding" />}
-      actions={<Button variant="ghost">Negeer</Button>}
+      actions={<Button variant="ghost">Negeren</Button>}
     />,
   )
   const card = screen.getByRole('article', { name: 'Probleem: Klein totaal' })
   expect(within(card).getByRole('img', { name: 'Schermafbeelding' })).toBeInTheDocument()
-  expect(within(card).getByRole('button', { name: 'Negeer' })).toBeInTheDocument()
+  expect(within(card).getByRole('button', { name: 'Negeren' })).toBeInTheDocument()
 })
 
 test('without a place there is no separator and no description', () => {

@@ -24,6 +24,15 @@ export default {
         />
       </div>
     ),
+    'Narrow: 320px, the legend wraps': () => (
+      <div className="w-full max-w-[288px]">
+        <SeverityBar
+          label="Bevindingen naar ernst"
+          counts={{ blocking: 128, problem: 1204, note: 37 }}
+          labels={nl.severity}
+        />
+      </div>
+    ),
     'Only remarks: no bar': () => (
       <div className="w-full max-w-96">
         <SeverityBar label="Bevindingen naar ernst" counts={{ note: 3 }} labels={nl.severity} />

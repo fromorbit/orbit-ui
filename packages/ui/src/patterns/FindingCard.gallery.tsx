@@ -7,14 +7,15 @@ import { FindingCard } from './FindingCard'
 
 /**
  * A screenshot of a checkout as a small drawing: the page, and the error the review saw on it.
- * Beside the words it is a 144×96 thumbnail; under them, on a narrow card, it fills their column.
+ * A 144×96 thumbnail, beside the words on a wide card and under them, at the same size, on a narrow
+ * one.
  */
 function Screenshot(): ReactNode {
   return (
     <div
       role="img"
       aria-label="Schermafbeelding: foutmelding op de kassa"
-      className="flex aspect-[3/2] w-full max-w-80 flex-col gap-1.5 overflow-hidden rounded-md bg-canvas p-2 @lg:aspect-auto @lg:h-24 @lg:w-36"
+      className="flex h-24 w-36 flex-col gap-1.5 overflow-hidden rounded-md bg-canvas p-2"
     >
       <span className="h-1.5 w-12 rounded-full bg-border-strong" />
       <span className="h-1.5 w-20 rounded-full bg-surface-active" />
@@ -33,6 +34,7 @@ export default {
     'Blocking, with a screenshot': () => (
       <div className="w-full max-w-[640px]">
         <FindingCard
+          headingLevel={2}
           severity="blocking"
           severityLabel={nl.severityWord.blocking}
           title="Betalen met iDEAL loopt vast"
@@ -41,13 +43,14 @@ export default {
           media={<Screenshot />}
         >
           Na het kiezen van een bank blijft de kassa op ‘Bezig met betalen…’ staan en verschijnt na
-          twintig seconden ‘Er ging iets mis’. POST /api/betalingen antwoordt met 500.
+          twintig seconden ‘Er ging iets mis’. POST&nbsp;/api/betalingen antwoordt met 500.
         </FindingCard>
       </div>
     ),
     'Every severity, heavy to light': () => (
       <div className="flex w-full max-w-[640px] flex-col gap-2">
         <FindingCard
+          headingLevel={2}
           severity="blocking"
           severityLabel={nl.severityWord.blocking}
           title="Wachtwoord staat in de log"
@@ -57,6 +60,7 @@ export default {
           Bij een mislukte login schrijft de server het ingevoerde wachtwoord naar de log.
         </FindingCard>
         <FindingCard
+          headingLevel={2}
           severity="problem"
           severityLabel={nl.severityWord.problem}
           title="Bankkeuze heeft geen label"
@@ -67,9 +71,12 @@ export default {
           ‘keuzelijst’.
         </FindingCard>
         <FindingCard
+          headingLevel={2}
           severity="note"
           severityLabel={nl.severityWord.note}
           title="Spelling van iDEAL"
+          location="src/kassa/BetaalKnop.tsx:12"
+          locationLabel="bestand"
         >
           De knop zegt ‘Betaal met iDeal’; de merknaam is ‘iDEAL’, in hoofdletters.
         </FindingCard>
@@ -78,30 +85,42 @@ export default {
     'With actions': () => (
       <div className="w-full max-w-[640px]">
         <FindingCard
+          headingLevel={2}
           severity="problem"
           severityLabel={nl.severityWord.problem}
           title="Totaalbedrag is te klein om te lezen"
           location="/kassa"
           locationLabel="pagina"
           actions={
-            <>
-              <Button variant="secondary" size="sm">
-                Bekijk in opname
+            // Quiet, the one style of a card's actions, pulled out by the button's own padding so
+            // its words line up with the text; each named by the finding as well.
+            <span className="-ms-2.5 flex flex-wrap gap-1">
+              <Button
+                variant="quiet"
+                size="sm"
+                aria-label="In opname bekijken: Totaalbedrag is te klein om te lezen"
+              >
+                In opname bekijken
               </Button>
-              <Button variant="quiet" size="sm">
+              <Button
+                variant="quiet"
+                size="sm"
+                aria-label="Negeren voor deze review: Totaalbedrag is te klein om te lezen"
+              >
                 <Icon name="eye-off" size="sm" />
-                Negeer
+                Negeren voor deze review
               </Button>
-            </>
+            </span>
           }
         >
-          Het totaal onder de bankkeuze staat in 10 px; elders op de kassa is het 16 px.
+          Het totaal onder de bankkeuze staat in 10&nbsp;px; elders op de kassa is het 16&nbsp;px.
         </FindingCard>
       </div>
     ),
     'Long words, a deep file and a long story': () => (
       <div className="w-full max-w-[640px]">
         <FindingCard
+          headingLevel={2}
           severity="blocking"
           severityLabel={nl.severityWord.blocking}
           title="Ontwikkelomgevingsconfiguratiebestandsvalidatiefoutmelding verschijnt bij elke start van de server"
@@ -120,6 +139,7 @@ export default {
     'Narrow: the screenshot under the words': () => (
       <div className="w-full max-w-[340px]">
         <FindingCard
+          headingLevel={2}
           severity="blocking"
           severityLabel={nl.severityWord.blocking}
           title="Betalen met iDEAL loopt vast"

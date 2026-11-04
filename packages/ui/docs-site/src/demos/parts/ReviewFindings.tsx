@@ -9,6 +9,8 @@ export interface Finding {
   detail: string
   /** The page of the shop it happened on. */
   url?: string
+  /** The file and line of the code behind it: "src/kassa/Kassa.tsx:88". */
+  file?: string
   /** The step of the recording (of 23) where the agent saw it. */
   step: number
   /** A screenshot, drawn here as a small sketch of what it shows. */
@@ -66,8 +68,8 @@ function Sketch({ kind, large = false }: { kind: 'fout' | 'klein'; large?: boole
 }
 
 /**
- * The thumbnail of a finding, a button that opens the recording at its screenshot. Beside the words
- * it is 144×96; under them, on a narrow card, it fills their column (the card is the container).
+ * The thumbnail of a finding, a button that opens the recording at its screenshot: 144×96 beside
+ * the words, and the same under them on a narrow card, so the words lead.
  */
 function Shot({ kind, onOpen }: { kind: 'fout' | 'klein'; onOpen(): void }): ReactNode {
   return (
@@ -75,17 +77,27 @@ function Shot({ kind, onOpen }: { kind: 'fout' | 'klein'; onOpen(): void }): Rea
       type="button"
       aria-label={`Open schermafbeelding: ${SHOT_NAME[kind]}`}
       onClick={onOpen}
-      className="block aspect-[3/2] w-full max-w-80 rounded-md text-left outline-focus transition-[filter] duration-(--nt-duration-fast) hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 @lg:aspect-auto @lg:h-24 @lg:w-36"
+      className="block h-24 w-36 rounded-md text-left outline-focus transition-[filter] duration-(--nt-duration-fast) hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <Sketch kind={kind} />
     </button>
   )
 }
 
+/** The page every finding shares, or nothing when they differ. */
+function sharedPage(findings: readonly Finding[]): string | undefined {
+  const first = findings[0]?.url
+  return first !== undefined && findings.every((finding) => finding.url === first)
+    ? first
+    : undefined
+}
+
 /**
- * The findings of the review as one group: the count in the heading, the count per weight, and
- * the cards heavy to light, 8px apart. Each card opens the recording at its step, the thumbnail as
- * well as the quiet "Bekijk in opname", in a dialog that hands the focus back when it closes.
+ * The findings of the review as one group: a quiet count with the page they share, the count per
+ * weight, and 24px under that the cards heavy to light, 8px apart. A card with a screenshot opens
+ * the recording at its step through the thumbnail; a card without one has the quiet "In opname
+ * bekijken" instead, so no card offers the same thing twice. The dialog hands the focus back when
+ * it closes. When every finding is on one page the group says it once and the cards name the file.
  */
 export function ReviewFindings({ findings }: { findings: readonly Finding[] }): ReactNode {
   const headingId = useId()
@@ -101,50 +113,78 @@ export function ReviewFindings({ findings }: { findings: readonly Finding[] }): 
     problem: findings.filter((finding) => finding.severity === 'problem').length,
     note: findings.filter((finding) => finding.severity === 'note').length,
   }
+  const page = sharedPage(findings)
+  const placeOf = (finding: Finding) =>
+    finding.file !== undefined
+      ? { location: finding.file, locationLabel: 'bestand' }
+      : finding.url !== undefined && page === undefined
+        ? { location: finding.url, locationLabel: 'pagina' }
+        : {}
   return (
-    <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-2">
-      <h3 id={headingId} className="m-0 font-medium text-[13px] text-fg leading-5">
-        {findings.length === 1 ? '1 bevinding' : `${findings.length} bevindingen`}
-      </h3>
-      <SeverityBar label="Bevindingen naar ernst" counts={counts} labels={galleryLabels.severity} />
-      {findings.map((finding) => (
-        <FindingCard
-          key={finding.title}
-          severity={finding.severity}
-          severityLabel={galleryLabels.severityWord[finding.severity]}
-          title={finding.title}
-          headingLevel={4}
-          {...(finding.url === undefined ? {} : { location: finding.url, locationLabel: 'pagina' })}
-          {...(finding.screenshot === undefined
-            ? {}
-            : { media: <Shot kind={finding.screenshot} onOpen={() => show(finding)} /> })}
-          actions={
-            // Pulled out by the button's own padding, so a quiet one lines up with the words.
-            <span className="-ms-2.5 flex">
-              <Button
-                variant="quiet"
-                size="sm"
-                aria-label={`Bekijk in opname: ${finding.title}`}
-                onClick={() => show(finding)}
-              >
-                Bekijk in opname
-              </Button>
-            </span>
-          }
-        >
-          {finding.detail}
-        </FindingCard>
-      ))}
+    <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-6">
+      <div className="flex min-w-0 flex-col gap-2">
+        <h3 id={headingId} className="m-0 font-normal text-[12px] text-secondary leading-4">
+          {findings.length === 1 ? '1 bevinding' : `${findings.length} bevindingen`}
+          {page === undefined ? null : (
+            <>
+              {' op pagina '}
+              <span className="font-mono text-[11px]">{page}</span>
+            </>
+          )}
+        </h3>
+        <SeverityBar
+          label="Bevindingen naar ernst"
+          counts={counts}
+          labels={galleryLabels.severity}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-2">
+        {findings.map((finding) => (
+          <FindingCard
+            key={finding.title}
+            severity={finding.severity}
+            severityLabel={galleryLabels.severityWord[finding.severity]}
+            title={finding.title}
+            headingLevel={4}
+            {...placeOf(finding)}
+            {...(finding.screenshot === undefined
+              ? {
+                  actions: (
+                    // Pulled out by the button's own padding, so a quiet one lines up with the words.
+                    <span className="-ms-2.5 flex">
+                      <Button
+                        variant="quiet"
+                        size="sm"
+                        aria-label={`In opname bekijken: ${finding.title}`}
+                        onClick={() => show(finding)}
+                      >
+                        In opname bekijken
+                      </Button>
+                    </span>
+                  ),
+                }
+              : { media: <Shot kind={finding.screenshot} onOpen={() => show(finding)} /> })}
+          >
+            {finding.detail}
+          </FindingCard>
+        ))}
+      </div>
       <Dialog
         open={open}
         onOpenChange={setOpen}
         title={opened?.title ?? ''}
         description={`Stap ${opened?.step ?? 0} van 23${opened?.url === undefined ? '' : ` · pagina ${opened.url}`}`}
         closeLabel="Sluiten"
+        initialFocus="panel"
         footer={
-          <Button variant="secondary" onClick={() => setOpen(false)}>
-            Sluiten
-          </Button>
+          <>
+            <Button variant="quiet" onClick={() => setOpen(false)}>
+              Sluiten
+            </Button>
+            <Button variant="primary" onClick={() => setOpen(false)}>
+              {`Opname openen bij stap ${opened?.step ?? 0}`}
+            </Button>
+          </>
         }
       >
         {opened?.screenshot === undefined ? (

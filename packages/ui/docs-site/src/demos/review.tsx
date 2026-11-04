@@ -242,8 +242,9 @@ const FINDINGS: Finding[] = [
     severity: 'blocking',
     title: 'Betalen met iDEAL loopt vast',
     detail:
-      'Na het kiezen van een bank blijft de kassa op ‘Bezig met betalen…’ staan en verschijnt na twintig seconden ‘Er ging iets mis’. POST /api/betalingen antwoordt met 500.',
+      'Na het kiezen van een bank blijft de kassa op ‘Bezig met betalen…’ staan en verschijnt na twintig seconden ‘Er ging iets mis’. POST\u00a0/api/betalingen antwoordt met 500.',
     url: '/kassa',
+    file: 'src/api/betalingen.ts:23',
     step: 14,
     screenshot: 'fout',
   },
@@ -251,8 +252,9 @@ const FINDINGS: Finding[] = [
     severity: 'problem',
     title: 'Totaalbedrag is te klein om te lezen',
     detail:
-      'Het totaal onder de bankkeuze staat in 10 px; elders op de kassa is het 16 px. Op een telefoon is het nauwelijks te lezen.',
+      'Het totaal onder de bankkeuze staat in 10\u00a0px; elders op de kassa is het 16\u00a0px. Op een telefoon is het nauwelijks te lezen.',
     url: '/kassa',
+    file: 'src/kassa/Kassa.tsx:88',
     step: 9,
     screenshot: 'klein',
   },
@@ -262,12 +264,15 @@ const FINDINGS: Finding[] = [
     detail:
       'Het keuzemenu voor de bank heeft geen zichtbaar label; een schermlezer noemt het alleen ‘keuzelijst’.',
     url: '/kassa',
+    file: 'src/kassa/IdealKeuze.tsx:5',
     step: 8,
   },
   {
     severity: 'note',
     title: 'Spelling van iDEAL',
     detail: 'De knop zegt ‘Betaal met iDeal’; de merknaam is ‘iDEAL’, in hoofdletters.',
+    url: '/kassa',
+    file: 'src/kassa/BetaalKnop.tsx:12',
     step: 6,
   },
 ]
@@ -298,7 +303,7 @@ function FileCard({
         <IconButton
           icon={open ? 'chevron-down' : 'chevron-right'}
           size="sm"
-          label={open ? 'Verberg wijziging' : 'Toon wijziging'}
+          label={`${open ? 'Verberg wijziging' : 'Toon wijziging'}: ${file.path}`}
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
         />
@@ -311,6 +316,7 @@ function FileCard({
           {file.removed > 0 ? <span className="text-danger">{`−${file.removed}`}</span> : null}
         </span>
         <ReviewSeen
+          path={file.path}
           checked={seen}
           onCheckedChange={(next) => {
             onSeen(next)
@@ -461,25 +467,25 @@ function Verdict(): ReactNode {
           </span>
           <div className="flex min-w-0 flex-col gap-0.5">
             <span className="font-medium text-[13px] text-fg leading-5">
-              {asComment ? 'Alleen een opmerking' : 'Vraagt om wijzigingen'}
+              {asComment ? 'Alleen een reactie' : 'Wijzigingen nodig'}
             </span>
             <span className="text-[12px] text-secondary leading-4">
               {asComment
-                ? 'Het verslag komt als opmerking; de pull request blijft open voor samenvoegen.'
+                ? 'Het verslag komt als reactie; de pull request blijft open voor samenvoegen.'
                 : 'Er is een blokkade. Orbit Review keurt nooit zelf goed; dat doe jij.'}
             </span>
           </div>
         </div>
         <div className="flex items-start justify-between gap-3">
           <span className="flex min-w-0 flex-col gap-0.5" aria-hidden="true">
-            <span className="text-[13px] text-fg leading-5">Alleen als opmerking</span>
+            <span className="text-[13px] text-fg leading-5">Alleen als reactie plaatsen</span>
             <span className="text-[12px] text-muted leading-4">
               Plaatst het verslag zonder om wijzigingen te vragen.
             </span>
           </span>
           <span className="flex h-5 items-center">
             <Switch
-              label="Alleen als opmerking: plaatst het verslag zonder om wijzigingen te vragen"
+              label="Alleen als reactie plaatsen: plaatst het verslag zonder om wijzigingen te vragen"
               checked={asComment}
               onCheckedChange={setAsComment}
             />
@@ -498,27 +504,34 @@ function Verdict(): ReactNode {
 }
 
 /**
- * The report of the review agent: its phases, the summary, the verdict, the findings and the
+ * The report of the review agent: its phases, the summary, the findings, the verdict and the
  * earlier runs. In that order in the source, which is the order of a narrow screen, so the verdict
- * and its one action stand above the findings there; on a wide one the verdict takes a column of
+ * and its one action come after the evidence there; on a wide one the verdict takes a column of
  * its own and stays in sight while the findings scroll.
  */
 function Report(): ReactNode {
   return (
     <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,1fr)_19rem]">
-      <div className="flex min-w-0 flex-col gap-2 @5xl:col-start-1">
+      {/* On a narrow screen the four chips break evenly, two and two, so the last one never
+          stands alone on a line of its own. */}
+      <div className="flex min-w-0 flex-col gap-2 @5xl:col-start-1 @max-md:[&>[role=tablist]]:grid @max-md:[&>[role=tablist]]:grid-cols-[auto_auto] @max-md:[&>[role=tablist]]:justify-start">
         <StepChips
           label="Fases van de review"
           steps={PHASES}
           selected="reviewen"
           onSelect={() => {}}
         />
-        <span className="text-[12px] text-muted">6 min · 23 stappen · 2 schermafbeeldingen</span>
+        <span className="text-[12px] text-muted">
+          {'6\u00a0min · 23 stappen · 2 schermafbeeldingen'}
+        </span>
       </div>
       <div className="min-w-0 @5xl:col-start-1">
         <Panel title="Samenvatting">
           <p className="m-0 text-[13px] text-fg leading-5">{SUMMARY}</p>
         </Panel>
+      </div>
+      <div className="min-w-0 @5xl:col-start-1">
+        <ReviewFindings findings={FINDINGS} />
       </div>
       <aside
         aria-label="Oordeel"
@@ -527,23 +540,27 @@ function Report(): ReactNode {
         <Verdict />
       </aside>
       <div className="min-w-0 @5xl:col-start-1">
-        <ReviewFindings findings={FINDINGS} />
-      </div>
-      <div className="min-w-0 @5xl:col-start-1">
         <Panel title="Eerdere reviews" flush>
           <div className="px-2 pb-2">
             <List label="Eerdere reviews">
+              {/* The status word in sight as the quiet meta (the row already says it to a screen
+                  reader), and what the run found, or what to do next, as its second line. */}
               <ListRow
-                title="Gisteren, 16:40"
+                title="gisteren 16:40"
                 marker={<StatusMark kind="fault" />}
                 status="Mislukt"
-                meta="Docker startte niet"
+                meta={<span aria-hidden="true">Mislukt</span>}
+                subline={{
+                  content: 'Docker startte niet: start het opnieuw',
+                  label: 'Docker startte niet: start het opnieuw',
+                }}
               />
               <ListRow
-                title="Maandag, 10:12"
+                title="maandag 10:12"
                 marker={<StatusMark kind="running" />}
                 status="Klaar"
-                meta="3 bevindingen"
+                meta={<span aria-hidden="true">Klaar</span>}
+                subline={{ content: '3 bevindingen', label: '3 bevindingen' }}
               />
             </List>
           </div>

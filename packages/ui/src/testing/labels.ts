@@ -140,7 +140,7 @@ export const nl = {
     blocking: (count) => (count === 1 ? '1 blokkade' : `${dutchCount(count)} blokkades`),
     problem: (count) => (count === 1 ? '1 probleem' : `${dutchCount(count)} problemen`),
     note: (count) => (count === 1 ? '1 opmerking' : `${dutchCount(count)} opmerkingen`),
-    none: 'Geen bevindingen; niets houdt de merge tegen',
+    none: 'Geen bevindingen; niets houdt het samenvoegen tegen',
   } satisfies SeverityBarLabels,
   severityWord: {
     blocking: 'Blokkade',

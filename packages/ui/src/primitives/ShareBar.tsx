@@ -40,14 +40,6 @@ const INK: Record<ShareTone, string> = {
   success: 'text-success',
   neutral: 'text-muted',
 }
-// The words of a share in the colour of its tone, so the heaviest share also reads first in the
-// legend; neutral keeps the secondary text.
-const WORDS: Record<ShareTone, string> = {
-  danger: 'text-danger',
-  attention: 'text-attention',
-  success: 'text-success',
-  neutral: 'text-secondary',
-}
 
 /**
  * How a whole splits into parts, as words and as one shared bar: findings per weight, tests per
@@ -57,7 +49,10 @@ const WORDS: Record<ShareTone, string> = {
  * `label`; the bar only draws the proportions and is hidden from it. A share of zero is left out
  * of both. Each part is a status colour and, with `icon`, a sign, so colour is never the only cue.
  * Each share is a pill of its own with a 2px gap, on no track: the bar is a whole split in parts,
- * never a meter with an empty rest.
+ * never a meter with an empty rest. A share is at least 12px wide, so a small one stays a piece of
+ * the bar rather than a stray dot. The words are quiet labels in the secondary ink; the colour is on
+ * the sign and in the bar, so a view with many shares does not shout. Under forced colours the
+ * pills draw in the text colour, so the proportion stays visible.
  */
 export function ShareBar({ label, segments, hideLegend = false, hideBar = false }: ShareBarProps) {
   const shown = segments.filter((segment) => segment.value > 0)
@@ -77,7 +72,7 @@ export function ShareBar({ label, segments, hideLegend = false, hideBar = false 
               ) : (
                 <span aria-hidden="true" className={`size-2 rounded-full ${FILL[segment.tone]}`} />
               )}
-              <span className={`tabular-nums ${WORDS[segment.tone]}`}>{segment.label}</span>
+              <span className="text-secondary tabular-nums">{segment.label}</span>
             </li>
           ))}
         </ul>
@@ -88,7 +83,7 @@ export function ShareBar({ label, segments, hideLegend = false, hideBar = false 
             <span
               key={segment.id}
               data-nt-share={segment.id}
-              className={`min-w-1.5 basis-0 rounded-full ${FILL[segment.tone]}`}
+              className={`min-w-3 basis-0 rounded-full forced-colors:bg-[CanvasText] ${FILL[segment.tone]}`}
               // The one value no class can hold: the share itself.
               style={{ flexGrow: segment.value }}
             />

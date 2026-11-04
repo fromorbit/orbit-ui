@@ -34,7 +34,7 @@ test('large counts take Dutch figures', () => {
   ).toEqual(['128 blokkades', '1.204 problemen', '37 opmerkingen'])
 })
 
-test('the bar weighs a blocker four times and a problem twice, so it is never the thinnest', () => {
+test('the bar is proportional to the counts, as a stacked bar is read', () => {
   const { container } = render(
     <SeverityBar
       label="Bevindingen"
@@ -43,7 +43,7 @@ test('the bar weighs a blocker four times and a problem twice, so it is never th
     />,
   )
   const shares = [...container.querySelectorAll<HTMLElement>('[data-nt-share]')]
-  expect(shares.map((share) => share.style.flexGrow)).toEqual(['4', '4', '1'])
+  expect(shares.map((share) => share.style.flexGrow)).toEqual(['1', '2', '1'])
 })
 
 test('a weight of zero or left out is not drawn', () => {
@@ -65,7 +65,7 @@ test('only remarks: the words without a bar, which would read as an empty meter'
 test('nothing found is one calm line in a status region, without a bar', () => {
   const { container } = render(<SeverityBar label="Bevindingen" counts={{}} labels={nl.severity} />)
   expect(screen.getByRole('status')).toHaveTextContent(
-    'Geen bevindingen; niets houdt de merge tegen',
+    'Geen bevindingen; niets houdt het samenvoegen tegen',
   )
   expect(screen.queryByRole('list')).toBeNull()
   expect(container.querySelector('[data-nt-share-bar]')).toBeNull()

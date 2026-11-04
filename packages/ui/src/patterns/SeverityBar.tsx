@@ -19,13 +19,6 @@ export const SEVERITY_SIGN: Readonly<
   note: { tone: 'neutral', icon: 'message-square' },
 }
 
-/**
- * How much each weight counts in the bar: one blocking finding weighs on a merge as much as four
- * remarks, so the heaviest share is never the thinnest (Von Restorff). Only the bar; the words
- * keep the real counts.
- */
-const BAR_WEIGHT: Readonly<Record<FindingSeverity, number>> = { blocking: 4, problem: 2, note: 1 }
-
 /** The words of `SeverityBar`: a count per weight, and the line when there is nothing. */
 export interface SeverityBarLabels {
   /** "1 blokkade", "2 blokkades". */
@@ -34,7 +27,7 @@ export interface SeverityBarLabels {
   problem: (count: number) => string
   /** "1 opmerking", "4 opmerkingen". */
   note: (count: number) => string
-  /** The line when every count is zero: "Geen bevindingen; niets houdt de merge tegen". */
+  /** The line when every count is zero: "Geen bevindingen; niets houdt het samenvoegen tegen". */
   none: string
 }
 
@@ -49,12 +42,14 @@ export interface SeverityBarProps {
 
 /**
  * The findings of a review counted per weight: the words with their signs, in the colour of the
- * weight, and one bar that shows how much each weight weighs, heavy to light.
+ * weight, and one bar that shows the share of each weight, heavy to light.
  *
  * A `ShareBar` with the weights filled in, so the review screen and its card agree on colour and
- * sign (`SEVERITY_SIGN`). A weight of zero is left out. The bar weighs a blocking finding four
- * times and a problem twice (`BAR_WEIGHT`), so one blocker never looks lighter than one remark;
- * with only remarks there is no bar, only the words. With no findings at all it is one calm line
+ * sign (`SEVERITY_SIGN`). A weight of zero is left out. The bar is proportional to the counts,
+ * because a stacked bar is read as shares: a bar that weighed blockers more drew equal lengths
+ * beside different numbers. A share is never thinner than 12px (`ShareBar`), so a single blocker
+ * among many problems stays a red piece of its own, first in the bar (Von Restorff). With only
+ * remarks there is no bar, only the words. With no findings at all it is one calm line
  * with a check, the good end of a review. A `status` region, so a finding that turns up while a
  * review runs is announced.
  */
@@ -64,7 +59,7 @@ export function SeverityBar({ label, counts, labels }: SeverityBarProps) {
     return {
       id: severity,
       label: labels[severity](count),
-      value: count * BAR_WEIGHT[severity],
+      value: count,
       ...SEVERITY_SIGN[severity],
     }
   })
