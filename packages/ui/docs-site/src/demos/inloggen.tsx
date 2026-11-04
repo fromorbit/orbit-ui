@@ -12,7 +12,6 @@ import {
   OrbitWordmark,
   OtpInput,
   ProjectMark,
-  ScrollArea,
   StatusMark,
   Tag,
 } from '../../../src'
@@ -200,7 +199,7 @@ function Workspaces(): ReactNode {
       <Heading title="Kies een werkruimte">
         Je bent ingelogd als <span className="font-medium text-fg">{EMAIL}</span>.
       </Heading>
-      <ul className="m-0 flex list-none flex-col overflow-hidden rounded-lg bg-overlay p-0">
+      <ul className="m-0 flex list-none flex-col overflow-hidden rounded-lg border border-border bg-overlay p-0">
         {WORKSPACES.map((space) => (
           <li key={space.name} className="border-border not-first:border-t">
             <a
@@ -277,48 +276,52 @@ function Galaxy(): ReactNode {
  * Signing in to Orbit: the brand's galaxy beside the form on a wide window, the form alone on a
  * narrow one. The variants walk the flow: the form, a wrong password, the mailed code, and the
  * choice of a workspace.
+ *
+ * The form's side is one column that scrolls as a whole: a top row, the form centred in the space
+ * that is left (both ways), and the small print at the foot. The middle row grows (`flex-1`), so
+ * the foot stays at the bottom of a tall window and moves down with the form on a short one; a
+ * native scroller, because Radix's viewport wraps its content in a box without a height, where a
+ * column cannot fill the panel. In light the side is the white card plane, not Paper.
  */
 function Login({ variant = 'standaard' }: DemoScreenProps): ReactNode {
   return (
     <div className="flex h-full min-h-0 w-full">
       <Galaxy />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <ScrollArea>
-          <div className="flex min-h-full flex-col px-5 py-5 @xl:px-10">
-            <div className="flex items-center justify-between gap-3 text-[12px]">
-              <OrbitWordmark className="h-4 text-fg @4xl:invisible" />
-              <span className="text-muted">
-                Nog geen account?{' '}
-                <a href="#/demo/inloggen" className={LINK}>
-                  Aanmelden
-                </a>
-              </span>
-            </div>
-            <div className="mx-auto flex w-full max-w-[380px] flex-1 flex-col justify-center gap-6 py-10">
-              {variant === 'code' ? (
-                <Code />
-              ) : variant === 'werkruimte' ? (
-                <Workspaces />
-              ) : (
-                <SignIn key={variant} failed={variant === 'fout'} />
-              )}
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-muted">
-              <span>© 2026 Orbit</span>
-              <span className="flex gap-4">
-                {FOOTER.map((item) => (
-                  <a
-                    key={item}
-                    href="#/demo/inloggen"
-                    className="rounded-sm text-muted no-underline outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    {item}
-                  </a>
-                ))}
-              </span>
-            </div>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-overlay">
+        <div className="flex shrink-0 items-center justify-between min-h-5 gap-3 px-6 pt-6 text-[12px] @xl:px-10 @xl:pt-10">
+          <OrbitWordmark className="h-4 text-fg @4xl:invisible" />
+          <span className="text-muted">
+            Nog geen account?{' '}
+            <a href="#/demo/inloggen" className={LINK}>
+              Aanmelden
+            </a>
+          </span>
+        </div>
+        <div className="flex flex-1 items-center justify-center px-6 py-10 @xl:px-10">
+          <div className="flex w-full max-w-[420px] flex-col gap-6">
+            {variant === 'code' ? (
+              <Code />
+            ) : variant === 'werkruimte' ? (
+              <Workspaces />
+            ) : (
+              <SignIn key={variant} failed={variant === 'fout'} />
+            )}
           </div>
-        </ScrollArea>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 pb-6 text-[12px] text-muted @xl:px-10 @xl:pb-10">
+          <span>© 2026 Orbit</span>
+          <span className="flex gap-4">
+            {FOOTER.map((item) => (
+              <a
+                key={item}
+                href="#/demo/inloggen"
+                className="rounded-sm text-muted no-underline outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                {item}
+              </a>
+            ))}
+          </span>
+        </div>
       </div>
     </div>
   )
