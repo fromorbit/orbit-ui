@@ -1,5 +1,14 @@
 import { DocProse, type DocProseLabels, type DocProseOptions } from '@fromorbit/doc-view'
-import { createContext, Fragment, type ReactNode, useContext, useMemo, useState } from 'react'
+import {
+  createContext,
+  Fragment,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import Markdown, { type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Tooltip } from '../overlays/Tooltip'
@@ -156,11 +165,28 @@ function InlineCode({ children }: { children: ReactNode }): ReactNode {
     const [match] = references.find(text, 'code')
     if (match) return references.render(match, text)
   }
-  // `anywhere`: a long path or identifier breaks inside the column instead of pushing it wide.
+  // A path breaks after a `/`, between its folders, and `anywhere` is only the fallback for one
+  // segment that is wider than the column on its own.
   return (
     <code className="rounded-sm bg-surface px-1 py-px font-mono text-[12px] [overflow-wrap:anywhere]">
-      {children}
+      {text?.includes('/') ? withSlashBreaks(text) : children}
     </code>
+  )
+}
+
+/** A path with a break opportunity (`<wbr>`) after every `/`, so it wraps at its folders. */
+function withSlashBreaks(text: string): ReactNode {
+  const parts = text.split('/')
+  return parts.map((part, index) =>
+    index === parts.length - 1 ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: the segments of one fixed string.
+      <Fragment key={index}>{part}</Fragment>
+    ) : (
+      // biome-ignore lint/suspicious/noArrayIndexKey: the segments of one fixed string.
+      <Fragment key={index}>
+        {part}/<wbr />
+      </Fragment>
+    ),
   )
 }
 
@@ -327,7 +353,27 @@ function CodeBlock({ code, children }: { code: () => string; children: ReactNode
   // Long lines either scroll (a thumb that stays visible, since the app's own bar shows only on
   // hover and a block cut off at the edge looked like it ended there) or wrap, by choice.
   const [wrap, setWrap] = useState(false)
-  const region = wrap ? CODE_REGION_WRAPPED : CODE_REGION
+  // Whether a line runs on past the right edge: only then does the edge fade, so the end of a line
+  // that was scrolled into view stands sharp, and a block that fits never looks cut.
+  const scroller = useRef<HTMLDivElement>(null)
+  const [more, setMore] = useState(false)
+  useEffect(() => {
+    const element = scroller.current
+    if (!element || wrap) {
+      setMore(false)
+      return
+    }
+    const check = () => setMore(element.scrollLeft + element.clientWidth < element.scrollWidth - 1)
+    check()
+    element.addEventListener('scroll', check, { passive: true })
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(check)
+    observer?.observe(element)
+    return () => {
+      element.removeEventListener('scroll', check)
+      observer?.disconnect()
+    }
+  }, [wrap])
+  const region = wrap ? CODE_REGION_WRAPPED : more ? `${CODE_REGION} ${CODE_FADE}` : CODE_REGION
   return (
     // A named group: the message around this block is a `group` of its own (its own row of time
     // and copy button hangs off it), and an unnamed `group-hover` would answer to that one too,
@@ -337,8 +383,15 @@ function CodeBlock({ code, children }: { code: () => string; children: ReactNode
           the same name are a fault of their own (axe: landmark-unique). A group still carries a
           name. */}
       {/* biome-ignore lint/a11y/useSemanticElements: a named group inside an answer, not a form. */}
-      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: a long line scrolls sideways, and WCAG 2.1.1 (axe: scrollable-region-focusable) wants the keyboard to reach that overflow too. */}
-      <div role="group" tabIndex={0} aria-label={labels.codeBlock} className={region}>
+      <div
+        ref={scroller}
+        role="group"
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: a long line scrolls sideways, and WCAG 2.1.1 (axe: scrollable-region-focusable) wants the keyboard to reach that overflow too.
+        tabIndex={0}
+        aria-label={labels.codeBlock}
+        data-more={more || undefined}
+        className={region}
+      >
         <InsideBlockContext.Provider value={true}>
           <pre className={wrap ? PRE_WRAPPED : PRE}>{children}</pre>
         </InsideBlockContext.Provider>
@@ -430,7 +483,9 @@ function TableRegion({ children }: { children: ReactNode }) {
     // biome-ignore lint/a11y/useSemanticElements: a named group inside an answer, not a form.
     // biome-ignore lint/a11y/noNoninteractiveTabindex: the wrapper scrolls a wide table sideways; without tabIndex the keyboard never reaches that overflow.
     <div role="group" tabIndex={0} aria-label={labels.table} className={SCROLLS}>
-      <table className="w-full border-collapse text-[13px]">{children}</table>
+      {/* As wide as its columns, left on the prose, not stretched across the column: three short
+          figures 300px apart lose their row (Proximity). A wide table still scrolls. */}
+      <table className="w-auto border-collapse text-[13px]">{children}</table>
     </div>
   )
 }
@@ -440,15 +495,16 @@ const SCROLLS =
   'no-drag overflow-x-auto outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
 /**
  * A block whose lines scroll: the tint and the focus ring on the block, the scroller inside it
- * without either, its last 24px fading out so a line cut by the edge reads as "goes on" rather than
- * as broken. The fade is a mask on the scroller, which stays put while the lines move under it, and
+ * without either, its last 40px fading out while a line runs on past the edge (`CODE_FADE`), so a
+ * line cut by the edge reads as "goes on" rather than as broken. The fade is a mask on the scroller, which stays put while the lines move under it, and
  * a mask would clip a ring drawn outside the scroller, so the block draws it.
  */
 const CODE_BLOCK =
   'group/code relative rounded-md bg-surface outline-focus has-[>[role=group]:focus-visible]:outline-2 has-[>[role=group]:focus-visible]:outline-offset-2'
 const CODE_BLOCK_WRAPPED = 'group/code relative'
 const CODE_REGION =
-  'no-drag overflow-x-auto p-3 outline-none pointer-coarse:pt-9 [mask-image:linear-gradient(to_left,transparent,black_24px)] [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)'
+  'no-drag overflow-x-auto p-3 outline-none pointer-coarse:pt-9 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)'
+const CODE_FADE = '[mask-image:linear-gradient(to_left,transparent,black_40px)]'
 // Quiet until you go there: 100 ms is the shortest step the guidelines allow, and under reduced
 // motion there is no step at all. Opacity only, so nothing moves when it appears — and no reach
 // while it is invisible, or it would swallow a selection drag that starts at the right end of the
@@ -560,13 +616,13 @@ const components: Options['components'] = {
   th: ({ children, style }) => (
     <th
       style={style}
-      className="border-b border-border px-3 py-1.5 text-left font-medium text-[12px] text-muted first:ps-0"
+      className="h-8 border-b border-border px-3 py-0 text-left font-medium text-[12px] text-muted first:ps-0"
     >
       <Linked>{children}</Linked>
     </th>
   ),
   td: ({ children, style }) => (
-    <td style={style} className="border-b border-border px-3 py-1.5 tabular-nums first:ps-0">
+    <td style={style} className="h-8 border-b border-border px-3 py-0 tabular-nums first:ps-0">
       <Linked>{children}</Linked>
     </td>
   ),

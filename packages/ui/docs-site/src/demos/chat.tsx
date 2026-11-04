@@ -18,8 +18,9 @@ import {
   Shimmer,
   StackedRow,
   StackedRowBranch,
-  StatusLine,
+  StatusMark,
   StatusShape,
+  Tooltip,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule } from '../demo-kit/types'
@@ -32,11 +33,21 @@ const MODELS: SearchListItem[] = [
   { id: 'haiku', label: 'Haiku 5', detail: 'Kort en goedkoop' },
 ]
 
-/** What the agent may do in this conversation. */
-const ACCESS: SearchListItem[] = [
-  { id: 'read', label: 'Alleen lezen', detail: 'Leest bestanden, verandert niets' },
-  { id: 'edit', label: 'Mag bewerken', detail: 'Bewerkt bestanden, vraagt voor commando’s' },
-  { id: 'full', label: 'Volledige toegang', detail: 'Bewerkt en voert commando’s uit' },
+/** What the agent may do in this conversation: the whole name in the list, a short word in the pill. */
+const ACCESS: (SearchListItem & { short: string })[] = [
+  { id: 'read', label: 'Alleen lezen', short: 'Lezen', detail: 'Leest bestanden, verandert niets' },
+  {
+    id: 'edit',
+    label: 'Mag bewerken',
+    short: 'Bewerken',
+    detail: 'Bewerkt bestanden, vraagt voor commando’s',
+  },
+  {
+    id: 'full',
+    label: 'Volledige toegang',
+    short: 'Alles',
+    detail: 'Bewerkt en voert commando’s uit',
+  },
 ]
 
 /** One conversation in the column: where it works and what it waits for. */
@@ -99,7 +110,7 @@ const GROUPS: { heading: string; rows: Conversation[] }[] = [
         project: 'webwinkel',
         branch: 'main',
         worktree: false,
-        time: '14:02',
+        time: '14:03',
         status: ['done', 'Klaar'],
       },
       {
@@ -131,7 +142,7 @@ interface Message {
   text: string
   /** The hour of the message; an answer is named by it, so a list of articles tells them apart. */
   time: string
-  /** The model and the time an answer took. */
+  /** The hour, the model and the time an answer took: the same hour as the answer's name. */
   meta?: string
 }
 
@@ -164,7 +175,13 @@ const START: Message[] = [
     text: 'Kun je een functie schrijven die de btw uit een bedrag inclusief btw haalt?',
     time: '14:02',
   },
-  { id: 2, role: 'assistant', text: ANSWER, time: '14:03', meta: 'Opus 5.5 · klaar in 12 s' },
+  {
+    id: 2,
+    role: 'assistant',
+    text: ANSWER,
+    time: '14:03',
+    meta: '14:03 · Opus 5.5 · klaar in 12 s',
+  },
 ]
 
 /** One message: the user's in a bubble at the right, the assistant's as plain text with actions. */
@@ -189,7 +206,10 @@ function Message({ message }: { message: Message }): ReactNode {
       actions={
         <>
           <CopyButton text={message.text} {...galleryLabels.copy} />
-          <IconButton icon="rotate-ccw" size="sm" label="Opnieuw" />
+          {/* Its own glyph and name: "Opnieuw proberen" (rotate-ccw) is the way on after an error. */}
+          <Tooltip label="Opnieuw genereren">
+            <IconButton icon="repeat" size="sm" label="Opnieuw genereren" />
+          </Tooltip>
         </>
       }
     >
@@ -316,7 +336,7 @@ function Chat(): ReactNode {
           role: 'assistant',
           text: 'Dit is een demo zonder netwerk, dus hier komt altijd hetzelfde antwoord. In Orbit stroomt de tekst hier binnen.',
           time: '14:06',
-          meta: 'Opus 5.5 · klaar in 1 s',
+          meta: '14:06 · Opus 5.5 · klaar in 1 s',
         },
       ])
     }, 1200)
@@ -331,14 +351,12 @@ function Chat(): ReactNode {
             <h1 className="m-0 min-w-0 truncate font-medium text-[13px] text-fg">
               Btw uit een bedrag halen
             </h1>
-            {/* Where this conversation works, in a short form on a phone: the project always, the
-                branch from a wider column on. */}
+            {/* Where this conversation works and where it writes: the project and the branch, on a
+                phone too; the title gives way first. */}
             <span className="flex min-w-0 shrink-0 items-center gap-2 text-[12px] text-muted">
               <ProjectMark name="webwinkel" />
               webwinkel
-              <span className="hidden @2xl:flex">
-                <StackedRowBranch name="main" />
-              </span>
+              <StackedRowBranch name="main" />
             </span>
             <div className="flex-1" />
             <DropdownMenu
@@ -353,14 +371,21 @@ function Chat(): ReactNode {
               ]}
             />
           </div>
-          <div className="min-h-0 flex-1">
+          {/* Short fades in the pane's tint at both ends of the conversation: 24px under the header
+              and 40px above the composer, so a turn slides out of sight instead of being cut. */}
+          <div className="relative min-h-0 flex-1 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:z-10 before:h-6 before:bg-linear-to-b before:from-canvas before:to-transparent after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-10 after:h-10 after:bg-linear-to-t after:from-canvas after:to-transparent">
             <ScrollArea>
               <div ref={column} className="mx-auto w-full max-w-[720px] px-4 py-6 @3xl:px-8">
                 <ChatLog label="Gesprek">
                   {messages.slice(0, 1).map((message) => (
                     <Message key={message.id} message={message} />
                   ))}
-                  <StatusLine tone="success">Las src/btw.ts en src/prijs.ts</StatusLine>
+                  {/* A step of the agent: a quiet label under the question, its mark flat with a
+                      soft glow, so the answer below stays what the eye reads. */}
+                  <p className="m-0 flex items-center gap-2 text-[12px] text-muted [&_.nt-status-mark-body]:size-2">
+                    <StatusMark kind="running" />
+                    Las src/btw.ts en src/prijs.ts
+                  </p>
                   {messages.slice(1).map((message) => (
                     <Message key={message.id} message={message} />
                   ))}
@@ -379,9 +404,7 @@ function Chat(): ReactNode {
               </div>
             </ScrollArea>
           </div>
-          {/* A short fade above the composer: the conversation slides under it calmly, without a
-              hard edge. */}
-          <div className="relative mx-auto w-full max-w-[720px] px-4 pb-4 before:pointer-events-none before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-linear-to-t before:from-canvas before:to-transparent @3xl:px-8 @3xl:pb-6">
+          <div className="mx-auto w-full max-w-[720px] px-4 pb-4 @3xl:px-8 @3xl:pb-6">
             <Composer
               labels={galleryLabels.composer}
               placeholder="Vraag iets of geef een opdracht…"
@@ -403,14 +426,13 @@ function Chat(): ReactNode {
                     onSelect={setModel}
                     searchable={false}
                   />
-                  {/* In a narrow composer the access level gives up its word first and keeps its
-                      sign, so the model keeps its name. */}
+                  {/* A short word at every width: a bare shield would not say whether the agent may
+                      only read or may change files. */}
                   <PickerPill
                     listLabels={galleryLabels.list}
                     label="Toegang"
                     icon="shield"
-                    collapse
-                    value={ACCESS.find((item) => item.id === access)?.label ?? ''}
+                    value={ACCESS.find((item) => item.id === access)?.short ?? ''}
                     items={ACCESS}
                     selectedId={access}
                     onSelect={setAccess}

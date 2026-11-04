@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Story } from '../gallery/story'
+import { Tooltip } from '../overlays/Tooltip'
 import { Button } from '../primitives/Button'
 import { Icon } from '../primitives/Icon'
 import { IconButton } from '../primitives/IconButton'
@@ -36,12 +37,17 @@ const ANSWER = [
   'Rond pas **aan het eind** af, anders loopt het verschil per regel op.',
 ].join('\n')
 
-/** The actions under an answer: copy and ask again. */
+/**
+ * The actions under an answer: copy and ask again. Asking again has a glyph and a name of its own,
+ * apart from "Opnieuw proberen" after an error.
+ */
 function AnswerActions({ text }: { text: string }) {
   return (
     <>
       <CopyButton {...nl.copy} text={text} />
-      <IconButton icon="rotate-ccw" size="sm" label="Opnieuw" />
+      <Tooltip label="Opnieuw genereren">
+        <IconButton icon="repeat" size="sm" label="Opnieuw genereren" />
+      </Tooltip>
     </>
   )
 }
@@ -62,8 +68,8 @@ export default {
         </ChatMessage>
         <ChatMessage
           from="assistant"
-          label="Opus 5.5"
-          meta="Opus 5.5 · klaar in 12 s"
+          label="Opus 5.5, 14:03"
+          meta="14:03 · Opus 5.5 · klaar in 12 s"
           actions={<AnswerActions text={ANSWER} />}
         >
           <Prose labels={nl.prose} markdown={ANSWER} settled />

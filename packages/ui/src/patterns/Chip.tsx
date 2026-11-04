@@ -7,11 +7,21 @@ import { IconButton } from '../primitives/IconButton'
 /** The props of `Chip`. */
 export interface ChipProps {
   /**
-   * `sm` is the chip above the composer: 24px, a 16px
-   * thumbnail, and its cross only on hover or focus, since a row of crosses reads as a row of
-   * errors. `md` (default) everywhere else, the conversation included.
+   * `sm` is the chip above the composer: a 28px pill on a soft tint, no border, a 16px thumbnail
+   * or file icon, and its 24px cross in sight at rest in the quiet muted colour, so the chip reads
+   * as an object that can be taken away rather than as an empty field (and a touch screen, where
+   * nothing hovers, can see what it taps). `md` (default) everywhere else, the conversation
+   * included.
    */
   size?: 'sm' | 'md'
+  /**
+   * Where a label that does not fit loses its letters. `end` (default) cuts the tail; `middle`
+   * keeps the last eight characters, the extension of a file name with a little before it
+   * ("factuur-20…0412.pdf"), because that is what tells a pdf from a csv. A label cut in the middle
+   * carries itself as the chip's `title` when no other is given, so the whole name is one hover
+   * away; a screen reader reads the whole name either way.
+   */
+  truncate?: 'end' | 'middle'
   /** What the chip is, in words: its visible text and the name of its button. */
   label: string
   /**
@@ -84,9 +94,29 @@ const FRAME =
   'inline-flex h-(--nt-control-md) max-w-88 min-w-0 items-center rounded-md border border-border bg-surface text-[12px] text-fg'
 /** The frame of a `sm` chip; `group/chip` so its cross can wait for hover or focus. */
 const FRAME_SM =
-  'group/chip inline-flex h-(--nt-control-sm) max-w-88 min-w-0 items-center rounded-md border border-border bg-surface text-[12px] text-fg'
+  'group/chip inline-flex h-(--nt-control-sm) max-w-88 min-w-0 items-center rounded-md bg-pill text-[12px] text-fg'
 const BODY =
   'flex h-full min-w-0 items-center gap-1.5 rounded-md pr-2 pl-1 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
+/** The body of a `sm` chip: 8px in from its edge, the step of the kit. */
+const BODY_SM =
+  'flex h-full min-w-0 items-center gap-1.5 rounded-md pr-2 pl-2 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
+
+/** The characters a `middle` cut keeps at the end: an extension and a little before it. */
+const TAIL = 8
+
+/** The label in its truncation: one cut at the end, or a head that gives way before a fixed tail. */
+function Words({ label, truncate }: { label: string; truncate: 'end' | 'middle' }) {
+  if (truncate === 'end' || label.length <= TAIL + 4) {
+    return <span className="min-w-0 truncate">{label}</span>
+  }
+  // Two spans with no space between them, so a screen reader still reads one word.
+  return (
+    <span className="flex min-w-0">
+      <span className="min-w-0 truncate">{label.slice(0, -TAIL)}</span>
+      <span className="shrink-0 whitespace-pre">{label.slice(-TAIL)}</span>
+    </span>
+  )
+}
 
 /**
  * A small token for one piece of content: a thumbnail, a few words, optionally a panel behind a
@@ -113,9 +143,12 @@ export function Chip({
   children,
   remove,
   size = 'md',
+  truncate = 'end',
 }: ChipProps) {
   const small = size === 'sm'
   const frame = small ? FRAME_SM : FRAME
+  const body = small ? BODY_SM : BODY
+  const hint = title ?? (truncate === 'middle' ? label : undefined)
   const content = (
     <>
       {number ? (
@@ -142,7 +175,7 @@ export function Chip({
           {icon}
         </span>
       ) : null}
-      <span className="min-w-0 truncate">{label}</span>
+      <Words label={label} truncate={truncate} />
       {mark ? (
         <span data-nt-chip-mark className="flex shrink-0 text-muted">
           <Icon name={mark.icon} size="xs" />
@@ -151,7 +184,7 @@ export function Chip({
     </>
   )
   const text = (
-    <span className={BODY} {...(title ? { title } : {})}>
+    <span className={body} {...(hint ? { title: hint } : {})}>
       {content}
     </span>
   )
@@ -167,9 +200,9 @@ export function Chip({
           trigger={
             <button
               type="button"
-              {...(title ? { title } : {})}
+              {...(hint ? { title: hint } : {})}
               {...(name ? { 'aria-label': name } : {})}
-              className={`${BODY} no-drag cursor-default hover:bg-surface-hover`}
+              className={`${body} no-drag cursor-default hover:bg-surface-hover`}
             >
               {content}
             </button>
@@ -180,10 +213,10 @@ export function Chip({
       ) : onOpen ? (
         <button
           type="button"
-          {...(title ? { title } : {})}
+          {...(hint ? { title: hint } : {})}
           {...(name ? { 'aria-label': name } : {})}
           onClick={onOpen}
-          className={`${BODY} no-drag cursor-default hover:bg-surface-hover`}
+          className={`${body} no-drag cursor-default hover:bg-surface-hover`}
         >
           {content}
         </button>
@@ -191,15 +224,8 @@ export function Chip({
         plain
       )}
       {remove ? (
-        // The name of the cross as a tooltip too.
-        <span
-          data-nt-chip-remove
-          className={
-            small
-              ? 'flex opacity-0 group-focus-within/chip:opacity-100 group-hover/chip:opacity-100'
-              : 'flex'
-          }
-        >
+        // The name of the cross as a tooltip too. In sight at rest, in the muted colour of a ghost.
+        <span data-nt-chip-remove className="flex">
           <Tooltip label={remove.label}>
             <IconButton
               icon="x"

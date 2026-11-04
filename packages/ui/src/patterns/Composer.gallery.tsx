@@ -6,6 +6,7 @@ import { nl } from '../testing/labels'
 import { Chip } from './Chip'
 import { Composer, type ComposerProps } from './Composer'
 import { PickerPill } from './PickerPill'
+import { PierreFileIcon } from './PierreFileIcon'
 import type { SearchListItem } from './SearchList'
 import { StackedRowBranch } from './StackedRow'
 
@@ -15,16 +16,27 @@ const MODELS: SearchListItem[] = [
   { id: 'haiku', label: 'Haiku 5', detail: 'Kort en goedkoop' },
 ]
 
-/** What the agent may do in this chat. */
-const ACCESS: SearchListItem[] = [
-  { id: 'read', label: 'Alleen lezen', detail: 'Leest bestanden, verandert niets' },
-  { id: 'edit', label: 'Mag bewerken', detail: 'Bewerkt bestanden, vraagt voor commando’s' },
-  { id: 'full', label: 'Volledige toegang', detail: 'Bewerkt en voert commando’s uit' },
+/** What the agent may do in this chat: the whole name in the list, a short word in the pill. */
+const ACCESS: (SearchListItem & { short: string })[] = [
+  { id: 'read', label: 'Alleen lezen', short: 'Lezen', detail: 'Leest bestanden, verandert niets' },
+  {
+    id: 'edit',
+    label: 'Mag bewerken',
+    short: 'Bewerken',
+    detail: 'Bewerkt bestanden, vraagt voor commando’s',
+  },
+  {
+    id: 'full',
+    label: 'Volledige toegang',
+    short: 'Alles',
+    detail: 'Bewerkt en voert commando’s uit',
+  },
 ]
 
 /**
  * The tools of Orbit's composer: the round "+", the model and the access level, three quiet
- * controls of one height. The access level gives up its word first when the row is narrow.
+ * controls of one height. The access level keeps a short word at every width: a bare shield would
+ * not say whether the agent may only read or may change files.
  */
 function Tools() {
   const [model, setModel] = useState('opus')
@@ -46,8 +58,7 @@ function Tools() {
         listLabels={nl.list}
         label="Toegang"
         icon="shield"
-        collapse
-        value={ACCESS.find((item) => item.id === access)?.label ?? ''}
+        value={ACCESS.find((item) => item.id === access)?.short ?? ''}
         items={ACCESS}
         selectedId={access}
         onSelect={setAccess}
@@ -91,7 +102,7 @@ export default {
         minRows={3}
         footer={
           <>
-            Start op een nieuwe branch
+            Start op een nieuwe branch:
             <StackedRowBranch name="nt/btw-tarieven" worktree />
           </>
         }
@@ -104,11 +115,15 @@ export default {
           <>
             <Chip
               size="sm"
+              truncate="middle"
+              icon={<PierreFileIcon path="factuur-2026-0412.pdf" />}
               label="factuur-2026-0412.pdf"
               remove={{ label: 'Haal factuur-2026-0412.pdf weg', onRemove: () => {} }}
             />
             <Chip
               size="sm"
+              truncate="middle"
+              icon={<PierreFileIcon path="export-boekhouding.csv" />}
               label="export-boekhouding.csv"
               remove={{ label: 'Haal export-boekhouding.csv weg', onRemove: () => {} }}
             />
@@ -123,7 +138,7 @@ export default {
       <Live
         disabledReason="Kies eerst een project om in te werken."
         disabledAction={
-          <Button variant="ghost" size="sm">
+          <Button variant="primary" size="sm">
             Kies project
           </Button>
         }

@@ -41,8 +41,8 @@ function chromeFor(
   if (variant === 'bare') return 'no-drag block text-fg'
   // A field that failed its check (`aria-invalid`) keeps the danger border while it has the focus.
   const box = invalid
-    ? 'no-drag block rounded-md border border-danger bg-surface px-2 py-[5.25px] text-fg outline-focus focus-within:outline-2 focus-within:outline-offset-2'
-    : 'no-drag block rounded-md border border-border bg-surface px-2 py-[5.25px] text-fg outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2'
+    ? 'no-drag block rounded-md border border-danger bg-surface px-2 py-[5px] text-fg outline-focus focus-within:outline-2 focus-within:outline-offset-2'
+    : 'no-drag block rounded-md border border-border bg-surface px-2 py-[5px] text-fg outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2'
   return disabled ? `${box} opacity-40` : box
 }
 
@@ -106,7 +106,7 @@ export function Textarea({
         value={value}
         defaultValue={isControlled ? undefined : defaultValue}
         onChange={handleChange}
-        className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] text-inherit leading-[19.5px] outline-none disabled:cursor-not-allowed ${placeholderHidden ? 'placeholder:text-transparent' : 'placeholder:text-muted'}`}
+        className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] text-inherit leading-5 outline-none disabled:cursor-not-allowed ${placeholderHidden ? 'placeholder:text-transparent' : 'placeholder:text-muted'}`}
         {...rest}
       />
     </div>

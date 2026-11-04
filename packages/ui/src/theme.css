@@ -224,11 +224,14 @@
 /* A percentage in `mask-position` counts off the room the window leaves (`100%` rests it against
    the right edge), so the two `calc`s add exactly one window width past each end: it enters and
    leaves fully off-screen instead of pausing at the edges. */
+/* The first third of each turn the window waits off the left edge, so the line rests in one even
+   tone between two sweeps and a still frame is mostly a calm, uniform line. */
 @keyframes nt-wave {
-  from {
+  0%,
+  30% {
     mask-position: calc(-1 * var(--nt-wave-width)) 0;
   }
-  to {
+  100% {
     mask-position: calc(100% + var(--nt-wave-width)) 0;
   }
 }

@@ -116,9 +116,9 @@ test('the cross shows its name as a tooltip on focus', async () => {
   expect(await screen.findByRole('tooltip')).toHaveTextContent('Haal weg')
 })
 
-test('a small chip is 24px with a 16px thumbnail and its cross only on hover or focus', () => {
-  // The chips above the composer: a row of five crosses
-  // read as five errors, so the cross waits for the pointer or the keyboard.
+test('a small chip is a 28px tinted pill with a 16px thumbnail and its cross in sight', () => {
+  // The chips above the composer: a cross that waits for hover is invisible on a touch screen, and
+  // a chip without one reads as an empty field, so the quiet cross stays.
   render(
     <TooltipProvider>
       <Chip
@@ -131,12 +131,20 @@ test('a small chip is 24px with a 16px thumbnail and its cross only on hover or 
   )
   const frame = document.querySelector('[data-nt-chip]') as HTMLElement
   expect(frame.className).toContain('h-(--nt-control-sm)')
+  expect(frame.className).toContain('bg-pill')
+  expect(frame.className).not.toContain('border')
   expect(frame.querySelector('img')?.getAttribute('class')).toContain('size-4')
   const cross = screen.getByRole('button', { name: 'Haal weg: schets.png' })
   const holder = cross.closest('[data-nt-chip-remove]') as HTMLElement
-  expect(holder.className).toContain('opacity-0')
-  expect(holder.className).toContain('group-hover/chip:opacity-100')
-  expect(holder.className).toContain('group-focus-within/chip:opacity-100')
+  expect(holder.className).not.toContain('opacity-0')
+})
+
+test('a chip cut in the middle keeps the extension and carries the whole name as its title', () => {
+  render(<Chip size="sm" truncate="middle" label="factuur-2026-0412.pdf" />)
+  const frame = document.querySelector('[data-nt-chip]') as HTMLElement
+  expect(frame).toHaveTextContent('factuur-2026-0412.pdf')
+  expect(screen.getByText('0412.pdf')).toBeInTheDocument()
+  expect(screen.getByTitle('factuur-2026-0412.pdf')).toBeInTheDocument()
 })
 
 test('a chip keeps its size and its cross by default', () => {

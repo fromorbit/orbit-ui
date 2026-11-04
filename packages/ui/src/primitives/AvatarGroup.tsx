@@ -57,7 +57,7 @@ export function AvatarGroup({
       {rest > 0 ? (
         <span
           aria-hidden="true"
-          className={`flex items-center justify-center rounded-full bg-mark font-medium text-secondary tabular-nums ${ring} ${size === 'sm' ? 'size-5 text-[9px]' : 'size-7.5 text-[11px]'}`}
+          className={`flex items-center justify-center rounded-full bg-mark font-medium text-secondary tabular-nums ${ring} ${size === 'sm' ? 'size-5 text-[11px]' : 'size-7.5 text-[11px]'}`}
         >
           +{rest}
         </span>

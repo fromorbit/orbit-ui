@@ -26,13 +26,13 @@ test('an answer carries its actions and its meta', () => {
       from="assistant"
       label="Opus 5.5"
       meta="Opus 5.5 · klaar in 12 s"
-      actions={<IconButton icon="rotate-ccw" label="Opnieuw" />}
+      actions={<IconButton icon="repeat" label="Opnieuw genereren" />}
     >
       Klaar.
     </ChatMessage>,
   )
   const message = screen.getByRole('article', { name: 'Opus 5.5' })
-  expect(within(message).getByRole('button', { name: 'Opnieuw' })).toBeInTheDocument()
+  expect(within(message).getByRole('button', { name: 'Opnieuw genereren' })).toBeInTheDocument()
   expect(message).toHaveTextContent('Opus 5.5 · klaar in 12 s')
 })
 
@@ -42,7 +42,7 @@ test('while an answer streams it is busy and offers no actions yet', () => {
       from="assistant"
       label="Opus 5.5"
       streaming
-      actions={<IconButton icon="rotate-ccw" label="Opnieuw" />}
+      actions={<IconButton icon="repeat" label="Opnieuw genereren" />}
     >
       Ik begin met
     </ChatMessage>,
@@ -103,4 +103,22 @@ test('your own actions stay in the document, shown on hover or focus', () => {
   )
   // Hidden by opacity only: the keyboard reaches them, and the focus shows them.
   expect(screen.getByRole('button', { name: 'Bewerk' })).toBeInTheDocument()
+})
+
+test('your own question is read before its buttons', () => {
+  // The buttons stand to the left of the bubble on screen, but a screen reader walking the turn
+  // hears the question first: the row is reversed, the document is not.
+  render(
+    <ChatMessage
+      from="user"
+      label="Jij"
+      meta="14:02"
+      actions={<button type="button">Kopiëren</button>}
+    >
+      Kun je de btw uitrekenen?
+    </ChatMessage>,
+  )
+  expect(screen.getByRole('article', { name: 'Jij' }).textContent).toMatch(
+    /^Kun je de btw uitrekenen\?.*Kopiëren/,
+  )
 })
