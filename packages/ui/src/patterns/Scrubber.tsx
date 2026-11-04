@@ -60,8 +60,9 @@ export interface ScrubberProps<K extends string = string> {
   legendLabel?: string
   /**
    * The heading of the hover card of a mark that holds more than one event, in the host's words:
-   * "3 gebeurtenissen". Such a mark shows a second, faint copy of its shape behind it; the number
-   * is said here, not printed on the track. Left out, the card only lists the events.
+   * "3 gebeurtenissen". Such a mark shows only its leading shape (and a second one that
+   * went wrong as well); the rest of the group is listed and counted here, never drawn on the
+   * track. Left out, the card only lists the events.
    */
   groupLabel?(count: number): string
   /**
@@ -120,12 +121,81 @@ export interface ScrubberGroup<K extends string = string> {
 /** How loud a tone is: what went wrong leads a group, and is the shape on top. */
 const WEIGHT: Record<ScrubberTone, number> = { danger: 0, attention: 1, neutral: 2 }
 
+/** Half the 14px box of a shape, and the gap between the two shapes of a pair. */
+const HALF = 7
+const PAIR_GAP = 4
+/** The least room, in pixels, between two drawn marks: closer, and they become one mark. */
+const MARK_GAP = 6
+/** The room at each end of the track, so a mark at the very start or end is drawn whole. */
+const INSET = 8
+
+/** The tone of a kind, `neutral` when it has none. */
+const toneOf = (kind: ScrubberKind): ScrubberTone => kind.tone ?? 'neutral'
+
+/** How often each kind occurs on the whole track. */
+function frequencyOf<K extends string>(markers: readonly ScrubberMarker<K>[]): Map<K, number> {
+  const frequency = new Map<K, number>()
+  for (const marker of markers) frequency.set(marker.kind, (frequency.get(marker.kind) ?? 0) + 1)
+  return frequency
+}
+
+/**
+ * The kinds of a group, each once: the loudest first, then the rarest on the whole track (a
+ * navigation among many clicks says more, so a busy stretch still shows where the pages change),
+ * then in the order of the legend.
+ */
+function kindsOf<K extends string>(
+  group: ScrubberGroup<K>,
+  kinds: Readonly<Record<K, ScrubberKind>>,
+  frequency?: ReadonlyMap<K, number>,
+): K[] {
+  const order = Object.keys(kinds)
+  const often = (kind: K) => frequency?.get(kind) ?? 0
+  return [...new Set(group.markers.map((marker) => marker.kind))].sort(
+    (a, b) =>
+      WEIGHT[toneOf(kinds[a])] - WEIGHT[toneOf(kinds[b])] ||
+      often(a) - often(b) ||
+      order.indexOf(a) - order.indexOf(b),
+  )
+}
+
+/**
+ * The shapes a group shows: its loudest kind, and beside it a second one only when that one went
+ * wrong as well (an error and its failed request). Quiet company is not drawn: the hover card
+ * lists and counts it, so no mark ever reads as a ghosted or doubled glyph.
+ */
+function shownKinds<K extends string>(
+  group: ScrubberGroup<K>,
+  kinds: Readonly<Record<K, ScrubberKind>>,
+  frequency?: ReadonlyMap<K, number>,
+): K[] {
+  const [lead, second] = kindsOf(group, kinds, frequency)
+  if (lead === undefined) return []
+  return second !== undefined && toneOf(kinds[second]) !== 'neutral' ? [lead, second] : [lead]
+}
+
+/**
+ * Where the second shape of a pair stands: after the leading one, or before it where the track
+ * ends too soon to hold it whole.
+ */
+function pairSide(x: number, width: number): 'after' | 'before' {
+  return x + HALF * 3 + PAIR_GAP > width + INSET ? 'before' : 'after'
+}
+
+/** The left and right edge, in pixels, of what a group draws on a track `width` wide. */
+function extentOf(x: number, width: number, pair: boolean): [number, number] {
+  if (!pair) return [x - HALF, x + HALF]
+  const reach = HALF * 3 + PAIR_GAP
+  return pairSide(x, width) === 'after' ? [x - HALF, x + reach] : [x - reach, x + HALF]
+}
+
 /**
  * The markers of a track `width` pixels wide, gathered where they would crowd, so every shape
  * stays whole and a busy stretch reads as a few calm marks rather than a picket fence. The
  * loudest markers lead (what went wrong first, then the earliest): each in turn joins the nearest
- * leader less than `gap` pixels away, or leads a group of its own. So two marks never stand
- * closer than `gap` (24px, one pointer target), and an error is always drawn at its own moment.
+ * leader less than `gap` pixels away, or leads a group of its own. Then, with the `kinds` known,
+ * two marks whose drawn shapes (a pair takes two) come closer than 6px are one mark as well, led
+ * by the louder. So no two shapes ever touch, and an error is always drawn at its own moment.
  * Without a width (not measured yet) every marker is its own group.
  */
 export function scrubberGroups<K extends string>(
@@ -151,44 +221,32 @@ export function scrubberGroups<K extends string>(
     else groups.push({ at: marker.at, markers: [marker] })
   }
   for (const group of groups) group.markers.sort((a, b) => a.at - b.at)
-  return groups.sort((a, b) => a.at - b.at)
-}
-
-/** The tone of a kind, `neutral` when it has none. */
-const toneOf = (kind: ScrubberKind): ScrubberTone => kind.tone ?? 'neutral'
-
-/**
- * The kinds of a group, each once: the loudest first, then the rarest on the whole track (a
- * navigation among many clicks says more, so a busy stretch still shows where the pages change),
- * then in the order of the legend.
- */
-function kindsOf<K extends string>(
-  group: ScrubberGroup<K>,
-  kinds: Readonly<Record<K, ScrubberKind>>,
-  frequency?: ReadonlyMap<K, number>,
-): K[] {
-  const order = Object.keys(kinds)
-  const often = (kind: K) => frequency?.get(kind) ?? 0
-  return [...new Set(group.markers.map((marker) => marker.kind))].sort(
-    (a, b) =>
-      WEIGHT[toneOf(kinds[a])] - WEIGHT[toneOf(kinds[b])] ||
-      often(a) - often(b) ||
-      order.indexOf(a) - order.indexOf(b),
-  )
-}
-
-/**
- * The shapes a group shows: its loudest kind, and beside it a second one only when that one went
- * wrong as well (an error and its failed request); quiet company is the faint copy behind.
- */
-function shownKinds<K extends string>(
-  group: ScrubberGroup<K>,
-  kinds: Readonly<Record<K, ScrubberKind>>,
-  frequency?: ReadonlyMap<K, number>,
-): K[] {
-  const [lead, second] = kindsOf(group, kinds, frequency)
-  if (lead === undefined) return []
-  return second !== undefined && toneOf(kinds[second]) !== 'neutral' ? [lead, second] : [lead]
+  groups.sort((a, b) => a.at - b.at)
+  if (kinds === undefined) return groups
+  const frequency = frequencyOf(markers)
+  const loudness = (group: ScrubberGroup<K>) => {
+    const lead = kindsOf(group, kinds, frequency)[0]
+    return lead === undefined ? WEIGHT.neutral : WEIGHT[toneOf(kinds[lead])]
+  }
+  const extent = (group: ScrubberGroup<K>) =>
+    extentOf(x(group.at), width, shownKinds(group, kinds, frequency).length > 1)
+  for (let index = 0; index < groups.length - 1; ) {
+    const left = groups[index]
+    const right = groups[index + 1]
+    if (left === undefined || right === undefined) break
+    if (extent(right)[0] - extent(left)[1] >= MARK_GAP) {
+      index += 1
+      continue
+    }
+    const merged: ScrubberGroup<K> = {
+      at: loudness(right) < loudness(left) ? right.at : left.at,
+      markers: [...left.markers, ...right.markers].sort((a, b) => a.at - b.at),
+    }
+    groups.splice(index, 2, merged)
+    // The merged mark may now reach back to the one before it.
+    index = Math.max(0, index - 1)
+  }
+  return groups
 }
 
 /** The colour each tone paints its shape in (`currentColor`). */
@@ -219,7 +277,7 @@ const CHEVRON = 'M5 2 10 7 5 12'
  * 12px (multiples of 4, so their weights match), each with a 1px edge in the colour of the plane,
  * so it stands apart on the played part without cutting the line it sits on.
  */
-function Shape({ kind, faint = false }: { kind: ScrubberKind; faint?: boolean }): ReactNode {
+function Shape({ kind }: { kind: ScrubberKind }): ReactNode {
   const tone = toneOf(kind)
   const drawing = (() => {
     switch (kind.shape) {
@@ -277,7 +335,7 @@ function Shape({ kind, faint = false }: { kind: ScrubberKind; faint?: boolean })
     <svg
       aria-hidden="true"
       viewBox="0 0 14 14"
-      className={`block size-3.5 shrink-0 overflow-visible ${TONE_TEXT[tone]} ${faint ? 'opacity-45' : TONE_GLOW[tone]}`}
+      className={`block size-3.5 shrink-0 overflow-visible ${TONE_TEXT[tone]} ${TONE_GLOW[tone]}`}
     >
       {drawing}
     </svg>
@@ -290,6 +348,25 @@ const NEAR = 12
 
 /** The room, in pixels, the end time needs after the last round label before that one gives way. */
 const END_ROOM = 56
+
+/**
+ * The time labels under a track `width` pixels wide: round ticks, thinned as the track narrows
+ * (one per 96px), and once the track is measured the end of the recording closing the row. The
+ * last round label gives way where it would crowd the end; the gap before the end would then
+ * stand out (0:00, 0:10, 0:24), so the labels split the track evenly instead (0:00, 0:12, 0:24).
+ */
+export function scrubberLabels(duration: number, width: number, maxTicks = 6): number[] {
+  const length = Math.max(duration, 0)
+  const ticks = scrubberTicks(
+    length,
+    width > 0 ? Math.max(2, Math.min(maxTicks, Math.floor(width / TICK_ROOM) + 1)) : maxTicks,
+  )
+  const lastTick = ticks.at(-1) ?? 0
+  if (!(width > 0) || !(length > lastTick)) return ticks
+  if (ticks.length < 2 || (1 - lastTick / length) * width >= END_ROOM) return [...ticks, length]
+  const count = ticks.length
+  return Array.from({ length: count }, (_, index) => (index * length) / (count - 1))
+}
 
 /** Where the pointer rests over the track, in pixels from its left. */
 interface Hover {
@@ -305,14 +382,16 @@ interface Hover {
  * the arrows move one `step`, Page Up and Page Down ten, Home and End to the ends; a press
  * anywhere on the track seeks there. The thumb is drawn at zero width, so Radix keeps no inset at
  * the ends and the playhead, the played part and the marks all stand at exactly
- * `seconds / duration` of the width.
+ * `seconds / duration` of the width. The track itself stands 8px in from each side, so a mark at
+ * the very start or end is drawn whole.
  *
  * The track is one unbroken 2px line: the played part in the foreground colour, the rest in muted
  * (each at least 3:1 against the other and against the plane), and the marks sit on it with a
  * 1px edge of the plane. Markers that would crowd are one mark (`scrubberGroups`): its loudest
- * kind (the rarest, among quiet ones), with a second kind that went wrong beside it on the same
- * centre line (the leading shape on the moment), and a faint copy of
- * the shape behind it when the mark holds more. Each mark is a 24px target for a pointer: a
+ * kind (the rarest, among quiet ones), with a second kind that went wrong 4px beside it on the same
+ * centre line (the leading shape on the moment; before it at the very end). Quiet company is not
+ * drawn, so no mark ever reads as a doubled glyph, and marks whose shapes would come closer than
+ * 6px are merged, so no two shapes touch at any width. Each mark is a 24px target for a pointer: a
  * press seeks to it, and resting on it names every event in it with its time (under
  * `groupLabel`'s heading when there are several); the louder mark lies on top where two touch.
  * For a screen reader the marks are decoration (`aria-hidden`, out of the tab order): the events
@@ -321,9 +400,10 @@ interface Hover {
  * status marks (`--nt-status-glow`), so an error stands out among the clicks (Von Restorff).
  *
  * The playhead is always neutral: a 24px stem with a 16px knob in the foreground colour. Where it
- * stands on a mark the knob gives way and the mark lies over the stem in its own tone, so the
- * error it is at stays in sight and the one emphasis of a player stays its play button. The time
- * labels keep their rhythm under it, and the end time always closes the row on the right.
+ * stands on a mark the knob gives way and the stem steps back to two short tips above and below
+ * the mark, which keeps its own tone and shape, so the error it is at stays in sight and the one emphasis of a player stays its play button. The time
+ * labels keep their rhythm under it, and the end time always closes the row on the right; where
+ * the last round label gives way to it, the labels split the track evenly instead.
  */
 export function Scrubber<K extends string>({
   label,
@@ -365,8 +445,7 @@ export function Scrubber<K extends string>({
   const at = (seconds: number) => `${share(seconds) * 100}%`
   const position = clamp(value)
   const groups = scrubberGroups(markers, length, width, kinds)
-  const frequency = new Map<K, number>()
-  for (const marker of markers) frequency.set(marker.kind, (frequency.get(marker.kind) ?? 0) + 1)
+  const frequency = frequencyOf(markers)
   const loudness = (group: ScrubberGroup<K>) => {
     const lead = kindsOf(group, kinds)[0]
     return lead === undefined ? WEIGHT.neutral : WEIGHT[toneOf(kinds[lead])]
@@ -381,22 +460,7 @@ export function Scrubber<K extends string>({
       : Math.abs(group.at - position) <= 0.05,
   )
 
-  const ticks = scrubberTicks(
-    length,
-    width > 0 ? Math.max(2, Math.min(maxTicks, Math.floor(width / TICK_ROOM) + 1)) : maxTicks,
-  )
-  const lastTick = ticks.at(-1) ?? 0
-  // The end of the recording always closes the row once the track is measured; the last round
-  // label gives way where it would crowd it.
-  const labels =
-    width > 0 && length > lastTick
-      ? [
-          ...(ticks.length > 1 && (1 - share(lastTick)) * width < END_ROOM
-            ? ticks.slice(0, -1)
-            : ticks),
-          length,
-        ]
-      : ticks
+  const labels = scrubberLabels(length, width, maxTicks)
   const usedKinds = (Object.keys(kinds) as K[]).filter((kind) =>
     markers.some((marker) => marker.kind === kind),
   )
@@ -421,7 +485,8 @@ export function Scrubber<K extends string>({
 
   return (
     <div data-nt-scrubber className="@container flex min-w-0 flex-col gap-2">
-      <div className="flex flex-col">
+      {/* The track stands 8px in from each end, so a mark at the very start or end is drawn whole. */}
+      <div className="flex flex-col px-2">
         <RadixSlider.Root
           value={[position]}
           min={0}
@@ -500,7 +565,16 @@ export function Scrubber<K extends string>({
               data-nt-scrubber-thumb={current === undefined ? 'free' : 'on'}
               className="absolute top-0 left-0 flex h-6 w-4 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full outline-focus transition-transform duration-(--nt-duration-fast) group-hover/scrubber:scale-110 group-focus-visible/thumb:outline-2 group-focus-visible/thumb:outline-offset-2 motion-reduce:transition-none"
             >
-              <span className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
+              {current === undefined ? (
+                <span className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
+              ) : (
+                // On a mark the stem steps back to two tips above and below it, so the line never
+                // runs through the shape and the two never read as one glyph.
+                <>
+                  <span className="absolute top-0 left-1/2 h-1 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
+                  <span className="absolute bottom-0 left-1/2 h-1 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
+                </>
+              )}
               <span
                 className={`relative block size-4 rounded-full border-2 border-overlay bg-fg ${current === undefined ? '' : 'opacity-0'}`}
               />
@@ -509,8 +583,9 @@ export function Scrubber<K extends string>({
           <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-10">
             {drawn.map((group) => {
               const shown = shownKinds(group, kinds, frequency)
-              const company = group.markers.length > shown.length
-              const last = shown.at(-1)
+              const pair = shown.length > 1
+              const before =
+                pair && width > 0 && pairSide(share(group.at) * width, width) === 'before'
               return (
                 <button
                   key={`${group.markers[0]?.kind}-${group.at}`}
@@ -519,9 +594,14 @@ export function Scrubber<K extends string>({
                   disabled={off}
                   data-nt-scrubber-marker={shown[0]}
                   data-nt-scrubber-count={group.markers.length}
-                  // A pair is set so its first shape, the one that leads, stands on the moment.
-                  className={`absolute top-0 flex h-full min-w-6 ${shown.length > 1 ? '-translate-x-[7px]' : '-translate-x-1/2'} cursor-pointer items-center justify-center outline-none ${group === current || off ? 'pointer-events-none' : 'pointer-events-auto'}`}
-                  style={{ left: at(group.at) }}
+                  data-nt-scrubber-pair={pair ? (before ? 'before' : 'after') : undefined}
+                  // A pair is set so its first shape, the one that leads, stands on the moment; the
+                  // second goes 4px after it, or before it at the very end of the track.
+                  className={`absolute top-0 flex h-full min-w-6 ${pair ? (before ? 'flex-row-reverse' : '') : '-translate-x-1/2'} cursor-pointer items-center justify-center gap-1 outline-none ${group === current || off ? 'pointer-events-none' : 'pointer-events-auto'}`}
+                  style={{
+                    left: at(group.at),
+                    ...(pair ? { translate: before ? 'calc(-100% + 7px) 0' : '-7px 0' } : {}),
+                  }}
                   // A press on a mark seeks to its moment; it must not start the slider's own drag
                   // from wherever the pointer happened to land.
                   onPointerDown={(event) => event.stopPropagation()}
@@ -529,14 +609,7 @@ export function Scrubber<K extends string>({
                 >
                   {shown.map((kind) => (
                     <span key={kind} className="relative flex">
-                      {company && kind === last ? (
-                        <span data-nt-scrubber-stack className="absolute top-0 left-[3px] flex">
-                          <Shape kind={kinds[kind]} faint />
-                        </span>
-                      ) : null}
-                      <span className="relative flex">
-                        <Shape kind={kinds[kind]} />
-                      </span>
+                      <Shape kind={kinds[kind]} />
                     </span>
                   ))}
                 </button>
@@ -547,7 +620,14 @@ export function Scrubber<K extends string>({
         <div aria-hidden="true" className="relative h-4 text-[11px] text-muted tabular-nums">
           {labels.map((tick) => {
             const where = share(tick)
-            const align = where === 0 ? '' : where > 0.92 ? '-translate-x-full' : '-translate-x-1/2'
+            // The first and last label reach out over the 8px inset, so the times line up with
+            // the controls and the legend under them.
+            const align =
+              where === 0
+                ? '-translate-x-2'
+                : where > 0.92
+                  ? 'translate-x-[calc(-100%+8px)]'
+                  : '-translate-x-1/2'
             return (
               <span key={tick} className={`absolute top-0 ${align}`} style={{ left: at(tick) }}>
                 {formatTime(tick)}
@@ -560,7 +640,8 @@ export function Scrubber<K extends string>({
       {legendLabel === undefined || usedKinds.length === 0 ? null : (
         <ul
           aria-label={legendLabel}
-          className="m-0 flex list-none flex-wrap items-center gap-x-6 gap-y-1 p-0 text-[12px] text-secondary"
+          // Below 480px of width a balanced grid of two columns, so no kind is left alone on a line.
+          className="m-0 grid list-none grid-cols-2 items-center gap-x-6 gap-y-1 p-0 text-[12px] text-secondary @[480px]:flex @[480px]:flex-wrap"
         >
           {usedKinds.map((kind) => (
             <li key={kind} className="flex min-h-6 items-center gap-1.5 whitespace-nowrap">

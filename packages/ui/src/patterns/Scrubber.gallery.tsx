@@ -128,7 +128,7 @@ export default {
     'Een fout en een mislukt verzoek tegelijk: één markering, beide vormen': () => (
       <Player duration={10} start={2} markers={TOGETHER} />
     ),
-    'Dicht: 48 gebeurtenissen, dichtbij gegroepeerd; een vage tweede vorm markeert een groep, de kaart telt hem':
+    'Dicht: 48 gebeurtenissen, dichtbij gegroepeerd tot één vorm; de kaart noemt en telt de groep':
       () => <Player duration={120} start={76} markers={BUSY} />,
     'Een lange opname: streepjes om de vijf minuten': () => (
       <Player duration={721} start={402} markers={ADMIN} />

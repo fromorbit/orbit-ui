@@ -8,6 +8,7 @@ import {
   type ScrubberKind,
   type ScrubberMarker,
   scrubberGroups,
+  scrubberLabels,
   scrubberTicks,
 } from './Scrubber'
 
@@ -99,6 +100,19 @@ describe('Scrubber', () => {
       'data-nt-scrubber-thumb',
       'free',
     )
+  })
+
+  test('a group draws its leading shape only, never a faint copy behind it', () => {
+    const { container } = render(<Player />)
+    expect(container.querySelector('[data-nt-scrubber-stack]')).toBeNull()
+    expect(container.querySelector('svg.opacity-45')).toBeNull()
+  })
+
+  test('on a mark the stem steps back to two tips, so it never runs through the shape', () => {
+    const { container } = render(<Player start={14} />)
+    const thumb = container.querySelector('[data-nt-scrubber-thumb="on"]')
+    expect(thumb?.querySelector('.inset-y-0')).toBeNull()
+    expect(thumb?.querySelectorAll('.h-1')).toHaveLength(2)
   })
 
   test('the legend lists the kinds that occur, with their counts', () => {
@@ -199,6 +213,65 @@ describe('scrubberGroups', () => {
       KINDS,
     )
     expect(groups.map((group) => [group.at, group.markers.length])).toEqual([[20.35, 2]])
+  })
+})
+
+describe('scrubberLabels', () => {
+  test.each([
+    [24, 0, [0, 5, 10, 15, 20]],
+    [24, 640, [0, 5, 10, 15, 20, 24]],
+    [24, 340, [0, 10, 20, 24]],
+    [24, 300, [0, 12, 24]],
+    [20, 640, [0, 5, 10, 15, 20]],
+  ])('%i seconds on a track of %ipx', (duration, width, labels) => {
+    expect(scrubberLabels(duration, width)).toEqual(labels)
+  })
+})
+
+describe('scrubberGroups with kinds: no two drawn shapes touch', () => {
+  type Trail = 'fout' | 'verzoek' | 'klik' | 'navigatie'
+  const TRAIL: Record<Trail, ScrubberKind> = {
+    fout: { label: 'Fout', shape: 'diamond', tone: 'danger' },
+    verzoek: { label: 'Mislukt verzoek', shape: 'ring', tone: 'danger' },
+    klik: { label: 'Klik', shape: 'dot' },
+    navigatie: { label: 'Navigatie', shape: 'chevron' },
+  }
+  const CHECKOUT: ScrubberMarker<Trail>[] = [
+    { at: 0.2, kind: 'navigatie', label: '/' },
+    { at: 3.1, kind: 'klik', label: 'In winkelmand' },
+    { at: 5.8, kind: 'navigatie', label: '/kassa' },
+    { at: 9.2, kind: 'klik', label: 'Bank' },
+    { at: 12.6, kind: 'klik', label: 'Betalen' },
+    { at: 14.35, kind: 'fout', label: 'TypeError' },
+    { at: 14.6, kind: 'verzoek', label: '500' },
+    { at: 19.1, kind: 'klik', label: 'Opnieuw' },
+    { at: 20.35, kind: 'fout', label: 'TypeError' },
+    { at: 20.6, kind: 'verzoek', label: '500' },
+    { at: 23.0, kind: 'navigatie', label: '/' },
+  ]
+  test.each([272, 288, 340, 400, 624])('on a track of %ipx', (width) => {
+    const groups = scrubberGroups(CHECKOUT, 24, width, TRAIL)
+    // A group with an error and a failed request draws two shapes, 32px wide; any other one.
+    const extents = groups.map((group) => {
+      const x = (group.at / 24) * width
+      const pair = new Set(group.markers.map((marker) => TRAIL[marker.kind].tone)).has('danger')
+        ? group.markers.some((m) => m.kind === 'fout') &&
+          group.markers.some((m) => m.kind === 'verzoek')
+        : false
+      if (!pair) return [x - 7, x + 7] as const
+      return x + 25 > width + 8 ? ([x - 25, x + 7] as const) : ([x - 7, x + 25] as const)
+    })
+    for (let index = 1; index < extents.length; index += 1) {
+      const left = extents[index - 1]
+      const right = extents[index]
+      if (!left || !right) throw new Error('no extent')
+      expect(right[0] - left[1]).toBeGreaterThanOrEqual(6)
+    }
+    // Every marker is still in a group, and an error still leads its own.
+    expect(groups.flatMap((group) => group.markers)).toHaveLength(CHECKOUT.length)
+    expect(
+      groups.filter((group) => group.markers.some((m) => m.kind === 'fout')).map((g) => g.at),
+    ).toEqual([14.35, 20.35])
   })
 })
 
