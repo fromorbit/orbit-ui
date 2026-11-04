@@ -1,12 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import {
   adjacentMarker,
   Scrubber,
   type ScrubberKind,
+  ScrubberMark,
   type ScrubberMarker,
+  scrubberEventText,
   scrubberGroups,
   scrubberLabels,
   scrubberTicks,
@@ -108,11 +110,11 @@ describe('Scrubber', () => {
     expect(container.querySelector('svg.opacity-45')).toBeNull()
   })
 
-  test('on a mark the stem steps back to two tips, so it never runs through the shape', () => {
+  test('on a mark the stem gives way to a bar under it, so no line runs through the shape', () => {
     const { container } = render(<Player start={14} />)
     const thumb = container.querySelector('[data-nt-scrubber-thumb="on"]')
     expect(thumb?.querySelector('.inset-y-0')).toBeNull()
-    expect(thumb?.querySelectorAll('.h-1')).toHaveLength(2)
+    expect(thumb?.querySelectorAll('[data-nt-scrubber-under]')).toHaveLength(1)
   })
 
   test('the legend lists the kinds that occur, with their counts', () => {
@@ -175,6 +177,68 @@ describe('Scrubber', () => {
   })
 })
 
+describe('Scrubber hover card', () => {
+  test('a kind that is not named shows only its own words, and a group heading gets the markers', () => {
+    const groupLabel = vi.fn((count: number) => `${count} gebeurtenissen`)
+    const { container } = render(
+      <Scrubber
+        label="Afspeelpositie"
+        duration={24}
+        value={0}
+        onValueChange={() => {}}
+        markers={MARKERS}
+        kinds={{ ...KINDS, klik: { ...KINDS.klik, named: false } }}
+        formatTime={clock}
+        valueText={() => ''}
+        groupLabel={groupLabel}
+      />,
+    )
+    const root = container.querySelector<HTMLElement>('[data-orientation="horizontal"]')
+    if (!root) throw new Error('no root')
+    root.getBoundingClientRect = () => ({
+      left: 0,
+      width: 240,
+      top: 0,
+      height: 32,
+      right: 240,
+      bottom: 32,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    fireEvent.pointerMove(root, { clientX: 30, pointerType: 'mouse' })
+    expect(container.textContent).toContain('Klikt op In winkelmand')
+    expect(container.textContent).not.toContain('Klik ·')
+    fireEvent.pointerMove(root, { clientX: 141, pointerType: 'mouse' })
+    expect(container.textContent).toContain('Fout · TypeError in Kassa.betaal')
+  })
+})
+
+describe('scrubberEventText', () => {
+  test('names the kind before the words, unless the words already say it', () => {
+    const marker = { label: 'Klikt op ‘Betalen’' }
+    expect(scrubberEventText({ label: 'Fout', shape: 'diamond' }, { label: 'TypeError' })).toBe(
+      'Fout · TypeError',
+    )
+    expect(scrubberEventText({ label: 'Klik', shape: 'dot', named: false }, marker)).toBe(
+      'Klikt op ‘Betalen’',
+    )
+    expect(scrubberEventText({ label: 'Fout', shape: 'diamond' }, { label: 'X' }, ': ')).toBe(
+      'Fout: X',
+    )
+  })
+})
+
+describe('ScrubberMark', () => {
+  test('draws the shape of a kind without the edge of the track', () => {
+    const { container } = render(<ScrubberMark kind={KINDS.fout} />)
+    const svg = container.querySelector('svg')
+    expect(svg).toHaveAttribute('aria-hidden', 'true')
+    expect(svg?.getAttribute('class')).toMatch(/text-danger/)
+    expect(svg?.querySelectorAll('path')).toHaveLength(1)
+  })
+})
+
 describe('scrubberTicks', () => {
   test.each([
     [24, [0, 5, 10, 15, 20]],
@@ -220,9 +284,13 @@ describe('scrubberLabels', () => {
   test.each([
     [24, 0, [0, 5, 10, 15, 20]],
     [24, 640, [0, 5, 10, 15, 20, 24]],
-    [24, 340, [0, 10, 20, 24]],
-    [24, 300, [0, 12, 24]],
+    [24, 340, [0, 10, 24]],
+    [24, 300, [0, 10, 24]],
     [20, 640, [0, 5, 10, 15, 20]],
+    // Round times only: 1:30 gives way to the end time 1:35, never 0:31 and 1:03.
+    [95, 592, [0, 30, 60, 95]],
+    // 10:00 would crowd 12:01.
+    [721, 592, [0, 300, 721]],
   ])('%i seconds on a track of %ipx', (duration, width, labels) => {
     expect(scrubberLabels(duration, width)).toEqual(labels)
   })

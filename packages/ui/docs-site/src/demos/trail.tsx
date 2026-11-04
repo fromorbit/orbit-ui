@@ -14,7 +14,9 @@ import {
   RoomyListRow,
   ScrollArea,
   Scrubber,
+  ScrubberMark,
   type ScrubberMarker,
+  scrubberEventText,
   Tabs,
   Tag,
   Timeline,
@@ -46,14 +48,6 @@ type Speed = '1' | '2' | '4'
 
 const SPEEDS: readonly Speed[] = ['1', '2', '4']
 
-/** The glyph and tone of a line of the events, per kind. */
-const EVENT_LOOK: Record<TrailEventKind, { icon: IconName; word: string }> = {
-  klik: { icon: 'mouse-pointer-click', word: 'Klik' },
-  navigatie: { icon: 'globe', word: 'Navigatie' },
-  fout: { icon: 'octagon-alert', word: 'Fout' },
-  verzoek: { icon: 'alert-triangle', word: 'Mislukt verzoek' },
-}
-
 /** The glyph and tone of a console line, per level. */
 const LEVEL_LOOK: Record<ConsoleLine['level'], { icon: IconName; row: string; text: string }> = {
   info: { icon: 'info', row: '', text: 'text-secondary' },
@@ -65,10 +59,11 @@ const LEVEL_LOOK: Record<ConsoleLine['level'], { icon: IconName; row: string; te
 const ON = 0.05
 
 /**
- * What happened in the recording, as a timeline that follows the playhead: what went wrong in
- * red, the last event the player passed in full strength (the current step), and what it has not
- * reached yet as a dashed round; the current step also lies on a tint, so "you are here" holds at a
- * glance. Each event is a button that seeks the player there, so the
+ * What happened in the recording, as a timeline that follows the playhead: each event with the shape
+ * its kind has on the timeline and in the legend (a diamond for a fault, a ring for a failed
+ * request), what went wrong in red, the last event the player passed in full strength (the current step), and what it has not
+ * reached yet as a dashed round; the current step's whole row (sign, words and time) also lies on a tint, so "you are
+ * here" holds at a glance. Each event is a button that seeks the player there, so the
  * keyboard reaches every moment, not only the errors. The detail (a status, a file and line) is a
  * unit of its own that wraps under the title on a narrow screen and is never cut off.
  */
@@ -82,17 +77,20 @@ function Events({
   const passed = EVENTS.filter((event) => event.at <= position + ON)
   const last = passed.at(-1)
   return (
-    <div className="px-3 py-4 @3xl:px-4">
+    // The tint of the current step and of a row under the pointer spans the whole row, from the
+    // sign to the time, at the same inset on both sides; the row's own margins undo the padding,
+    // so the signs stay on the line.
+    <div className="px-3 pt-2 pb-4 @3xl:px-4 [&_li]:-mx-1.5 [&_li]:-my-1 [&_li]:rounded-sm [&_li]:px-1.5 [&_li]:py-1 [&_li:has([aria-current=step])]:bg-surface-active [&_li:has(button:hover)]:bg-surface">
       <Timeline label="Gebeurtenissen">
         {EVENTS.map((event) => {
-          const look = EVENT_LOOK[event.kind]
+          const kind = TRAIL_KINDS[event.kind]
           const here = event === last
           const ahead = event.at > position + ON
           const wrong = event.kind === 'fout' || event.kind === 'verzoek'
           return (
             <TimelineItem
               key={`${event.kind}-${event.at}`}
-              marker={<Icon name={look.icon} size="sm" />}
+              marker={<ScrubberMark kind={kind} />}
               tone={ahead ? 'pending' : wrong ? 'danger' : 'default'}
               time={<span className="tabular-nums">{clock(event.at)}</span>}
             >
@@ -100,7 +98,7 @@ function Events({
                 type="button"
                 aria-current={here ? 'step' : undefined}
                 onClick={() => onSeek(event.at)}
-                className={`-mx-1.5 flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 rounded-sm px-1.5 py-0.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-1 ${here ? 'bg-surface-active' : 'hover:bg-surface'}`}
+                className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 rounded-sm text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <span className={here ? 'font-medium text-fg' : ahead ? 'text-muted' : 'text-fg'}>
                   {event.title}
@@ -108,7 +106,7 @@ function Events({
                 {event.detail === undefined ? null : (
                   <span className="whitespace-nowrap text-[12px] text-muted">{event.detail}</span>
                 )}
-                <span className="sr-only">{` (${look.word})`}</span>
+                <span className="sr-only">{` (${kind.label})`}</span>
               </button>
             </TimelineItem>
           )
@@ -280,17 +278,34 @@ function TriggerTag({ trigger }: { trigger: string }): ReactNode {
 function spoken(seconds: number, here: readonly ScrubberMarker<TrailEventKind>[]): string {
   return [
     `${clock(seconds)} van ${clock(DURATION)}`,
-    ...here.map((marker) => `${TRAIL_KINDS[marker.kind].label}: ${marker.label}`),
+    ...here.map((marker) => scrubberEventText(TRAIL_KINDS[marker.kind], marker, ': ')),
   ].join(', ')
+}
+
+/** The heading of a group's hover card: how many, the span, and what went wrong in it. */
+function heading(count: number, markers: readonly ScrubberMarker<TrailEventKind>[]): string {
+  const first = markers[0]?.at ?? 0
+  const last = markers.at(-1)?.at ?? first
+  const errors = markers.filter((marker) => marker.kind === 'fout').length
+  const failed = markers.filter((marker) => marker.kind === 'verzoek').length
+  const wrong = [
+    errors === 0 ? '' : errors === 1 ? '1 fout' : `${errors} fouten`,
+    failed === 0 ? '' : failed === 1 ? '1 mislukt verzoek' : `${failed} mislukte verzoeken`,
+  ].filter(Boolean)
+  return [
+    `${count} gebeurtenissen`,
+    `${clock(first)}–${clock(last)}`,
+    ...(wrong.length === 0 ? [] : [wrong.join(', ')]),
+  ].join(' · ')
 }
 
 /**
  * Halo's trail: a recording of a browser session around an error, replayed with its timeline,
  * what happened, the console and the network, and the other recordings of the app beside it.
  *
- * Under the timeline the controls wrap in three groups at 28px: the transport (5 seconds back,
- * Afspelen as the one emphasis of the view, 5 seconds forward), the time with the speed beside it,
- * and on the right the way between the errors ("Vorige fout", where the player is among them,
+ * Under the timeline the controls, every one a framed 28px button, wrap in three parts: the
+ * transport (5 seconds back, Afspelen as the one emphasis of the view, 5 seconds forward) with the
+ * time, the speed, and on the right the way between the errors ("Vorige fout", where the player is among them,
  * "Volgende fout"). The legend stays a passive key. On a narrow screen the timeline and its
  * controls stick to the bottom of the player while the replay scrolls past, so both stay in
  * sight. A jump between errors is announced politely.
@@ -367,14 +382,15 @@ function Trail(): ReactNode {
                     formatTime={clock}
                     valueText={spoken}
                     legendLabel="Markeringen"
-                    groupLabel={(count) => `${count} gebeurtenissen`}
+                    groupLabel={heading}
                     controls={
-                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-2">
                           <Tooltip label="5 seconden terug">
                             <IconButton
                               icon="rewind"
                               size="sm"
+                              variant="secondary"
                               label="5 seconden terug"
                               onClick={() => seek(position - 5)}
                             />
@@ -394,35 +410,35 @@ function Trail(): ReactNode {
                             <IconButton
                               icon="fast-forward"
                               size="sm"
+                              variant="secondary"
                               label="5 seconden vooruit"
                               onClick={() => seek(position + 5)}
                             />
                           </Tooltip>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-[13px] text-fg tabular-nums whitespace-nowrap">
+                          <span className="ml-1 font-medium text-[13px] text-fg tabular-nums whitespace-nowrap">
                             {clock(position)}
                             <span className="font-normal text-muted">{` / ${clock(DURATION)}`}</span>
                           </span>
-                          <DropdownMenu
-                            label="Snelheid"
-                            side="top"
-                            align="start"
-                            trigger={
-                              <Button variant="ghost" size="sm" aria-label={`Snelheid ${speed}×`}>
-                                {`${speed}×`}
-                              </Button>
-                            }
-                            items={SPEEDS.map((option) => ({
-                              id: option,
-                              label: `${option}×`,
-                              kind: 'radio' as const,
-                              group: 'snelheid',
-                              checked: speed === option,
-                              onSelect: () => setSpeed(option),
-                            }))}
-                          />
                         </div>
+                        <DropdownMenu
+                          label="Snelheid"
+                          side="top"
+                          align="start"
+                          trigger={
+                            <Button variant="secondary" size="sm" aria-label={`Snelheid ${speed}×`}>
+                              {`${speed}×`}
+                              <Icon name="chevron-down" size="sm" tone="faint" />
+                            </Button>
+                          }
+                          items={SPEEDS.map((option) => ({
+                            id: option,
+                            label: `${option}×`,
+                            kind: 'radio' as const,
+                            group: 'snelheid',
+                            checked: speed === option,
+                            onSelect: () => setSpeed(option),
+                          }))}
+                        />
                         <fieldset
                           aria-label="Fouten"
                           className="m-0 ml-auto flex min-w-0 items-center gap-1 border-0 p-0"
@@ -431,7 +447,7 @@ function Trail(): ReactNode {
                             <IconButton
                               icon="chevron-left"
                               size="sm"
-                              outlined
+                              variant="secondary"
                               label="Vorige fout"
                               aria-disabled={previous === undefined}
                               onClick={() => jump(previous)}
@@ -444,7 +460,7 @@ function Trail(): ReactNode {
                             <IconButton
                               icon="chevron-right"
                               size="sm"
-                              outlined
+                              variant="secondary"
                               label="Volgende fout"
                               aria-disabled={next === undefined}
                               onClick={() => jump(next)}

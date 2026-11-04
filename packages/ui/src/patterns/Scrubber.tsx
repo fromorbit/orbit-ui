@@ -16,6 +16,24 @@ export interface ScrubberKind {
   shape: ScrubberShape
   /** `neutral` by default. */
   tone?: ScrubberTone
+  /**
+   * Whether a line about one event names its kind first ("Fout · TypeError in Kassa.betaal"). True
+   * by default; false for a kind whose own words already say it ("Klikt op ‘Betalen’"), where the
+   * word would only repeat the verb and the shape in front of the line already shows the kind.
+   */
+  named?: boolean
+}
+
+/**
+ * One event in words, as the hover card writes it and a host's `valueText` may: the word of its
+ * kind, the separator and its own words, or only its own words where the kind is not `named`.
+ */
+export function scrubberEventText(
+  kind: ScrubberKind,
+  marker: { label: string },
+  separator = ' · ',
+): string {
+  return kind.named === false ? marker.label : `${kind.label}${separator}${marker.label}`
 }
 
 /** One moment on the timeline: a click, a navigation, an error. */
@@ -60,11 +78,12 @@ export interface ScrubberProps<K extends string = string> {
   legendLabel?: string
   /**
    * The heading of the hover card of a mark that holds more than one event, in the host's words:
-   * "3 gebeurtenissen". Such a mark shows only its leading shape (and a second one that
+   * "7 gebeurtenissen · 1:11–1:24 · 1 fout", from the count and the markers of the group (in
+   * order of time), so what went wrong is named in the heading, not hidden in line three. Such a mark shows only its leading shape (and a second one that
    * went wrong as well); the rest of the group is listed and counted here, never drawn on the
    * track. Left out, the card only lists the events.
    */
-  groupLabel?(count: number): string
+  groupLabel?(count: number, markers: readonly ScrubberMarker<K>[]): string
   /**
    * The controls of the player (play, skip, the time, the way between the errors), set right
    * under the times and above the legend, so the transport stays next to the track it drives and
@@ -125,7 +144,7 @@ const WEIGHT: Record<ScrubberTone, number> = { danger: 0, attention: 1, neutral:
 const HALF = 7
 const PAIR_GAP = 4
 /** The least room, in pixels, between two drawn marks: closer, and they become one mark. */
-const MARK_GAP = 6
+const MARK_GAP = 8
 /** The room at each end of the track, so a mark at the very start or end is drawn whole. */
 const INSET = 8
 
@@ -194,8 +213,9 @@ function extentOf(x: number, width: number, pair: boolean): [number, number] {
  * stays whole and a busy stretch reads as a few calm marks rather than a picket fence. The
  * loudest markers lead (what went wrong first, then the earliest): each in turn joins the nearest
  * leader less than `gap` pixels away, or leads a group of its own. Then, with the `kinds` known,
- * two marks whose drawn shapes (a pair takes two) come closer than 6px are one mark as well, led
- * by the louder. So no two shapes ever touch, and an error is always drawn at its own moment.
+ * two marks whose drawn shapes (a pair takes two) come closer than 8px are one mark as well, led
+ * by the louder. So no two shapes ever come closer than 8px, and an error is always drawn at its
+ * own moment.
  * Without a width (not measured yet) every marker is its own group.
  */
 export function scrubberGroups<K extends string>(
@@ -277,28 +297,38 @@ const CHEVRON = 'M5 2 10 7 5 12'
  * 12px (multiples of 4, so their weights match), each with a 1px edge in the colour of the plane,
  * so it stands apart on the played part without cutting the line it sits on.
  */
-function Shape({ kind }: { kind: ScrubberKind }): ReactNode {
+function Shape({ kind, edge = true }: { kind: ScrubberKind; edge?: boolean }): ReactNode {
   const tone = toneOf(kind)
+  // Without the edge (in a list beside the player) the shape stands on whatever plane it is put.
+  const plane = edge ? PLANE : 'none'
   const drawing = (() => {
     switch (kind.shape) {
       case 'dot':
         return (
           <>
-            <circle cx="7" cy="7" r="5" fill={PLANE} />
+            {edge ? <circle cx="7" cy="7" r="5" fill={plane} /> : null}
             <circle cx="7" cy="7" r="4" fill="currentColor" />
           </>
         )
       case 'ring':
         return (
           <>
-            <circle cx="7" cy="7" r="7" fill={PLANE} />
-            <circle cx="7" cy="7" r="5" fill={PLANE} stroke="currentColor" strokeWidth="2" />
+            {edge ? <circle cx="7" cy="7" r="7" fill={plane} /> : null}
+            <circle cx="7" cy="7" r="5" fill={plane} stroke="currentColor" strokeWidth="2" />
           </>
         )
       case 'diamond':
         return (
           <>
-            <path d={DIAMOND} fill={PLANE} stroke={PLANE} strokeWidth="3" strokeLinejoin="round" />
+            {edge ? (
+              <path
+                d={DIAMOND}
+                fill={plane}
+                stroke={plane}
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+            ) : null}
             <path
               d={DIAMOND}
               fill="currentColor"
@@ -311,14 +341,16 @@ function Shape({ kind }: { kind: ScrubberKind }): ReactNode {
       case 'chevron':
         return (
           <>
-            <path
-              d={CHEVRON}
-              fill="none"
-              stroke={PLANE}
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {edge ? (
+              <path
+                d={CHEVRON}
+                fill="none"
+                stroke={plane}
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : null}
             <path
               d={CHEVRON}
               fill="none"
@@ -342,30 +374,43 @@ function Shape({ kind }: { kind: ScrubberKind }): ReactNode {
   )
 }
 
+/**
+ * The shape of a kind on its own, without the edge it has on the track: for the list of events
+ * beside the player and any other place the kinds are named, so "Fout" and "Mislukt verzoek" look
+ * the same everywhere (a diamond and a ring), in the same tone and glow.
+ */
+export function ScrubberMark({ kind }: { kind: ScrubberKind }): ReactNode {
+  return <Shape kind={kind} edge={false} />
+}
+
 /** How close, in pixels, the playhead must be to a mark to stand on it, and the pointer to name it. */
 const ON = 7
 const NEAR = 12
 
-/** The room, in pixels, the end time needs after the last round label before that one gives way. */
+/** The least room, in pixels, between the last round label and the end time that closes the row. */
 const END_ROOM = 56
 
 /**
  * The time labels under a track `width` pixels wide: round ticks, thinned as the track narrows
- * (one per 96px), and once the track is measured the end of the recording closing the row. The
- * last round label gives way where it would crowd the end; the gap before the end would then
- * stand out (0:00, 0:10, 0:24), so the labels split the track evenly instead (0:00, 0:12, 0:24).
+ * (one per 96px), and once the track is measured the end of the recording closing the row. Every
+ * label but the end is a round time (0:30, 1:00, never 0:31): the finest round step that fits is
+ * taken, and its last tick gives way where it would crowd the end time (closer than 56px, or than
+ * nearly half a step), so 1:30 is left out before 1:35 and 10:00 before 12:01.
  */
 export function scrubberLabels(duration: number, width: number, maxTicks = 6): number[] {
   const length = Math.max(duration, 0)
-  const ticks = scrubberTicks(
-    length,
-    width > 0 ? Math.max(2, Math.min(maxTicks, Math.floor(width / TICK_ROOM) + 1)) : maxTicks,
-  )
-  const lastTick = ticks.at(-1) ?? 0
-  if (!(width > 0) || !(length > lastTick)) return ticks
-  if (ticks.length < 2 || (1 - lastTick / length) * width >= END_ROOM) return [...ticks, length]
-  const count = ticks.length
-  return Array.from({ length: count }, (_, index) => (index * length) / (count - 1))
+  if (!(width > 0) || !(length > 0)) return scrubberTicks(length, maxTicks)
+  const max = Math.max(2, Math.min(maxTicks, Math.floor(width / TICK_ROOM) + 1))
+  for (const step of TICK_STEPS) {
+    const room = Math.max(END_ROOM, (step / length) * width * 0.45)
+    const ticks = Array.from({ length: Math.floor(length / step) + 1 }, (_, index) => index * step)
+    const kept = ticks.filter(
+      (tick) => tick === 0 || tick === length || (1 - tick / length) * width >= room,
+    )
+    const labels = (kept.at(-1) ?? 0) < length ? [...kept, length] : kept
+    if (labels.length <= max) return labels
+  }
+  return [0, length]
 }
 
 /** Where the pointer rests over the track, in pixels from its left. */
@@ -391,7 +436,7 @@ interface Hover {
  * kind (the rarest, among quiet ones), with a second kind that went wrong 4px beside it on the same
  * centre line (the leading shape on the moment; before it at the very end). Quiet company is not
  * drawn, so no mark ever reads as a doubled glyph, and marks whose shapes would come closer than
- * 6px are merged, so no two shapes touch at any width. Each mark is a 24px target for a pointer: a
+ * 8px are merged, so no two shapes touch at any width. Each mark is a 24px target for a pointer: a
  * press seeks to it, and resting on it names every event in it with its time (under
  * `groupLabel`'s heading when there are several); the louder mark lies on top where two touch.
  * For a screen reader the marks are decoration (`aria-hidden`, out of the tab order): the events
@@ -400,10 +445,11 @@ interface Hover {
  * status marks (`--nt-status-glow`), so an error stands out among the clicks (Von Restorff).
  *
  * The playhead is always neutral: a 24px stem with a 16px knob in the foreground colour. Where it
- * stands on a mark the knob gives way and the stem steps back to two short tips above and below
- * the mark, which keeps its own tone and shape, so the error it is at stays in sight and the one emphasis of a player stays its play button. The time
- * labels keep their rhythm under it, and the end time always closes the row on the right; where
- * the last round label gives way to it, the labels split the track evenly instead.
+ * stands on a mark the knob and the stem give way to a short bar under the mark, which keeps its
+ * own tone and shape, so the error it is at stays in sight, no line ever runs through a shape, and
+ * the one emphasis of a player stays its play button. The time
+ * labels keep their round steps under it, and the end time always closes the row on the right; the
+ * last round label gives way where it would crowd it.
  */
 export function Scrubber<K extends string>({
   label,
@@ -538,7 +584,7 @@ export function Scrubber<K extends string>({
                 <>
                   {nearby.markers.length > 1 && groupLabel !== undefined ? (
                     <span className="font-medium text-secondary">
-                      {groupLabel(nearby.markers.length)}
+                      {groupLabel(nearby.markers.length, nearby.markers)}
                     </span>
                   ) : null}
                   {nearby.markers.map((marker) => (
@@ -548,7 +594,7 @@ export function Scrubber<K extends string>({
                       </span>
                       <Shape kind={kinds[marker.kind]} />
                       <span className="line-clamp-2 min-w-0 break-words">
-                        {`${kinds[marker.kind].label} · ${marker.label}`}
+                        {scrubberEventText(kinds[marker.kind], marker)}
                       </span>
                     </span>
                   ))}
@@ -568,12 +614,14 @@ export function Scrubber<K extends string>({
               {current === undefined ? (
                 <span className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
               ) : (
-                // On a mark the stem steps back to two tips above and below it, so the line never
-                // runs through the shape and the two never read as one glyph.
-                <>
-                  <span className="absolute top-0 left-1/2 h-1 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
-                  <span className="absolute bottom-0 left-1/2 h-1 w-0.5 -translate-x-1/2 rounded-full bg-fg" />
-                </>
+                // On a mark the stem gives way to a bar under it, centred on the mark (which may
+                // stand a few pixels from the playhead), so no line runs through the shape and the
+                // two never read as one glyph.
+                <span
+                  data-nt-scrubber-under
+                  className="absolute bottom-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-full bg-fg"
+                  style={{ marginLeft: (share(current.at) - share(position)) * width }}
+                />
               )}
               <span
                 className={`relative block size-4 rounded-full border-2 border-overlay bg-fg ${current === undefined ? '' : 'opacity-0'}`}
@@ -640,8 +688,9 @@ export function Scrubber<K extends string>({
       {legendLabel === undefined || usedKinds.length === 0 ? null : (
         <ul
           aria-label={legendLabel}
-          // Below 480px of width a balanced grid of two columns, so no kind is left alone on a line.
-          className="m-0 grid list-none grid-cols-2 items-center gap-x-6 gap-y-1 p-0 text-[12px] text-secondary @[480px]:flex @[480px]:flex-wrap"
+          // Below 480px of width a balanced grid of two columns packed to the start, so no kind is left
+          // alone on a line and each stays near its row partner.
+          className="m-0 grid list-none grid-cols-[repeat(2,max-content)] items-center gap-x-6 gap-y-1 p-0 text-[12px] text-secondary @[480px]:flex @[480px]:flex-wrap"
         >
           {usedKinds.map((kind) => (
             <li key={kind} className="flex min-h-6 items-center gap-1.5 whitespace-nowrap">

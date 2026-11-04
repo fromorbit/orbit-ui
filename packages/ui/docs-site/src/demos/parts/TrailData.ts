@@ -27,8 +27,8 @@ export interface TrailEvent {
 export const TRAIL_KINDS: Record<TrailEventKind, ScrubberKind> = {
   fout: { label: 'Fout', shape: 'diamond', tone: 'danger' },
   verzoek: { label: 'Mislukt verzoek', shape: 'ring', tone: 'danger' },
-  klik: { label: 'Klik', shape: 'dot' },
-  navigatie: { label: 'Navigatie', shape: 'chevron' },
+  klik: { label: 'Klik', shape: 'dot', named: false },
+  navigatie: { label: 'Navigatie', shape: 'chevron', named: false },
 }
 
 /** One line of the browser's console. */
@@ -68,13 +68,13 @@ export const POSITION = 14.35
 
 export const EVENTS: TrailEvent[] = [
   { at: 0.2, kind: 'navigatie', title: 'Opent de startpagina (/)' },
-  { at: 3.1, kind: 'klik', title: 'Klikt op In winkelmand', detail: 'Koffiebonen Noord' },
+  { at: 3.1, kind: 'klik', title: 'Klikt op ‘In winkelmand’', detail: 'Koffiebonen Noord' },
   { at: 5.8, kind: 'navigatie', title: 'Opent de kassa (/kassa)' },
   { at: 9.2, kind: 'klik', title: 'Kiest een bank', detail: 'Rabobank' },
-  { at: 12.6, kind: 'klik', title: 'Klikt op Betalen' },
+  { at: 12.6, kind: 'klik', title: 'Klikt op ‘Betalen’' },
   { at: 14.35, kind: 'fout', title: 'TypeError in Kassa.betaal', detail: 'kassa.js:88' },
   { at: 14.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: 'status 500 · 233 ms' },
-  { at: 19.1, kind: 'klik', title: 'Klikt opnieuw op Betalen' },
+  { at: 19.1, kind: 'klik', title: 'Klikt opnieuw op ‘Betalen’' },
   { at: 20.35, kind: 'fout', title: 'TypeError in Kassa.betaal', detail: 'kassa.js:88' },
   { at: 20.6, kind: 'verzoek', title: 'POST /api/bestellingen', detail: 'status 500 · 241 ms' },
   { at: 23.0, kind: 'navigatie', title: 'Opent de startpagina (/)' },

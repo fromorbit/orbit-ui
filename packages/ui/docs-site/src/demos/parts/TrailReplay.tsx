@@ -11,7 +11,7 @@ const LINES = [
 
 /** The first click on Betalen and the first error, from the recording. */
 const PAY =
-  EVENTS.find((event) => event.kind === 'klik' && event.title === 'Klikt op Betalen')?.at ?? 0
+  EVENTS.find((event) => event.kind === 'klik' && event.title === 'Klikt op ‘Betalen’')?.at ?? 0
 const ERROR = EVENTS.find((event) => event.kind === 'fout')?.at ?? 0
 
 /**
@@ -93,7 +93,9 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
               <span className="text-secondary">Totaal</span>
               <span className="font-medium text-fg tabular-nums">€ 39,45</span>
             </span>
-            <span className="relative flex h-8 items-center justify-center rounded-md bg-accent font-medium text-[12px] text-accent-fg">
+            {/* The customer's button in the quiet frame of a secondary: the replay is a picture of
+                their page, and the one emphasis of this view stays the player's Afspelen. */}
+            <span className="relative flex h-8 items-center justify-center rounded-md border border-border-strong font-medium text-[12px] text-fg">
               Betalen
               {clicked ? (
                 <>
