@@ -14,12 +14,20 @@ import { ConfirmDialog } from './ConfirmDialog'
  * falls inside it wherever the stage has scrolled to, and the dimmed overlay is part of the
  * reference too.
  */
-function Stage({ children }: { children: ReactNode }) {
+function Stage({
+  reopenLabel,
+  children,
+}: {
+  reopenLabel: string
+  children: (open: boolean, setOpen: (open: boolean) => void) => ReactNode
+}) {
   // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
-  // this box, and the gallery around it stays in reach.
+  // this box, and the gallery around it stays in reach, for the keyboard too.
   return (
     <div className="w-full max-w-[40rem]">
-      <LayerStage height={480}>{children}</LayerStage>
+      <LayerStage height={480} reopenLabel={reopenLabel}>
+        {children}
+      </LayerStage>
     </div>
   )
 }
@@ -50,18 +58,19 @@ function Closed() {
  * alone in its own state rather than beside another one that also opens on mount.
  */
 function Open() {
-  const [open, setOpen] = useState(true)
   return (
-    <Stage>
-      <ConfirmDialog
-        open={open}
-        onOpenChange={setOpen}
-        title="Uitloggen"
-        body="Je moet opnieuw inloggen om verder te gaan."
-        confirmLabel="Uitloggen"
-        cancelLabel="Annuleren"
-        onConfirm={() => setOpen(false)}
-      />
+    <Stage reopenLabel="Uitloggen">
+      {(open, setOpen) => (
+        <ConfirmDialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Uitloggen"
+          body="Je moet opnieuw inloggen om verder te gaan."
+          confirmLabel="Uitloggen"
+          cancelLabel="Annuleren"
+          onConfirm={() => setOpen(false)}
+        />
+      )}
     </Stage>
   )
 }

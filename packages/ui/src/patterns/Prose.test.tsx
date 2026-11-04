@@ -295,6 +295,21 @@ test('a task list from GFM draws its own boxes, with a name', () => {
   for (const item of screen.getAllByRole('listitem')) expect(item.className).toContain('list-none')
 })
 
+test('a task item starts its words at the box, on the edge of the text around the list', () => {
+  const { container } = render(
+    <Prose
+      labels={nl.prose}
+      markdown={'- [ ] Een bon van € 25 laat € 15 te betalen\n- [x] Klaar\n'}
+    />,
+  )
+  const [first] = screen.getAllByRole('listitem')
+  // No space between the box and the words: the hanging indent lines the wrapped line up with
+  // the first one only when the first starts right after the box's own margin.
+  expect(first?.textContent?.startsWith('Een bon')).toBe(true)
+  // A list of tasks only has no markers to make room for.
+  expect(container.querySelector('ul')).toHaveClass('pl-0')
+})
+
 test('a plain list item keeps its bullet', () => {
   render(<Prose labels={nl.prose} markdown={'- Een\n'} />)
   expect(screen.getByRole('listitem').className).not.toContain('list-none')

@@ -394,40 +394,47 @@ function MemberRow({
       <span className="hidden w-28 shrink-0 whitespace-nowrap text-[12px] text-muted @3xl:block">
         {seenText(member.seen)}
       </span>
+      {/* One width for every role, so the selects stand as a column with one left edge. */}
       <div className="flex shrink-0 justify-end @2xl:w-28">
         {member.role === 'owner' ? (
           <Tag>Eigenaar</Tag>
         ) : (
-          <Select<Assignable>
-            label={`Rol van ${member.name}`}
-            size="sm"
-            value={member.role}
-            options={ROLES}
-            onValueChange={onRole}
-          />
+          <div className="flex @2xl:w-full @2xl:*:w-full">
+            <Select<Assignable>
+              label={`Rol van ${member.name}`}
+              size="sm"
+              value={member.role}
+              options={ROLES}
+              onValueChange={onRole}
+            />
+          </div>
         )}
       </div>
-      <span className="hidden @lg:contents">
-        <DropdownMenu
-          trigger={
-            <IconButton icon="more-horizontal" size="sm" label={`Acties voor ${member.name}`} />
-          }
-          label={`Acties voor ${member.name}`}
-          align="end"
-          items={[
-            { id: 'profile', label: 'Profiel bekijken', icon: 'user' },
-            { id: 'mail', label: 'E-mail sturen', icon: 'at-sign' },
-            {
-              id: 'remove',
-              label: 'Uit het team halen',
-              icon: 'trash-2',
-              tone: 'danger',
-              separated: true,
-              disabled: member.role === 'owner',
-            },
-          ]}
-        />
-      </span>
+      {/* At every width: on a phone too, the menu is the only way to a member's acts. */}
+      <DropdownMenu
+        trigger={
+          <IconButton
+            icon="more-horizontal"
+            size="sm"
+            variant="secondary"
+            label={`Acties voor ${member.name}`}
+          />
+        }
+        label={`Acties voor ${member.name}`}
+        align="end"
+        items={[
+          { id: 'profile', label: 'Profiel bekijken', icon: 'user' },
+          { id: 'mail', label: 'E-mail sturen', icon: 'at-sign' },
+          {
+            id: 'remove',
+            label: 'Uit het team halen',
+            icon: 'trash-2',
+            tone: 'danger',
+            separated: true,
+            disabled: member.role === 'owner',
+          },
+        ]}
+      />
     </li>
   )
 }
@@ -471,7 +478,8 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                 meta={String(members.length)}
                 flush
                 actions={
-                  <div className="hidden w-56 *:w-full @xl:block">
+                  // Narrower on a phone, never gone: finding a member works at every width.
+                  <div className="w-36 *:w-full @md:w-44 @xl:w-56">
                     <Input
                       label="Zoek een lid"
                       icon="search"
@@ -534,6 +542,7 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                             <IconButton
                               icon="more-horizontal"
                               size="sm"
+                              variant="secondary"
                               label={`Acties voor ${invite.email}`}
                             />
                           }

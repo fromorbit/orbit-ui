@@ -60,11 +60,12 @@ export default {
       </div>
     ),
     'In een lijst en een rij filters': () => <Sampler />,
-    // The light palette on its own element: the glow there is 0.22 of the dark one. On the sunken
-    // surface of Paper rather than its canvas, so the sample is a region of its own on a light
-    // page too, not the page itself set in by 16px.
+    // The light palette on its own element: the glow there is 0.22 of the dark one. Paper itself,
+    // opaque and with its own text colour: a translucent plane would let the dark page through, and
+    // an inherited colour would still be the dark theme's (both resolve where they are set). The
+    // edge of a plane parts it from a light page.
     'Op Papier': () => (
-      <div data-theme="light" className="rounded-lg bg-surface p-4">
+      <div data-theme="light" className="rounded-lg bg-canvas p-4 text-fg shadow-plane">
         <Sampler />
       </div>
     ),

@@ -1,6 +1,6 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { stories, storyId } from '../../src/gallery'
 import { DocsPage } from './DocsPage'
 
@@ -42,6 +42,34 @@ describe('the docs page', () => {
     render(<DocsPage stories={stories} />)
     expect(screen.getByRole('heading', { level: 1, name: 'Button' })).toBeInTheDocument()
     expect(screen.getByText('Varianten')).toBeInTheDocument()
+  })
+
+  test('names the route in the title, so tabs and history tell the pages apart', () => {
+    goTo('#/primitives-statusmark')
+    render(<DocsPage stories={stories} />)
+    expect(document.title).toBe('StatusMark · Bouwstenen · Orbit UI')
+    goTo('#/demo/team')
+    expect(document.title).toBe("Team en rechten · Demo's · Orbit UI")
+    goTo('#/demo/ontbrekend')
+    expect(document.title).toBe("Wensenlijst · Demo's · Orbit UI")
+  })
+
+  test('an open layer of a story does not hold the keyboard: it takes no focus on load', async () => {
+    goTo('#/overlays-dialog')
+    render(<DocsPage stories={stories} />)
+    const dialog = await screen.findByRole('dialog', { name: 'Plan ter goedkeuring' })
+    await act(() => new Promise((done) => requestAnimationFrame(() => done(undefined))))
+    expect(dialog.contains(document.activeElement)).toBe(false)
+  })
+
+  test('closing a staged layer hands the focus to the button that opens it again', async () => {
+    goTo('#/overlays-dialog')
+    render(<DocsPage stories={stories} />)
+    await screen.findByRole('dialog', { name: 'Plan ter goedkeuring' })
+    await userEvent.click(screen.getByRole('button', { name: 'Blijf plannen' }))
+    await userEvent.keyboard('{Escape}')
+    const reopen = await screen.findByRole('button', { name: 'Plan bekijken' })
+    await vi.waitFor(() => expect(reopen).toHaveFocus())
   })
 
   test('follows a change of the hash', () => {

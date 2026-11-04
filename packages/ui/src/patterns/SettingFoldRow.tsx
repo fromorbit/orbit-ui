@@ -49,8 +49,9 @@ export function SettingFoldRow({
   const head = (
     <>
       {/* Under 480px the status goes under the label, as a `SettingRow` puts its control there,
-          so the explanation is not cut to a word or two. */}
-      <span className="min-w-0 flex-1 @max-[30rem]:basis-full">
+          so the explanation is not cut to a word or two; the chevron stays at the end of the
+          first line, centred on the label, so the row still says where it opens. */}
+      <span className="min-w-0 flex-1">
         <span className="block truncate text-[13px] leading-5 text-fg">{label}</span>
         {description === undefined || description.trim() === '' ? null : (
           <span className="block truncate text-[12px] leading-4 text-muted" title={description}>
@@ -60,9 +61,12 @@ export function SettingFoldRow({
       </span>
       {/* The status and the 24px slot stand 8px apart, as a control and its reset in a
           `SettingRow`, so the word ends on the line where every control of the card ends. */}
-      <span className="flex shrink-0 items-center gap-2">
+      <span className="flex shrink-0 items-center gap-2 @max-[30rem]:contents">
         {status === undefined ? null : (
-          <span className="flex shrink-0 items-center gap-2 text-[12px] leading-4 text-secondary">
+          <span
+            data-nt-fold-status-word
+            className="flex shrink-0 items-center gap-2 text-[12px] leading-4 text-secondary @max-[30rem]:order-last @max-[30rem]:basis-full"
+          >
             {/* The quiet size of the mark, as a status beside it in the same card draws it. */}
             <span aria-hidden="true" data-nt-fold-status={status.tone} className="flex shrink-0">
               {status.tone === 'off' ? (
@@ -76,7 +80,10 @@ export function SettingFoldRow({
             {status.label}
           </span>
         )}
-        <span className="flex size-6 shrink-0 items-center justify-center text-muted">
+        <span
+          data-nt-fold-slot
+          className="flex size-6 shrink-0 items-center justify-center text-muted"
+        >
           {foldable ? (
             <span
               data-nt-fold-chevron

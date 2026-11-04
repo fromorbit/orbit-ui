@@ -15,6 +15,9 @@ const HELPERS: readonly string[] = [
   // The ports a host hands the library: it draws nothing, so there is no story;
   // `UiProvider.test.tsx` covers it.
   'provider/UiProvider.tsx',
+  // The stage the open-on-load overlay stories stand in; shown by them, `layer-stage.test.tsx`
+  // covers it.
+  'gallery/layer-stage.tsx',
 ]
 
 /**

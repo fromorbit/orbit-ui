@@ -40,6 +40,7 @@ describe('findStaleHelpers', () => {
         'overlays/portal.tsx',
         'overlays/menu-rows.tsx',
         'provider/UiProvider.tsx',
+        'gallery/layer-stage.tsx',
       ]),
     ).toEqual([])
   })
@@ -50,6 +51,7 @@ describe('findStaleHelpers', () => {
         'overlays/Popover.tsx',
         'overlays/menu-rows.tsx',
         'provider/UiProvider.tsx',
+        'gallery/layer-stage.tsx',
       ]),
     ).toEqual(['overlays/portal.tsx'])
   })

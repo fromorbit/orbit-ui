@@ -11,12 +11,20 @@ import { Dialog } from './Dialog'
  * and a reference image is cropped to the state's own box, so an empty box would yield an empty
  * image. The dimmed overlay is part of the reference too.
  */
-function Stage({ children }: { children: ReactNode }) {
+function Stage({
+  reopenLabel,
+  children,
+}: {
+  reopenLabel: string
+  children: (open: boolean, setOpen: (open: boolean) => void) => ReactNode
+}) {
   // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
-  // this box, and the gallery around it stays in reach.
+  // this box, and the gallery around it stays in reach, for the keyboard too.
   return (
     <div className="w-full max-w-[48rem]">
-      <LayerStage height={480}>{children}</LayerStage>
+      <LayerStage height={480} reopenLabel={reopenLabel}>
+        {children}
+      </LayerStage>
     </div>
   )
 }
@@ -29,28 +37,29 @@ function Stage({ children }: { children: ReactNode }) {
  * `ConfirmDialog.gallery.tsx`.
  */
 function Open() {
-  const [open, setOpen] = useState(true)
   return (
-    <Stage>
-      <Dialog
-        open={open}
-        onOpenChange={setOpen}
-        title="Plan ter goedkeuring"
-        description="Stap 1 van 2"
-        closeLabel="Later"
-        // The panel takes the focus, not "Blijf plannen": an open story shows no ring beside the
-        // one filled button (one emphasis); Tab still goes on into the body and the footer.
-        initialFocus="panel"
-        footer={
-          <>
-            <Button variant="secondary">Blijf plannen</Button>
-            <Button variant="primary">Voer uit</Button>
-          </>
-        }
-      >
-        <p className="m-0 text-fg">1. Lees de notities in /work/notities.</p>
-        <p className="m-0 text-fg">2. Schrijf een samenvatting.</p>
-      </Dialog>
+    <Stage reopenLabel="Plan bekijken">
+      {(open, setOpen) => (
+        <Dialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Plan ter goedkeuring"
+          description="Stap 1 van 2"
+          closeLabel="Later"
+          // The panel takes the focus, not "Blijf plannen": an open story shows no ring beside the
+          // one filled button (one emphasis); Tab still goes on into the body and the footer.
+          initialFocus="panel"
+          footer={
+            <>
+              <Button variant="secondary">Blijf plannen</Button>
+              <Button variant="primary">Voer uit</Button>
+            </>
+          }
+        >
+          <p className="m-0 text-fg">1. Lees de notities in /work/notities.</p>
+          <p className="m-0 text-fg">2. Schrijf een samenvatting.</p>
+        </Dialog>
+      )}
     </Stage>
   )
 }

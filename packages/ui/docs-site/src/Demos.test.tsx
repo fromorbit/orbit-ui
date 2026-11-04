@@ -71,6 +71,15 @@ describe('the demos tab', () => {
     }
   })
 
+  test('keeps one h1 on the page: the headings of a screen sit under its block', async () => {
+    goTo('#/demo/team')
+    render(<DocsPage stories={stories} />)
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 2, name: 'Team en rechten' })).toBeInTheDocument()
+    // The screen's own `h1` "Team" is announced one level under the block's `h2`.
+    expect(await screen.findByRole('heading', { level: 3, name: 'Team' })).toBeInTheDocument()
+  })
+
   test('has one navigation: no list of components beside the demos', () => {
     goTo('#/demo')
     render(<DocsPage stories={stories} />)

@@ -138,7 +138,12 @@ function RowMenu({ space }: { space: Space }): ReactNode {
   return (
     <DropdownMenu
       trigger={
-        <IconButton icon="more-horizontal" size="sm" label={`Acties voor ${space.branch}`} />
+        <IconButton
+          icon="more-horizontal"
+          size="sm"
+          variant="secondary"
+          label={`Acties voor ${space.branch}`}
+        />
       }
       label={`Acties voor ${space.branch}`}
       align="end"
@@ -237,8 +242,9 @@ function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
         defaultSort={{ column: 'deployed', direction: 'descending' }}
         card={(space) => (
           <div className="flex items-start gap-3 px-3.5 py-3">
+            {/* The quiet size on a card: the mark sits beside a 13px title, not in a table row. */}
             <span className="flex h-5 items-center">
-              <StatusMark kind={space.kind} />
+              <StatusMark kind={space.kind} size="sm" />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13px]">
               <SpaceName space={space} />

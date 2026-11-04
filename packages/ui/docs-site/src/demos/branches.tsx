@@ -3,6 +3,7 @@ import {
   Avatar,
   Button,
   Checkbox,
+  CheckboxField,
   ConfirmDialog,
   DataTable,
   type DataTableColumn,
@@ -156,7 +157,14 @@ function BranchMenu({ branch }: { branch: Branch }): ReactNode {
   if (branch.fate === 'base') return null
   return (
     <DropdownMenu
-      trigger={<IconButton icon="more-horizontal" size="sm" label={`Meer over ${branch.name}`} />}
+      trigger={
+        <IconButton
+          icon="more-horizontal"
+          size="sm"
+          variant="secondary"
+          label={`Meer over ${branch.name}`}
+        />
+      }
       label={branch.name}
       align="end"
       items={[
@@ -219,6 +227,10 @@ function BranchCard({
           </span>
         </span>
       </div>
+      {/* The acts of the table's last column, on the card too; the slot stays for main. */}
+      <span className="flex w-7 shrink-0 justify-end">
+        <BranchMenu branch={branch} />
+      </span>
     </div>
   )
 }
@@ -303,6 +315,7 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
   const [asking, setAsking] = useState(variant === 'bevestigen')
   useEffect(() => setAsking(variant === 'bevestigen'), [variant])
   const rows = BRANCHES.filter((branch) => shown(branch, filter))
+  const choosable = rows.filter((branch) => branch.fate !== 'base').map((branch) => branch.name)
   const worktrees = BRANCHES.filter(
     (branch) => selected.includes(branch.name) && branch.worktree,
   ).length
@@ -347,11 +360,14 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
               </div>
             ))}
           </div>
+          {/* Its own container, as the table is: the filter in the head and the bar of the cards
+              trade places at the width where the table turns into cards. */}
           <Panel
             title="Alle branches"
             meta={`${rows.length} van ${BRANCHES.length}`}
+            className="@container"
             actions={
-              <div className="hidden @2xl:block">
+              <div className="hidden @3xl:block">
                 <SegmentedControl<Filter>
                   label="Filter"
                   size="sm"
@@ -363,6 +379,36 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
             }
             flush
           >
+            {/* The cards have no head row: the box for all and the filter stand above them, so a
+                phone keeps every way the table has to choose. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-border border-b px-4 pb-3 @3xl:hidden">
+              <CheckboxField
+                label="Kies alles"
+                checked={
+                  choosable.length > 0 && choosable.every((name) => selected.includes(name))
+                    ? true
+                    : choosable.some((name) => selected.includes(name))
+                      ? 'indeterminate'
+                      : false
+                }
+                onCheckedChange={(next) =>
+                  setSelected((now) =>
+                    next
+                      ? [...new Set([...now, ...choosable])]
+                      : now.filter((name) => !choosable.includes(name)),
+                  )
+                }
+              />
+              <div className="ml-auto">
+                <SegmentedControl<Filter>
+                  label="Filter"
+                  size="sm"
+                  value={filter}
+                  options={FILTERS}
+                  onValueChange={setFilter}
+                />
+              </div>
+            </div>
             <DataTable
               label="Branches"
               columns={COLUMNS}

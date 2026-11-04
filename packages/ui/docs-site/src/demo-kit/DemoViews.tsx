@@ -132,6 +132,32 @@ function Inventory({
   )
 }
 
+/** How far a screen's headings sit below the page's: the page's `h1`, then a block's `h2`. */
+const HEADING_OFFSET = 2
+
+/**
+ * Sets every heading inside a demo's window one outline level under its block: a screen's own `h1`
+ * ("Team") is announced as a level 3 under the block's `h2` ("Team en rechten"), its `h2` as 4, and
+ * so on to 6, so the page keeps one `h1` and heading navigation runs page, block, screen. The
+ * screens and the library's components keep their own elements, which is what they are in an app;
+ * `aria-level` says where they stand on this page. Kept up as a screen changes (a state, a width).
+ */
+function useHeadingOffset(frame: HTMLElement | null): void {
+  useEffect(() => {
+    if (frame === null) return
+    const apply = () => {
+      for (const heading of frame.querySelectorAll<HTMLElement>('h1,h2,h3,h4,h5,h6')) {
+        const level = String(Math.min(6, Number(heading.tagName.slice(1)) + HEADING_OFFSET))
+        if (heading.getAttribute('aria-level') !== level) heading.setAttribute('aria-level', level)
+      }
+    }
+    apply()
+    const watch = new MutationObserver(apply)
+    watch.observe(frame, { childList: true, subtree: true })
+    return () => watch.disconnect()
+  }, [frame])
+}
+
 /**
  * The window a screen stands in: its own container for the screen's container queries and for
  * the floating layers it opens, so a dialog covers the window, not the page. A dialog's layers
@@ -140,6 +166,7 @@ function Inventory({
  */
 function PreviewFrame({ demo, variant }: { demo: Demo; variant: string | undefined }): ReactNode {
   const [frame, setFrame] = useState<HTMLElement | null>(null)
+  useHeadingOffset(frame)
   return (
     <div
       ref={setFrame}
@@ -286,7 +313,7 @@ export function MissingOverview(): ReactNode {
         </p>
       </div>
       {entries.length === 0 ? (
-        <div className="rounded-xl bg-plane py-4 shadow-plane">
+        <div className="mx-1 rounded-xl bg-plane py-4 shadow-plane">
           <EmptyState
             icon="check-circle"
             title="Er ontbreekt niets"
@@ -346,6 +373,13 @@ const JUMPS = [
   ...DEMOS.map(({ slug, title }) => ({ slug, title })),
   { slug: OVERVIEW_SLUG, title: 'Wensenlijst' },
 ]
+
+/** The name of the block a demo hash leads to, for the page's title: "Team en rechten". */
+export function demoTitleOf(slug: string | undefined): string | undefined {
+  if (slug === undefined || slug === '') return undefined
+  const shown = shownSlug(slug)
+  return JUMPS.find((jump) => jump.slug === shown)?.title
+}
 
 /**
  * The demos tab: an introduction on the brand's galaxy, a bar to jump to a block, every demo as a
@@ -412,13 +446,13 @@ export function DemoGallery({
         </div>
         <nav
           aria-label="Naar een demo"
-          className="sticky top-0 z-20 -mx-4 -my-8 flex items-center gap-3 border-border border-b bg-canvas/90 px-4 py-1.5 backdrop-blur-md sm:-mx-8 sm:px-8"
+          className="sticky top-0 z-20 -mx-4 -my-8 flex items-center gap-3 border-border border-b bg-canvas/90 py-1.5 pr-4 pl-1 backdrop-blur-md sm:-mx-8 sm:pr-8 sm:pl-5 xl:pl-8"
         >
           {/* Wraps on a wide window, so every chip is in sight; scrolls on a narrow one, with a fade
-              at the end that says there is more. */}
+              at both ends that says there is more, the first chip at rest on the gutter. */}
           <ul
             ref={strip}
-            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto px-0.5 py-1 pr-8 xl:pr-0 [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
+            className="m-0 flex min-w-0 flex-1 list-none gap-1 overflow-x-auto py-1 pr-8 pl-3.5 xl:pr-0 xl:pl-0.5 [mask-image:linear-gradient(to_right,transparent,black_14px,black_calc(100%-32px),transparent)] [scrollbar-width:none] xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
           >
             {JUMPS.map((jump) => (
               <li key={jump.slug} className="shrink-0">

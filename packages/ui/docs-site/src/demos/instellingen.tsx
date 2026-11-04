@@ -577,7 +577,7 @@ function SettingsPage({ initial }: { initial: Section }): ReactNode {
   const Content = CONTENT[section]
   const current = SECTIONS.find((entry) => entry.id === section)
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5 text-[13px] @3xl:px-8 @3xl:py-7">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 text-[13px] @3xl:px-8 @3xl:py-7">
       <PageHeader
         title="Instellingen"
         meta={section === 'repository' ? `Zilverberg · ${REPO}` : 'Zilverberg'}

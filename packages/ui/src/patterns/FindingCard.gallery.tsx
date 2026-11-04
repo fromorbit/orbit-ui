@@ -43,7 +43,9 @@ export default {
           media={<Screenshot />}
         >
           Na het kiezen van een bank blijft de kassa op ‘Bezig met betalen…’ staan en verschijnt na
-          twintig seconden ‘Er ging iets mis’. POST&nbsp;/api/betalingen antwoordt met 500.
+          twintig seconden ‘Er ging iets mis’.{' '}
+          <code className="font-mono text-[12px]">POST&nbsp;/api/betalingen</code> antwoordt met
+          500.
         </FindingCard>
       </div>
     ),

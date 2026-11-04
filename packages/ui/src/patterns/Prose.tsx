@@ -261,6 +261,20 @@ function withoutLayoutBreaks(children: ReactNode): ReactNode {
 }
 
 /**
+ * The words of a task item without the space GFM leaves between its box and them: the box keeps
+ * its own margin, and a space there would push the first line 4px past the wrapped ones under it.
+ */
+function withoutTaskSpace(children: ReactNode): ReactNode {
+  if (!Array.isArray(children)) return children
+  let trimmed = false
+  return children.map((child) => {
+    if (trimmed || typeof child !== 'string') return child
+    trimmed = true
+    return child.trimStart()
+  })
+}
+
+/**
  * The box of a GFM task item: the state as a word, never as a control.
  *
  * Drawn here rather than left to the browser's own checkbox, which would be the only piece of
@@ -555,10 +569,13 @@ const HEADING_SMALL = 'm-0 mt-2 text-[13px] font-medium first:mt-0'
 // holds no text of its own, so the newlines to-hast puts between its items are layout only.
 const LIST = 'm-0 whitespace-normal pl-4'
 const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-5'
-// A task item carries a checkbox instead of a marker, but keeps the indent of the list it is in,
-// so the boxes line up with the bullets and numbers around them. A hanging indent of the box's
-// width (14px and its 8px margin) lines a wrapped line up with the words, not under the box.
+// A task item carries a checkbox instead of a marker. A hanging indent of the box's width (14px
+// and its 8px margin) lines a wrapped line up with the words, not under the box.
 const TASK_ITEM = `${ITEM} list-none pl-[22px] -indent-[22px]`
+// A list of tasks only has no markers to make room for: its boxes stand on the left edge of the
+// text around it, as the label above them does. A mixed list keeps the indent, so its boxes line
+// up with its bullets.
+const TASK_LIST = 'm-0 whitespace-normal pl-0'
 
 /** A heading on the chat's capped scale. */
 function Heading({ level, children }: { level: 1 | 2 | 3 | 4 | 5 | 6; children: ReactNode }) {
@@ -605,13 +622,22 @@ const components: Options['components'] = {
       <Linked>{children}</Linked>
     </em>
   ),
-  ul: ({ children }) => <ul className={`${LIST} list-disc`}>{children}</ul>,
+  // `contains-task-list` is the class remark-gfm puts on a list whose items are all tasks.
+  ul: ({ children, className }) => (
+    <ul className={className?.includes('contains-task-list') ? TASK_LIST : `${LIST} list-disc`}>
+      {children}
+    </ul>
+  ),
   ol: ({ children }) => <ol className={`${LIST} list-decimal`}>{children}</ol>,
   // `class` is not something markdown can set; the only one that ever arrives here is the
   // `task-list-item` that remark-gfm puts on an item with a checkbox.
   li: ({ children, className }) => (
     <li className={className?.includes('task-list-item') ? TASK_ITEM : ITEM}>
-      <Linked>{withoutLayoutBreaks(children)}</Linked>
+      <Linked>
+        {className?.includes('task-list-item')
+          ? withoutTaskSpace(withoutLayoutBreaks(children))
+          : withoutLayoutBreaks(children)}
+      </Linked>
     </li>
   ),
   a: ({ children, href, ...rest }) => (

@@ -11,12 +11,18 @@ import { Spotlight } from './Spotlight'
  * The reason of `Dialog.gallery.tsx`: the panel is `fixed` and hangs on no trigger, and a reference
  * image is cropped to the state's own box.
  */
-function Stage({ children }: { children: ReactNode }) {
+function Stage({
+  children,
+}: {
+  children: (open: boolean, setOpen: (open: boolean) => void) => ReactNode
+}) {
   // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
-  // this box, and the gallery around it stays in reach.
+  // this box, and the gallery around it stays in reach, for the keyboard too.
   return (
     <div className="w-full max-w-[48rem]">
-      <LayerStage height={480}>{children}</LayerStage>
+      <LayerStage height={480} reopenLabel="Zoeken">
+        {children}
+      </LayerStage>
     </div>
   )
 }
@@ -48,12 +54,13 @@ function Content() {
  * one story would both hold the focus.
  */
 function Open() {
-  const [open, setOpen] = useState(true)
   return (
     <Stage>
-      <Spotlight open={open} onOpenChange={setOpen} label="Zoeken">
-        <Content />
-      </Spotlight>
+      {(open, setOpen) => (
+        <Spotlight open={open} onOpenChange={setOpen} label="Zoeken">
+          <Content />
+        </Spotlight>
+      )}
     </Stage>
   )
 }

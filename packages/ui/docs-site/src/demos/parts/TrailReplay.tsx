@@ -18,9 +18,10 @@ const ERROR = EVENTS.find((event) => event.kind === 'fout')?.at ?? 0
  * The recorded page at `position`: the checkout of the web shop with its order and the payment by
  * iDEAL. Once the customer has pressed Betalen the button is ringed with the pointer on it, and
  * from the first error on the message the customer got stands under it. A drawing from the
- * tokens, as a replay shows the page in its own styles: dimmed and a step less saturated, so the
- * recorded shop's own buttons never compete with the player's, and a quiet "Zo zag de klant het"
- * in its address bar says whose page this is.
+ * tokens, as a replay shows the page in its own styles. Its text keeps full contrast (a dimmed
+ * page fell under 4.5:1); the shop's own button is a quiet secondary frame, so it never competes
+ * with the player's Afspelen, and a quiet "Zo zag de klant het" in its address bar says whose page
+ * this is.
  */
 export function TrailReplay({ position }: { position: number }): ReactNode {
   const clicked = position >= PAY
@@ -31,7 +32,12 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
       aria-label={`De kassa van de webwinkel op ${clock(position)}${failed ? ', met de melding: Er ging iets mis, het betalen lukt nu niet' : ''}`}
       className="flex flex-col overflow-hidden rounded-lg border border-border bg-canvas"
     >
-      <div className="flex h-8 shrink-0 items-center gap-2 border-border border-b bg-frame px-3">
+      {/* A picture: its name above says what it shows, so its parts are hidden from assistive
+          tech rather than read out piece by piece. */}
+      <div
+        aria-hidden="true"
+        className="flex h-8 shrink-0 items-center gap-2 border-border border-b bg-frame px-3"
+      >
         <span className="flex gap-1">
           <span className="size-2 rounded-full bg-border-strong" />
           <span className="size-2 rounded-full bg-border-strong" />
@@ -52,7 +58,10 @@ export function TrailReplay({ position }: { position: number }): ReactNode {
           Zo zag de klant het
         </span>
       </div>
-      <div className="pointer-events-none flex flex-col gap-3 p-3 opacity-70 saturate-50 @3xl:gap-4 @3xl:p-4">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none flex flex-col gap-3 p-3 @3xl:gap-4 @3xl:p-4"
+      >
         <div className="flex items-center justify-between gap-3">
           <span className="min-w-0 truncate font-heading text-[15px] text-fg">
             Zilverberg Koffie

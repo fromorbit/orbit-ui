@@ -203,10 +203,25 @@ function Open() {
       settle = setTimeout(open, 200)
     }
     window.addEventListener('scroll', onScroll, { capture: true, passive: true })
+    // Opened by the page, not by a reader, so nothing held the focus before it: Escape would let it
+    // fall to the body. The framed `⋯` of the row the menu was about takes it instead.
+    let back: ReturnType<typeof setTimeout> | undefined
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      back = setTimeout(() => {
+        if (document.activeElement !== document.body) return
+        stage.current
+          ?.querySelector<HTMLElement>('[data-nt-story-file] button')
+          ?.focus({ preventScroll: true })
+      }, 50)
+    }
+    document.addEventListener('keydown', onKey)
     return () => {
       cancelAnimationFrame(frame)
       clearTimeout(settle)
+      clearTimeout(back)
       window.removeEventListener('scroll', onScroll, { capture: true })
+      document.removeEventListener('keydown', onKey)
     }
   }, [])
   return (

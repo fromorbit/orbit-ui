@@ -1,6 +1,7 @@
 import {
   type ComponentType,
   createElement,
+  type KeyboardEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -22,7 +23,7 @@ import {
   UiProvider,
 } from '../../src'
 import { type Story, stateId, storyId } from '../../src/gallery'
-import { DEMO_PREFIX, DemoGallery, demoSlugOf } from './demo-kit/DemoViews'
+import { DEMO_PREFIX, DemoGallery, demoSlugOf, demoTitleOf } from './demo-kit/DemoViews'
 import { docsShortcuts } from './shortcuts'
 
 /** Prefix of the hash route of one story: `#/primitives-button`. */
@@ -116,6 +117,63 @@ function useHash(): string {
   return hash
 }
 
+/** A floating layer of a story: a menu, a popover, a listbox that stands open in the picture. */
+const FLOATING = '[data-radix-popper-content-wrapper]'
+
+/**
+ * Tab leaves a floating layer of a story as it leaves any other part of the page: the layer's own
+ * handling (a menu swallows Tab, a popover's focus scope loops it) is stopped on its way down, and
+ * the browser moves the focus on. The layer closes as the focus leaves it, as it would on a click
+ * beside it, so a keyboard user is never held in a picture.
+ */
+function leaveLayerOnTab(event: KeyboardEvent<HTMLElement>): void {
+  if (event.key !== 'Tab') return
+  if (event.target instanceof Element && event.target.closest(FLOATING) !== null) {
+    event.stopPropagation()
+  }
+}
+
+/**
+ * A story whose layer opens as it mounts shows it open, but does not take the focus with it: in
+ * the first second after mounting, and before the reader has pressed a key or the pointer, a focus
+ * that lands in a floating layer of the state is let go again (to the page's start, where a fresh
+ * load has it). Escape still closes the layer, and its trigger takes the focus then.
+ */
+function useQuietLayers(frame: HTMLElement | null): void {
+  useEffect(() => {
+    if (frame === null) return
+    let touched = false
+    const touch = () => {
+      touched = true
+    }
+    const release = (target: EventTarget | null) => {
+      if (touched || !(target instanceof HTMLElement)) return
+      if (target.closest(FLOATING) === null) return
+      queueMicrotask(() => {
+        if (document.activeElement === target) target.blur()
+      })
+    }
+    const onFocus = (event: FocusEvent) => release(event.target)
+    const settle = () => {
+      if (frame.contains(document.activeElement)) release(document.activeElement)
+    }
+    window.addEventListener('keydown', touch, true)
+    window.addEventListener('pointerdown', touch, true)
+    frame.addEventListener('focusin', onFocus)
+    const frameId = requestAnimationFrame(settle)
+    const stop = setTimeout(() => {
+      frame.removeEventListener('focusin', onFocus)
+    }, 1000)
+    return () => {
+      cancelAnimationFrame(frameId)
+      clearTimeout(stop)
+      window.removeEventListener('keydown', touch, true)
+      window.removeEventListener('pointerdown', touch, true)
+      frame.removeEventListener('focusin', onFocus)
+    }
+  }, [frame])
+}
+
 /**
  * The box one state of a story stands in (no frame: its caption and the space between states
  * group it, the Law of Proximity), which is also the container of its floating
@@ -127,8 +185,9 @@ function useHash(): string {
  */
 function StateFrame({ state }: { state: ComponentType }): ReactNode {
   const [frame, setFrame] = useState<HTMLElement | null>(null)
+  useQuietLayers(frame)
   return (
-    <div ref={setFrame} className="relative">
+    <div ref={setFrame} className="relative" onKeyDownCapture={leaveLayerOnTab}>
       <PortalContainerProvider container={frame}>{createElement(state)}</PortalContainerProvider>
     </div>
   )
@@ -184,6 +243,19 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const chosenId = idOf(hash)
   const story = stories.find((entry) => storyId(entry) === chosenId) ?? stories[0]
   const currentId = story ? storyId(story) : undefined
+
+  // The title says where the reader is, so a tab, the history and a screen reader tell the routes
+  // apart (WCAG 2.4.2): "StatusMark · Bouwstenen · Orbit UI", "Team en rechten · Demo's · Orbit UI".
+  const where =
+    mode === 'demos'
+      ? [demoTitleOf(demoSlug), "Demo's"]
+      : story === undefined
+        ? []
+        : [story.title, GROUP_LABEL[story.group]]
+  const title = [...where.filter((part) => part !== undefined), 'Orbit UI'].join(' · ')
+  useEffect(() => {
+    document.title = title
+  }, [title])
   // A story opens at its title. A state that takes the focus as it mounts (an active tab, a
   // field) or a layer that opens would scroll the stage down to itself, and the reader would land
   // mid-page; the stage goes back to the top once the states have settled, keeping their focus.

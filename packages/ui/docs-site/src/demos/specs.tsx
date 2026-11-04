@@ -35,7 +35,7 @@ type State = 'review' | 'building' | 'approved' | 'draft' | 'done'
 const STATES: Record<State, { label: string; mark: StatusMarkKind }> = {
   review: { label: 'Wacht op akkoord', mark: 'blocked' },
   building: { label: 'In uitvoering', mark: 'running' },
-  approved: { label: 'Goedgekeurd', mark: 'stopped' },
+  approved: { label: 'Gepland', mark: 'stopped' },
   draft: { label: 'Concept', mark: 'stopped' },
   done: { label: 'Klaar', mark: 'stopped' },
 }
@@ -225,7 +225,14 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                   Goedkeuren en uitvoeren
                 </Button>
                 <DropdownMenu
-                  trigger={<IconButton icon="more-horizontal" size="sm" label="Meer keuzes" />}
+                  trigger={
+                    <IconButton
+                      icon="more-horizontal"
+                      size="sm"
+                      variant="secondary"
+                      label="Meer keuzes"
+                    />
+                  }
                   label="Meer keuzes"
                   align="start"
                   items={[

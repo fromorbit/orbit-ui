@@ -101,5 +101,24 @@ export default {
   states: {
     'Agents, ingeklapt': () => <Agents open={false} />,
     'Agents, één open': () => <Agents open />,
+    // As wide as a phone: the status goes under the name, the chevron stays at the end.
+    'Smal, als op een telefoon': () => (
+      <TooltipProvider>
+        <div className="w-full max-w-[358px]">
+          <SettingsGroup title="Koppeling">
+            <SettingFoldRow label="Omgeving" description="Wat Review op deze machine nodig heeft">
+              <ProgramRow />
+            </SettingFoldRow>
+            <SettingFoldRow
+              label="Vega"
+              description="vega staat niet in het PATH"
+              status={{ tone: 'off', label: 'Niet gevonden' }}
+            >
+              <ProgramRow />
+            </SettingFoldRow>
+          </SettingsGroup>
+        </div>
+      </TooltipProvider>
+    ),
   },
 } satisfies Story
