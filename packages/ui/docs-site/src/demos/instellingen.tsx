@@ -477,7 +477,8 @@ function Subscription(): ReactNode {
           </Button>
         }
       >
-        Incasso van € 174,24 voor september mislukt: onvoldoende saldo. Nieuwe poging 24 okt.
+        Incasso van € 174,24 voor september mislukt: onvoldoende saldo. Nieuwe poging 24{'\u00a0'}
+        okt.
       </Banner>
       <PlanCards label="Plannen">
         <PlanCard
@@ -521,7 +522,7 @@ function Subscription(): ReactNode {
         <SettingRow
           labels={labels}
           label="Betaalwijze"
-          description="SEPA-incasso, NL •••• 4021 · nieuwe poging 24 okt"
+          description={'SEPA-incasso, NL •••• 4021 · nieuwe poging 24\u00a0okt'}
         >
           {() => (
             <span className="inline-flex items-center gap-3">

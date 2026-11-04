@@ -69,6 +69,13 @@
      hover and a soft card for the chosen one, without border or accent. */
   --nt-row-hover: rgb(231 233 242 / 0.05);
   --nt-row-active: rgb(231 233 242 / 0.08);
+  /* The one chosen card among cards of one kind (the current plan): in dark the tint of a lit row
+     over the plane of a card lifts it a step, and its quiet words step up to secondary, as muted
+     falls under 4.5:1 on that tint. In light the card stays white like the cards beside it, with
+     a firmer hairline as its edge and its words as quiet as theirs: never a grey fill. */
+  --nt-lift: rgb(231 233 242 / 0.08);
+  --nt-shadow-lift: 0 0 #0000;
+  --nt-text-lift: var(--nt-text-secondary);
   /* A hairline between things that belong together; `strong` for what has to stand as an object
      of its own: a pill, the round "+", the composer's plane, a key cap. */
   --nt-border: rgb(231 233 242 / 0.08);
@@ -353,6 +360,9 @@
   --nt-shadow-plane: 0 0 0 1px rgb(17 25 54 / 0.07), 0 1px 2px rgb(17 25 54 / 0.04);
   --nt-row-hover: rgb(17 25 54 / 0.04);
   --nt-row-active: rgb(17 25 54 / 0.06);
+  --nt-lift: rgb(17 25 54 / 0);
+  --nt-shadow-lift: 0 0 0 1px rgb(17 25 54 / 0.18), 0 1px 2px rgb(17 25 54 / 0.05);
+  --nt-text-lift: var(--nt-text-muted);
   --nt-border: rgb(17 25 54 / 0.09);
   --nt-border-strong: rgb(17 25 54 / 0.14);
   --nt-control-border: rgb(17 25 54 / 0.52);

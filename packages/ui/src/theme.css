@@ -21,6 +21,10 @@
   --color-canvas: var(--nt-canvas);
   --color-row-hover: var(--nt-row-hover);
   --color-row-active: var(--nt-row-active);
+  /* The chosen card among cards (`from-lift`, `shadow-lift`, `text-lift-quiet`): a tint in dark, a
+     firmer hairline on white in light. */
+  --color-lift: var(--nt-lift);
+  --color-lift-quiet: var(--nt-text-lift);
   --color-border-strong: var(--nt-border-strong);
   --color-control-border: var(--nt-control-border);
   --color-pill: var(--nt-pill);
@@ -74,6 +78,7 @@
   --color-satellite: var(--nt-satellite);
   --shadow-menu: var(--nt-shadow-menu);
   --shadow-plane: var(--nt-shadow-plane);
+  --shadow-lift: var(--nt-shadow-lift);
   /* The hairline on the inner end of a frame column (a sidebar) against the canvas: light only. */
   --shadow-frame-edge: inset -1px 0 0 var(--nt-frame-edge);
   --radius-sm: var(--nt-radius-sm);

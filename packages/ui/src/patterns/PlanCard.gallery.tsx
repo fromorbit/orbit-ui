@@ -1,5 +1,6 @@
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
+import { StatusMark } from '../primitives/StatusMark'
 import { PlanCard, PlanCards } from './PlanCard'
 
 const TEAM = [
@@ -60,8 +61,9 @@ function Current() {
 
 /**
  * A plan alone with what of it is used this month, as on Gebruik: no other plan to compare to, so
- * no tint and no tag. Each figure says its limit and a 4px meter shows how far it is; the foot
- * gives the amount to expect, not the fixed part, as the hours count.
+ * no lift and no tag. Each figure says its limit and a 4px meter shows how far it is; the hours
+ * head past the plan, so that line takes the tone of attention as on Gebruik, and the foot gives
+ * the amount to expect, not the fixed part.
  */
 function WithUsage() {
   return (
@@ -76,6 +78,7 @@ function WithUsage() {
             label: '250 agent-uren per maand',
             detail: '182 van 250 u',
             used: { value: 182, max: 250 },
+            over: 'Verwacht ≈\u00a0282 u eind oktober',
           },
           {
             label: 'Orbit Review op 10 repositories',
@@ -196,6 +199,7 @@ function ManyFeatures() {
               label: '250 agent-uren per maand',
               detail: '182 van 250 agent-uren gebruikt',
               used: { value: 182, max: 250 },
+              over: 'Verwacht ≈\u00a0282 u eind oktober',
             },
             'Orbit Review op 10 repositories',
           ]}
@@ -227,7 +231,13 @@ function Compare() {
             'Orbit Review op 1 repository',
             '5 GB opslag voor opnames',
           ]}
-          summary="Past niet bij 6 leden"
+          summary={
+            // A reason, not a price: a quiet stopped mark before the words.
+            <span className="inline-flex items-center gap-1.5">
+              <StatusMark kind="stopped" size="sm" />
+              Past niet bij 6 leden
+            </span>
+          }
         />
         <PlanCard {...TEAM_CURRENT} />
         <PlanCard {...BEDRIJF} action={toBedrijf} />

@@ -11,7 +11,6 @@ import {
   type DataTableColumn,
   Form,
   Icon,
-  IconButton,
   type IconName,
   PageHeader,
   PlanCard,
@@ -116,13 +115,13 @@ const STATUS: Record<InvoiceStatus, { label: string; kind: StatusMarkKind }> = {
 }
 
 /**
- * The mark and the word of an invoice's status. Paid is the norm of the column, so its mark is the
- * quiet size; the failed one keeps the full mark and stands out alone (Von Restorff).
+ * The mark and the word of an invoice's status, every mark at the quiet size so the column has one
+ * optical weight; the failed one stands out by its shape, its colour and its word (Von Restorff).
  */
 function InvoiceState({ status }: { status: InvoiceStatus }): ReactNode {
   return (
     <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
-      <StatusMark kind={STATUS[status].kind} size={status === 'paid' ? 'sm' : 'md'} />
+      <StatusMark kind={STATUS[status].kind} size="sm" />
       {STATUS[status].label}
     </span>
   )
@@ -174,7 +173,7 @@ const INVOICES: readonly Invoice[] = [
       {
         icon: 'rotate-cw',
         label: 'Nieuwe poging',
-        at: '24 okt',
+        at: '24\u00a0okt',
         tone: 'muted',
       },
     ],
@@ -271,26 +270,13 @@ function invoiceColumns(onSelect: (number: string) => void): DataTableColumn<Inv
       header: 'Status',
       cell: (invoice) => <InvoiceState status={invoice.status} />,
     },
-    {
-      id: 'download',
-      header: 'Downloaden',
-      headerHidden: true,
-      align: 'end',
-      cell: (invoice) => (
-        <IconButton
-          icon="arrow-down"
-          size="sm"
-          label={`Download ${invoice.number} als pdf`}
-          onClick={(event) => event.stopPropagation()}
-        />
-      ),
-    },
   ]
 }
 
 /**
  * One invoice as a row of two lines, for a narrow table: number and month at the start, amount and
- * status at the end, the download after it, so nothing scrolls sideways on a phone.
+ * status at the end, so nothing scrolls sideways on a phone. The whole row is the one target that
+ * opens the invoice; the download stands in its header (Fitts).
  */
 function InvoiceCard({
   invoice,
@@ -302,7 +288,7 @@ function InvoiceCard({
   onSelect(number: string): void
 }): ReactNode {
   return (
-    <div className={`flex items-center gap-2 py-2 pr-2 pl-4 ${current ? 'bg-row-active' : ''}`}>
+    <div className={`flex items-center py-2 pr-4 pl-4 ${current ? 'bg-row-active' : ''}`}>
       <button
         type="button"
         onClick={() => onSelect(invoice.number)}
@@ -318,7 +304,6 @@ function InvoiceCard({
           <InvoiceState status={invoice.status} />
         </span>
       </button>
-      <IconButton icon="arrow-down" size="sm" label={`Download ${invoice.number} als pdf`} />
     </div>
   )
 }
@@ -384,18 +369,20 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
 /** One invoice in full: the amount, its parts, the reference and its history. */
 function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
   return (
-    <Panel
-      headingLevel={2}
-      title={invoice.number}
-      meta={invoice.period}
-      actions={<IconButton icon="arrow-down" size="sm" label="Download als pdf" />}
-    >
+    <Panel headingLevel={2} title={invoice.number} meta={invoice.period}>
       <div className="flex flex-col gap-5">
-        <div className="flex items-center gap-3">
+        {/* The download is the one action of the invoice, a framed button at the end of its
+            amount, so the number keeps its line on a phone and the rows above stay one target. */}
+        <div className="flex flex-wrap items-center gap-3">
           <span className="font-heading text-[20px] text-fg leading-none tabular-nums">
             {euro(gross(invoice))}
           </span>
           <InvoiceState status={invoice.status} />
+          <span className="ml-auto">
+            <Button variant="secondary" size="sm">
+              Pdf downloaden
+            </Button>
+          </span>
         </div>
         <PropertyList
           label="Factuur"
@@ -463,7 +450,7 @@ function PaymentMethod({ initialOpen }: { initialOpen: boolean }): ReactNode {
                   label: 'Laatste poging',
                   value: (
                     <span className="inline-flex items-center gap-1.5">
-                      <StatusMark kind="fault" />
+                      <StatusMark kind="fault" size="sm" />
                       Mislukt op 3 oktober
                     </span>
                   ),
@@ -476,7 +463,7 @@ function PaymentMethod({ initialOpen }: { initialOpen: boolean }): ReactNode {
             className="flex flex-col gap-3 border-border border-t pt-6 [&>*]:max-w-md"
           >
             <div className="flex flex-col gap-1">
-              <h3 id="kaart-toevoegen" className="m-0 font-heading text-[15px] text-fg leading-6">
+              <h3 id="kaart-toevoegen" className="m-0 font-heading text-[13px] text-fg leading-5">
                 Liever met een kaart
               </h3>
               <p className="m-0 text-[12px] text-muted leading-relaxed">
@@ -592,7 +579,7 @@ function NextInvoice(): ReactNode {
 
 /** The least and the most height of the Agent-uren plot. */
 const PLOT_MIN = 192
-const PLOT_MAX = 320
+const PLOT_MAX = 420
 
 /**
  * The height of the Agent-uren plot: 192px, and beside the plan as much more as the card has
@@ -604,7 +591,18 @@ function usePlotHeight(
   content: RefObject<HTMLDivElement | null>,
 ): number {
   const [height, setHeight] = useState(PLOT_MIN)
+  // The height asked for and the height on screen: a measure taken before the last ask is painted
+  // would add the same spare twice and push the plan's row past its own height.
+  const asked = useRef(PLOT_MIN)
+  const painted = useRef(PLOT_MIN)
   useLayoutEffect(() => {
+    painted.current = height
+  }, [height])
+  useLayoutEffect(() => {
+    const ask = (next: number) => {
+      asked.current = next
+      setHeight(next)
+    }
     const box = card.current
     const inner = content.current
     if (!box || !inner || typeof ResizeObserver !== 'function') return
@@ -616,14 +614,15 @@ function usePlotHeight(
       // A new width starts again from the least, so the plot can shrink with its row.
       if (row && Math.abs(row.width - width) > 1) {
         width = row.width
-        setHeight(PLOT_MIN)
+        ask(PLOT_MIN)
         frame = requestAnimationFrame(measure)
         return
       }
       const beside = row !== undefined && own.width < row.width - 1
-      if (!beside) return setHeight(PLOT_MIN)
+      if (!beside) return ask(PLOT_MIN)
+      if (asked.current !== painted.current) return
       const spare = own.bottom - 16 - inner.getBoundingClientRect().bottom
-      if (spare > 2) setHeight((current) => Math.min(PLOT_MAX, current + Math.floor(spare)))
+      if (spare > 2) ask(Math.min(PLOT_MAX, painted.current + Math.floor(spare)))
     }
     const observer = new ResizeObserver(measure)
     observer.observe(box)
@@ -679,8 +678,8 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               </div>
             }
           >
-            De incasso van {euro(OPEN_GROSS)} voor september is mislukt: onvoldoende saldo. We
-            proberen het op 24 oktober opnieuw.
+            Incasso van {euro(OPEN_GROSS)} voor september mislukt: onvoldoende saldo. Nieuwe poging
+            24{'\u00a0'}okt.
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS.map((kpi) => (

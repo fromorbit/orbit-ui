@@ -106,7 +106,8 @@ test('the current plan is lifted the same way on either plane; every alternative
   )
   const team = screen.getByRole('article', { name: /^Team\W+Huidig plan$/ })
   expect(team.className).toContain('bg-overlay')
-  expect(team.className).toContain('from-row-active')
+  expect(team.className).toContain('from-lift')
+  expect(team.className).toContain('shadow-lift')
   expect(team.className).not.toContain('accent')
   expect(screen.getByRole('article', { name: 'Bedrijf' }).className).toMatch(/\bbg-plane\b/)
   expect(screen.getByRole('article', { name: 'Solo' }).className).toMatch(/\bbg-overlay\b/)
@@ -119,7 +120,7 @@ test('the heading is read as "Team, Huidig plan", with no space before the comma
   expect(heading).toHaveAccessibleName('Team, Huidig plan')
 })
 
-test('the quiet words of the current plan step up to secondary; at rest they stay muted', () => {
+test('the quiet words of the current plan take the lift tone; at rest they stay muted', () => {
   const props = {
     price: '€ 24',
     period: 'per lid per maand',
@@ -136,7 +137,7 @@ test('the quiet words of the current plan step up to secondary; at rest they sta
   const bedrijf = screen.getByRole('article', { name: 'Bedrijf' })
   for (const word of [/^per lid per maand$/, /^,?\s*182 u gebruikt$/, /^6 leden$/]) {
     expect(within(team).getByText(word).closest('[class*="text-"]')?.className).toContain(
-      'text-secondary',
+      'text-lift-quiet',
     )
     expect(within(bedrijf).getByText(word).closest('[class*="text-"]')?.className).toContain(
       'text-muted',
@@ -299,16 +300,26 @@ describe.each([
   const planes = {
     'overlay at rest': [layer(c('--nt-overlay-background')), '--nt-text-muted'],
     'surface at rest': [layer(c('--nt-canvas'), c('--nt-surface')), '--nt-text-muted'],
-    // The current plan lies on the plane of a card with the tint of a lit row, on either plane.
-    current: [layer(c('--nt-overlay-background'), c('--nt-row-active')), '--nt-text-secondary'],
+    // The current plan lies on the plane of a card with the lift over it, on either plane.
+    current: [layer(c('--nt-overlay-background'), c('--nt-lift')), '--nt-text-lift'],
     // A line past the plan, on the plane of a card and on the current plan.
     'attention at rest': [layer(c('--nt-overlay-background')), '--nt-attention'],
     'attention on the current plan': [
-      layer(c('--nt-overlay-background'), c('--nt-row-active')),
+      layer(c('--nt-overlay-background'), c('--nt-lift')),
       '--nt-attention',
     ],
   } as const
   test.each(Object.entries(planes))('%s', (_plane, [ground, text]) => {
     expect(contrast(layer(c(text)), ground)).toBeGreaterThanOrEqual(4.5)
   })
+})
+
+test('in light the current plan stays white with a firmer hairline and the quiet tone of its neighbours; dark keeps its tint', () => {
+  expect(color(light, '--nt-lift')[3]).toBe(0)
+  expect(color(light, '--nt-overlay-background')).toEqual([255, 255, 255, 1])
+  expect(light.get('--nt-text-lift')).toBe('var(--nt-text-muted)')
+  expect(light.get('--nt-shadow-lift')).toMatch(/^0 0 0 1px rgb/)
+  expect(color(dark, '--nt-lift')).toEqual(color(dark, '--nt-row-active'))
+  expect(dark.get('--nt-text-lift')).toBe('var(--nt-text-secondary)')
+  expect(dark.get('--nt-shadow-lift')).toBe('0 0 #0000')
 })

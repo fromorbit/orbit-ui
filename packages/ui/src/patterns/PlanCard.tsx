@@ -52,8 +52,8 @@ export interface PlanCardProps {
   /** What the plan holds, one line each, each after a check. */
   features?: readonly (string | PlanFeature)[]
   /**
-   * The plan the workspace is on now, among other plans: the card is lifted to the plane of a card
-   * with the neutral tint of a lit row over it, in either plane and theme, and its heading carries a tag,
+   * The plan the workspace is on now, among other plans: the card is lifted (a tint in dark, a
+   * firmer hairline on white in light), in either plane, and its heading carries a tag,
    * so it reads "Team, Huidig plan". A plan that stands alone compares to nothing: leave it out.
    */
   current?: boolean
@@ -90,17 +90,19 @@ const REST: Record<PlanCardPlane, string> = {
 }
 
 /**
- * The plane of the current plan on either plane: the opaque plane of a card with the neutral tint
- * of a lit row laid over it as an image. Violet stays for links and focus; the tag in the heading
- * is the one signal of "you are here", the tint only lifts the card a step from its neighbours.
+ * The plane of the current plan on either plane: the opaque plane of a card with the `lift` laid
+ * over it as an image. In dark that is the neutral tint of a lit row; in light the card stays white
+ * like its neighbours and `shadow-lift` gives it a firmer hairline, never a grey fill. Violet stays
+ * for links and focus; the tag in the heading is the one signal of "you are here".
  */
-const CURRENT = 'bg-overlay bg-linear-to-b from-row-active to-row-active shadow-plane'
+const CURRENT = 'bg-overlay bg-linear-to-b from-lift to-lift shadow-lift'
 
 /**
- * The quiet words of a card (the period, a figure, the summary): `muted` at rest; on the tint of
- * the current plan `secondary`, as `muted` falls under 4.5:1 there in dark.
+ * The quiet words of a card (the period, a figure, the summary): `muted` at rest; on the current
+ * plan `lift-quiet`, which is `secondary` on the tint of dark (`muted` falls under 4.5:1 there)
+ * and `muted` on the white of light, so cards side by side speak one tone.
  */
-const quiet = (current: boolean) => (current ? 'text-secondary' : 'text-muted')
+const quiet = (current: boolean) => (current ? 'text-lift-quiet' : 'text-muted')
 
 /** The share of a meter, clamped to its ends, as a whole percentage. */
 function share(value: number, max: number): number {
@@ -110,7 +112,8 @@ function share(value: number, max: number): number {
 /**
  * One line of the plan: a check, the label, and at its end the figure of what is used. The figure
  * wraps under the label when the line has no room for both, so a long label never squeezes to a
- * word a line. With `used`, a 4px meter under it in the colour of a quiet figure, in attention
+ * word a line; in a list under 20rem every figure stands under its label, so the figures of one
+ * card keep one rule instead of some at the end and some under. With `used`, a 4px meter under it in the colour of a quiet figure, in attention
  * with `over`, and the words of `over` under the meter.
  */
 function FeatureLine({ feature, current }: { feature: PlanFeature; current: boolean }) {
@@ -124,7 +127,9 @@ function FeatureLine({ feature, current }: { feature: PlanFeature; current: bool
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3">
-          <span className="min-w-0 grow basis-40 text-secondary">{label}</span>
+          <span className="min-w-0 grow basis-40 text-secondary @max-[20rem]/features:basis-full">
+            {label}
+          </span>
           {detail === undefined ? null : (
             <span
               className={`shrink-0 text-[12px] tabular-nums ${tone}`}
@@ -187,9 +192,10 @@ function describedAction(action: ReactNode, nameId: string): ReactNode {
  * and who it is for; the features with what the caller adds; the foot — with the lines of a row
  * 8px apart (Proximity). The name is the 15px/600 of a card, the price the 20px of a figure with
  * tabular digits, its period a muted 12px beside it, so the eye goes name, price, what you get
- * (Serial Position). The current plan is marked by the neutral tint of a lit row over the plane of a
- * card (Common Region) and by the tag in its heading, never by a frame or a filled button (Von
- * Restorff, one emphasis per view). The heading row is 28px with or without the tag, so names and
+ * (Serial Position). The current plan is marked by the tag in its heading and lifted a step: in dark
+ * by the neutral tint of a lit row over the plane of a card, in light by a firmer hairline on the
+ * same white as its neighbours (`--nt-lift`), never by a grey fill, an accent frame or a filled
+ * button (Von Restorff, one emphasis per view). The heading row is 28px with or without the tag, so names and
  * prices of plans side by side stand on one line. A feature can carry a figure at its end ("182 van 250 u"), so the card can say what
  * of the plan is used without a second widget.
  *
@@ -260,7 +266,7 @@ export function PlanCard({
       </div>
       <div className="flex min-w-0 flex-col gap-6">
         {features.length === 0 ? null : (
-          <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px] leading-5">
+          <ul className="@container/features m-0 flex list-none flex-col gap-2 p-0 text-[13px] leading-5">
             {features.map(featureOf).map((feature) => (
               <FeatureLine key={feature.label} feature={feature} current={current} />
             ))}
