@@ -14,6 +14,7 @@ import {
   IconButton,
   type IconName,
   PageHeader,
+  PlanCard,
   PropertyList,
   ScrollArea,
   Tag,
@@ -25,7 +26,6 @@ import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
 import { type Figure, KpiTile } from './parts/KpiTile'
 import { Panel } from './parts/Panel'
-import { UsagePlanCard } from './parts/UsagePlanCard'
 
 /** Agent hours per day of October so far, made up: quiet in the weekends. 182 in all. */
 const DAILY = [11, 12, 2, 1, 13, 12, 14, 11, 10, 2, 3, 14, 13, 12, 15, 12, 2, 1, 13, 9]
@@ -95,6 +95,9 @@ const USED = DAILY.reduce((sum, hours) => sum + hours, 0)
 const PROJECTED = Math.round((USED / DAILY.length) * DAYS)
 /** What an agent hour above the plan costs, in cents, excluding VAT. */
 const EXTRA_HOUR = 80
+/** The plan of six members and the expected hours above it, in cents, excluding VAT. */
+const PLAN_NET = 6 * 2_400
+const EXTRA_NET = (PROJECTED - PLAN_HOURS) * EXTRA_HOUR
 
 /** A number and its unit, kept on one line. */
 const unit = (value: number, name: string) => `${value.toLocaleString('nl-NL')}\u00a0${name}`
@@ -467,6 +470,38 @@ function PaymentMethod(): ReactNode {
   )
 }
 
+/**
+ * What the next invoice will be at this pace: the plan, the hours above it, and the total with VAT,
+ * the figures in a column at the end like the use of the plan above it.
+ */
+function NextInvoice(): ReactNode {
+  const rows = [
+    { label: 'Plan, 6 leden', value: euro(PLAN_NET) },
+    { label: `${unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan`, value: `≈ ${euro(EXTRA_NET)}` },
+  ]
+  return (
+    <section aria-labelledby="volgende-factuur" className="flex flex-col gap-2">
+      <h4 id="volgende-factuur" className="m-0 font-normal text-[12px] text-muted">
+        Volgende factuur, 1 november
+      </h4>
+      <dl className="m-0 flex flex-col gap-2 text-[13px] leading-5">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-baseline justify-between gap-3">
+            <dt className="text-secondary">{row.label}</dt>
+            <dd className="m-0 text-secondary tabular-nums">{row.value}</dd>
+          </div>
+        ))}
+        <div className="flex items-baseline justify-between gap-3">
+          <dt className="font-medium text-fg">Verwacht, incl. btw</dt>
+          <dd className="m-0 font-medium text-fg tabular-nums">
+            ≈ {euro(Math.round((PLAN_NET + EXTRA_NET) * 1.21))}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  )
+}
+
 /** The plan, what of it was used this month, and the invoices with one opened beside them. */
 function Usage({ variant }: DemoScreenProps): ReactNode {
   const [selected, setSelected] = useState('ZB-2026-0098')
@@ -520,7 +555,29 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
             ))}
           </div>
           <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(17rem,1fr)_minmax(0,2fr)]">
-            <UsagePlanCard />
+            <PlanCard
+              name="Team"
+              price="€ 24"
+              period="per lid per maand, excl. btw"
+              features={[
+                'Onbeperkt gesprekken en specs',
+                {
+                  label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
+                  detail: `${USED} gebruikt`,
+                },
+                { label: 'Orbit Review op 10 repositories', detail: '7 in gebruik' },
+                { label: '50 GB opslag voor opnames', detail: '18,4 GB' },
+              ]}
+              current
+              currentLabel="Huidig plan"
+              action={
+                <Button variant="secondary" size="sm">
+                  Plan wijzigen
+                </Button>
+              }
+            >
+              <NextInvoice />
+            </PlanCard>
             <Panel title="Agent-uren" meta="opgeteld, deze maand">
               <div className="flex flex-col gap-3">
                 <Chart
@@ -545,15 +602,8 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                 />
                 <p className="m-0 text-[12px] text-muted leading-relaxed">
                   Op dit tempo kom je eind oktober rond {unit(PROJECTED, 'u')} uit,{' '}
-                  {unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan. Uren boven je plan kosten{' '}
-                  {euro(EXTRA_HOUR)} per uur, samen ongeveer{' '}
-                  {euro((PROJECTED - PLAN_HOURS) * EXTRA_HOUR)} extra.{' '}
-                  <button
-                    type="button"
-                    className="rounded-sm text-fg underline decoration-border-strong underline-offset-2 outline-focus hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    Plan wijzigen
-                  </button>
+                  {unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan. Elk uur daarboven kost{' '}
+                  {euro(EXTRA_HOUR)}, excl. btw.
                 </p>
               </div>
             </Panel>

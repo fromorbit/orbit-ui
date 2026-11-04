@@ -11,6 +11,7 @@ import {
   List,
   ListRow,
   PageHeader,
+  PlanCard,
   RadioGroup,
   ScrollArea,
   SearchList,
@@ -27,7 +28,6 @@ import {
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame, ME, REPO } from './parts/AppFrame'
-import { UsagePlanCard } from './parts/UsagePlanCard'
 
 const labels = galleryLabels.settingRow
 
@@ -450,17 +450,52 @@ function Notifications(): ReactNode {
   )
 }
 
-/** The plan in short; the whole of it lives on the page of usage and invoices. */
+/**
+ * The plan the workspace is on beside the one above it, then who pays: two plans rather than a
+ * table of every plan, so the choice stays small, and the whole of the usage on its own page.
+ */
 function Subscription(): ReactNode {
   return (
     <>
-      <div className="max-w-sm">
-        <UsagePlanCard />
+      <div className="@container">
+        <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2">
+          <PlanCard
+            name="Team"
+            price="€ 24"
+            period="per lid per maand, excl. btw"
+            description="Voor een team dat samen bouwt en reviewt."
+            features={[
+              'Onbeperkt gesprekken en specs',
+              '250 agent-uren per maand',
+              'Orbit Review op 10 repositories',
+              '50 GB opslag voor opnames',
+            ]}
+            current
+            currentLabel="Huidig plan"
+            summary="6 leden · € 174,24 per maand incl. btw"
+          />
+          <PlanCard
+            name="Bedrijf"
+            price="€ 39"
+            period="per lid per maand, excl. btw"
+            description="Voor meer teams, met inloggen via je eigen provider."
+            features={[
+              'Alles van Team',
+              '1.000 agent-uren per maand',
+              'Orbit Review op elke repository',
+              '250 GB opslag voor opnames',
+              'Inloggen met SSO',
+            ]}
+            summary="6 leden · € 283,14 per maand incl. btw"
+            action={
+              <Button variant="secondary" size="sm">
+                Overstappen
+              </Button>
+            }
+          />
+        </div>
       </div>
-      <SettingsGroup title="Plan">
-        <SettingRow labels={labels} label="Team" description="€ 24 per lid per maand, excl. btw">
-          {() => <Tag tone="success">6 leden</Tag>}
-        </SettingRow>
+      <SettingsGroup title="Betaling">
         <SettingRow labels={labels} label="Betaalwijze" description="SEPA-incasso, NL·· ···· 4021">
           {() => (
             <Button variant="secondary" size="sm">
@@ -468,7 +503,11 @@ function Subscription(): ReactNode {
             </Button>
           )}
         </SettingRow>
-        <SettingRow labels={labels} label="Gebruik en facturen">
+        <SettingRow
+          labels={labels}
+          label="Gebruik en facturen"
+          description="Wat Zilverberg deze maand gebruikte, en elke factuur"
+        >
           {() => (
             <Button
               variant="secondary"
@@ -559,6 +598,7 @@ export default {
   variants: [
     { value: 'repository', label: 'Repository' },
     { value: 'account', label: 'Account' },
+    { value: 'abonnement', label: 'Abonnement' },
   ],
   Screen: Settings,
 } satisfies DemoModule

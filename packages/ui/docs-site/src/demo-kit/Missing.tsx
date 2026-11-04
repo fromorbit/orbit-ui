@@ -8,8 +8,6 @@ import { createContext, type ReactNode, useContext } from 'react'
  * not explain; which demos use a name is read from their sources (`registry.ts`), never kept here.
  */
 export const MISSING = {
-  PlanCard:
-    'Een abonnementskaart: naam, prijs per maand, wat erin zit en een knop; de huidige gemarkeerd.',
   Scrubber:
     'De tijdlijn van een opname: afspeelpositie, slepen en markeringen per gebeurtenis (klik, navigatie, fout).',
 } as const

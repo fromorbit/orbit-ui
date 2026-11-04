@@ -110,10 +110,11 @@ describe('the demos tab', () => {
   })
 
   test('shows what a demo uses and what it misses, from its source', () => {
-    goTo('#/demo/gebruik')
+    // The opname still draws its Scrubber as missing, so both lists are there.
+    goTo('#/demo/trail')
     render(<DocsPage stories={stories} />)
-    const block = blockOf('gebruik')
-    const inventory = inventoryOf('gebruik')
+    const block = blockOf('trail')
+    const inventory = inventoryOf('trail')
     const used = within(block).getByRole('list', { name: 'Gebruikt' })
     const missing = within(block).getByRole('list', { name: 'Ontbreekt' })
     expect(

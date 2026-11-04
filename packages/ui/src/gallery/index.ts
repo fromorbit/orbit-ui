@@ -41,6 +41,7 @@ import pierreDiffStory from '../patterns/PierreDiff.gallery'
 import pierreFileStory from '../patterns/PierreFile.gallery'
 import pierreFileIconStory from '../patterns/PierreFileIcon.gallery'
 import pierreTreeStory from '../patterns/PierreTree.gallery'
+import planCardStory from '../patterns/PlanCard.gallery'
 import propertyListStory from '../patterns/PropertyList.gallery'
 import proseStory from '../patterns/Prose.gallery'
 import railStory from '../patterns/Rail.gallery'
@@ -170,6 +171,7 @@ export const stories: Story[] = collectStories([
   pierreFileStory,
   pierreFileIconStory,
   pierreTreeStory,
+  planCardStory,
   propertyListStory,
   proseStory,
   railStory,
