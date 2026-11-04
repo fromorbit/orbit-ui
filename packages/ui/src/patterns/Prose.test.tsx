@@ -167,10 +167,11 @@ test('whatever scrolls horizontally is a named region the keyboard can reach', (
   const table = screen.getByRole('group', { name: 'Tabel' })
   expect(code.querySelector('pre')).toHaveTextContent('lang')
   expect(within(table).getByRole('table')).toBeInTheDocument()
-  for (const node of [code, table]) {
-    expect(node).toHaveAttribute('tabindex', '0')
-    expect(node.className).toContain('focus-visible:outline-2')
-  }
+  for (const node of [code, table]) expect(node).toHaveAttribute('tabindex', '0')
+  expect(table.className).toContain('focus-visible:outline-2')
+  // The scroller of a code block fades out at its edge with a mask, which would clip a ring drawn
+  // around it, so the block around the scroller shows the ring while the focus is in it.
+  expect(code.parentElement?.className).toContain('has-[>[role=group]:focus-visible]:outline-2')
 })
 
 test('a single line break stays a line break', () => {

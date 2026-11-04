@@ -156,7 +156,12 @@ function InlineCode({ children }: { children: ReactNode }): ReactNode {
     const [match] = references.find(text, 'code')
     if (match) return references.render(match, text)
   }
-  return <code className="rounded-sm bg-surface px-1 py-0.5 font-mono text-[12px]">{children}</code>
+  // `anywhere`: a long path or identifier breaks inside the column instead of pushing it wide.
+  return (
+    <code className="rounded-sm bg-surface px-1 py-px font-mono text-[12px] [overflow-wrap:anywhere]">
+      {children}
+    </code>
+  )
 }
 
 /**
@@ -327,7 +332,7 @@ function CodeBlock({ code, children }: { code: () => string; children: ReactNode
     // A named group: the message around this block is a `group` of its own (its own row of time
     // and copy button hangs off it), and an unnamed `group-hover` would answer to that one too,
     // so pointing at a sentence would light up every code block in the answer.
-    <div data-nt-code-block className="group/code relative">
+    <div data-nt-code-block className={wrap ? CODE_BLOCK_WRAPPED : CODE_BLOCK}>
       {/* `group`, not a landmark: an answer can hold several code blocks, and two landmarks with
           the same name are a fault of their own (axe: landmark-unique). A group still carries a
           name. */}
@@ -433,21 +438,34 @@ function TableRegion({ children }: { children: ReactNode }) {
 // A block that can scroll sideways, focusable so the keyboard reaches its overflow too.
 const SCROLLS =
   'no-drag overflow-x-auto outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
-const CODE_REGION = `${SCROLLS} rounded-md bg-surface p-3 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)`
+/**
+ * A block whose lines scroll: the tint and the focus ring on the block, the scroller inside it
+ * without either, its last 24px fading out so a line cut by the edge reads as "goes on" rather than
+ * as broken. The fade is a mask on the scroller, which stays put while the lines move under it, and
+ * a mask would clip a ring drawn outside the scroller, so the block draws it.
+ */
+const CODE_BLOCK =
+  'group/code relative rounded-md bg-surface outline-focus has-[>[role=group]:focus-visible]:outline-2 has-[>[role=group]:focus-visible]:outline-offset-2'
+const CODE_BLOCK_WRAPPED = 'group/code relative'
+const CODE_REGION =
+  'no-drag overflow-x-auto p-3 outline-none pointer-coarse:pt-9 [mask-image:linear-gradient(to_left,transparent,black_24px)] [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)'
 // Quiet until you go there: 100 ms is the shortest step the guidelines allow, and under reduced
 // motion there is no step at all. Opacity only, so nothing moves when it appears — and no reach
 // while it is invisible, or it would swallow a selection drag that starts at the right end of the
 // first line. Focus is unaffected: `pointer-events` says nothing about the keyboard, and landing
 // on the button is itself what makes the block show it.
+// On a touch screen nothing hovers, so there the buttons stay in sight, on a band of their own
+// above the first line (`pointer-coarse:pt-9` on the scroller) rather than over it.
 const CODE_COPY =
-  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto motion-reduce:transition-none'
-// The thumb of a code block stays visible at rest, so a line that runs on past the edge says so;
-// the rest of the app shows its scrollbars only while they are pointed at (index.css).
+  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto motion-reduce:transition-none'
 const CODE_REGION_WRAPPED =
-  'no-drag rounded-md border border-border bg-surface p-3 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
+  'no-drag rounded-md border border-border bg-surface p-3 pointer-coarse:pt-9 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
 const PRE_WRAPPED =
   'm-0 font-mono text-[12px] leading-normal whitespace-pre-wrap break-words [&>code]:bg-transparent [&>code]:p-0'
-const PRE = 'm-0 font-mono text-[12px] leading-normal [&>code]:bg-transparent [&>code]:p-0'
+// `w-max`: the line is as long as it is, so the padding of the scroller stays at its end and the
+// last character never stands flush against the edge.
+const PRE =
+  'm-0 w-max min-w-full pe-3 font-mono text-[12px] leading-normal [&>code]:bg-transparent [&>code]:p-0'
 // The capped scale of a conversation: an answer is not a document, so a `#` heading must not tower
 // over the text around it.
 const HEADING_LARGE = 'm-0 mt-2 text-[15px] font-medium first:mt-0'
@@ -537,13 +555,18 @@ const components: Options['components'] = {
   ),
   hr: () => <Separator />,
   table: ({ children }) => <TableRegion>{children}</TableRegion>,
-  th: ({ children }) => (
-    <th className="border-b border-border px-3 py-1.5 text-left font-medium text-muted first:ps-0">
+  // The alignment of a column (`| ---: |`) comes in as `style`; numbers line up on the right, in
+  // tabular figures, under a header in the quiet label style.
+  th: ({ children, style }) => (
+    <th
+      style={style}
+      className="border-b border-border px-3 py-1.5 text-left font-medium text-[12px] text-muted first:ps-0"
+    >
       <Linked>{children}</Linked>
     </th>
   ),
-  td: ({ children }) => (
-    <td className="border-b border-border px-3 py-1.5 first:ps-0">
+  td: ({ children, style }) => (
+    <td style={style} className="border-b border-border px-3 py-1.5 tabular-nums first:ps-0">
       <Linked>{children}</Linked>
     </td>
   ),

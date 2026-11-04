@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Story } from '../gallery/story'
+import { Button } from '../primitives/Button'
 import { IconButton } from '../primitives/IconButton'
-import { Pill } from '../primitives/Pill'
 import { nl } from '../testing/labels'
 import { Chip } from './Chip'
 import { Composer, type ComposerProps } from './Composer'
@@ -15,12 +15,23 @@ const MODELS: SearchListItem[] = [
   { id: 'haiku', label: 'Haiku 5', detail: 'Kort en goedkoop' },
 ]
 
-/** The tools of Orbit's composer: the round "+", the model and the access level. */
+/** What the agent may do in this chat. */
+const ACCESS: SearchListItem[] = [
+  { id: 'read', label: 'Alleen lezen', detail: 'Leest bestanden, verandert niets' },
+  { id: 'edit', label: 'Mag bewerken', detail: 'Bewerkt bestanden, vraagt voor commando’s' },
+  { id: 'full', label: 'Volledige toegang', detail: 'Bewerkt en voert commando’s uit' },
+]
+
+/**
+ * The tools of Orbit's composer: the round "+", the model and the access level, three quiet
+ * controls of one height. The access level gives up its word first when the row is narrow.
+ */
 function Tools() {
   const [model, setModel] = useState('opus')
+  const [access, setAccess] = useState('edit')
   return (
     <>
-      <IconButton icon="plus" shape="round" outlined size="sm" label="Bijlage" />
+      <IconButton icon="plus" shape="round" size="sm" label="Bijlage toevoegen" />
       <PickerPill
         listLabels={nl.list}
         label="Model"
@@ -31,7 +42,17 @@ function Tools() {
         onSelect={setModel}
         searchable={false}
       />
-      <Pill icon="shield">Bewerkingen</Pill>
+      <PickerPill
+        listLabels={nl.list}
+        label="Toegang"
+        icon="shield"
+        collapse
+        value={ACCESS.find((item) => item.id === access)?.label ?? ''}
+        items={ACCESS}
+        selectedId={access}
+        onSelect={setAccess}
+        searchable={false}
+      />
     </>
   )
 }
@@ -66,7 +87,15 @@ export default {
       <Live initial="Zet het lage tarief van 9% er ook in, met een test." />
     ),
     'A new chat: three rows and where it lands': () => (
-      <Live minRows={3} footer={<StackedRowBranch name="nt/btw-tarieven" worktree />} />
+      <Live
+        minRows={3}
+        footer={
+          <>
+            Start op een nieuwe branch
+            <StackedRowBranch name="nt/btw-tarieven" worktree />
+          </>
+        }
+      />
     ),
     'With attachments': () => (
       <Live
@@ -74,10 +103,12 @@ export default {
         attachments={
           <>
             <Chip
+              size="sm"
               label="factuur-2026-0412.pdf"
               remove={{ label: 'Haal factuur-2026-0412.pdf weg', onRemove: () => {} }}
             />
             <Chip
+              size="sm"
               label="export-boekhouding.csv"
               remove={{ label: 'Haal export-boekhouding.csv weg', onRemove: () => {} }}
             />
@@ -88,6 +119,15 @@ export default {
     'Running: Stop in place of send': () => (
       <Live running onStop={() => {}} initial="En daarna de facturen van" />
     ),
-    'Off, with the reason': () => <Live disabledReason="Kies eerst een project om in te werken." />,
+    'Off, with the reason': () => (
+      <Live
+        disabledReason="Kies eerst een project om in te werken."
+        disabledAction={
+          <Button variant="ghost" size="sm">
+            Kies project
+          </Button>
+        }
+      />
+    ),
   },
 } satisfies Story

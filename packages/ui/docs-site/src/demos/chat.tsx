@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import {
+  ChatLog,
   ChatMessage,
   Composer,
   CopyButton,
@@ -9,7 +10,6 @@ import {
   List,
   ListGroup,
   PickerPill,
-  Pill,
   ProjectMark,
   Prose,
   type RunStatusKind,
@@ -32,6 +32,13 @@ const MODELS: SearchListItem[] = [
   { id: 'haiku', label: 'Haiku 5', detail: 'Kort en goedkoop' },
 ]
 
+/** What the agent may do in this conversation. */
+const ACCESS: SearchListItem[] = [
+  { id: 'read', label: 'Alleen lezen', detail: 'Leest bestanden, verandert niets' },
+  { id: 'edit', label: 'Mag bewerken', detail: 'Bewerkt bestanden, vraagt voor commando’s' },
+  { id: 'full', label: 'Volledige toegang', detail: 'Bewerkt en voert commando’s uit' },
+]
+
 /** One conversation in the column: where it works and what it waits for. */
 interface Conversation {
   id: string
@@ -41,6 +48,8 @@ interface Conversation {
   worktree: boolean
   time: string
   status?: [RunStatusKind, string]
+  /** What a conversation that waits for you asks, in a word or three. */
+  asks?: string
   seen?: boolean
   changes?: string
 }
@@ -58,7 +67,7 @@ const GROUPS: { heading: string; rows: Conversation[] }[] = [
         worktree: true,
         time: '8 min',
         status: ['attention', 'Wacht op jou'],
-        changes: '+84 −12',
+        asks: 'Vraagt toestemming',
       },
       {
         id: 'cadeaubon',
@@ -68,7 +77,7 @@ const GROUPS: { heading: string; rows: Conversation[] }[] = [
         worktree: true,
         time: '25 min',
         status: ['attention', 'Wacht op jou'],
-        changes: '+46 −3',
+        asks: 'Heeft een vraag',
       },
     ],
   },
@@ -120,8 +129,9 @@ interface Message {
   id: number
   role: 'user' | 'assistant'
   text: string
-  /** The hour of a question, the model and the time an answer took. */
-  time?: string
+  /** The hour of the message; an answer is named by it, so a list of articles tells them apart. */
+  time: string
+  /** The model and the time an answer took. */
   meta?: string
 }
 
@@ -141,8 +151,8 @@ const ANSWER = [
   '2. Voor het lage tarief geef je `0.09` mee.',
   '3. Zet de functie in `/work/webwinkel/src/btw.ts`, naast de andere rekenhulpjes.',
   '',
-  '| Bedrag incl. | Tarief | Btw |',
-  '| --- | --- | --- |',
+  '| Bedrag incl. btw | Tarief | Btw |',
+  '| ---: | ---: | ---: |',
   '| € 121,00 | 21% | € 21,00 |',
   '| € 109,00 | 9% | € 9,00 |',
 ].join('\n')
@@ -154,7 +164,7 @@ const START: Message[] = [
     text: 'Kun je een functie schrijven die de btw uit een bedrag inclusief btw haalt?',
     time: '14:02',
   },
-  { id: 2, role: 'assistant', text: ANSWER, meta: 'Opus 5.5 · 12 s' },
+  { id: 2, role: 'assistant', text: ANSWER, time: '14:03', meta: 'Opus 5.5 · klaar in 12 s' },
 ]
 
 /** One message: the user's in a bubble at the right, the assistant's as plain text with actions. */
@@ -174,7 +184,7 @@ function Message({ message }: { message: Message }): ReactNode {
   return (
     <ChatMessage
       from="assistant"
-      label="Opus 5.5"
+      label={`Opus 5.5, ${message.time}`}
       meta={message.meta}
       actions={
         <>
@@ -194,7 +204,9 @@ function Conversations(): ReactNode {
   return (
     <div className="hidden w-72 shrink-0 flex-col bg-frame @4xl:flex">
       <div className="flex h-12 shrink-0 items-center gap-2 px-4">
-        <h2 className="m-0 flex-1 font-medium text-[13px] text-fg">Gesprekken</h2>
+        {/* A title, not a heading: the list below is named "Gesprekken" already, and the demo's own
+            heading says the same word. */}
+        <span className="flex-1 font-medium text-[13px] text-fg">Gesprekken</span>
         <IconButton icon="search" size="sm" label="Zoek gesprekken" />
         <IconButton icon="square-pen" size="sm" label="Nieuw gesprek" />
       </div>
@@ -214,7 +226,7 @@ function Conversations(): ReactNode {
                   {group.rows.map((row) => (
                     <StackedRow
                       key={row.id}
-                      label={`${row.title}, ${row.project}${row.status ? `, ${row.status[1]}` : ''}, ${row.branch}, ${row.time}`}
+                      label={`${row.title}, ${row.project}${row.status ? `, ${row.status[1]}` : ''}${row.asks ? `, ${row.asks}` : ''}, ${row.branch}, ${row.time}`}
                       meta={
                         <>
                           <ProjectMark name={row.project} />
@@ -229,13 +241,19 @@ function Conversations(): ReactNode {
                         ) : null
                       }
                       detail={<StackedRowBranch name={row.branch} worktree={row.worktree} />}
-                      {...(row.changes === undefined
-                        ? {}
-                        : {
-                            trailingDetail: (
-                              <span className="font-mono tabular-nums">{row.changes}</span>
-                            ),
-                          })}
+                      {...(row.asks !== undefined
+                        ? {
+                            // What it asks, in words beside the branch: the triangle says that it
+                            // waits, this says for what.
+                            trailingDetail: <span className="text-secondary">{row.asks}</span>,
+                          }
+                        : row.changes === undefined
+                          ? {}
+                          : {
+                              trailingDetail: (
+                                <span className="font-mono tabular-nums">{row.changes}</span>
+                              ),
+                            })}
                       current={row.id === 'btw'}
                       seen={row.seen ?? false}
                     />
@@ -259,6 +277,9 @@ function Chat(): ReactNode {
   const [draft, setDraft] = useState('')
   const [model, setModel] = useState('opus')
   const [thinking, setThinking] = useState(false)
+  const [access, setAccess] = useState('edit')
+  // Said once through a polite status, never token by token: thinking, complete, stopped.
+  const [said, setSaid] = useState('')
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
 
@@ -275,6 +296,7 @@ function Chat(): ReactNode {
   const stop = () => {
     clearTimeout(timer.current)
     setThinking(false)
+    setSaid('Gestopt')
   }
 
   const send = () => {
@@ -283,15 +305,18 @@ function Chat(): ReactNode {
     setMessages((now) => [...now, { id: now.length + 1, role: 'user', text, time: '14:06' }])
     setDraft('')
     setThinking(true)
+    setSaid('Opus 5.5 is aan het nadenken')
     timer.current = setTimeout(() => {
       setThinking(false)
+      setSaid('Antwoord compleet')
       setMessages((now) => [
         ...now,
         {
           id: now.length + 1,
           role: 'assistant',
           text: 'Dit is een demo zonder netwerk, dus hier komt altijd hetzelfde antwoord. In Orbit stroomt de tekst hier binnen.',
-          meta: 'Opus 5.5 · 1 s',
+          time: '14:06',
+          meta: 'Opus 5.5 · klaar in 1 s',
         },
       ])
     }, 1200)
@@ -306,10 +331,14 @@ function Chat(): ReactNode {
             <h1 className="m-0 min-w-0 truncate font-medium text-[13px] text-fg">
               Btw uit een bedrag halen
             </h1>
-            <span className="hidden min-w-0 items-center gap-2 text-[12px] text-muted @2xl:flex">
+            {/* Where this conversation works, in a short form on a phone: the project always, the
+                branch from a wider column on. */}
+            <span className="flex min-w-0 shrink-0 items-center gap-2 text-[12px] text-muted">
               <ProjectMark name="webwinkel" />
               webwinkel
-              <StackedRowBranch name="main" />
+              <span className="hidden @2xl:flex">
+                <StackedRowBranch name="main" />
+              </span>
             </span>
             <div className="flex-1" />
             <DropdownMenu
@@ -326,31 +355,33 @@ function Chat(): ReactNode {
           </div>
           <div className="min-h-0 flex-1">
             <ScrollArea>
-              <div
-                ref={column}
-                className="mx-auto flex w-full max-w-[720px] flex-col gap-6 px-4 py-6 @3xl:px-8"
-              >
-                {messages.slice(0, 1).map((message) => (
-                  <Message key={message.id} message={message} />
-                ))}
-                <StatusLine tone="success" meta="2 bestanden">
-                  Las src/btw.ts en src/prijs.ts
-                </StatusLine>
-                {messages.slice(1).map((message) => (
-                  <Message key={message.id} message={message} />
-                ))}
-                {thinking ? (
-                  <ChatMessage from="assistant" label="Opus 5.5" streaming>
-                    <p className="m-0 flex items-center gap-2 text-muted">
-                      <Icon name="sparkles" size="sm" tone="faint" />
-                      <Shimmer active>Aan het nadenken…</Shimmer>
-                    </p>
-                  </ChatMessage>
-                ) : null}
+              <div ref={column} className="mx-auto w-full max-w-[720px] px-4 py-6 @3xl:px-8">
+                <ChatLog label="Gesprek">
+                  {messages.slice(0, 1).map((message) => (
+                    <Message key={message.id} message={message} />
+                  ))}
+                  <StatusLine tone="success">Las src/btw.ts en src/prijs.ts</StatusLine>
+                  {messages.slice(1).map((message) => (
+                    <Message key={message.id} message={message} />
+                  ))}
+                  {thinking ? (
+                    <ChatMessage from="assistant" label="Opus 5.5" streaming>
+                      <p className="m-0 flex items-center gap-2 text-muted">
+                        <Icon name="sparkles" size="sm" tone="faint" />
+                        <Shimmer active>Aan het nadenken…</Shimmer>
+                      </p>
+                    </ChatMessage>
+                  ) : null}
+                </ChatLog>
+                <p role="status" className="sr-only">
+                  {said}
+                </p>
               </div>
             </ScrollArea>
           </div>
-          <div className="mx-auto w-full max-w-[720px] px-4 pb-4 @3xl:px-8 @3xl:pb-6">
+          {/* A short fade above the composer: the conversation slides under it calmly, without a
+              hard edge. */}
+          <div className="relative mx-auto w-full max-w-[720px] px-4 pb-4 before:pointer-events-none before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-linear-to-t before:from-canvas before:to-transparent @3xl:px-8 @3xl:pb-6">
             <Composer
               labels={galleryLabels.composer}
               placeholder="Vraag iets of geef een opdracht…"
@@ -361,7 +392,7 @@ function Chat(): ReactNode {
               onStop={stop}
               tools={
                 <>
-                  <IconButton icon="plus" shape="round" outlined size="sm" label="Bijlage" />
+                  <IconButton icon="plus" shape="round" size="sm" label="Bijlage toevoegen" />
                   <PickerPill
                     listLabels={galleryLabels.list}
                     label="Model"
@@ -372,9 +403,19 @@ function Chat(): ReactNode {
                     onSelect={setModel}
                     searchable={false}
                   />
-                  <span className="hidden @xl:inline-flex">
-                    <Pill icon="shield">Bewerkingen</Pill>
-                  </span>
+                  {/* In a narrow composer the access level gives up its word first and keeps its
+                      sign, so the model keeps its name. */}
+                  <PickerPill
+                    listLabels={galleryLabels.list}
+                    label="Toegang"
+                    icon="shield"
+                    collapse
+                    value={ACCESS.find((item) => item.id === access)?.label ?? ''}
+                    items={ACCESS}
+                    selectedId={access}
+                    onSelect={setAccess}
+                    searchable={false}
+                  />
                 </>
               }
             />
@@ -386,9 +427,9 @@ function Chat(): ReactNode {
 }
 
 export default {
-  title: 'Assistent',
+  title: 'Gesprekken',
   description:
-    'Het gesprek van Orbit: links de gesprekken met wat op jou wacht bovenaan, rechts één gesprek met code, een tabel en het invoerkader. Een nieuw bericht krijgt een vast antwoord.',
+    'De gesprekken van Orbit: links de lijst met wat op jou wacht bovenaan, rechts één gesprek met code, een tabel en het invoerkader. Een nieuw bericht krijgt een vast antwoord.',
   icon: 'messages-square',
   product: 'orbit',
   Screen: Chat,

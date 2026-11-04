@@ -59,7 +59,7 @@ export interface Place {
 
 /** The places of Orbit, the desktop app for working with agents on a repository. */
 export const ORBIT_PLACES: readonly Place[] = [
-  { id: 'chat', label: 'Gesprekken', icon: 'messages-square', trailing: '3', demo: 'chat' },
+  { id: 'chat', label: 'Gesprekken', icon: 'messages-square', trailing: '2', demo: 'chat' },
   { id: 'review', label: 'Review', icon: 'scan-search', trailing: '2', demo: 'review' },
   { id: 'taken', label: 'Specs', icon: 'clipboard-list', demo: 'taken' },
   { id: 'branches', label: 'Branches', icon: 'git-branch', demo: 'branches' },

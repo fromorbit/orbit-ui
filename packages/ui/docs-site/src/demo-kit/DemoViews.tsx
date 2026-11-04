@@ -221,7 +221,7 @@ export function DemoBlock({ demo, stories }: { demo: Demo; stories: readonly Sto
       </header>
       <div className="flex justify-center rounded-2xl border border-border bg-frame bg-[radial-gradient(var(--nt-border)_1px,transparent_1px)] bg-size-[18px_18px] p-2 sm:p-3">
         <div
-          className={`h-[min(780px,82dvh)] overflow-hidden rounded-xl border border-border shadow-menu transition-[width] duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${view === 'code' ? 'w-full' : WIDTH[viewport]}`}
+          className={`h-[clamp(520px,calc(100dvh-220px),780px)] overflow-hidden rounded-xl border border-border shadow-menu transition-[width] duration-(--nt-duration) ease-(--nt-ease) motion-reduce:transition-none ${view === 'code' ? 'w-full' : WIDTH[viewport]}`}
         >
           {view === 'code' ? (
             <CodeView demo={demo} />

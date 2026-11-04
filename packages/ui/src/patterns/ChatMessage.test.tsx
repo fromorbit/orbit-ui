@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { IconButton } from '../primitives/IconButton'
-import { ChatMessage } from './ChatMessage'
+import { ChatLog, ChatMessage } from './ChatMessage'
 
 test('a message is an article named by who speaks', () => {
   render(
@@ -25,7 +25,7 @@ test('an answer carries its actions and its meta', () => {
     <ChatMessage
       from="assistant"
       label="Opus 5.5"
-      meta="Opus 5.5 · 12 s"
+      meta="Opus 5.5 · klaar in 12 s"
       actions={<IconButton icon="rotate-ccw" label="Opnieuw" />}
     >
       Klaar.
@@ -33,7 +33,7 @@ test('an answer carries its actions and its meta', () => {
   )
   const message = screen.getByRole('article', { name: 'Opus 5.5' })
   expect(within(message).getByRole('button', { name: 'Opnieuw' })).toBeInTheDocument()
-  expect(message).toHaveTextContent('Opus 5.5 · 12 s')
+  expect(message).toHaveTextContent('Opus 5.5 · klaar in 12 s')
 })
 
 test('while an answer streams it is busy and offers no actions yet', () => {
@@ -61,15 +61,38 @@ test('a complete answer is not busy', () => {
   expect(screen.getByRole('article')).not.toHaveAttribute('aria-busy')
 })
 
-test('an error is said in words under what did arrive', () => {
+test('an error is said in words under what did arrive, as an alert that describes the turn', () => {
   render(
-    <ChatMessage from="assistant" label="Opus 5.5" error="De verbinding viel weg.">
+    <ChatMessage
+      from="assistant"
+      label="Opus 5.5"
+      error="De verbinding viel weg."
+      errorAction={<button type="button">Opnieuw proberen</button>}
+    >
       Ik heb gelezen
     </ChatMessage>,
   )
   const message = screen.getByRole('article')
   expect(message).toHaveTextContent('Ik heb gelezen')
-  expect(within(message).getByText('De verbinding viel weg.')).toBeInTheDocument()
+  const alert = within(message).getByRole('alert')
+  expect(alert).toHaveTextContent('De verbinding viel weg.')
+  // The way on stands with the error, named in words.
+  expect(within(alert).getByRole('button', { name: 'Opnieuw proberen' })).toBeInTheDocument()
+  expect(message).toHaveAccessibleDescription(/De verbinding viel weg\./)
+})
+
+test('the turns stand in a polite log, so a new one is announced', () => {
+  render(
+    <ChatLog label="Gesprek">
+      <ChatMessage from="user" label="Jij">
+        Hallo
+      </ChatMessage>
+    </ChatLog>,
+  )
+  const log = screen.getByRole('log', { name: 'Gesprek' })
+  expect(log).toHaveAttribute('aria-live', 'polite')
+  expect(log).toHaveAttribute('aria-relevant', 'additions')
+  expect(within(log).getByRole('article', { name: 'Jij' })).toBeInTheDocument()
 })
 
 test('your own actions stay in the document, shown on hover or focus', () => {

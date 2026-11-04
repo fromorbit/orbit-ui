@@ -1,16 +1,24 @@
 import type { ReactNode } from 'react'
 import type { Story } from '../gallery/story'
+import { Button } from '../primitives/Button'
 import { Icon } from '../primitives/Icon'
 import { IconButton } from '../primitives/IconButton'
 import { nl } from '../testing/labels'
-import { ChatMessage } from './ChatMessage'
+import { ChatLog, ChatMessage } from './ChatMessage'
 import { CopyButton } from './CopyButton'
 import { Prose } from './Prose'
 import { Shimmer } from './Shimmer'
 
-/** The column of a conversation: 720px at most, the turns 24px apart, as the chat lays them out. */
+/**
+ * The column of a conversation: 720px at most, the turns 24px apart in a `ChatLog`, as the chat
+ * lays them out.
+ */
 function Column({ children }: { children: ReactNode }) {
-  return <div className="flex w-full max-w-[720px] flex-col gap-6">{children}</div>
+  return (
+    <div className="w-full max-w-[720px]">
+      <ChatLog label="Gesprek">{children}</ChatLog>
+    </div>
+  )
 }
 
 const QUESTION = 'Kun je een functie schrijven die de btw uit een bedrag inclusief btw haalt?'
@@ -55,7 +63,7 @@ export default {
         <ChatMessage
           from="assistant"
           label="Opus 5.5"
-          meta="Opus 5.5 · 12 s"
+          meta="Opus 5.5 · klaar in 12 s"
           actions={<AnswerActions text={ANSWER} />}
         >
           <Prose labels={nl.prose} markdown={ANSWER} settled />
@@ -91,13 +99,34 @@ export default {
         </ChatMessage>
       </Column>
     ),
+    'A long path breaks inside the column': () => (
+      <Column>
+        <ChatMessage
+          from="assistant"
+          label="Opus 5.5"
+          meta="Opus 5.5 · klaar in 4 s"
+          actions={<AnswerActions text="iDEAL" />}
+        >
+          <Prose
+            labels={nl.prose}
+            markdown="De status van iDEAL komt binnen in `/work/webwinkel/src/kassa/betaalmethoden/ideal/verwerkBetaalstatus.ts`; daar zet ik de controle op het bedrag bij."
+            settled
+          />
+        </ChatMessage>
+      </Column>
+    ),
     'Stopped short with an error': () => (
       <Column>
         <ChatMessage
           from="assistant"
           label="Opus 5.5"
           error="De verbinding viel weg na 40 seconden. Wat er al stond, blijft staan."
-          actions={<IconButton icon="rotate-ccw" size="sm" label="Opnieuw" />}
+          errorAction={
+            <Button variant="ghost" size="sm">
+              <Icon name="rotate-ccw" size="sm" />
+              Opnieuw proberen
+            </Button>
+          }
         >
           <Prose labels={nl.prose} markdown="Ik heb `src/btw.ts` gelezen en begin nu met" settled />
         </ChatMessage>

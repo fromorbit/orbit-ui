@@ -81,11 +81,37 @@ test('while an answer runs the button stops it, and Enter sends nothing', async 
   expect(onSend).not.toHaveBeenCalled()
 })
 
-test('a reason turns the field off and describes it', () => {
-  render(<Live disabledReason="Kies eerst een project." />)
+test('a reason turns the field off but keeps it a tab stop that says why', async () => {
+  const onSend = vi.fn()
+  render(
+    <Live
+      onSend={onSend}
+      initial="Hallo"
+      disabledReason="Kies eerst een project."
+      tools={<button type="button">Model</button>}
+    />,
+  )
   const field = screen.getByRole('textbox', { name: 'Bericht' })
-  expect(field).toBeDisabled()
+  // Not `disabled`: a disabled field leaves the tab order, and its reason is then never heard.
+  expect(field).not.toBeDisabled()
+  expect(field).toHaveAttribute('aria-disabled', 'true')
+  expect(field).toHaveAttribute('readonly')
   expect(field).toHaveAccessibleDescription('Kies eerst een project.')
+  const send = screen.getByRole('button', { name: 'Verstuur' })
+  expect(send).toHaveAttribute('aria-disabled', 'true')
+  expect(send).toHaveAccessibleDescription('Kies eerst een project.')
+  await userEvent.click(send)
+  await userEvent.type(field, '{Enter}')
+  expect(onSend).not.toHaveBeenCalled()
+  // The tools cannot act while the composer is off, so they leave the tab order.
+  expect(screen.getByText('Model').closest('[inert]')).not.toBeNull()
+})
+
+test('Escape in the field stops a running answer', async () => {
+  const onStop = vi.fn()
+  render(<Live onStop={onStop} running />)
+  await userEvent.type(screen.getByRole('textbox'), '{Escape}')
+  expect(onStop).toHaveBeenCalledTimes(1)
 })
 
 test('a click on the plane beside the controls puts the caret in the field', async () => {

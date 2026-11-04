@@ -28,24 +28,36 @@ export interface ComposerProps {
   /** The words in the empty field: "Vraag iets of geef een opdracht…". */
   placeholder?: string
   /**
-   * An answer is running: the button becomes Stop (a square in the same round 28px, so the row
-   * keeps its shape) and Enter sends nothing. Typing stays possible, for the next message.
+   * An answer is running: the button becomes Stop (a square in the same round 32px, so the row
+   * keeps its shape) and Enter sends nothing; Escape in the field presses Stop. Typing stays
+   * possible, for the next message.
    */
   running?: boolean
   /** Stop was pressed; called only while `running`. Left out, the button is not offered. */
   onStop?(): void
   /**
-   * Why nothing can be typed now, already translated: the field is off and the sentence stands
-   * under the plane with a warning sign. Left out, the composer is usable.
+   * Why nothing can be typed now, already translated. The reason stands inside the plane, on top,
+   * with a warning sign; the field, the tools and the send button below it step back to 40%. The
+   * field stays a tab stop (`aria-disabled` and read-only, not `disabled`), so the keyboard and a
+   * screen reader reach it and hear the reason as its description; the send button is described
+   * by the same sentence. Left out, the composer is usable.
    */
   disabledReason?: ReactNode
+  /** The way out of `disabledReason`, beside it: a quiet button "Kies project". */
+  disabledAction?: ReactNode
   /**
-   * The settings of this message, left in the toolbar: the round "+" for an attachment, the model
-   * as a `PickerPill`, the access level as a `Pill`. A slot, because what goes in a pill belongs to
-   * the host; the composer owns the row they stand on.
+   * The settings of this message, left in the toolbar: the round ghost "+" for an attachment, the
+   * model and the access level as ghost `PickerPill`s, so every tool is one 28px control of one
+   * kind and the send button is the only mark with a fill. A slot, because what goes in a pill
+   * belongs to the host; the composer owns the row they stand on. The row is the `toolbar`
+   * container, so a `PickerPill` with `collapse` (the access level) gives up its word first when
+   * the composer is narrow, before the model name loses a letter.
    */
   tools?: ReactNode
-  /** What the message takes along, above the field: `Chip`s of attached files. */
+  /**
+   * What the message takes along, above the field: small `Chip`s of attached files. They wrap,
+   * two to a row at most, and a long name loses its tail rather than taking a row of its own.
+   */
   attachments?: ReactNode
   /** A quiet line under the plane: where the message lands, or a hint about the keys. 12px, muted. */
   footer?: ReactNode
@@ -58,17 +70,22 @@ export interface ComposerProps {
 /**
  * The input of a chat: a growing field and its toolbar as one plane.
  *
- * One plane on the `composer` tint, 12px round with 12px of air inside, a strong hairline that
- * lightens when the focus is inside (neutral, not the accent: the field is where you always are,
- * and the send button is the one emphasis of the view). Under the field one 28px row: the tools
- * on the left, the send button against the right edge, 16px under the text so the row reads as a
- * row of its own (Proximity).
+ * One plane on the `composer` tint, 12px round with 12px of air inside and one hairline, no shadow:
+ * a region by its tint, not a card that floats. With the keyboard focus in the field the plane
+ * takes the kit's 2px focus ring, the one every control shows, so where you type is never a guess.
+ * Under the field one row: the tools on the left, the send button against the right edge, 16px
+ * under the text so the row reads as a row of its own (Proximity).
  *
- * The send button is a round arrow on the accent only when a press sends something. Empty, it is
- * the quiet `idle` plane, `aria-disabled` rather than `disabled`: it stays a tab stop with a name,
- * and the plane at full strength says "nothing yet" without looking broken. While an answer runs
- * it turns into Stop, a square on the accent. A click anywhere on the plane that is not a control puts the caret in the
- * field: the whole plane is the target (Fitts).
+ * The send button is the one emphasis and the biggest target of the row: a round 32px arrow on
+ * the accent when a press sends something, beside 28px tools (Fitts). Empty, it is the quiet
+ * `idle` plane, `aria-disabled` rather than `disabled`: it stays a tab stop with a name, and the
+ * plane at full strength says "nothing yet" without looking broken. While an answer runs it turns
+ * into Stop, a square on the accent. A click anywhere on the plane that is not a control puts the
+ * caret in the field: the whole plane is the target (Fitts).
+ *
+ * Off (`disabledReason`), the plane loses its tint and keeps a quiet hairline, the reason stands
+ * inside it on top and everything under the reason steps back: one region, one glance (Common
+ * Region).
  */
 export function Composer({
   labels,
@@ -79,6 +96,7 @@ export function Composer({
   running = false,
   onStop,
   disabledReason,
+  disabledAction,
   tools,
   attachments,
   footer,
@@ -94,6 +112,12 @@ export function Composer({
     if (ready) onSend()
   }
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Escape is the keyboard twin of the square button.
+    if (event.key === 'Escape' && running && onStop) {
+      event.preventDefault()
+      onStop()
+      return
+    }
     // An input method (Japanese, Chinese, accents on some layouts) confirms its word with Enter:
     // that Enter is the method's, not a send.
     if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
@@ -107,18 +131,33 @@ export function Composer({
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: as above, the keyboard reaches the field directly. */}
       <div
         data-nt-composer
+        data-disabled={disabled || undefined}
         onClick={(event) => {
           if (event.target === event.currentTarget) field.current?.focus()
         }}
-        className={[
-          'flex flex-col gap-2 rounded-lg border border-border-strong bg-composer p-3 shadow-menu transition-[border-color] duration-(--nt-duration-fast)',
-          disabled ? '' : 'cursor-text focus-within:border-border-focus',
-        ].join(' ')}
+        className={
+          disabled
+            ? 'flex flex-col gap-2 rounded-lg border border-border p-3 outline-focus has-[textarea:focus-visible]:outline-2 has-[textarea:focus-visible]:outline-offset-2'
+            : 'flex cursor-text flex-col gap-2 rounded-lg border border-border-strong bg-composer p-3 outline-focus has-[textarea:focus-visible]:outline-2 has-[textarea:focus-visible]:outline-offset-2'
+        }
       >
-        {attachments !== undefined ? (
-          <div className="flex flex-wrap items-center gap-2">{attachments}</div>
+        {disabled ? (
+          <div className="flex min-h-(--nt-control-sm) flex-wrap items-center gap-x-2 gap-y-1">
+            <p id={reasonId} className="m-0 flex min-w-0 items-center gap-2 text-[12px] text-fg">
+              <span className="flex shrink-0 text-attention">
+                <Icon name="alert-triangle" size="sm" />
+              </span>
+              {disabledReason}
+            </p>
+            {disabledAction}
+          </div>
         ) : null}
-        <div className={disabled ? 'opacity-60' : undefined}>
+        {attachments !== undefined ? (
+          <div className="flex flex-wrap items-center gap-2 [&>*]:max-w-[calc(50%-4px)]">
+            {attachments}
+          </div>
+        ) : null}
+        <div className={disabled ? 'opacity-40' : undefined}>
           <Textarea
             ref={field}
             label={labels.field}
@@ -126,17 +165,45 @@ export function Composer({
             minRows={minRows}
             maxRows={maxRows}
             value={value}
-            disabled={disabled}
             {...(placeholder === undefined ? {} : { placeholder })}
-            {...(disabled ? { 'aria-describedby': reasonId } : {})}
+            {...(disabled
+              ? { 'aria-disabled': true, readOnly: true, 'aria-describedby': reasonId }
+              : {})}
             onChange={(event) => onValueChange(event.target.value)}
             onKeyDown={onKeyDown}
           />
         </div>
-        <div data-nt-composer-toolbar className="mt-2 flex min-w-0 items-center gap-2">
-          <div className="flex min-w-0 items-center gap-2">{tools}</div>
+        <div
+          data-nt-composer-toolbar
+          className="@container/toolbar mt-2 flex min-w-0 items-center gap-2"
+        >
+          {/* Off, the tools leave the tab order with the rest of the row: nothing there can act. */}
+          <div
+            className={
+              disabled
+                ? 'flex min-w-0 items-center gap-1 opacity-40'
+                : 'flex min-w-0 items-center gap-1'
+            }
+            inert={disabled || undefined}
+          >
+            {tools}
+          </div>
           <span className="flex-1" />
-          {running && onStop ? (
+          {disabled ? (
+            // Off, the send button stays a named tab stop that says why (the reason describes it),
+            // and steps back with the row.
+            <span className="flex opacity-40">
+              <IconButton
+                icon="arrow-up"
+                label={labels.send}
+                variant="idle"
+                shape="round"
+                size="md"
+                aria-disabled
+                aria-describedby={reasonId}
+              />
+            </span>
+          ) : running && onStop ? (
             <IconButton
               icon="square"
               label={labels.stop}
@@ -144,7 +211,7 @@ export function Composer({
               // and a square on a quiet ring would read as a checkbox.
               variant="primary"
               shape="round"
-              size="sm"
+              size="md"
               onClick={onStop}
             />
           ) : (
@@ -153,21 +220,14 @@ export function Composer({
               label={labels.send}
               variant={ready ? 'primary' : 'idle'}
               shape="round"
-              size="sm"
+              size="md"
               aria-disabled={ready ? undefined : true}
               onClick={send}
             />
           )}
         </div>
       </div>
-      {disabled ? (
-        <p id={reasonId} className="m-0 flex items-center gap-2 px-3 text-[12px] text-muted">
-          <span className="flex shrink-0 text-attention">
-            <Icon name="alert-triangle" size="sm" />
-          </span>
-          {disabledReason}
-        </p>
-      ) : footer !== undefined ? (
+      {!disabled && footer !== undefined ? (
         <div className="flex min-h-6 items-center gap-2 px-3 text-[12px] text-muted">{footer}</div>
       ) : null}
     </div>
