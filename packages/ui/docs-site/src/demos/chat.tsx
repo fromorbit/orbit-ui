@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
 import {
   ChatLog,
   ChatMessage,
@@ -309,21 +309,33 @@ function Conversations({
   shown,
   current,
   onOpen,
+  root,
 }: {
   shown: boolean
   /** The conversation that is open; none while a new one is. */
   current: string | null
   onOpen(): void
+  /** The column, so the screen can put the focus back on a row of it. */
+  root: RefObject<HTMLDivElement | null>
 }): ReactNode {
   const [open, setOpen] = useState<Record<string, boolean>>({})
   return (
     <div
+      ref={root}
       className={`${shown ? 'flex w-full' : 'hidden'} shrink-0 flex-col bg-frame shadow-frame-edge @4xl:flex @4xl:w-72`}
     >
       <div className="flex h-12 shrink-0 items-center gap-2 px-4">
         {/* A title, not a heading: the list below is named "Gesprekken" already, and the demo's own
             heading says the same word. */}
-        <span className="flex-1 font-medium text-[13px] text-fg">Gesprekken</span>
+        {/* Focusable by script only: where the focus lands back when the row that opened the
+            conversation is gone. */}
+        <span
+          data-chat-list-title
+          tabIndex={-1}
+          className="flex-1 font-medium text-[13px] text-fg focus:outline-none"
+        >
+          Gesprekken
+        </span>
         <IconButton icon="search" size="sm" label="Zoek gesprekken" />
         <IconButton icon="square-pen" size="sm" label="Nieuw gesprek" />
       </div>
@@ -424,6 +436,37 @@ function ChatScreen({ state }: { state: ChatState }): ReactNode {
   const [access, setAccess] = useState('edit')
   // Below the 3-column width: the list, or the conversation pushed on top of it.
   const [listView, setListView] = useState(false)
+  // The switch between the two hides the one that held the focus, so the focus moves with it
+  // (WCAG 2.4.3): opening puts it on the conversation's title, going back on the row that opened
+  // it, or on the current row, or on the list's title.
+  const list = useRef<HTMLDivElement>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+  const opener = useRef<HTMLElement | null>(null)
+  const moving = useRef<'thread' | 'list' | null>(null)
+  useEffect(() => {
+    const to = moving.current
+    moving.current = null
+    if (to === 'thread' && !listView) heading.current?.focus()
+    if (to !== 'list' || !listView) return
+    const row = opener.current
+    const target =
+      row?.isConnected && list.current?.contains(row)
+        ? row
+        : (list.current?.querySelector<HTMLElement>('[aria-current="page"]') ??
+          list.current?.querySelector<HTMLElement>('[data-chat-list-title]'))
+    target?.focus()
+  }, [listView])
+  const openThread = () => {
+    // Only on a phone, where the list gives way: beside the list a click keeps its place.
+    if (!listView) return
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    moving.current = 'thread'
+    setListView(false)
+  }
+  const backToList = () => {
+    moving.current = 'list'
+    setListView(true)
+  }
   // Said once through a polite status, never token by token: thinking, complete, stopped.
   const [said, setSaid] = useState('')
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -541,7 +584,8 @@ function ChatScreen({ state }: { state: ChatState }): ReactNode {
         <Conversations
           shown={listView}
           current={state === 'leeg' ? null : state === 'lang' ? 'korting' : 'btw'}
-          onOpen={() => setListView(false)}
+          onOpen={openThread}
+          root={list}
         />
         <div className={`${listView ? 'hidden @4xl:flex' : 'flex'} min-w-0 flex-1 flex-col`}>
           {/* The header shares the column of the turns, so the title starts on the edge of the
@@ -553,13 +597,17 @@ function ChatScreen({ state }: { state: ChatState }): ReactNode {
                   icon="chevron-left"
                   size="sm"
                   label="Terug naar gesprekken"
-                  onClick={() => setListView(true)}
+                  onClick={backToList}
                 />
               </span>
               {/* On a phone the title takes the whole row and where it works moves to a quiet
                   line under it: the title is the one emphasis and gives way to nothing. */}
               <div className="flex min-w-0 flex-1 flex-col @lg:flex-row @lg:items-center @lg:gap-3">
-                <h1 className="m-0 min-w-0 truncate font-medium text-[13px] text-fg leading-5">
+                <h1
+                  ref={heading}
+                  tabIndex={-1}
+                  className="m-0 min-w-0 truncate font-medium text-[13px] text-fg leading-5 focus:outline-none"
+                >
                   {title}
                 </h1>
                 <span className="flex min-w-0 items-center gap-2 text-[12px] text-muted leading-4 @lg:shrink-0">

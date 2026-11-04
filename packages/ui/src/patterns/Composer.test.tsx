@@ -154,3 +154,14 @@ test('the tools and the footer stand where the caller put them', () => {
   expect(screen.getByText('Opus 5.5')).toBeInTheDocument()
   expect(screen.getByText('webwinkel')).toBeInTheDocument()
 })
+
+test('the field says how its keys work to a screen reader, and only while it can be typed in', () => {
+  const { rerender } = render(<Live />)
+  expect(screen.getByRole('textbox', { name: 'Bericht' })).toHaveAccessibleDescription(
+    'Enter verstuurt, Shift+Enter voor een nieuwe regel',
+  )
+  rerender(<Live disabledReason="Kies eerst een project." />)
+  expect(screen.getByRole('textbox', { name: 'Bericht' })).toHaveAccessibleDescription(
+    'Kies eerst een project.',
+  )
+})

@@ -1,4 +1,4 @@
-import { type ReactNode, useId } from 'react'
+import { createContext, type ReactNode, useContext, useId } from 'react'
 import { Icon } from '../primitives/Icon'
 
 /** The props of `ChatMessage`. */
@@ -40,8 +40,9 @@ export interface ChatMessageProps {
   streaming?: boolean
   /**
    * Why the answer stopped short, already translated: a line with a warning sign in the danger
-   * colour under what did arrive. Shape and word, never colour alone. It is an `alert`, so it is
-   * heard when it appears, and it describes the article, so it is heard again with that turn.
+   * colour under what did arrive. Shape and word, never colour alone. Inside a `ChatLog` the log
+   * announces it as the turn's last addition; on its own it is an `alert`, so it is heard when it
+   * appears, never twice. It describes the article either way, so it is heard again with that turn.
    */
   error?: ReactNode
   /**
@@ -60,21 +61,26 @@ export interface ChatMessageProps {
 const CARET =
   "[&>div>p:last-child]:after:ml-0.5 [&>div>p:last-child]:after:inline-block [&>div>p:last-child]:after:h-[1em] [&>div>p:last-child]:after:w-0.5 [&>div>p:last-child]:after:translate-y-0.5 [&>div>p:last-child]:after:animate-pulse [&>div>p:last-child]:after:bg-muted [&>div>p:last-child]:after:content-[''] motion-reduce:[&>div>p:last-child]:after:animate-none"
 
+/** Whether a message stands in a `ChatLog`, whose polite announcement already carries an error. */
+const InLog = createContext(false)
+
 /**
  * One column of turns that a screen reader follows: a `log`, polite, that announces what is added.
  * The column of a conversation is one; put `ChatMessage`s and tool lines in it.
  */
 export function ChatLog({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div
-      role="log"
-      aria-label={label}
-      aria-live="polite"
-      aria-relevant="additions"
-      className="flex min-w-0 flex-col gap-6"
-    >
-      {children}
-    </div>
+    <InLog.Provider value={true}>
+      <div
+        role="log"
+        aria-label={label}
+        aria-live="polite"
+        aria-relevant="additions"
+        className="flex min-w-0 flex-col gap-6"
+      >
+        {children}
+      </div>
+    </InLog.Provider>
   )
 }
 
@@ -103,6 +109,9 @@ export function ChatMessage({
   errorAction,
 }: ChatMessageProps) {
   const errorId = useId()
+  // An alert inside the log's live region is heard twice on some screen readers: in a log, the
+  // log says it.
+  const inLog = useContext(InLog)
   const footer =
     !streaming && (actions !== undefined || meta !== undefined) ? (
       <div
@@ -126,7 +135,11 @@ export function ChatMessage({
       // Two columns: the sign, and the sentence with its action. The action wraps inside the second
       // column, so a wrapped action's frame stands on the left edge of the sentence (Proximity: the
       // failure and its way on stay one).
-      <div id={errorId} role="alert" className="flex items-start gap-2 text-[12px] text-fg">
+      <div
+        id={errorId}
+        role={inLog ? undefined : 'alert'}
+        className="flex items-start gap-2 text-[12px] text-fg"
+      >
         <span className="flex h-(--nt-control-sm) shrink-0 items-center text-danger">
           <Icon name="alert-triangle" size="sm" />
         </span>

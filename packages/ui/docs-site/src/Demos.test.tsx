@@ -217,6 +217,38 @@ describe('every demo', () => {
   )
 })
 
+describe('the chat on a phone', () => {
+  /** The chat demo on its own, as the page mounts it. */
+  function renderChat(): void {
+    const chat = DEMOS.find((demo) => demo.slug === 'chat')
+    if (!chat) throw new Error('No chat demo')
+    render(<UiProvider locale="nl-NL">{createElement(chat.Screen, {})}</UiProvider>)
+  }
+
+  test('going back puts the focus on the row of the open conversation, never on the page', async () => {
+    renderChat()
+    const back = screen.getByRole('button', { name: 'Terug naar gesprekken' })
+    back.focus()
+    await userEvent.keyboard('{Enter}')
+    const row = screen.getByRole('button', { name: /^Btw uit een bedrag halen,/ })
+    expect(row).toHaveAttribute('aria-current', 'page')
+    expect(document.activeElement).toBe(row)
+  })
+
+  test('opening a conversation puts the focus on its title, and back on the row that opened it', async () => {
+    renderChat()
+    screen.getByRole('button', { name: 'Terug naar gesprekken' }).focus()
+    await userEvent.keyboard('{Enter}')
+    const other = screen.getByRole('button', { name: /^Kortingscodes/ })
+    other.focus()
+    await userEvent.keyboard('{Enter}')
+    expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
+    screen.getByRole('button', { name: 'Terug naar gesprekken' }).focus()
+    await userEvent.keyboard('{Enter}')
+    expect(document.activeElement).toBe(other)
+  })
+})
+
 describe('the overview of what is missing', () => {
   test('names every Missing of every demo, with the demos it stands in, or that none is left', () => {
     goTo('#/demo/ontbrekend')

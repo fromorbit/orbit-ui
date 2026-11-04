@@ -122,3 +122,15 @@ test('your own question is read before its buttons', () => {
     /^Kun je de btw uitrekenen\?.*Kopiëren/,
   )
 })
+
+test('inside a log the error is no alert of its own: the polite log says it, once', () => {
+  render(
+    <ChatLog label="Gesprek">
+      <ChatMessage from="assistant" label="Opus 5.5" error="De verbinding viel weg.">
+        Ik heb gelezen
+      </ChatMessage>
+    </ChatLog>,
+  )
+  expect(screen.queryByRole('alert')).toBeNull()
+  expect(screen.getByRole('article')).toHaveAccessibleDescription(/De verbinding viel weg\./)
+})

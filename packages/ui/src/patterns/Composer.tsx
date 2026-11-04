@@ -12,6 +12,11 @@ export interface ComposerLabels {
   send: string
   /** The name of the button while an answer runs: "Stop". */
   stop: string
+  /**
+   * How the keys work, said to a screen reader as the field's description and never shown:
+   * "Enter verstuurt, Shift+Enter voor een nieuwe regel". Left out, the field has no hint.
+   */
+  keys?: string
 }
 
 /** The props of `Composer`. */
@@ -121,6 +126,7 @@ export function Composer({
 }: ComposerProps) {
   const field = useRef<HTMLTextAreaElement>(null)
   const reasonId = useId()
+  const keysId = useId()
   const disabled = disabledReason !== undefined
   const ready = !disabled && !running && value.trim() !== ''
 
@@ -188,10 +194,17 @@ export function Composer({
             {...(placeholder === undefined || disabled ? {} : { placeholder })}
             {...(disabled
               ? { 'aria-disabled': true, readOnly: true, 'aria-describedby': reasonId }
-              : {})}
+              : labels.keys === undefined
+                ? {}
+                : { 'aria-describedby': keysId })}
             onChange={(event) => onValueChange(event.target.value)}
             onKeyDown={onKeyDown}
           />
+          {!disabled && labels.keys !== undefined ? (
+            <span id={keysId} className="sr-only">
+              {labels.keys}
+            </span>
+          ) : null}
         </div>
         <div
           data-nt-composer-toolbar

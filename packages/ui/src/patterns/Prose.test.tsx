@@ -153,16 +153,36 @@ test('inline code gets no button of its own', () => {
   expect(screen.queryByRole('button', { name: 'Kopiëren' })).toBeNull()
 })
 
+/** Every element as wide inside as given, against a box of 300px: jsdom lays nothing out. */
+function widths(scroll: number): () => void {
+  const scrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth')
+  const clientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+  Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+    configurable: true,
+    get: () => scroll,
+  })
+  Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+    configurable: true,
+    get: () => 300,
+  })
+  return () => {
+    if (scrollWidth) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', scrollWidth)
+    if (clientWidth) Object.defineProperty(HTMLElement.prototype, 'clientWidth', clientWidth)
+  }
+}
+
+const SCROLLING = '```\nlang\n```\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n'
+
 test('whatever scrolls horizontally is a named region the keyboard can reach', () => {
   // A scroll region that only the mouse can reach hides its overflow from a keyboard user; axe
   // calls that `scrollable-region-focusable`. A tab stop without a name is just as opaque, so
   // each one says what it is, the way `ScrollArea` does.
-  render(
-    <Prose
-      labels={nl.prose}
-      markdown={'```\nlang\n```\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n'}
-    />,
-  )
+  const restore = widths(900)
+  try {
+    render(<Prose labels={nl.prose} markdown={SCROLLING} />)
+  } finally {
+    restore()
+  }
   const code = screen.getByRole('group', { name: 'Codeblok' })
   const table = screen.getByRole('group', { name: 'Tabel' })
   expect(code.querySelector('pre')).toHaveTextContent('lang')
@@ -640,4 +660,16 @@ describe('as a document', () => {
       [35, 52],
     ])
   })
+})
+
+test('a code block or table that fits its column is no tab stop: nothing there to scroll', () => {
+  const restore = widths(200)
+  try {
+    render(<Prose labels={nl.prose} markdown={SCROLLING} />)
+  } finally {
+    restore()
+  }
+  for (const name of ['Codeblok', 'Tabel']) {
+    expect(screen.getByRole('group', { name })).not.toHaveAttribute('tabindex')
+  }
 })

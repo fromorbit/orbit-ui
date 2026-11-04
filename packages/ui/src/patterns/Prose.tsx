@@ -357,13 +357,19 @@ function CodeBlock({ code, children }: { code: () => string; children: ReactNode
   // that was scrolled into view stands sharp, and a block that fits never looks cut.
   const scroller = useRef<HTMLDivElement>(null)
   const [more, setMore] = useState(false)
+  // Whether anything runs past the edge at all, scrolled or not: only then is the block a tab stop.
+  const [overflows, setOverflows] = useState(false)
   useEffect(() => {
     const element = scroller.current
     if (!element || wrap) {
       setMore(false)
+      setOverflows(false)
       return
     }
-    const check = () => setMore(element.scrollLeft + element.clientWidth < element.scrollWidth - 1)
+    const check = () => {
+      setMore(element.scrollLeft + element.clientWidth < element.scrollWidth - 1)
+      setOverflows(element.scrollWidth > element.clientWidth)
+    }
     check()
     element.addEventListener('scroll', check, { passive: true })
     const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(check)
@@ -386,8 +392,10 @@ function CodeBlock({ code, children }: { code: () => string; children: ReactNode
       <div
         ref={scroller}
         role="group"
-        // biome-ignore lint/a11y/noNoninteractiveTabindex: a long line scrolls sideways, and WCAG 2.1.1 (axe: scrollable-region-focusable) wants the keyboard to reach that overflow too.
-        tabIndex={0}
+        // A tab stop only while a line runs past the edge: WCAG 2.1.1 (axe: scrollable-region-focusable)
+        // wants the keyboard to reach that overflow, and a block that fits is a stop with nothing
+        // to do.
+        {...(overflows ? { tabIndex: 0 } : {})}
         aria-label={labels.codeBlock}
         data-more={more || undefined}
         className={region}
@@ -479,10 +487,27 @@ function FootnotesHeading({ id }: { id: string | undefined }) {
 /** A table wide enough to scroll sideways, named for the same reason as `CodeBlock`. */
 function TableRegion({ children }: { children: ReactNode }) {
   const labels = useProseLabels()
+  // A tab stop only while the table is wider than its column, as with `CodeBlock`.
+  const scroller = useRef<HTMLDivElement>(null)
+  const [overflows, setOverflows] = useState(false)
+  useEffect(() => {
+    const element = scroller.current
+    if (!element) return
+    const check = () => setOverflows(element.scrollWidth > element.clientWidth)
+    check()
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(check)
+    observer?.observe(element)
+    return () => observer?.disconnect()
+  }, [])
   return (
     // biome-ignore lint/a11y/useSemanticElements: a named group inside an answer, not a form.
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: the wrapper scrolls a wide table sideways; without tabIndex the keyboard never reaches that overflow.
-    <div role="group" tabIndex={0} aria-label={labels.table} className={SCROLLS}>
+    <div
+      ref={scroller}
+      role="group"
+      {...(overflows ? { tabIndex: 0 } : {})}
+      aria-label={labels.table}
+      className={SCROLLS}
+    >
       {/* As wide as its columns, left on the prose, not stretched across the column: three short
           figures 300px apart lose their row (Proximity). A wide table still scrolls. */}
       <table className="w-auto border-collapse text-[13px]">{children}</table>

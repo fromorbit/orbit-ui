@@ -40,6 +40,7 @@ export const nl = {
     field: 'Bericht',
     send: 'Verstuur',
     stop: 'Stop',
+    keys: 'Enter verstuurt, Shift+Enter voor een nieuwe regel',
   } satisfies ComposerLabels,
   secret: {
     set: 'Ingesteld',
