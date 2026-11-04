@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
 import { TrendBadge } from '../primitives/TrendBadge'
@@ -70,6 +71,44 @@ const SPACES: ChartPoint[] = [
   values: [Number(ok), Number(failed)],
 }))
 
+/**
+ * The card a chart ships on, as the demos lay it out: white with a hairline in light, a step
+ * lighter than the page in dark, 12px corners, the title 13px with a quiet note beside it.
+ */
+function Card({
+  title,
+  meta,
+  className = 'max-w-3xl',
+  children,
+}: {
+  title: string
+  meta?: string
+  className?: string
+  children: ReactNode
+}): ReactNode {
+  return (
+    <section
+      className={`flex w-full flex-col gap-3 rounded-lg bg-overlay p-4 shadow-plane ${className}`}
+    >
+      <p className="m-0 flex items-baseline gap-2">
+        <span className="font-medium text-[13px] text-fg">{title}</span>
+        {meta === undefined ? null : <span className="text-[12px] text-muted">{meta}</span>}
+      </p>
+      {children}
+    </section>
+  )
+}
+
+/** Builds per app this week: short names, which fit under their bars. */
+const APPS: ChartPoint[] = [
+  ['webwinkel', 103, 7],
+  ['beheer', 18, 0],
+  ['nieuwsbrief', 12, 2],
+  ['zoekdienst', 9, 1],
+].map(([label, ok, failed]) => ({ label: String(label), values: [Number(ok), Number(failed)] }))
+
+const SPACE_KEYS = 'Pijltjes om de spaces te lezen, Home en End voor de eerste en de laatste'
+
 const BUILDS = [
   { id: 'ok', label: 'Geslaagd' },
   { id: 'failed', label: 'Mislukt', tone: 'danger' as const },
@@ -80,7 +119,7 @@ export default {
   title: 'Chart',
   states: {
     'Gestapelde staven: builds per dag, mislukte bovenop': () => (
-      <div className="w-full max-w-3xl">
+      <Card title="Builds" meta="per dag">
         <Chart
           label="Builds per dag"
           series={BUILDS}
@@ -90,10 +129,10 @@ export default {
           keys={KEYS}
           roleDescription="grafiek"
         />
-      </div>
+      </Card>
     ),
     'Veel staven: een maand, om de paar een label en de laatste': () => (
-      <div className="w-full max-w-3xl">
+      <Card title="Builds" meta="per dag, oktober">
         <Chart
           label="Builds per dag in oktober"
           series={BUILDS}
@@ -103,10 +142,10 @@ export default {
           keys={KEYS}
           roleDescription="grafiek"
         />
-      </div>
+      </Card>
     ),
     'Lijn tegen een plan: de grens getekend, de rest van de maand een verwachting': () => (
-      <div className="w-full max-w-3xl">
+      <Card title="Agent-uren" meta="opgeteld, deze maand">
         <Chart
           kind="line"
           label="Agent-uren in oktober, opgeteld per dag"
@@ -128,11 +167,10 @@ export default {
           keys={KEYS}
           roleDescription="grafiek"
         />
-      </div>
+      </Card>
     ),
     'Eén lijn: geen legenda, de titel noemt hem': () => (
-      <div className="flex w-full max-w-3xl flex-col gap-3">
-        <p className="m-0 font-medium text-[13px] text-fg">Gemiddelde bouwtijd per dag</p>
+      <Card title="Gemiddelde bouwtijd" meta="per dag">
         <Chart
           kind="line"
           label="Gemiddelde bouwtijd per dag"
@@ -143,11 +181,12 @@ export default {
             values: [[118, 112, 109, 121, 104, 99, 111][index] ?? 0],
           }))}
           format={duration}
+          step={60}
           height={144}
           keys={KEYS}
           roleDescription="grafiek"
         />
-      </div>
+      </Card>
     ),
     'Sparkline in een StatTile': () => (
       <div className="grid w-full max-w-3xl grid-cols-2 gap-3">
@@ -183,13 +222,18 @@ export default {
       </div>
     ),
     'Laden: zachte vormen, de figuur bezig': () => (
-      <div className="flex w-full max-w-3xl flex-col gap-3">
-        <p className="m-0 font-medium text-[13px] text-fg">Builds per dag</p>
-        <Chart label="Builds per dag" series={BUILDS} points={[]} loading="Builds laden" />
-      </div>
+      <Card title="Builds" meta="per dag">
+        <Chart
+          label="Builds per dag"
+          series={BUILDS}
+          points={[]}
+          loading="Builds laden"
+          loadingCount={WEEK.length}
+        />
+      </Card>
     ),
     'Leeg: het raster, één zin en de volgende stap': () => (
-      <div className="w-full max-w-3xl">
+      <Card title="Builds" meta="per dag">
         <Chart
           label="Builds per dag"
           series={BUILDS}
@@ -206,10 +250,10 @@ export default {
             </Button>
           }
         />
-      </div>
+      </Card>
     ),
     'Smal: 320px, een maand aan staven': () => (
-      <div className="w-full max-w-[288px]">
+      <Card title="Builds" meta="per dag" className="max-w-[320px]">
         <Chart
           label="Builds per dag in oktober"
           series={BUILDS}
@@ -219,50 +263,72 @@ export default {
           height={144}
           keys={KEYS}
         />
-      </div>
+      </Card>
     ),
     'Eén punt: één staaf en één stip': () => (
-      <div className="grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
-        <Chart
-          label="Builds vandaag"
-          series={BUILDS}
-          points={[{ label: 'vandaag', title: 'woensdag 4 november', values: [12, 1] }]}
-          format={nl}
-          total={builds}
-          height={144}
-          keys={KEYS}
-        />
-        <Chart
-          kind="line"
-          label="Gemiddelde bouwtijd vandaag"
-          series={[{ id: 'seconds', label: 'Bouwtijd' }]}
-          points={[{ label: 'vandaag', title: 'woensdag 4 november', values: [104] }]}
-          format={(value) => `${nl(value)}\u00a0s`}
-          height={144}
-          keys={KEYS}
-        />
+      <div className="grid w-full max-w-3xl grid-cols-1 gap-3 md:grid-cols-2">
+        <Card title="Builds" meta="vandaag" className="">
+          <Chart
+            label="Builds vandaag"
+            series={BUILDS}
+            points={[{ label: 'vandaag', title: 'woensdag 4 november', values: [12, 1] }]}
+            format={nl}
+            total={builds}
+            height={144}
+            keys={KEYS}
+          />
+        </Card>
+        <Card title="Gemiddelde bouwtijd" meta="vandaag" className="">
+          <Chart
+            kind="line"
+            label="Gemiddelde bouwtijd vandaag"
+            series={[{ id: 'seconds', label: 'Bouwtijd' }]}
+            points={[{ label: 'vandaag', title: 'woensdag 4 november', values: [104] }]}
+            format={(value) => `${nl(value)}\u00a0s`}
+            height={144}
+            keys={KEYS}
+          />
+        </Card>
       </div>
     ),
-    'Lange labels: een staaf per space, de namen ingekort': () => (
-      <div className="flex w-full max-w-3xl flex-col gap-8">
-        <Chart
-          label="Builds per space, deze week"
-          series={BUILDS}
-          points={SPACES}
-          format={nl}
-          total={builds}
-          keys="Pijltjes links en rechts om de spaces te lezen, Home en End voor de eerste en de laatste"
-        />
-        <div className="w-full max-w-[288px]">
+    'Categorieën: een staaf per space, elke staaf zijn naam': () => (
+      <div className="flex w-full max-w-3xl flex-col gap-3">
+        <Card title="Builds per app" meta="deze week">
           <Chart
-            label="Builds per space, deze week, smal"
+            label="Builds per app, deze week"
+            axis="category"
+            series={BUILDS}
+            points={APPS}
+            format={nl}
+            total={builds}
+            keys={SPACE_KEYS}
+            roleDescription="grafiek"
+          />
+        </Card>
+        <Card title="Builds per space" meta="deze week">
+          <Chart
+            label="Builds per space, deze week"
+            axis="category"
             series={BUILDS}
             points={SPACES}
             format={nl}
             total={builds}
-            height={144}
+            keys={SPACE_KEYS}
+            roleDescription="grafiek"
           />
-        </div>
+        </Card>
+        <Card title="Builds per space" meta="smal" className="max-w-[320px]">
+          <Chart
+            label="Builds per space, deze week, smal"
+            axis="category"
+            series={BUILDS}
+            points={SPACES}
+            format={nl}
+            total={builds}
+            keys={SPACE_KEYS}
+            roleDescription="grafiek"
+          />
+        </Card>
       </div>
     ),
   },

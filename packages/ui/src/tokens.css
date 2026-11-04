@@ -92,7 +92,7 @@
   --nt-chart-mark: rgb(231 233 242 / 0.52);
   --nt-chart-line: var(--nt-text);
   --nt-chart-wash: rgb(231 233 242 / 0.08);
-  --nt-chart-skeleton: rgb(231 233 242 / 0.12);
+  --nt-chart-skeleton: rgb(231 233 242 / 0.18);
   /* A line to measure against (a plan, a limit): a step above the faint ink, a graphic and never
      a word; 3.7:1 on a card, with room above the 3:1 of WCAG 1.4.11. */
   --nt-chart-reference: #737a98;

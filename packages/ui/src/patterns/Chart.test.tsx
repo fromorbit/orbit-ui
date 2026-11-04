@@ -152,10 +152,62 @@ test('a sparkline is an image named by its label, with a dot on the latest value
 test('the labels of the axis keep one rhythm to the last point where a step allows it', () => {
   // 31 days, a label at least every 4: every 5 ends on the 31st.
   const box = (index: number) => [index * 20 - 10, index * 20 + 10] as const
-  expect(chartLabelled(31, 4, box, 20)).toEqual([0, 5, 10, 15, 20, 25, 30])
-  // 30 days have no such step: the last is added, and drops the label that crowds it.
-  expect(chartLabelled(30, 4, box, 20)).toEqual([0, 4, 8, 12, 16, 20, 24, 29])
-  expect(chartLabelled(1, 4, box, 20)).toEqual([0])
+  expect(chartLabelled(31, 4, box)).toEqual([0, 5, 10, 15, 20, 25, 30])
+  // 30 days have no such step: the rhythm is counted back from the last one.
+  expect(chartLabelled(30, 4, box)).toEqual([1, 5, 9, 13, 17, 21, 25, 29])
+  // 24 hours, a label every 5: …03:00 08:00 13:00, never a last one out of step.
+  expect(chartLabelled(24, 5, box)).toEqual([3, 8, 13, 18, 23])
+  expect(chartLabelled(1, 4, box)).toEqual([0])
+})
+
+test('a fixed step makes the grid round in the unit of the reader: minutes for seconds', () => {
+  expect(chartTicks(121, true, 60)).toEqual([0, 60, 120, 180])
+})
+
+test('a category axis never drops a name: bars lie down when the names do not fit', () => {
+  const points: ChartPoint[] = [
+    'webwinkel · main',
+    'webwinkel · betaling-ideal',
+    'webwinkel · zoeken-v2',
+    'beheer · main',
+    'nieuwsbrief · sjablonen',
+    'webwinkel · cadeaubon',
+  ].map((label, index) => ({ label, values: [10 + index, index % 2] }))
+  const { container } = render(
+    <Chart label="Builds per space" axis="category" series={SERIES} points={points} format={nl} />,
+  )
+  for (const point of points) expect(screen.getAllByText(point.label).length).toBeGreaterThan(0)
+  expect(container.querySelectorAll('[data-nt-chart-bar]')).toHaveLength(6)
+  const plot = screen.getByRole('group', { name: 'Builds per space' })
+  fireEvent.keyDown(plot, { key: 'ArrowDown' })
+  expect(container.querySelector('[data-nt-chart-tooltip]')).toHaveTextContent('webwinkel · main')
+})
+
+test('short category names stand under their bars, every one of them', () => {
+  const points: ChartPoint[] = ['web', 'beheer', 'mail', 'zoek'].map((label) => ({
+    label,
+    values: [3, 0],
+  }))
+  render(<Chart label="Builds per app" axis="category" series={SERIES} points={points} />)
+  for (const point of points) expect(screen.getAllByText(point.label).length).toBeGreaterThan(0)
+})
+
+test('the skeleton draws as many columns as the range on its way', () => {
+  const { container } = render(
+    <Chart label="Builds" series={SERIES} points={[]} loading="Builds laden" loadingCount={7} />,
+  )
+  expect(container.querySelectorAll('.nt-shimmer')).toHaveLength(7)
+})
+
+test('the period before in a sparkline is a thin dashed trace without a wash', () => {
+  const { container } = render(
+    <Sparkline label="Builds per dag" values={[3, 5, 4, 8]} previous={[2, 4, 4, 6]} />,
+  )
+  const before = container.querySelector('[data-nt-sparkline-previous]')
+  expect(before).toHaveAttribute('stroke-width', '1')
+  expect(before).toHaveAttribute('stroke-dasharray', '2 2')
+  expect(before).toHaveAttribute('fill', 'none')
+  expect(Number(before?.getAttribute('stroke-opacity'))).toBeLessThanOrEqual(0.4)
 })
 
 test('the rows of the table and the readout say the point in full, with the sum of a stack', () => {

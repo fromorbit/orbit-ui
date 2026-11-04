@@ -101,6 +101,20 @@ export interface ChartProps {
   keys?: string
   /** What a screen reader calls the plot instead of "group": "grafiek". */
   roleDescription?: string
+  /**
+   * What the points are: moments in time (the default), whose labels may thin to one every few, or
+   * categories (spaces, branches), where every bar keeps its name. When the names of a category
+   * axis do not fit under their bars, the bars lie down: one row per name, the name above its bar
+   * and the sum at its end.
+   */
+  axis?: 'time' | 'category'
+  /**
+   * The step between grid lines, in the unit of the values: 60 for seconds read as minutes. A round
+   * step of 1, 2, 2.5 or 5 times a power of ten without.
+   */
+  step?: number
+  /** How many soft columns stand in while `loading`: the points of the range on their way (7 for a week). */
+  loadingCount?: number
   /** What the table says where a point has no value ("nog geen waarde"); a dash without. */
   none?: string
 }
@@ -138,6 +152,11 @@ const HATCH_MIN = 4
 const LABEL_MIN = 80
 /** The grid of an empty plot: three quiet steps without values, the shape of a filled one, its middle free for the sentence. */
 const EMPTY_TICKS = [0, 1, 2, 3]
+/** A row of a lying bar chart: the name and its sum on a 16px line, the 8px bar under it. */
+const ROW = 36
+const ROW_BAR = 8
+/** The air the sentence of an empty plot keeps from the lines of its grid. */
+const HOLE_PAD = 8
 
 function defaultFormat(value: number): string {
   return new Intl.NumberFormat().format(value)
@@ -157,8 +176,8 @@ export function chartStep(max: number, integer = false): number {
 }
 
 /** The values of the grid, from zero to the first step at or above the largest value. */
-export function chartTicks(max: number, integer = false): number[] {
-  const step = chartStep(max, integer)
+export function chartTicks(max: number, integer = false, fixed?: number): number[] {
+  const step = fixed !== undefined && fixed > 0 ? fixed : chartStep(max, integer)
   const top = Math.max(step, Math.ceil(max / step) * step)
   return Array.from({ length: Math.round(top / step) + 1 }, (_, index) => index * step)
 }
@@ -207,6 +226,14 @@ function columnPath(x: number, y: number, width: number, height: number, round: 
   const bottom = y + height
   if (r === 0) return `M${x},${bottom}V${y}H${x + width}V${bottom}Z`
   return `M${x},${bottom}V${y + r}A${r},${r} 0 0 1 ${x + r},${y}H${x + width - r}A${r},${r} 0 0 1 ${x + width},${y + r}V${bottom}Z`
+}
+
+/** A bar lying down: a square start on the left, a rounded end on the right when it is the last part. */
+function rowPath(x: number, y: number, width: number, height: number, round: boolean): string {
+  const r = round ? Math.min(RADIUS, height / 2, width) : 0
+  const right = x + width
+  if (r === 0) return `M${x},${y}H${right}V${y + height}H${x}Z`
+  return `M${x},${y}H${right - r}A${r},${r} 0 0 1 ${right},${y + r}V${y + height - r}A${r},${r} 0 0 1 ${right - r},${y + height}H${x}Z`
 }
 
 /** The runs of a series between its gaps, as the points of a path. */
@@ -298,6 +325,9 @@ function ForecastKey(): ReactNode {
   )
 }
 
+/** The share of the line's ink the period before keeps in a sparkline. */
+const PREVIOUS_INK = 0.4
+
 /** Varied heights of the shapes that stand in for the bars while the data loads. */
 const LOADING_SHAPE = [42, 58, 50, 72, 64, 36, 30, 54, 68, 60, 46, 28]
 
@@ -306,19 +336,18 @@ const labelWidth = (text: string) => text.length * 6.5
 
 /**
  * The points that get a label under the axis: every few when they would collide, on a step that
- * ends on the last point where one is near, so the labels keep one rhythm to the end. Otherwise the
- * last one is added and drops the regular label before it when less than `room` lies between the
- * two (`extent` gives a label's left and right edge as drawn, inside the plot).
+ * ends on the last point where one is near; otherwise counted back from the last point, so the
+ * labels keep one rhythm and the last one is always named (`extent` gives a label's left and right
+ * edge as drawn, inside the plot).
  */
 export function chartLabelled(
   count: number,
   least: number,
   extent: (index: number) => readonly [number, number],
-  room: number,
 ): number[] {
   const last = count - 1
   if (last <= 0) return count === 1 ? [0] : []
-  let every = least
+  let every = 0
   for (let step = least; step <= Math.ceil(least * 1.5); step++) {
     if (last % step === 0) {
       every = step
@@ -326,12 +355,9 @@ export function chartLabelled(
     }
   }
   const out: number[] = []
-  for (let index = 0; index <= last; index += every) out.push(index)
-  if (out[out.length - 1] !== last) {
-    const before = out[out.length - 1] ?? 0
-    if (before > 0 && extent(last)[0] - extent(before)[1] < room) out.pop()
-    out.push(last)
-  }
+  if (every > 0) for (let index = 0; index <= last; index += every) out.push(index)
+  // No step ends on the last point: the rhythm is counted back from it, so the last label keeps it.
+  else for (let index = last; index >= 0; index -= least) out.unshift(index)
   // Two labels that still touch (long names in a narrow plot): the first one alone.
   if (out.length === 2 && extent(last)[0] - extent(0)[1] < 8) out.pop()
   return out
@@ -382,10 +408,22 @@ export function Chart({
   keys,
   roleDescription,
   none = '–',
+  axis = 'time',
+  step,
+  loadingCount,
 }: ChartProps): ReactNode {
+  const figureRef = useRef<HTMLElement>(null)
   const plot = useRef<HTMLDivElement>(null)
   const tip = useRef<HTMLDivElement>(null)
+  const message = useRef<HTMLDivElement>(null)
   const width = useWidth(plot, 600)
+  const figureWidth = useWidth(figureRef, 640)
+  const [hole, setHole] = useState<{
+    left: number
+    top: number
+    right: number
+    bottom: number
+  } | null>(null)
   const tableId = useId()
   const keysId = useId()
   const hatch = `chart-hatch-${useId().replace(/[^\w-]/g, '')}`
@@ -406,8 +444,24 @@ export function Chart({
   const forecastIndex =
     kind === 'line' && forecast ? series.findIndex((entry) => entry.id === forecast.series) : -1
   const ceiling = Math.max(max, limit?.value ?? 0, forecastIndex >= 0 ? (forecast?.value ?? 0) : 0)
-  const ticks = isEmpty ? EMPTY_TICKS : chartTicks(ceiling, integer && Number.isInteger(ceiling))
+  const ticks = isEmpty
+    ? EMPTY_TICKS
+    : chartTicks(ceiling, integer && Number.isInteger(ceiling), step)
   const top = ticks[ticks.length - 1] ?? 1
+  // A category axis names every bar: where the names do not fit under their bars (judged on the
+  // figure, so the choice does not swing with the column of values it takes away), they lie down.
+  const horizontal =
+    kind === 'bar' &&
+    axis === 'category' &&
+    loading === undefined &&
+    !isEmpty &&
+    points.some(
+      (point) =>
+        labelWidth(point.label) >
+        (figureWidth - 8 - labelWidth(format(top))) / Math.max(points.length, 1) - 8,
+    )
+  const rows = horizontal ? points.length * ROW : 0
+  const plotHeight = horizontal ? rows : height
   const inner = height - PAD_TOP
   const y = (value: number) => PAD_TOP + inner * (1 - value / top)
   const count = Math.max(points.length, 1)
@@ -423,7 +477,7 @@ export function Chart({
     Math.max(...points.map((point) => labelWidth(point.label)), 1),
     Math.max(LABEL_MIN, spacing - 16),
   )
-  const every = Math.max(1, Math.ceil((cap + 16) / spacing))
+  const every = axis === 'category' ? 1 : Math.max(1, Math.ceil((cap + 16) / spacing))
   const labelBox = (index: number): [number, number] => {
     const point = points[index]
     const size = Math.min(cap, labelWidth(point?.label ?? ''))
@@ -452,23 +506,41 @@ export function Chart({
     return () => document.removeEventListener('pointerdown', close)
   }, [active])
 
-  const indexAt = (clientX: number): number | null => {
+  // The lines of an empty grid stop short of its sentence, so no line runs into the words.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the width moves the sentence, so it is measured again.
+  useLayoutEffect(() => {
+    const box = message.current
+    if (!isEmpty || !box || box.offsetWidth === 0) {
+      setHole(null)
+      return
+    }
+    setHole({
+      left: box.offsetLeft - HOLE_PAD,
+      top: box.offsetTop - HOLE_PAD,
+      right: box.offsetLeft + box.offsetWidth + HOLE_PAD,
+      bottom: box.offsetTop + box.offsetHeight + HOLE_PAD,
+    })
+  }, [isEmpty, width])
+
+  const indexAt = (clientX: number, clientY: number): number | null => {
     const box = plot.current?.getBoundingClientRect()
     if (!box || points.length === 0 || box.width === 0) return null
+    if (horizontal)
+      return Math.min(points.length - 1, Math.max(0, Math.floor((clientY - box.top) / ROW)))
     const share = (clientX - box.left) / box.width
     const index =
       kind === 'bar' ? Math.floor(share * points.length) : Math.round(share * (points.length - 1))
     return Math.min(points.length - 1, Math.max(0, index))
   }
   const onPointerMove = (event: PointerEvent) => {
-    const index = indexAt(event.clientX)
+    const index = indexAt(event.clientX, event.clientY)
     if (index === null) return
     setByKey(false)
     setActive(index)
   }
   const onPointerDown = (event: PointerEvent) => {
     if (event.pointerType === 'mouse') return
-    const index = indexAt(event.clientX)
+    const index = indexAt(event.clientX, event.clientY)
     if (index === null) return
     setByKey(false)
     setActive((current) => (current === index ? null : index))
@@ -482,6 +554,15 @@ export function Chart({
     const next: Record<string, (current: number | null) => number | null> = {
       ArrowRight: (current) => (current === null ? 0 : Math.min(last, current + 1)),
       ArrowLeft: (current) => (current === null ? last : Math.max(0, current - 1)),
+      // Lying down, the rows run down the plot: the arrows up and down read them as well.
+      ...(horizontal
+        ? {
+            ArrowDown: (current: number | null) =>
+              current === null ? 0 : Math.min(last, current + 1),
+            ArrowUp: (current: number | null) =>
+              current === null ? last : Math.max(0, current - 1),
+          }
+        : {}),
       Home: () => 0,
       End: () => last,
       Escape: () => null,
@@ -493,8 +574,16 @@ export function Chart({
     setActive(move)
   }
 
-  const tipStyle = (): { left: number } => {
+  const tipStyle = (): { left: number; top?: number | string; bottom?: number } => {
     if (active === null) return { left: 0 }
+    // Lying down, the tooltip sits at the right end under the row being read, or over it in the
+    // lower half, so it never runs out of the plot.
+    if (horizontal) {
+      const left = Math.max(0, width - tipWidth)
+      return active < points.length / 2
+        ? { left, top: (active + 1) * ROW }
+        : { left, top: 'auto', bottom: rows - active * ROW }
+    }
     const off = (kind === 'bar' ? barWidth / 2 : 4) + 8
     const x = at(active)
     const right = x + off
@@ -545,8 +634,25 @@ export function Chart({
     return null
   })()
 
+  /**
+   * Where the words at the end of a forecast stand: 4px over the end of its run, clear of every grid
+   * line; where a line would cross them, just over that line, or, with no room left above it, under
+   * it and a step left of the run's end, so neither line touches the words.
+   */
+  const forecastPlace = (value: number): { top: number; right: number } => {
+    const end = Math.round(y(value))
+    const top = end - 20
+    const clash = ticks
+      .map((tick) => Math.round(y(tick)) + 0.5)
+      .find((line) => line >= top - 3 && line <= top + 19)
+    if (clash === undefined) return { top: Math.max(0, top), right: 0 }
+    const above = Math.floor(clash) - 19
+    return above >= 0 ? { top: above, right: 0 } : { top: Math.ceil(clash) + 3, right: 24 }
+  }
+
   return (
     <figure
+      ref={figureRef}
       aria-busy={loading === undefined ? undefined : true}
       data-nt-chart={kind}
       className="m-0 flex min-w-0 flex-col gap-3"
@@ -571,8 +677,8 @@ export function Chart({
         </ul>
       ) : null}
       <div className="flex gap-2">
-        {isEmpty ? null : (
-          // An empty grid has no values to name: it runs flush with the caption.
+        {isEmpty || horizontal ? null : (
+          // An empty grid has no values to name, and lying bars name their own: flush with the caption.
           <div
             aria-hidden="true"
             className="relative shrink-0 text-right text-[11px] text-muted tabular-nums"
@@ -604,7 +710,7 @@ export function Chart({
           tabIndex={drawn ? 0 : undefined}
           data-nt-chart-plot
           className="relative min-w-0 flex-1 touch-pan-y rounded-sm outline-focus focus-visible:outline-2 focus-visible:outline-offset-4"
-          style={{ height }}
+          style={{ height: plotHeight }}
           onPointerMove={drawn ? onPointerMove : undefined}
           onPointerDown={drawn ? onPointerDown : undefined}
           onPointerLeave={onPointerLeave}
@@ -626,7 +732,7 @@ export function Chart({
           <svg
             aria-hidden="true"
             width={width}
-            height={height}
+            height={plotHeight}
             className="absolute inset-0 block overflow-visible"
           >
             <defs>
@@ -649,18 +755,34 @@ export function Chart({
                 </pattern>
               ))}
             </defs>
-            {(loading === undefined ? ticks : [0]).map((tick) => (
-              <line
-                key={tick}
-                x1={0}
-                x2={width}
-                y1={Math.round(y(tick)) + 0.5}
-                y2={Math.round(y(tick)) + 0.5}
-                stroke="var(--nt-border-strong)"
-                strokeDasharray={tick === 0 ? undefined : '2 3'}
-                shapeRendering="crispEdges"
-              />
-            ))}
+            {(horizontal ? [] : loading === undefined ? ticks : [0]).flatMap((tick) => {
+              const at = Math.round(y(tick)) + 0.5
+              // In an empty plot a line that would cross the sentence stops short of it, both sides.
+              const cut = hole !== null && at >= hole.top && at <= hole.bottom
+              const spans: [number, number][] = cut
+                ? [
+                    [0, Math.max(0, hole.left)],
+                    [Math.min(width, hole.right), width],
+                  ]
+                : [[0, width]]
+              return (
+                spans
+                  // A stub at the edge, where the sentence is nearly as wide as the plot, is left out.
+                  .filter(([from, to]) => to - from >= (cut ? 24 : 1))
+                  .map(([from, to]) => (
+                    <line
+                      key={`${tick}-${from}`}
+                      x1={from}
+                      x2={to}
+                      y1={at}
+                      y2={at}
+                      stroke="var(--nt-border-strong)"
+                      strokeDasharray={tick === 0 ? undefined : '2 3'}
+                      shapeRendering="crispEdges"
+                    />
+                  ))
+              )
+            })}
             {drawn && limit ? (
               <line
                 data-nt-chart-limit
@@ -672,7 +794,17 @@ export function Chart({
                 shapeRendering="crispEdges"
               />
             ) : null}
-            {drawn && active !== null ? (
+            {drawn && active !== null && horizontal ? (
+              <rect
+                x={-8}
+                y={active * ROW}
+                width={width + 16}
+                height={ROW}
+                rx={4}
+                fill="var(--nt-row-hover)"
+              />
+            ) : null}
+            {drawn && active !== null && !horizontal ? (
               kind === 'bar' ? (
                 <rect
                   x={at(active) - Math.min(band, barWidth + 12) / 2}
@@ -693,7 +825,41 @@ export function Chart({
                 />
               )
             ) : null}
-            {drawn && kind === 'bar'
+            {drawn && horizontal
+              ? points.map((point, index) => {
+                  const parts = series
+                    .map((entry, place) => ({ entry, value: point.values[place] ?? 0 }))
+                    .filter((part) => part.value > 0)
+                  const lengths = stackHeights(
+                    parts.map((part) => part.value),
+                    width / Math.max(max, 1),
+                  )
+                  const barTop = index * ROW + ROW - ROW_BAR - 6
+                  let cursor = 0
+                  return (
+                    <g key={point.label} data-nt-chart-bar={point.label}>
+                      {parts.map((part, place) => {
+                        const from = cursor + (place === 0 ? 0 : GAP)
+                        cursor += lengths[place] ?? 0
+                        return (
+                          <path
+                            key={part.entry.id}
+                            d={rowPath(
+                              from,
+                              barTop,
+                              Math.max(0, cursor - from),
+                              ROW_BAR,
+                              place === parts.length - 1,
+                            )}
+                            fill={barFill(part.entry.tone ?? 'mark', hatch, false)}
+                          />
+                        )
+                      })}
+                    </g>
+                  )
+                })
+              : null}
+            {drawn && kind === 'bar' && !horizontal
               ? points.map((point, index) => {
                   const parts = series
                     .map((entry, place) => ({ entry, value: point.values[place] ?? 0 }))
@@ -800,6 +966,21 @@ export function Chart({
                 })
               : null}
           </svg>
+          {drawn && horizontal
+            ? points.map((point, index) => (
+                <span
+                  key={point.label}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 flex items-baseline gap-3 text-[12px] leading-4"
+                  style={{ top: index * ROW + 4 }}
+                >
+                  <span className="min-w-0 flex-1 truncate text-secondary">{point.label}</span>
+                  <span className="shrink-0 text-muted tabular-nums">
+                    {format(totals[index] ?? 0)}
+                  </span>
+                </span>
+              ))
+            : null}
           {drawn && limit ? (
             <span
               aria-hidden="true"
@@ -812,8 +993,9 @@ export function Chart({
           {drawn && forecastFrom && forecast ? (
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute right-0 whitespace-nowrap text-[11px] text-muted tabular-nums leading-4"
-              style={{ top: Math.max(0, Math.round(y(forecast.value)) - 18) }}
+              data-nt-chart-forecast-label
+              className="pointer-events-none absolute whitespace-nowrap text-[11px] text-muted tabular-nums leading-4"
+              style={forecastPlace(forecast.value)}
             >
               {forecast.label}
             </span>
@@ -824,9 +1006,13 @@ export function Chart({
               className="absolute inset-x-0 bottom-0 flex items-end justify-around gap-1"
               style={{ top: PAD_TOP }}
             >
-              {LOADING_SHAPE.slice(
-                0,
-                Math.min(LOADING_SHAPE.length, Math.max(4, Math.floor(width / 48))),
+              {Array.from(
+                {
+                  length:
+                    loadingCount ??
+                    Math.min(LOADING_SHAPE.length, Math.max(4, Math.floor(width / 48))),
+                },
+                (_, index) => LOADING_SHAPE[index % LOADING_SHAPE.length] ?? 50,
               ).map((shape, index) => (
                 <span
                   // biome-ignore lint/suspicious/noArrayIndexKey: fixed decorative shapes that never reorder.
@@ -838,10 +1024,15 @@ export function Chart({
             </div>
           )}
           {isEmpty && empty !== undefined ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-4 text-center text-[12px]">
-              <p className="m-0 text-secondary">{empty}</p>
-              {emptyNext === undefined ? null : <div className="text-muted">{emptyNext}</div>}
-              {emptyAction === undefined ? null : <div className="mt-2">{emptyAction}</div>}
+            <div className="absolute inset-0 flex items-center justify-center px-4">
+              <div
+                ref={message}
+                className="flex max-w-full flex-col items-center gap-1 text-center text-[12px]"
+              >
+                <p className="m-0 text-secondary">{empty}</p>
+                {emptyNext === undefined ? null : <div className="text-muted">{emptyNext}</div>}
+                {emptyAction === undefined ? null : <div className="mt-2">{emptyAction}</div>}
+              </div>
             </div>
           ) : null}
           {drawn && activePoint && active !== null ? (
@@ -884,11 +1075,11 @@ export function Chart({
       </div>
       <div
         aria-hidden="true"
-        className="relative ml-auto h-4 text-[11px] text-muted"
+        className={`relative ml-auto h-4 text-[11px] text-muted ${horizontal ? 'hidden' : ''}`}
         style={{ width }}
       >
         {loading === undefined
-          ? chartLabelled(points.length, every, labelBox, cap).map((index) => {
+          ? (horizontal ? [] : chartLabelled(points.length, every, labelBox)).map((index) => {
               const point = points[index]
               if (!point) return null
               const x = at(index)
@@ -966,8 +1157,9 @@ export interface SparklineProps {
   /** The height in px; 28 without. */
   height?: number
   /**
-   * The same stretch of the period before ("vorige week"), as a faint line behind it: where the
-   * change of the figure is between the periods, not along the line. Its `label` says it too.
+   * The same stretch of the period before ("vorige week"), as a faint line behind it: 1px, dashed,
+   * at under half the ink of the line and without a wash, so it reads as a trace and not as a second
+   * stroke. Its `label` says it too.
    */
   previous?: readonly number[]
 }
@@ -977,7 +1169,7 @@ export interface SparklineProps {
  * grid, a 2px line in the quiet chart ink on its wash, and a dot in the accent on the latest
  * value, the one the figure above it tells. Scaled from its lowest to its highest value, since it
  * shows a course, not an amount; with `previous` both lines share that scale, the earlier one a
- * faint 1.5px line behind. An image named by `label`, which says the course in words; it
+ * faint dashed 1px line behind. An image named by `label`, which says the course in words; it
  * follows the width of its parent.
  */
 export function Sparkline({
@@ -1022,9 +1214,10 @@ export function Sparkline({
               data-nt-sparkline-previous
               d={path(previous)}
               fill="none"
-              stroke={REFERENCE}
-              strokeWidth={1.5}
-              strokeLinecap="round"
+              stroke={TONE[tone]}
+              strokeOpacity={PREVIOUS_INK}
+              strokeWidth={1}
+              strokeDasharray="2 2"
               strokeLinejoin="round"
             />
           ) : null}

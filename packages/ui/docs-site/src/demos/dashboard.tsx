@@ -368,7 +368,8 @@ function Overview(): ReactNode {
           </Panel>
           <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             <Panel title="Spaces" meta={`${SPACES.length} getoond`} flush>
-              <div className="px-2 pb-2">
+              {/* Rows apart by a hairline, inset to the column of the text, not under the heading. */}
+              <div className="px-2 pb-2 [&_li+li]:before:pointer-events-none [&_li+li]:before:absolute [&_li+li]:before:inset-x-2 [&_li+li]:before:top-0 [&_li+li]:before:h-px [&_li+li]:before:bg-border [&_li+li]:before:content-['']">
                 <List label="Spaces">
                   {SPACES.map((space) => (
                     <ListRow

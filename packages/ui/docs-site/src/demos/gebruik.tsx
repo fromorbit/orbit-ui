@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   Banner,
   Button,
@@ -572,10 +572,60 @@ function NextInvoice(): ReactNode {
   )
 }
 
+/** The least and the most height of the Agent-uren plot. */
+const PLOT_MIN = 192
+const PLOT_MAX = 320
+
+/**
+ * The height of the Agent-uren plot: 192px, and beside the plan as much more as the card has
+ * spare under its words, so the chart fills its card to the plan's bottom instead of ending in
+ * mid-air. Stacked, the card is as tall as its content and the plot keeps 192px.
+ */
+function usePlotHeight(
+  card: RefObject<HTMLDivElement | null>,
+  content: RefObject<HTMLDivElement | null>,
+): number {
+  const [height, setHeight] = useState(PLOT_MIN)
+  useLayoutEffect(() => {
+    const box = card.current
+    const inner = content.current
+    if (!box || !inner || typeof ResizeObserver !== 'function') return
+    let width = 0
+    let frame = 0
+    const measure = () => {
+      const row = box.parentElement?.getBoundingClientRect()
+      const own = box.getBoundingClientRect()
+      // A new width starts again from the least, so the plot can shrink with its row.
+      if (row && Math.abs(row.width - width) > 1) {
+        width = row.width
+        setHeight(PLOT_MIN)
+        frame = requestAnimationFrame(measure)
+        return
+      }
+      const beside = row !== undefined && own.width < row.width - 1
+      if (!beside) return setHeight(PLOT_MIN)
+      const spare = own.bottom - 16 - inner.getBoundingClientRect().bottom
+      if (spare > 2) setHeight((current) => Math.min(PLOT_MAX, current + Math.floor(spare)))
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(box)
+    if (box.parentElement) observer.observe(box.parentElement)
+    measure()
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [card, content])
+  return height
+}
+
 /** The plan, what of it was used this month, and the invoices with one opened beside them. */
 function Usage({ variant }: DemoScreenProps): ReactNode {
   const [selected, setSelected] = useState('ZB-2026-0098')
   const invoice = INVOICES.find((entry) => entry.number === selected) ?? INVOICES[0]
+  const hoursCard = useRef<HTMLDivElement>(null)
+  const hoursContent = useRef<HTMLDivElement>(null)
+  const plotHeight = usePlotHeight(hoursCard, hoursContent)
   // The variant "Betaalwijze" opens the page at the card; only the scroll area moves, not the page.
   useEffect(() => {
     if (variant !== 'betaalwijze') return
@@ -623,12 +673,12 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               />
             ))}
           </div>
-          {/* The plan beside the chart once both have room; each card keeps its own height. Stacked,
-              the plan keeps the width of a card (30rem), so its figures stay near their lines. */}
-          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(20rem,1fr)_minmax(0,2fr)]">
+          {/* The plan beside the chart once both have room, both cards to the height of the row;
+              stacked, each takes the whole column, as the tiles above and the cards below do. */}
+          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(20rem,1fr)_minmax(0,2fr)]">
             {/* The one plan of the page: on the plane of every card beside it, no tag, as there
                 is nothing to compare it to. */}
-            <div className="w-full max-w-[30rem] @5xl:max-w-none">
+            <div className="flex w-full min-w-0 flex-col [&>*]:flex-1">
               <PlanCard
                 name="Team"
                 price="€ 24"
@@ -653,40 +703,43 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                 <NextInvoice />
               </PlanCard>
             </div>
-            <Panel headingLevel={2} title="Agent-uren" meta="opgeteld, deze maand">
-              <div className="flex flex-col gap-3">
-                <Chart
-                  kind="line"
-                  label="Agent-uren in oktober, opgeteld per dag"
-                  series={[
-                    { id: 'used', label: 'Gebruikt' },
-                    {
-                      id: 'pace',
-                      label: `Op koers voor ${unit(PLAN_HOURS, 'u')}`,
-                      reference: true,
-                    },
-                  ]}
-                  points={HOURS}
-                  limit={{ value: PLAN_HOURS, label: `Plan ${unit(PLAN_HOURS, 'u')}` }}
-                  forecast={{
-                    series: 'used',
-                    value: PROJECTED,
-                    label: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')}`,
-                    text: `verwacht eind oktober: ${unit(PROJECTED, 'u')}`,
-                    legend: 'Verwachting',
-                  }}
-                  format={(value) => unit(value, 'u')}
-                  none="nog niet bekend"
-                  keys="Pijltjes links en rechts om de dagen te lezen, Home en End voor de eerste en de laatste"
-                  roleDescription="grafiek"
-                />
-                <p className="m-0 text-[12px] text-muted leading-relaxed">
-                  Op dit tempo kom je eind oktober rond {unit(PROJECTED, 'u')} uit,{' '}
-                  {unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan. Elk uur daarboven kost{' '}
-                  {euro(EXTRA_HOUR)}, excl. btw.
-                </p>
-              </div>
-            </Panel>
+            <div ref={hoursCard} className="flex min-w-0 flex-col [&>*]:flex-1">
+              <Panel headingLevel={2} title="Agent-uren" meta="opgeteld, deze maand">
+                <div ref={hoursContent} className="flex flex-col gap-3">
+                  <Chart
+                    kind="line"
+                    label="Agent-uren in oktober, opgeteld per dag"
+                    series={[
+                      { id: 'used', label: 'Gebruikt' },
+                      {
+                        id: 'pace',
+                        label: `Op koers voor ${unit(PLAN_HOURS, 'u')}`,
+                        reference: true,
+                      },
+                    ]}
+                    points={HOURS}
+                    limit={{ value: PLAN_HOURS, label: `Plan ${unit(PLAN_HOURS, 'u')}` }}
+                    forecast={{
+                      series: 'used',
+                      value: PROJECTED,
+                      label: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')}`,
+                      text: `verwacht eind oktober: ${unit(PROJECTED, 'u')}`,
+                      legend: 'Verwachting',
+                    }}
+                    format={(value) => unit(value, 'u')}
+                    none="nog niet bekend"
+                    keys="Pijltjes links en rechts om de dagen te lezen, Home en End voor de eerste en de laatste"
+                    roleDescription="grafiek"
+                    height={plotHeight}
+                  />
+                  <p className="m-0 text-[12px] text-muted leading-relaxed">
+                    Op dit tempo kom je eind oktober rond {unit(PROJECTED, 'u')} uit,{' '}
+                    {unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan. Elk uur daarboven kost{' '}
+                    {euro(EXTRA_HOUR)}, excl. btw.
+                  </p>
+                </div>
+              </Panel>
+            </div>
           </div>
           {/* Wide, the payment method and under it the list stand in the first column and the
               opened invoice beside both, so neither column ends in an empty field; narrow, the
