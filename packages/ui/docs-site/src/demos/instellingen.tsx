@@ -477,8 +477,7 @@ function Subscription(): ReactNode {
           </Button>
         }
       >
-        De incasso van € 174,24 voor september is mislukt: onvoldoende saldo. We proberen het op 24
-        okt opnieuw.
+        Incasso van € 174,24 voor september mislukt: onvoldoende saldo. Nieuwe poging 24 okt.
       </Banner>
       <PlanCards label="Plannen">
         <PlanCard
@@ -495,12 +494,7 @@ function Subscription(): ReactNode {
           current
           currentLabel="Huidig plan"
           plane="surface"
-          summary="6 leden: € 174,24 per maand incl. btw"
-          action={
-            <Button variant="secondary" size="sm">
-              Plan wijzigen
-            </Button>
-          }
+          summary="6 leden · € 174,24 per maand incl. btw"
         />
         <PlanCard
           name="Bedrijf"
@@ -530,9 +524,20 @@ function Subscription(): ReactNode {
           description="SEPA-incasso, NL •••• 4021 · nieuwe poging 24 okt"
         >
           {() => (
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
-              <StatusMark kind="fault" />
-              Incasso mislukt
+            <span className="inline-flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+                <StatusMark kind="fault" />
+                Incasso mislukt
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  location.hash = '#/demo/gebruik'
+                }}
+              >
+                Wijzigen
+              </Button>
             </span>
           )}
         </SettingRow>

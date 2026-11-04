@@ -18,6 +18,18 @@ export interface PlanFeature {
    * "182 van 250 u", "18,4 van 50 GB". A screen reader hears it after a comma.
    */
   detail?: string
+  /**
+   * What of it is used, drawn as a 4px meter under the line, so the figure carries a sense of the
+   * limit: `{ value: 182, max: 250 }`. The meter is named by the label and says `detail` (and
+   * `over`) to a screen reader, so the visible figure is not heard twice.
+   */
+  used?: { value: number; max: number }
+  /**
+   * The one line that matters: where this line goes past the plan ("Verwacht ≈ 282 u eind oktober").
+   * The figure and the meter take the tone of attention and the words stand under the meter
+   * (Von Restorff); leave it out while the use stays inside the plan.
+   */
+  over?: string
 }
 
 /**
@@ -57,8 +69,10 @@ export interface PlanCardProps {
   summary?: ReactNode
   /**
    * One button at the end of the foot, as a `size="sm"` secondary `Button` that names its target
-   * ("Naar Bedrijf"), or "Plan wijzigen" where no other plan is shown. A row of plans has no
-   * filled button, so the page keeps its one emphasis. The card describes it by the plan's name
+   * ("Naar Bedrijf"), or "Plan wijzigen" where no other plan is shown. Among other plans the
+   * current one has no action: its tag says where you are, the plan beside it is the one step, so
+   * one decision has one button (Hick). A row of plans has no filled button, so the page keeps its
+   * one emphasis. The card describes it by the plan's name
    * (`aria-describedby`, unless the button brings its own), so actions in a row are told apart.
    */
   action?: ReactNode
@@ -87,6 +101,73 @@ const CURRENT = 'bg-overlay bg-linear-to-b from-row-active to-row-active shadow-
  * the current plan `secondary`, as `muted` falls under 4.5:1 there in dark.
  */
 const quiet = (current: boolean) => (current ? 'text-secondary' : 'text-muted')
+
+/** The share of a meter, clamped to its ends, as a whole percentage. */
+function share(value: number, max: number): number {
+  return max > 0 ? Math.round(Math.min(1, Math.max(0, value / max)) * 100) : 0
+}
+
+/**
+ * One line of the plan: a check, the label, and at its end the figure of what is used. The figure
+ * wraps under the label when the line has no room for both, so a long label never squeezes to a
+ * word a line. With `used`, a 4px meter under it in the colour of a quiet figure, in attention
+ * with `over`, and the words of `over` under the meter.
+ */
+function FeatureLine({ feature, current }: { feature: PlanFeature; current: boolean }) {
+  const { label, detail, used, over } = feature
+  const tone = over === undefined ? quiet(current) : 'text-attention'
+  const spoken = [detail, over].filter((part) => part !== undefined).join(', ')
+  return (
+    <li className="flex min-w-0 items-start gap-2">
+      <span className="flex h-5 shrink-0 items-center text-muted">
+        <Icon name="check" size="sm" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <span className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3">
+          <span className="min-w-0 grow basis-40 text-secondary">{label}</span>
+          {detail === undefined ? null : (
+            <span
+              className={`shrink-0 text-[12px] tabular-nums ${tone}`}
+              {...(used === undefined ? {} : { 'aria-hidden': true })}
+            >
+              {used === undefined ? <span className="sr-only">, </span> : null}
+              {detail}
+            </span>
+          )}
+        </span>
+        {used === undefined ? null : (
+          // biome-ignore lint/a11y/useSemanticElements: a native meter paints the gauge of the platform in colours of its own; a span takes the tokens.
+          <span
+            role="meter"
+            aria-label={label}
+            aria-valuenow={used.value}
+            aria-valuemin={0}
+            aria-valuemax={used.max}
+            {...(spoken === '' ? {} : { 'aria-valuetext': spoken })}
+            className="relative block h-1 overflow-hidden rounded-full bg-mark forced-colors:border forced-colors:border-[CanvasText]"
+          >
+            <span
+              data-nt-meter-fill
+              className={`absolute inset-y-0 left-0 rounded-full forced-colors:bg-[CanvasText] ${over === undefined ? 'bg-secondary' : 'bg-attention-fill'}`}
+              // The one value no class can hold: the share itself.
+              style={{ width: `${share(used.value, used.max)}%` }}
+            />
+          </span>
+        )}
+        {over === undefined ? null : (
+          // With a meter, the meter says it; without one, it is read as the line's last words.
+          <span
+            className="text-[12px] text-attention leading-5"
+            {...(used === undefined ? {} : { 'aria-hidden': true })}
+          >
+            {used === undefined ? <span className="sr-only">, </span> : null}
+            {over}
+          </span>
+        )}
+      </span>
+    </li>
+  )
+}
 
 /** The action with the plan's name as its description, unless it brings one of its own. */
 function describedAction(action: ReactNode, nameId: string): ReactNode {
@@ -180,19 +261,8 @@ export function PlanCard({
       <div className="flex min-w-0 flex-col gap-6">
         {features.length === 0 ? null : (
           <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px] leading-5">
-            {features.map(featureOf).map(({ label, detail }) => (
-              <li key={label} className="flex min-w-0 items-start gap-2">
-                <span className="flex h-5 shrink-0 items-center text-muted">
-                  <Icon name="check" size="sm" />
-                </span>
-                <span className="min-w-0 flex-1 text-secondary">{label}</span>
-                {detail === undefined ? null : (
-                  <span className={`shrink-0 text-[12px] tabular-nums ${quiet(current)}`}>
-                    <span className="sr-only">, </span>
-                    {detail}
-                  </span>
-                )}
-              </li>
+            {features.map(featureOf).map((feature) => (
+              <FeatureLine key={feature.label} feature={feature} current={current} />
             ))}
           </ul>
         )}

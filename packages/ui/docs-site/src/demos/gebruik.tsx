@@ -135,8 +135,6 @@ interface Step {
   at: string
   note?: string
   tone?: 'danger' | 'muted'
-  /** The step the reader can take here instead of waiting: the one pay action of the page. */
-  pay?: boolean
 }
 
 /** One invoice of the made-up workspace. */
@@ -178,7 +176,6 @@ const INVOICES: readonly Invoice[] = [
         label: 'Nieuwe poging',
         at: '24 okt',
         tone: 'muted',
-        pay: true,
       },
     ],
   },
@@ -360,7 +357,7 @@ function InvoiceTable({
 /** The one way to pay the open invoice now, named the same wherever it stands. */
 const PAY_NOW = 'Nu betalen met iDEAL'
 
-/** What happened to an invoice, step by step. */
+/** What happened to an invoice, step by step; the step to come is a status, the pay action is the banner's. */
 function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
   return (
     <Timeline label="Verloop">
@@ -377,13 +374,6 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
             <span className="text-[12px] text-muted">
               {step.note === undefined ? step.at : `${step.at} · ${step.note}`}
             </span>
-            {step.pay ? (
-              <span className="mt-2 flex">
-                <Button variant="secondary" size="sm">
-                  {PAY_NOW}
-                </Button>
-              </span>
-            ) : null}
           </span>
         </TimelineItem>
       ))}
@@ -442,64 +432,31 @@ const PAYMENT_ID = 'betaalwijze'
 const NO_CARD: CardValue = { number: '', expiry: '', cvc: '', name: '' }
 
 /**
- * The payment method: the card to add first, at the top, with the card itself in sight as it is
- * typed, because that is the way out of the failed debit; under it the one-off iDEAL payment, and
- * last what pays now. Each part is a group of its own, 24px apart (Proximity).
+ * The payment method: how Zilverberg pays now, named once in the subtitle, with the account and the
+ * last attempt; under it the way out of the failed debit, a card, behind one button that opens the
+ * form in place (progressive disclosure), so the longest part of the page is not an alternative
+ * path. The one-off iDEAL payment is the banner's. The variant "Betaalwijze" opens with the form.
  */
-function PaymentMethod(): ReactNode {
+function PaymentMethod({ initialOpen }: { initialOpen: boolean }): ReactNode {
+  const [open, setOpen] = useState(initialOpen)
   const [card, setCard] = useState<CardValue>(NO_CARD)
   const [submitted, setSubmitted] = useState(false)
+  const form = useRef<HTMLDivElement>(null)
+  const focusForm = useRef(false)
+  // Opened by its button, the form takes the focus at its first field; the button is gone.
+  useEffect(() => {
+    if (!open || !focusForm.current) return
+    focusForm.current = false
+    form.current?.querySelector<HTMLInputElement>('input')?.focus()
+  }, [open])
   return (
     <section id={PAYMENT_ID} className="scroll-mt-4">
-      <Panel headingLevel={2} title="Betaalwijze" meta="hoe Zilverberg betaalt">
-        <div className="flex max-w-xl flex-col gap-6">
-          <section aria-labelledby="kaart-toevoegen" className="flex max-w-md flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <h3 id="kaart-toevoegen" className="m-0 font-medium text-[13px] text-fg">
-                Kaart toevoegen
-              </h3>
-              <p className="m-0 text-[12px] text-muted leading-relaxed">
-                Met een kaart gaan de volgende facturen voortaan van de kaart af en stopt de
-                incasso. De open factuur van september schrijven we dan meteen af.
-              </p>
-            </div>
-            <Form
-              label="Kaart toevoegen"
-              onSubmit={() => setSubmitted(true)}
-              actions={
-                <Button type="submit" variant="secondary">
-                  Kaart gebruiken
-                </Button>
-              }
-            >
-              <CreditCardField
-                value={card}
-                onValueChange={setCard}
-                labels={galleryLabels.creditCard}
-                showErrors={submitted}
-                now={new Date(2026, 9, 20)}
-              />
-            </Form>
-          </section>
-          <section aria-labelledby="eenmalig-ideal" className="flex flex-col gap-2">
-            <h3 id="eenmalig-ideal" className="m-0 font-medium text-[13px] text-fg">
-              Eenmalig met iDEAL
-            </h3>
-            <p className="m-0 text-[12px] text-muted leading-relaxed">
-              Betaal de open factuur van september ({euro(OPEN_GROSS)}) nu via je eigen bank. De
-              incasso blijft voor de volgende facturen.
-            </p>
-            <span className="flex">
-              <Button variant="secondary" size="sm">
-                {PAY_NOW}
-              </Button>
-            </span>
-          </section>
+      <Panel headingLevel={2} title="Betaalwijze" meta="SEPA-incasso">
+        <div className="flex flex-col gap-6">
           <PropertyList
-            label="Nu"
+            label="SEPA-incasso"
             groups={[
               [
-                { label: 'Betaalwijze', value: 'SEPA-incasso' },
                 { label: 'Rekening', value: 'NL •••• 4021' },
                 { label: 'Op naam van', value: 'Zilverberg B.V.' },
                 {
@@ -514,6 +471,67 @@ function PaymentMethod(): ReactNode {
               ],
             ]}
           />
+          <section
+            aria-labelledby="kaart-toevoegen"
+            className="flex flex-col gap-3 border-border border-t pt-6 [&>*]:max-w-md"
+          >
+            <div className="flex flex-col gap-1">
+              <h3 id="kaart-toevoegen" className="m-0 font-heading text-[15px] text-fg leading-6">
+                Liever met een kaart
+              </h3>
+              <p className="m-0 text-[12px] text-muted leading-relaxed">
+                Met een kaart gaan de volgende facturen voortaan van de kaart af en stopt de
+                incasso. De open factuur van september schrijven we dan meteen af.
+              </p>
+            </div>
+            {open ? (
+              <div ref={form}>
+                <Form
+                  label="Kaart toevoegen"
+                  onSubmit={() => setSubmitted(true)}
+                  actions={
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        // Keeps the focus in the field: its check on blur would add a line and move
+                        // the button away under the pointer before the click lands.
+                        onPointerDown={(event) => event.preventDefault()}
+                        onClick={() => setOpen(false)}
+                      >
+                        Annuleren
+                      </Button>
+                      <Button type="submit" variant="secondary">
+                        Kaart gebruiken
+                      </Button>
+                    </>
+                  }
+                >
+                  <CreditCardField
+                    value={card}
+                    onValueChange={setCard}
+                    labels={galleryLabels.creditCard}
+                    showErrors={submitted}
+                    now={new Date(2026, 9, 20)}
+                  />
+                </Form>
+              </div>
+            ) : (
+              <span className="flex">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    focusForm.current = true
+                    setOpen(true)
+                  }}
+                >
+                  <Icon name="plus" size="sm" />
+                  Kaart toevoegen
+                </Button>
+              </span>
+            )}
+          </section>
         </div>
       </Panel>
     </section>
@@ -673,36 +691,12 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
               />
             ))}
           </div>
-          {/* The plan beside the chart once both have room, both cards to the height of the row;
-              stacked, each takes the whole column, as the tiles above and the cards below do. */}
-          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(20rem,1fr)_minmax(0,2fr)]">
-            {/* The one plan of the page: on the plane of every card beside it, no tag, as there
-                is nothing to compare it to. */}
-            <div className="flex w-full min-w-0 flex-col [&>*]:flex-1">
-              <PlanCard
-                name="Team"
-                price="€ 24"
-                period="per lid per maand, excl. btw"
-                description="Het plan van Zilverberg, voor 6 leden."
-                headingLevel={2}
-                features={[
-                  'Onbeperkt gesprekken en specs',
-                  {
-                    label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
-                    detail: `${USED.toLocaleString('nl-NL')} van ${unit(PLAN_HOURS, 'u')}`,
-                  },
-                  { label: 'Orbit Review op 10 repositories', detail: '7 van 10' },
-                  { label: '50 GB opslag voor opnames', detail: '18,4 van 50\u00a0GB' },
-                ]}
-                action={
-                  <Button variant="secondary" size="sm">
-                    Plan wijzigen
-                  </Button>
-                }
-              >
-                <NextInvoice />
-              </PlanCard>
-            </div>
+          {/* One column grid for both rows, 3 to 2: the chart and the payment method in the
+              wide column, the plan and the opened invoice, the money, in the narrow one, so the
+              rows share their edges. The chart comes first, also on a phone, as it explains the
+              hours above the plan that the plan card warns of. Stacked, every card takes the
+              whole column, as the tiles above do. */}
+          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div ref={hoursCard} className="flex min-w-0 flex-col [&>*]:flex-1">
               <Panel headingLevel={2} title="Agent-uren" meta="opgeteld, deze maand">
                 <div ref={hoursContent} className="flex flex-col gap-3">
@@ -740,13 +734,50 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
                 </div>
               </Panel>
             </div>
+            {/* The one plan of the page: on the plane of every card beside it, no tag, as there
+                is nothing to compare it to. */}
+            <div className="flex w-full min-w-0 flex-col [&>*]:flex-1">
+              <PlanCard
+                name="Team"
+                price="€ 24"
+                period="per lid per maand, excl. btw"
+                description="Het plan van Zilverberg, voor 6 leden."
+                headingLevel={2}
+                features={[
+                  'Onbeperkt gesprekken en specs',
+                  {
+                    label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
+                    detail: `${USED.toLocaleString('nl-NL')} van ${unit(PLAN_HOURS, 'u')}`,
+                    used: { value: USED, max: PLAN_HOURS },
+                    over: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')} eind oktober`,
+                  },
+                  {
+                    label: 'Orbit Review op 10 repositories',
+                    detail: '7 van 10',
+                    used: { value: 7, max: 10 },
+                  },
+                  {
+                    label: '50 GB opslag voor opnames',
+                    detail: '18,4 van 50\u00a0GB',
+                    used: { value: 18.4, max: 50 },
+                  },
+                ]}
+                action={
+                  <Button variant="secondary" size="sm">
+                    Plan wijzigen
+                  </Button>
+                }
+              >
+                <NextInvoice />
+              </PlanCard>
+            </div>
           </div>
           {/* Wide, the payment method and under it the list stand in the first column and the
               opened invoice beside both, so neither column ends in an empty field; narrow, the
               payment method comes first and the invoice follows its list. */}
-          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] @5xl:grid-rows-[auto_1fr]">
+          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @5xl:grid-rows-[auto_1fr]">
             <div className="min-w-0 @5xl:col-start-1 @5xl:row-start-1">
-              <PaymentMethod />
+              <PaymentMethod key={variant} initialOpen={variant === 'betaalwijze'} />
             </div>
             <Panel
               headingLevel={2}

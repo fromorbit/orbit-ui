@@ -144,6 +144,92 @@ test('the quiet words of the current plan step up to secondary; at rest they sta
   }
 })
 
+test('a line with its use carries a meter named by the label, heard once', () => {
+  render(
+    <PlanCard
+      name="Team"
+      price="€ 24"
+      features={[
+        {
+          label: '250 agent-uren per maand',
+          detail: '182 van 250 u',
+          used: { value: 182, max: 250 },
+        },
+      ]}
+    />,
+  )
+  const meter = screen.getByRole('meter', { name: '250 agent-uren per maand' })
+  expect(meter).toHaveAttribute('aria-valuenow', '182')
+  expect(meter).toHaveAttribute('aria-valuemax', '250')
+  expect(meter).toHaveAttribute('aria-valuetext', '182 van 250 u')
+  // The visible figure is the meter's to say, so a screen reader does not hear it twice.
+  expect(screen.getByText('182 van 250 u')).toHaveAttribute('aria-hidden', 'true')
+  const fill = meter.querySelector<HTMLElement>('[data-nt-meter-fill]')
+  expect(fill?.style.width).toBe('73%')
+  expect(fill?.className).toContain('bg-secondary')
+})
+
+test('a line past the plan takes the tone of attention and says where it ends', () => {
+  render(
+    <PlanCard
+      name="Team"
+      price="€ 24"
+      features={[
+        {
+          label: '250 agent-uren per maand',
+          detail: '263 van 250 u',
+          used: { value: 263, max: 250 },
+          over: '13 u boven je plan',
+        },
+        {
+          label: 'Orbit Review op 10 repositories',
+          detail: '7 van 10',
+          used: { value: 7, max: 10 },
+        },
+      ]}
+    />,
+  )
+  const meter = screen.getByRole('meter', { name: '250 agent-uren per maand' })
+  expect(meter).toHaveAttribute('aria-valuetext', '263 van 250 u, 13 u boven je plan')
+  const fill = meter.querySelector<HTMLElement>('[data-nt-meter-fill]')
+  // Clamped to its end, in attention.
+  expect(fill?.style.width).toBe('100%')
+  expect(fill?.className).toContain('bg-attention-fill')
+  expect(screen.getByText('263 van 250 u').className).toContain('text-attention')
+  expect(screen.getByText('13 u boven je plan').className).toContain('text-attention')
+  // The other lines stay quiet.
+  expect(screen.getByText('7 van 10').className).not.toContain('attention')
+  const quiet = screen.getByRole('meter', { name: 'Orbit Review op 10 repositories' })
+  expect(quiet.querySelector('[data-nt-meter-fill]')?.className).toContain('bg-secondary')
+})
+
+test('without a meter, the words past the plan are read as the end of the line', () => {
+  render(
+    <PlanCard
+      name="Team"
+      price="€ 24"
+      features={[{ label: '250 agent-uren', detail: '263 u', over: '13 u boven je plan' }]}
+    />,
+  )
+  expect(screen.queryByRole('meter')).toBeNull()
+  expect(screen.getByRole('listitem')).toHaveTextContent(
+    '250 agent-uren, 263 u, 13 u boven je plan',
+  )
+})
+
+test('the figure may wrap under its label instead of squeezing it', () => {
+  render(
+    <PlanCard
+      name="Team"
+      price="€ 24"
+      features={[{ label: '250 agent-uren per maand', detail: '182 van 250 agent-uren gebruikt' }]}
+    />,
+  )
+  const label = screen.getByText('250 agent-uren per maand')
+  expect(label.className).toContain('basis-40')
+  expect(label.parentElement?.className).toContain('flex-wrap')
+})
+
 // The tokens, read from disk: happy-dom applies no stylesheet.
 const tokensCss = readFileSync(join(import.meta.dirname, '..', 'tokens.css'), 'utf8')
 
@@ -215,6 +301,12 @@ describe.each([
     'surface at rest': [layer(c('--nt-canvas'), c('--nt-surface')), '--nt-text-muted'],
     // The current plan lies on the plane of a card with the tint of a lit row, on either plane.
     current: [layer(c('--nt-overlay-background'), c('--nt-row-active')), '--nt-text-secondary'],
+    // A line past the plan, on the plane of a card and on the current plan.
+    'attention at rest': [layer(c('--nt-overlay-background')), '--nt-attention'],
+    'attention on the current plan': [
+      layer(c('--nt-overlay-background'), c('--nt-row-active')),
+      '--nt-attention',
+    ],
   } as const
   test.each(Object.entries(planes))('%s', (_plane, [ground, text]) => {
     expect(contrast(layer(c(text)), ground)).toBeGreaterThanOrEqual(4.5)

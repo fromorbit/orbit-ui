@@ -34,7 +34,7 @@ const TEAM_CURRENT = {
   features: TEAM,
   current: true,
   currentLabel: 'Huidig plan',
-  summary: '6 leden: € 174,24 per maand incl. btw',
+  summary: '6 leden · € 174,24 per maand incl. btw',
 } as const
 
 const toBedrijf = (
@@ -60,7 +60,8 @@ function Current() {
 
 /**
  * A plan alone with what of it is used this month, as on Gebruik: no other plan to compare to, so
- * no tint and no tag; each figure is short enough to keep its line.
+ * no tint and no tag. Each figure says its limit and a 4px meter shows how far it is; the foot
+ * gives the amount to expect, not the fixed part, as the hours count.
  */
 function WithUsage() {
   return (
@@ -71,13 +72,137 @@ function WithUsage() {
         period="per lid per maand, excl. btw"
         features={[
           'Onbeperkt gesprekken en specs',
-          { label: '250 agent-uren per maand', detail: '182 van 250 u' },
-          { label: 'Orbit Review op 10 repositories', detail: '7 van 10' },
-          { label: '50 GB opslag voor opnames', detail: '18,4 van 50 GB' },
+          {
+            label: '250 agent-uren per maand',
+            detail: '182 van 250 u',
+            used: { value: 182, max: 250 },
+          },
+          {
+            label: 'Orbit Review op 10 repositories',
+            detail: '7 van 10',
+            used: { value: 7, max: 10 },
+          },
+          {
+            label: '50 GB opslag voor opnames',
+            detail: '18,4 van 50 GB',
+            used: { value: 18.4, max: 50 },
+          },
         ]}
-        summary="6 leden: € 174,24 per maand incl. btw"
+        summary="6 leden · verwacht ≈ € 205,22 incl. btw"
         action={changePlan}
       />
+    </div>
+  )
+}
+
+/**
+ * The month heads past the plan: the one line that matters takes the tone of attention and says
+ * where it ends, the others stay quiet (Von Restorff).
+ */
+function OverLimit() {
+  return (
+    <div className="w-full max-w-sm">
+      <PlanCard
+        name="Team"
+        price="€ 24"
+        period="per lid per maand, excl. btw"
+        features={[
+          'Onbeperkt gesprekken en specs',
+          {
+            label: '250 agent-uren per maand',
+            detail: '263 van 250 u',
+            used: { value: 263, max: 250 },
+            over: '13 u boven je plan, ≈ € 10,40 extra',
+          },
+          {
+            label: 'Orbit Review op 10 repositories',
+            detail: '7 van 10',
+            used: { value: 7, max: 10 },
+          },
+          {
+            label: '50 GB opslag voor opnames',
+            detail: '18,4 van 50 GB',
+            used: { value: 18.4, max: 50 },
+          },
+        ]}
+        summary="6 leden · verwacht ≈ € 186,82 incl. btw"
+        action={changePlan}
+      />
+    </div>
+  )
+}
+
+/** The plan one step up, alone: no tint, no tag, one action that names its target. */
+function Target() {
+  return (
+    <div className="w-full max-w-sm">
+      <PlanCard {...BEDRIJF} action={toBedrijf} />
+    </div>
+  )
+}
+
+/**
+ * Two plans side by side, as in the settings: the current one lifted and tagged with no button,
+ * the other with the one step, so the decision has one button (Hick, one emphasis per row).
+ */
+function TwoUp() {
+  return (
+    <div className="w-full max-w-2xl">
+      <PlanCards label="Plannen">
+        <PlanCard {...TEAM_CURRENT} />
+        <PlanCard {...BEDRIJF} action={toBedrijf} />
+      </PlanCards>
+    </div>
+  )
+}
+
+/**
+ * Many lines, a long one beside a figure, and a long name: the figure drops under its label when
+ * the line has no room, the name wraps before the tag.
+ */
+function ManyFeatures() {
+  return (
+    <div className="grid w-full max-w-3xl grid-cols-[repeat(auto-fit,minmax(min(15rem,100%),1fr))] items-start gap-6">
+      <PlanCard
+        name="Onderneming met eigen omgeving"
+        price="€ 1.040"
+        period="per maand, excl. btw"
+        description="Voor organisaties met eigen eisen aan opslag en toegang."
+        features={[
+          'Alles van Bedrijf',
+          {
+            label: '4.000 agent-uren per maand, gedeeld over alle teams',
+            detail: '1.912 van 4.000 u',
+            used: { value: 1912, max: 4000 },
+          },
+          'Orbit Review op elke repository',
+          '2 TB opslag voor opnames',
+          'Inloggen met SSO en SCIM',
+          'Een eigen omgeving in de EU',
+          'Auditlog van 2 jaar',
+          'Een vaste contactpersoon',
+          'Reactie binnen 4 uur op werkdagen',
+        ]}
+        summary="40 leden · € 1.258,40 per maand incl. btw"
+        action={changePlan}
+      />
+      <div className="max-w-60">
+        <PlanCard
+          name="Team"
+          price="€ 24"
+          period="per lid per maand, excl. btw"
+          features={[
+            {
+              label: '250 agent-uren per maand',
+              detail: '182 van 250 agent-uren gebruikt',
+              used: { value: 182, max: 250 },
+            },
+            'Orbit Review op 10 repositories',
+          ]}
+          summary="6 leden · verwacht ≈ € 205,22 incl. btw"
+          action={changePlan}
+        />
+      </div>
     </div>
   )
 }
@@ -131,19 +256,19 @@ function LongName() {
         features={['Alles van Bedrijf', 'Een eigen omgeving in de EU', 'Een vaste contactpersoon']}
         current
         currentLabel="Huidig plan"
-        summary="40 leden: € 15.100,80 per jaar incl. btw"
+        summary="40 leden · € 15.100,80 per jaar incl. btw"
         action={changePlan}
       />
     </div>
   )
 }
 
-/** Plans among settings: on the tint of a `SettingsGroup`, the current one lifted. */
+/** Plans among settings: on the plane of a `SettingsGroup`, the current one lifted, without a button. */
 function OnSurface() {
   return (
     <div className="w-full max-w-2xl">
       <PlanCards label="Plannen">
-        <PlanCard {...TEAM_CURRENT} plane="surface" action={changePlan} />
+        <PlanCard {...TEAM_CURRENT} plane="surface" />
         <PlanCard {...BEDRIJF} plane="surface" action={toBedrijf} />
       </PlanCards>
     </div>
@@ -156,9 +281,13 @@ export default {
   states: {
     'Huidig plan': Current,
     'Met gebruik': WithUsage,
+    'Boven het plan': OverLimit,
+    'Een ander plan': Target,
+    'Twee plannen': TwoUp,
     'Plannen naast elkaar': Compare,
     'In de instellingen': OnSurface,
     Smal: Narrow,
     'Lange naam': LongName,
+    'Veel onderdelen': ManyFeatures,
   },
 } satisfies Story
