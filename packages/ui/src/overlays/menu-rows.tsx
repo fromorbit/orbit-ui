@@ -3,6 +3,7 @@ import { DropdownMenu as RadixDropdownMenu } from 'radix-ui'
 import { createContext, type ReactNode, useContext, useId } from 'react'
 import { Icon } from '../primitives/Icon'
 import { Kbd } from '../primitives/Kbd'
+import { useUi } from '../provider/UiProvider'
 import type { DropdownMenuHeader, DropdownMenuItem } from './DropdownMenu'
 import { PANEL } from './panel'
 import { usePortalContainer } from './portal'
@@ -97,9 +98,11 @@ const item = cva(
   // A row the keyboard walked to (`focus-visible`: Radix moves the real focus with the walk, and the
   // browser marks it visible only after a key) stands on a step more tint, `surface-active` (the
   // keyboard caret of every list of the family), rather than a ring: a ring drew a framed chip
-  // inside the frame of the panel, and regions are told apart by tint, not frames. A danger row
-  // doubles its own tint the same way (the inset shadow lays `danger-subtle` once more over it).
-  'flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
+  // inside the frame of the panel. A danger row doubles its own tint the same way (the inset shadow
+  // lays `danger-subtle` once more over it). The tint alone measured 1.2:1 against the panel, so
+  // the caret also carries a 2px bar of the focus colour on its leading edge, inset 6px from top
+  // and bottom: 3:1 and more in both themes (WCAG 1.4.11), the second cue a pointer's hover lacks.
+  'relative flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none focus-visible:before:absolute focus-visible:before:inset-y-1.5 focus-visible:before:start-0 focus-visible:before:w-0.5 focus-visible:before:rounded-full focus-visible:before:bg-focus data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
   {
     variants: {
       tone: {
@@ -426,10 +429,17 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
               <span className="truncate">{row.value}</span>
             </span>
           )}
+          {/* `muted`, not `faint`: the chevron is the only sign that a row opens rows of its own,
+              so it owes the 3:1 of WCAG 1.4.11 (faint measured 2.5:1 on the panel). */}
           <span
-            className={row.value === undefined ? 'ml-auto flex shrink-0 ps-4' : 'flex shrink-0'}
+            data-nt-menu-chevron
+            className={
+              row.value === undefined
+                ? 'ml-auto flex shrink-0 ps-4 text-muted'
+                : 'flex shrink-0 text-muted'
+            }
           >
-            <Icon name="chevron-right" size="sm" tone="faint" />
+            <Icon name="chevron-right" size="sm" />
           </span>
         </SubTrigger>
         <Portal container={container}>
@@ -471,6 +481,10 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
   const reasonId = useId()
   const density = useContext(Density)
   const { Item, CheckboxItem, RadioItem } = useContext(Parts)
+  // The key a reader hears for the row, from the same port that draws it: the row's name stays its
+  // label, and the key reaches assistive tech as a key (as on `Button` and `ChoiceCard`).
+  const { shortcuts } = useUi()
+  const keys = row.shortcut === undefined ? undefined : shortcuts.aria(row.shortcut)
   // A row that is `disabled` *and* carries a reason (`hint`) stays a real stop of the menu instead:
   // Radix's own `disabled` both removes a row from the roving-
   // focus walk — so ArrowDown skips straight over it — and sets `pointer-events: none` on it (the
@@ -491,6 +505,7 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
     ...(row.shortcut === undefined && row.count === undefined
       ? {}
       : { 'aria-label': nameOf(row), textValue: row.label }),
+    ...(keys === undefined ? {} : { 'aria-keyshortcuts': keys }),
     onSelect: (event: Event) => {
       if (guarded) {
         // Keeps the menu open, exactly what Radix's own `disabled` would have done by never

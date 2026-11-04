@@ -3,18 +3,20 @@ import type { Story } from '../gallery/story'
 import { Avatar } from '../primitives/Avatar'
 import { Icon, type IconName } from '../primitives/Icon'
 import { IconButton } from '../primitives/IconButton'
+import { useUi } from '../provider/UiProvider'
 import { ContextMenu } from './ContextMenu'
 import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 
 /**
  * The acts on a file, once: the `⋯` of each row and a right click on it are fed this one array, so
  * both offer the same rows in the same order. A submenu for where it goes, and the one destructive
- * act last, apart.
+ * act last, apart. The keys are command ids of the docs page's port, so they follow its platform
+ * switch (⌘O or Ctrl+O) and reach a screen reader as `aria-keyshortcuts`.
  */
 const FILE_ACTIONS: DropdownMenuItem[] = [
-  { id: 'open', label: 'Openen', icon: 'square-arrow-out-up-right', shortcut: '⌘O' },
+  { id: 'open', label: 'Openen', icon: 'square-arrow-out-up-right', shortcut: 'file.open' },
   { id: 'rename', label: 'Hernoemen', icon: 'pencil' },
-  { id: 'duplicate', label: 'Dupliceren', icon: 'copy', shortcut: '⌘D' },
+  { id: 'duplicate', label: 'Dupliceren', icon: 'copy', shortcut: 'file.duplicate' },
   {
     id: 'move',
     label: 'Verplaatsen naar',
@@ -22,13 +24,15 @@ const FILE_ACTIONS: DropdownMenuItem[] = [
     kind: 'submenu',
     separated: true,
     // Every destination with its own mark, so the rows of one level look alike; a long name of a
-    // folder shows the panel stop at its cap and the label end in an ellipsis.
+    // folder shows the panel stop at its cap and the label end in an ellipsis, and its full name
+    // in a tooltip on hover and on focus, so where the file goes is never a guess.
     items: [
       { id: 'to-quotes', label: 'Offertes', icon: 'folder' },
       { id: 'to-drawings', label: 'Tekeningen', icon: 'folder' },
       {
         id: 'to-final',
         label: 'Definitief ontwerp uitbreiding Bakkerij De Zon en omgeving',
+        hint: 'Definitief ontwerp uitbreiding Bakkerij De Zon en omgeving',
         icon: 'folder',
       },
       { id: 'to-archive', label: 'Archief', icon: 'archive', separated: true },
@@ -39,7 +43,7 @@ const FILE_ACTIONS: DropdownMenuItem[] = [
     label: 'Verwijderen',
     icon: 'trash-2',
     tone: 'danger',
-    shortcut: '⌘⌫',
+    shortcut: 'file.delete',
     separated: true,
   },
 ]
@@ -61,15 +65,27 @@ const FILES: { name: string; icon: IconName; size: string; age: string }[] = [
 
 /**
  * The line above a region that says how its menu opens, in the words of the input at hand: a right
- * click where there is a pointer, a long press on a phone (below `sm`, or under a coarse pointer),
- * where a right click does not exist. Each says what the gesture gives ("voor acties"). The keyboard's
- * way in is said once, on the first state, and on every region as `aria-keyshortcuts`.
+ * click where there is a pointer, a long press under a coarse pointer, where a right click does not
+ * exist. Chosen by the pointer only, never by the width: a keyboard user who zooms in to 400% keeps
+ * the pointer's line and its key. Each says what the gesture gives ("voor acties").
+ *
+ * The keyboard's half follows the platform of the page, as the keys in the menu do: on macOS a
+ * Control-click is the right click of a one-button mouse, and Shift+F10 is a key of Windows and
+ * Linux, named there only (`keys`, on the first state). The menu still opens on Shift+F10 on every
+ * platform, and every focusable region says so as `aria-keyshortcuts`.
  */
-function Hint({ id, pointer, touch }: { id: string; pointer: string; touch: string }) {
+function Hint({ id, subject, keys }: { id: string; subject: string; keys: boolean }) {
+  const { platform } = useUi()
+  const pointer =
+    platform === 'mac'
+      ? `Rechtsklik (of Control-klik) op ${subject} voor acties.`
+      : keys
+        ? `Rechtsklik op ${subject} voor acties, of druk op Shift+F10.`
+        : `Rechtsklik op ${subject} voor acties.`
   return (
     <p id={id} className="m-0 text-[12px] text-muted">
-      <span className="max-sm:hidden pointer-coarse:hidden">{pointer}</span>
-      <span className="hidden max-sm:inline pointer-coarse:inline">{touch}</span>
+      <span className="pointer-coarse:hidden">{pointer}</span>
+      <span className="hidden pointer-coarse:inline">{`Houd ${subject} ingedrukt voor acties.`}</span>
     </p>
   )
 }
@@ -81,18 +97,18 @@ function Hint({ id, pointer, touch }: { id: string; pointer: string; touch: stri
  * content of the region starts on. The region gets the id of the line, for its `aria-describedby`.
  */
 function Region({
-  pointer,
-  touch,
+  subject,
+  keys = false,
   children,
 }: {
-  pointer: string
-  touch: string
+  subject: string
+  keys?: boolean
   children: (hintId: string) => ReactNode
 }) {
   const id = useId()
   return (
     <div className="flex w-full max-w-md flex-col gap-2">
-      <Hint id={id} pointer={pointer} touch={touch} />
+      <Hint id={id} subject={subject} keys={keys} />
       {children(id)}
     </div>
   )
@@ -105,16 +121,17 @@ function Region({
 const FOCUSABLE = 'outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
 
 /**
- * One file as a 36px row of a list: its icon, its name, its size and age quiet at the end, and a
- * `⋯` with the same acts as the right click. The row stays lit while its menu is up
- * (`data-state="open"`, which Radix sets on the region), so it is plain what the menu is about.
+ * One file as a 40px row of a list: its icon, its name, its size and age quiet at the end, and a
+ * framed `⋯` (`secondary`, 28px) with the same acts as the right click: a frame, so the one action
+ * of the row never floats beside the text. The row stays lit a step above its hover while its menu
+ * is up (`data-state="open"`, which Radix sets on the region), so it is plain what the menu is about.
  */
 function FileRow({ file }: { file: (typeof FILES)[number] }) {
   return (
     <ContextMenu label={`Acties voor ${file.name}`} items={FILE_ACTIONS}>
       <li
         data-nt-story-file
-        className="group flex h-9 items-center gap-2 rounded-md ps-2 pe-1 text-[13px] text-fg hover:bg-surface-hover data-[state=open]:bg-surface-hover"
+        className="group flex h-10 items-center gap-2 ps-3 pe-2 text-[13px] text-fg first:rounded-t-lg last:rounded-b-lg hover:bg-surface-hover data-[state=open]:bg-surface-active"
       >
         <span className="flex text-muted">
           <Icon name={file.icon} size="sm" />
@@ -127,7 +144,7 @@ function FileRow({ file }: { file: (typeof FILES)[number] }) {
           {file.age}
         </span>
         <DropdownMenu
-          trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
+          trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" variant="secondary" />}
           label={`Acties voor ${file.name}`}
           items={FILE_ACTIONS}
           align="end"
@@ -137,10 +154,13 @@ function FileRow({ file }: { file: (typeof FILES)[number] }) {
   )
 }
 
-/** The files as one tinted plane of rows, no frame around it. */
+/**
+ * The files as one plane of rows (`bg-plane shadow-plane`): a white card with a hairline edge on
+ * the off-white page in light, a tint in dark; the rows parted by hairlines the eye follows across.
+ */
 function Files() {
   return (
-    <ul className="flex flex-col rounded-lg bg-surface p-1">
+    <ul className="m-0 flex list-none flex-col divide-y divide-border rounded-lg bg-plane p-0 shadow-plane">
       {FILES.map((file) => (
         <FileRow key={file.name} file={file} />
       ))}
@@ -192,10 +212,7 @@ function Open() {
   return (
     // As tall as the open panel reaches, so the next state starts at the same distance as the rest.
     <div ref={stage} className="flex min-h-58 w-full max-w-md flex-col">
-      <Region
-        pointer="Rechtsklik op een bestand voor acties, of druk op Shift+F10."
-        touch="Houd een bestand ingedrukt voor acties."
-      >
+      <Region subject="een bestand" keys>
         {() => <Files />}
       </Region>
     </div>
@@ -204,9 +221,10 @@ function Open() {
 
 /** Settings of a drawing among its acts: switches, and one choice of a unit in a group. */
 const CANVAS_ITEMS: DropdownMenuItem[] = [
-  { id: 'zoom-in', label: 'Inzoomen' },
-  { id: 'zoom-out', label: 'Uitzoomen' },
-  { id: 'fit', label: 'Passend in venster' },
+  // With their keys, as the acts on a file have theirs: the menu teaches the shortcut.
+  { id: 'zoom-in', label: 'Inzoomen', shortcut: 'canvas.zoomIn' },
+  { id: 'zoom-out', label: 'Uitzoomen', shortcut: 'canvas.zoomOut' },
+  { id: 'fit', label: 'Passend in venster', shortcut: 'canvas.fit' },
   { id: 'grid', label: 'Raster tonen', checked: true, separated: true },
   { id: 'sizes', label: 'Maten tonen', checked: false },
   // A quiet heading names the choice and the group (`aria-labelledby`); the dot of a radio row
@@ -223,10 +241,7 @@ const CANVAS_ITEMS: DropdownMenuItem[] = [
  */
 function WithChoices() {
   return (
-    <Region
-      pointer="Rechtsklik op de tekening voor acties."
-      touch="Houd de tekening ingedrukt voor acties."
-    >
+    <Region subject="de tekening">
       {(hint) => (
         <ContextMenu label="Tekening" items={CANVAS_ITEMS}>
           {/* biome-ignore lint/a11y/useSemanticElements: a drawing or a card, not a set of form controls */}
@@ -238,13 +253,15 @@ function WithChoices() {
             aria-describedby={hint}
             aria-keyshortcuts="Shift+F10"
             data-nt-story-region
-            className={`relative flex h-32 flex-col items-center justify-center gap-2 rounded-lg bg-surface text-muted data-[state=open]:bg-surface-hover ${FOCUSABLE}`}
+            className={`relative flex h-32 flex-col items-center justify-center gap-2 rounded-lg bg-plane text-muted shadow-plane data-[state=open]:bg-surface-active ${FOCUSABLE}`}
           >
             <Icon name="image" size="md" />
             <span className="text-[12px]">plattegrond-begane-grond.png</span>
-            <span className="absolute top-1 right-1">
+            <span className="absolute top-2 right-2">
               <DropdownMenu
-                trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
+                trigger={
+                  <IconButton icon="more-horizontal" label="Meer" size="sm" variant="secondary" />
+                }
                 label="Tekening"
                 items={CANVAS_ITEMS}
                 align="end"
@@ -279,10 +296,7 @@ const MEMBER = {
 /** A member of the team, with a head of identity over comfortable rows (the account menu's shape). */
 function WithAHead() {
   return (
-    <Region
-      pointer="Rechtsklik op een teamlid voor acties."
-      touch="Houd een teamlid ingedrukt voor acties."
-    >
+    <Region subject="een teamlid">
       {(hint) => (
         <ContextMenu
           label="Acties voor Robin de Vries"
@@ -295,19 +309,21 @@ function WithAHead() {
             // biome-ignore lint/a11y/noNoninteractiveTabindex: the focus target of the context-menu key
             tabIndex={0}
             role="group"
-            aria-label="Robin de Vries, Ontwerper"
+            aria-label="Robin de Vries, Ontwerper · Studio Noord"
             aria-describedby={hint}
             aria-keyshortcuts="Shift+F10"
             data-nt-story-region
-            className={`flex h-14 items-center gap-3 rounded-lg bg-surface ps-3 pe-2 data-[state=open]:bg-surface-hover ${FOCUSABLE}`}
+            className={`flex h-14 items-center gap-3 rounded-lg bg-plane ps-3 pe-3 shadow-plane data-[state=open]:bg-surface-active ${FOCUSABLE}`}
           >
             <Avatar name="Robin de Vries" size="md" />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-[13px] font-medium text-fg">Robin de Vries</span>
-              <span className="truncate text-[12px] text-muted">Ontwerper</span>
+              <span className="truncate text-[12px] text-muted">Ontwerper · Studio Noord</span>
             </div>
             <DropdownMenu
-              trigger={<IconButton icon="more-horizontal" label="Meer" size="sm" />}
+              trigger={
+                <IconButton icon="more-horizontal" label="Meer" size="sm" variant="secondary" />
+              }
               label="Acties voor Robin de Vries"
               header={MEMBER}
               density="comfortable"
@@ -327,30 +343,32 @@ function WithAHead() {
  */
 function Disabled() {
   return (
-    <Region
-      pointer="Acties zijn er zodra het uploaden klaar is."
-      touch="Acties zijn er zodra het uploaden klaar is."
-    >
-      {() => (
-        <ContextMenu label="Acties voor gevelaanzicht-noord.pdf" items={FILE_ACTIONS} disabled>
-          {/* `aria-busy` and the progress as a live line: a reader hears why a right click does
-            nothing yet, as a sighted one reads it at the end of the row. Only how far it is: the
-            line above says what comes after, so the name keeps its room on a phone. */}
-          <div
-            aria-busy="true"
-            className="flex h-9 items-center gap-2 rounded-lg bg-surface px-3 text-[13px] text-secondary"
+    // The line above says when the acts come, in the one pattern every reason of the family uses
+    // ("… kan/kunnen zodra … klaar is"); a sentence like the lines above the other regions.
+    <div className="flex w-full max-w-md flex-col gap-2">
+      <p className="m-0 text-[12px] text-muted">Acties kunnen zodra het uploaden klaar is.</p>
+      <ContextMenu label="Acties voor gevelaanzicht-noord.pdf" items={FILE_ACTIONS} disabled>
+        {/* `aria-busy` and the progress as a polite live line, in steps of a tenth in a real
+            product rather than every tick: a reader hears why a right click does nothing yet, as a
+            sighted one reads it at the end of the row. */}
+        <div
+          aria-busy="true"
+          className="flex h-10 items-center gap-2 rounded-lg bg-plane px-3 text-[13px] text-secondary shadow-plane"
+        >
+          <span className="flex text-muted">
+            <Icon name="upload" size="sm" />
+          </span>
+          <span className="min-w-0 flex-1 truncate">gevelaanzicht-noord.pdf</span>
+          <span
+            role="status"
+            aria-live="polite"
+            className="shrink-0 text-[12px] text-muted tabular-nums"
           >
-            <span className="flex text-muted">
-              <Icon name="upload" size="sm" />
-            </span>
-            <span className="min-w-0 flex-1 truncate">gevelaanzicht-noord.pdf</span>
-            <span role="status" className="shrink-0 text-[12px] text-muted tabular-nums">
-              Uploaden · 64%
-            </span>
-          </div>
-        </ContextMenu>
-      )}
-    </Region>
+            64% geüpload
+          </span>
+        </div>
+      </ContextMenu>
+    </div>
   )
 }
 

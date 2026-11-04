@@ -313,6 +313,66 @@ test('a row shows the keys of its shortcut id', async () => {
   expect(keys.map((key) => key.textContent)).toEqual(['Ctrl', '', 'R'])
 })
 
+test('a row with a shortcut id tells assistive tech its key, its name staying the label', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Meer</Button>}
+      label="Rijacties"
+      items={[{ id: 'hard', label: 'Herladen', shortcut: 'demo.reload', onSelect: () => {} }]}
+    />,
+    { wrapper: uiWrapper({ platform: 'windows' }) },
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const row = await screen.findByRole('menuitem', { name: 'Herladen' })
+  expect(row).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+R')
+})
+
+test('a written-out key the port does not announce adds no aria-keyshortcuts', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Meer</Button>}
+      label="Rijacties"
+      items={[{ id: 'hard', label: 'Herladen', shortcut: '⇧⌘R', onSelect: () => {} }]}
+    />,
+    { wrapper: uiWrapper({ platform: 'mac' }) },
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const row = await screen.findByRole('menuitem', { name: 'Herladen' })
+  expect(row).not.toHaveAttribute('aria-keyshortcuts')
+})
+
+test('the keyboard caret is a bar of the focus colour as well as a tint', async () => {
+  await open()
+  const row = await screen.findByRole('menuitem', { name: 'Hernoemen' })
+  const classes = row.className.split(' ')
+  // The tint alone measured 1.2:1 against the panel; the bar is the cue of 3:1 (WCAG 1.4.11).
+  expect(classes).toContain('focus-visible:bg-surface-active')
+  expect(classes).toContain('focus-visible:before:bg-focus')
+  expect(classes).toContain('focus-visible:before:w-0.5')
+})
+
+test('the chevron of a submenu is muted, not faint: it is the only sign of the submenu', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Model</Button>}
+      label="Model"
+      items={[
+        {
+          id: 'more',
+          label: 'Meer modellen',
+          kind: 'submenu',
+          items: [{ id: 'west', label: 'West 1', onSelect: () => {} }],
+        },
+      ]}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Model' }))
+  const trigger = await screen.findByRole('menuitem', { name: 'Meer modellen' })
+  const chevron = trigger.querySelector('[data-nt-menu-chevron]')
+  expect(chevron?.className.split(' ')).toContain('text-muted')
+  expect(chevron?.querySelector('svg')?.getAttribute('class') ?? '').not.toContain('faint')
+})
+
 test('a row without a key looks exactly as before', async () => {
   await open()
   const row = await screen.findByRole('menuitem', { name: 'Hernoemen' })

@@ -4,8 +4,8 @@ import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 
 /** The scopes of the list in Specs, each with its count and its key. */
 const SCOPES: DropdownMenuItem[] = [
-  // Names what is counted, and the radio group under it.
-  { id: 'tasks', label: 'Specs', kind: 'heading' },
+  // Names the choice, as the trigger and the menu's label do: one term for one thing.
+  { id: 'scope', label: 'Bereik', kind: 'heading' },
   {
     id: 'forYou',
     label: 'Voor jou',
@@ -49,7 +49,7 @@ function Open() {
   return (
     <div className="h-56 w-64">
       <DropdownMenu
-        trigger={<Button>Bereik: Voor jou</Button>}
+        trigger={<Button>Bereik: voor jou</Button>}
         label="Bereik"
         items={SCOPES}
         defaultOpen

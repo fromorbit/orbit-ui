@@ -27,7 +27,7 @@ const ROW_ACTIONS: DropdownMenuItem[] = [
     tone: 'danger',
     separated: true,
     disabled: true,
-    hint: 'Verwijderen kan zodra het opslaan klaar is',
+    hint: 'Kan zodra het opslaan klaar is',
     onSelect: () => {},
   },
 ]
@@ -77,7 +77,7 @@ const ROW_ACTIONS_WITH_A_SHORTCUT: DropdownMenuItem[] = [
   // Two modifiers and a letter, the row of the feedback that gave `Kbd` its icons.
   {
     id: 'hard-reload',
-    label: 'Hard herladen',
+    label: 'Herladen zonder cache',
     icon: 'rotate-cw',
     shortcut: '⇧⌘R',
     onSelect: () => {},
