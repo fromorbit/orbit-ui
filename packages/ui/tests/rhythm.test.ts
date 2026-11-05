@@ -36,12 +36,24 @@ const GLYPHS = new Set([
  */
 const FIGURES = new Map([['patterns/StatTile.tsx', '26']])
 
+/**
+ * The display type of the component site's home page: its title (36px, 44px from `sm`) and the
+ * lead under it (17px from `sm`) introduce the site, not a screen of the kit, so they stand above
+ * the scale.
+ */
+const DISPLAY = new Map([['docs-site/Home.tsx', new Set(['36', '44', '17'])]])
+
 test('text takes one of the five sizes of the scale', () => {
   const offenders = files().flatMap(([file, text]) =>
     GLYPHS.has(file)
       ? []
       : [...text.matchAll(/\btext-\[([\d.]+)px\]/g)]
-          .filter((match) => !SCALE.has(match[1] ?? '') && FIGURES.get(file) !== match[1])
+          .filter(
+            (match) =>
+              !SCALE.has(match[1] ?? '') &&
+              FIGURES.get(file) !== match[1] &&
+              !DISPLAY.get(file)?.has(match[1] ?? ''),
+          )
           .map((match) => `${file}: ${match[0]}`),
   )
   expect(offenders).toEqual([])

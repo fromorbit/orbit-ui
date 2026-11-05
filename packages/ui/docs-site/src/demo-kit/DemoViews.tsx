@@ -182,6 +182,50 @@ function PreviewFrame({ demo, variant }: { demo: Demo; variant: string | undefin
   )
 }
 
+/** The window a thumbnail draws a demo in, before it is scaled down to its card. */
+const THUMB_WIDTH = 1280
+const THUMB_HEIGHT = 800
+
+/**
+ * A demo drawn small, as the home page shows it: the real screen at a desktop window's size,
+ * scaled down to the width of its box. It is a picture of the screen, not a working one: `inert`
+ * keeps its fields and links out of the keyboard's path and out of the accessibility tree; the card
+ * around it carries the one link to the demo.
+ *
+ * The scale follows the box (`ResizeObserver`); where there is none (happy-dom), it stays at the
+ * size of the smallest card.
+ */
+export function DemoThumbnail({
+  demo,
+  variant,
+}: {
+  demo: Demo
+  variant?: string | undefined
+}): ReactNode {
+  const [box, setBox] = useState<HTMLElement | null>(null)
+  const [scale, setScale] = useState(0.25)
+  useEffect(() => {
+    if (!box || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setScale(entry.contentRect.width / THUMB_WIDTH)
+    })
+    observer.observe(box)
+    return () => observer.disconnect()
+  }, [box])
+  return (
+    <div ref={setBox} className="relative aspect-[16/10] w-full overflow-hidden">
+      <div
+        inert
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-0 origin-top-left select-none"
+        style={{ width: THUMB_WIDTH, height: THUMB_HEIGHT, transform: `scale(${scale})` }}
+      >
+        <PreviewFrame demo={demo} variant={variant ?? demo.variants?.[0]?.value} />
+      </div>
+    </div>
+  )
+}
+
 /** The source of a demo, as the code view shows it. */
 function CodeView({ demo }: { demo: Demo }): ReactNode {
   const fence = `\`\`\`tsx\n${sourceOf(demo.slug).trimEnd()}\n\`\`\``
