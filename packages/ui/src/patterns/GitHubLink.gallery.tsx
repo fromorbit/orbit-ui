@@ -9,9 +9,9 @@ export default {
   group: 'patterns',
   title: 'GitHubLink',
   states: {
-    'In a sentence': () => (
+    'In een zin': () => (
       <p className="w-full max-w-96 text-[13px] leading-normal">
-        Merged in{' '}
+        Samengevoegd in{' '}
         <GitHubLink
           label="Pull request of issue 394"
           text="#394"
@@ -20,7 +20,7 @@ export default {
           title="voorbeeld/webwinkel#394"
           onOpen={() => {}}
         />
-        , follows{' '}
+        , volgt op{' '}
         <GitHubLink
           label="Pull request 12"
           text="kassa#12"
@@ -29,7 +29,7 @@ export default {
           title="voorbeeld/kassa#12"
           onOpen={() => {}}
         />{' '}
-        and fixes{' '}
+        en lost{' '}
         <GitHubLink
           label="Issue 7"
           text="ander/bibliotheek#7"
@@ -37,8 +37,8 @@ export default {
           number={7}
           title="ander/bibliotheek#7"
           onOpen={() => {}}
-        />
-        .
+        />{' '}
+        op.
       </p>
     ),
   },

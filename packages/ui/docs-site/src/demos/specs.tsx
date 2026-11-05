@@ -1,8 +1,9 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
 import {
   Avatar,
   Button,
   DatePicker,
+  DropdownMenu,
   Icon,
   IconButton,
   Input,
@@ -13,11 +14,11 @@ import {
   ProgressMeter,
   PropertyList,
   Prose,
-  type RunStatusKind,
   ScrollArea,
   SegmentedControl,
   StackedRowBranch,
   StatusMark,
+  type StatusMarkKind,
   Tag,
   Textarea,
   Timeline,
@@ -31,12 +32,12 @@ import { AppFrame, ME } from './parts/AppFrame'
 type State = 'review' | 'building' | 'approved' | 'draft' | 'done'
 
 /** The words and the status shape of every state. */
-const STATES: Record<State, { label: string; kind: RunStatusKind }> = {
-  review: { label: 'Wacht op review', kind: 'attention' },
-  building: { label: 'In uitvoering', kind: 'running' },
-  approved: { label: 'Goedgekeurd', kind: 'queued' },
-  draft: { label: 'Concept', kind: 'queued' },
-  done: { label: 'Klaar', kind: 'done' },
+const STATES: Record<State, { label: string; mark: StatusMarkKind }> = {
+  review: { label: 'Wacht op akkoord', mark: 'blocked' },
+  building: { label: 'In uitvoering', mark: 'running' },
+  approved: { label: 'Gepland', mark: 'stopped' },
+  draft: { label: 'Concept', mark: 'stopped' },
+  done: { label: 'Klaar', mark: 'stopped' },
 }
 
 /** One spec of the made-up web shop. */
@@ -156,11 +157,11 @@ const SPECS: Spec[] = [
   },
 ]
 
-/** The groups of the list per view: "Voor jou" holds what waits for you and what you own. */
+/** The groups of the list per view: "Voor jou" holds what waits for your approval and what you own. */
 type View = 'mine' | 'open'
 
 const GROUPS: { heading: string; states: State[] }[] = [
-  { heading: 'Wacht op review', states: ['review'] },
+  { heading: 'Wacht op akkoord', states: ['review'] },
   { heading: 'In uitvoering', states: ['building'] },
   { heading: 'Gepland', states: ['approved', 'draft'] },
   { heading: 'Klaar', states: ['done'] },
@@ -173,13 +174,22 @@ const ACTIVITY = [
   { icon: 'user', text: `Review gevraagd aan ${ME}`, when: '5 u' },
 ] as const
 
-/** The status mark of a row: the glowing circle only while an agent works, the shape otherwise. */
+/**
+ * The status mark of a row: one `StatusMark` for every state, flat with a soft glow at one size,
+ * the amber diamond for what waits on an approval, the circle while an agent builds, the quiet
+ * square for the rest; the word beside it says which.
+ */
 function rowStatus(spec: Spec) {
   const state = STATES[spec.state]
-  return spec.state === 'building'
-    ? { marker: <StatusMark kind="running" />, status: state.label }
-    : { kind: state.kind, status: state.label }
+  return { marker: <StatusMark kind={state.mark} />, status: state.label }
 }
+
+/**
+ * A white card with a hairline in light, on the off-white page, as the lists of Apps, Branches and
+ * Team; nothing in dark, where the list and the pane lie on the canvas as they did.
+ */
+const LIGHT_CARD =
+  'in-data-[theme=light]:rounded-lg in-data-[theme=light]:bg-plane in-data-[theme=light]:shadow-plane'
 
 /** The detail of one spec beside the list: the gate, what it says, and what happened on it. */
 function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
@@ -187,7 +197,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
   const state = STATES[spec.state]
   const [met, all] = spec.criteria
   return (
-    <div className="hidden w-[420px] shrink-0 flex-col border-border border-l bg-bg @5xl:flex">
+    <div className="hidden w-[360px] shrink-0 flex-col border-border border-l bg-bg in-data-[theme=light]:bg-plane @4xl:flex @5xl:w-[420px]">
       <PanelTabHeader
         title={<span className="font-mono text-[12px] text-muted">{spec.id}</span>}
         actions={
@@ -211,21 +221,32 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
             </div>
           </div>
           {spec.reviewer === ME ? (
-            <div className="flex flex-col gap-3 rounded-lg bg-attention-subtle p-4">
+            <div className="flex flex-col gap-3 rounded-lg bg-attention-subtle p-4 in-data-[theme=light]:bg-plane in-data-[theme=light]:shadow-plane">
               <p className="m-0 text-[13px] text-fg leading-relaxed">
                 Deze spec wacht op jouw akkoord. Na goedkeuren kan een agent hem uitvoeren op een
                 eigen branch.
               </p>
-              <div className="flex flex-wrap gap-2">
+              {/* One next step; approving without running and a remark wait behind the menu. */}
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Button variant="primary" size="sm">
                   Goedkeuren en uitvoeren
                 </Button>
-                <Button variant="secondary" size="sm">
-                  Goedkeuren
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Opmerking
-                </Button>
+                <DropdownMenu
+                  trigger={
+                    <IconButton
+                      icon="more-horizontal"
+                      size="sm"
+                      variant="secondary"
+                      label="Meer keuzes"
+                    />
+                  }
+                  label="Meer keuzes"
+                  align="start"
+                  items={[
+                    { id: 'approve', label: 'Alleen goedkeuren', icon: 'check' },
+                    { id: 'remark', label: 'Opmerking plaatsen', icon: 'message-square' },
+                  ]}
+                />
               </div>
             </div>
           ) : null}
@@ -245,13 +266,13 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 {
                   label: 'Branch',
                   value: (
-                    <span className="flex min-w-0">
+                    <span className="flex min-w-0 items-center gap-1.5 font-mono">
                       <StackedRowBranch name={spec.branch} worktree />
                     </span>
                   ),
                 },
                 {
-                  label: 'Klaar als',
+                  label: 'Criteria',
                   value: (
                     <ProgressMeter
                       value={met}
@@ -262,10 +283,11 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                   ),
                 },
                 {
-                  label: 'Deadline',
+                  label: 'Uiterlijk klaar',
                   value: (
                     <DatePicker
-                      label="Deadline"
+                      label="Uiterlijk klaar"
+                      quiet
                       placeholder="Kies een datum"
                       labels={{ previousMonth: 'Vorige maand', nextMonth: 'Volgende maand' }}
                       today="2026-10-28"
@@ -301,7 +323,7 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
                 </TimelineItem>
               ))}
               <TimelineItem marker={<Avatar name="Sem Oudeweg" size="sm" />} time="2 u">
-                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg bg-surface px-3 py-2">
+                <span className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg bg-plane px-3 py-2 shadow-plane">
                   <span className="font-medium text-fg">Sem Oudeweg</span>
                   <span className="text-fg leading-relaxed">
                     Moet het restant ook in het account van de klant zichtbaar zijn?
@@ -324,6 +346,26 @@ function Detail({ spec, onClose }: { spec: Spec; onClose(): void }): ReactNode {
   )
 }
 
+/** The width of the frame from which the detail stands beside the list: `@4xl`, 56rem. */
+const BESIDE = 56 * 16
+
+/**
+ * Whether the frame around `ref` is wide enough for the detail beside the list. A row is only
+ * marked as chosen while its detail is in sight; narrower, the list stands alone and no row
+ * claims a selection that shows nothing.
+ */
+function useBeside(ref: RefObject<HTMLElement | null>): boolean {
+  const [beside, setBeside] = useState(true)
+  useEffect(() => {
+    const frame = ref.current?.closest<HTMLElement>('.\\@container')
+    if (!frame || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => setBeside(frame.clientWidth >= BESIDE))
+    observer.observe(frame)
+    return () => observer.disconnect()
+  }, [ref])
+  return beside
+}
+
 /**
  * Orbit's specs: what waits for your review on top, what an agent is building now, and what is
  * planned; the chosen spec beside the list with its gate, criteria and activity.
@@ -333,16 +375,13 @@ function Specs(): ReactNode {
   const [view, setView] = useState<View>('mine')
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const shown = SPECS.filter((spec) =>
-    view === 'open'
-      ? spec.state !== 'done'
-      : spec.owner === ME ||
-        spec.reviewer === ME ||
-        spec.state === 'building' ||
-        spec.state === 'done',
+    view === 'open' ? spec.state !== 'done' : spec.owner === ME || spec.reviewer === ME,
   )
   const spec = SPECS.find((entry) => entry.id === chosen)
+  const row = useRef<HTMLDivElement>(null)
+  const beside = useBeside(row)
   return (
-    <AppFrame product="orbit" current="taken">
+    <AppFrame product="orbit" current="specs">
       <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
         <h1 className="m-0 font-medium text-[13px] text-fg">Specs</h1>
         <SegmentedControl<View>
@@ -357,61 +396,69 @@ function Specs(): ReactNode {
         />
         <div className="flex-1" />
         <div className="hidden w-52 @3xl:block">
-          <Input label="Zoek specs" placeholder="Zoek…" icon="search" size="sm" />
+          <Input label="Zoek een spec" placeholder="Zoek een spec…" icon="search" size="sm" />
         </div>
         <Button variant="secondary" size="sm">
           Nieuwe spec
         </Button>
       </div>
-      <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1">
+      <div ref={row} className="flex min-h-0 flex-1">
+        {/* Its own container: beside the detail the list is narrow on any window, so its meta
+            answers to the list's width and the titles keep their room. */}
+        <div className="@container/list min-w-0 flex-1">
           <ScrollArea>
             <div className="mx-auto max-w-5xl px-3 py-3 @3xl:px-5">
-              <List label="Specs">
-                {GROUPS.map((group) => {
-                  const rows = shown.filter((entry) => group.states.includes(entry.state))
-                  if (rows.length === 0) return null
-                  return (
-                    <ListGroup
-                      key={group.heading}
-                      heading={group.heading}
-                      count={rows.length}
-                      label={`${group.heading}, ${rows.length} specs`}
-                      open={open[group.heading] ?? true}
-                      onOpenChange={(next) => setOpen((now) => ({ ...now, [group.heading]: next }))}
-                    >
-                      {rows.map((entry) => (
-                        <ListRow
-                          key={entry.id}
-                          title={entry.title}
-                          {...rowStatus(entry)}
-                          current={entry.id === chosen}
-                          emphasis="strong"
-                          onClick={() => setChosen(entry.id)}
-                          meta={
-                            <span className="flex items-center gap-3">
-                              {entry.criteria[1] > 0 ? (
-                                <span className="hidden @2xl:inline-flex">
-                                  <ProgressMeter
-                                    value={entry.criteria[0]}
-                                    max={entry.criteria[1]}
-                                    label={`Criteria van ${entry.id}`}
-                                    valueText={galleryLabels.progress}
-                                  />
+              <div
+                className={`in-data-[theme=light]:px-2 in-data-[theme=light]:py-3 ${LIGHT_CARD}`}
+              >
+                <List label="Specs">
+                  {GROUPS.map((group) => {
+                    const rows = shown.filter((entry) => group.states.includes(entry.state))
+                    if (rows.length === 0) return null
+                    return (
+                      <ListGroup
+                        key={group.heading}
+                        heading={group.heading}
+                        count={rows.length}
+                        label={`${group.heading}, ${rows.length === 1 ? '1 spec' : `${rows.length} specs`}`}
+                        open={open[group.heading] ?? true}
+                        onOpenChange={(next) =>
+                          setOpen((now) => ({ ...now, [group.heading]: next }))
+                        }
+                      >
+                        {rows.map((entry) => (
+                          <ListRow
+                            key={entry.id}
+                            title={entry.title}
+                            {...rowStatus(entry)}
+                            current={beside && entry.id === chosen}
+                            emphasis="strong"
+                            onClick={() => setChosen(entry.id)}
+                            meta={
+                              <span className="flex items-center gap-3">
+                                {entry.criteria[1] > 0 ? (
+                                  <span className="hidden @xl/list:inline-flex">
+                                    <ProgressMeter
+                                      value={entry.criteria[0]}
+                                      max={entry.criteria[1]}
+                                      label={`Criteria van ${entry.id}`}
+                                      valueText={galleryLabels.progress}
+                                    />
+                                  </span>
+                                ) : null}
+                                <span className="hidden w-16 font-mono text-[11px] text-muted @md/list:inline">
+                                  {entry.id}
                                 </span>
-                              ) : null}
-                              <span className="hidden w-16 font-mono text-[11px] text-muted @xl:inline">
-                                {entry.id}
+                                <Avatar name={entry.owner} size="sm" />
                               </span>
-                              <Avatar name={entry.owner} size="sm" />
-                            </span>
-                          }
-                        />
-                      ))}
-                    </ListGroup>
-                  )
-                })}
-              </List>
+                            }
+                          />
+                        ))}
+                      </ListGroup>
+                    )
+                  })}
+                </List>
+              </div>
             </div>
           </ScrollArea>
         </div>
@@ -424,7 +471,7 @@ function Specs(): ReactNode {
 export default {
   title: 'Specs',
   description:
-    'De specs van Orbit: bovenaan wat op jouw review wacht, dan wat een agent nu bouwt en wat gepland is. Naast de lijst de gekozen spec met zijn akkoord, criteria en activiteit.',
+    'De specs van Orbit: bovenaan wat op jouw akkoord wacht, dan wat een agent nu bouwt en wat gepland is. Op een breed scherm staat naast de lijst de gekozen spec, met zijn akkoord, criteria en activiteit.',
   icon: 'clipboard-list',
   product: 'orbit',
   Screen: Specs,

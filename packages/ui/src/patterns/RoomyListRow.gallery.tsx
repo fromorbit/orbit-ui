@@ -10,51 +10,56 @@ import { RoomyListRow } from './RoomyListRow'
  */
 export default {
   group: 'patterns',
-  title: 'Roomy list row',
+  title: 'RoomyListRow',
   states: {
-    'A title over one or two lines, and a note': () => (
+    'Een titel over een of twee regels, en een notitie': () => (
       <div className="w-full max-w-80">
-        <List label="Subagents">
+        <List label="Subagenten">
           <RoomyListRow
-            title="Finds the discount"
+            title="Zoekt de korting"
             kind="done"
-            status="Done"
-            meta="4 actions · 00:12"
-            note="The discount is computed in src/cart.ts."
+            status="Klaar"
+            meta="4 stappen · 00:12"
+            note="De korting wordt berekend in src/cart.ts."
           />
           <RoomyListRow
-            title="Reads the tests of the cart and notes every case that the discount leaves uncovered"
+            title="Leest de tests van de winkelmand en noteert elk geval dat de korting niet dekt"
             kind="running"
-            status="Running"
-            meta="6 actions · 00:31"
-            note="Reading tests/cart.test.ts"
+            status="Loopt"
+            meta="6 stappen · 00:31"
+            note="Leest tests/cart.test.ts"
           />
           <RoomyListRow
-            title="Checks the prices"
+            title="Controleert de prijzen"
             kind="failed"
-            status="Failed"
-            meta="1 action · 00:02"
-            note="Could not read data/prices.json."
+            status="Mislukt"
+            meta="1 stap · 00:02"
+            note="Kon data/prices.json niet lezen."
           />
-          <RoomyListRow title="Waits in line" kind="queued" status="Queued" meta="0 actions" />
+          <RoomyListRow
+            title="Wacht op zijn beurt"
+            kind="queued"
+            status="In de wachtrij"
+            meta="0 stappen"
+          />
         </List>
       </div>
     ),
     // The menu of a row stands beside it, quiet until hover or focus: the picture shows its room.
-    'With actions beside it, and something under it': () => (
+    'Met acties ernaast en iets eronder': () => (
       <div className="w-full max-w-80">
-        <List label="Subagents">
+        <List label="Subagenten">
           <RoomyListRow
-            title="Tests for the cart"
+            title="Tests voor de winkelmand"
             kind="running"
-            status="Running"
-            meta="large · +48 −3 · 4"
+            status="Loopt"
+            meta="groot · +48 −3 · 4"
             actions={
-              <Tooltip label="Actions">
-                <IconButton icon="more-horizontal" size="sm" label="Actions" />
+              <Tooltip label="Acties">
+                <IconButton icon="more-horizontal" size="sm" label="Acties" />
               </Tooltip>
             }
-            below={<p className="ps-8 pb-2 text-[12px] text-muted">A field opens here.</p>}
+            below={<p className="ps-8 pb-2 text-[12px] text-muted">Hier opent een veld.</p>}
           />
         </List>
       </div>

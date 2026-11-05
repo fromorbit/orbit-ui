@@ -15,18 +15,18 @@ interface Status {
 }
 
 const KINDS = [
-  { value: 'draft', label: 'Draft' },
+  { value: 'draft', label: 'Concept' },
   { value: 'review', label: 'Review' },
-  { value: 'busy', label: 'Busy' },
-  { value: 'done', label: 'Done' },
-  { value: 'closed', label: 'Closed' },
+  { value: 'busy', label: 'Bezig' },
+  { value: 'done', label: 'Klaar' },
+  { value: 'closed', label: 'Gesloten' },
 ]
 
 const STATUSES: Status[] = [
-  { id: 1, name: 'Draft', kind: 'draft', decision: false },
+  { id: 1, name: 'Concept', kind: 'draft', decision: false },
   { id: 2, name: 'In review', kind: 'review', decision: false },
-  { id: 3, name: 'Approved', kind: 'done', decision: true },
-  { id: 4, name: 'Dropped', kind: 'closed', decision: true },
+  { id: 3, name: 'Goedgekeurd', kind: 'done', decision: true },
+  { id: 4, name: 'Vervallen', kind: 'closed', decision: true },
 ]
 
 /** The statuses of a spec, as the profile dialog will hold them. */
@@ -39,18 +39,18 @@ function Statuses({ initial, maxRows }: { initial: Status[]; maxRows?: number })
     <TooltipProvider>
       <div className="w-full max-w-[480px]">
         <EditableTable<Status>
-          label="Statuses of a spec"
+          label="Statussen van een spec"
           labels={nl.editableTable}
           rows={rows}
           rowKey={(row) => String(row.id)}
           rowLabel={(row) => row.name || '…'}
           minRows={1}
           {...(maxRows !== undefined ? { maxRows } : {})}
-          addLabel="Add status"
+          addLabel="Status toevoegen"
           columns={[
             {
               id: 'name',
-              header: 'Name',
+              header: 'Naam',
               cell: (row, index, label) => (
                 <Input
                   label={label}
@@ -62,7 +62,7 @@ function Statuses({ initial, maxRows }: { initial: Status[]; maxRows?: number })
             },
             {
               id: 'kind',
-              header: 'Kind',
+              header: 'Soort',
               width: 'fit',
               cell: (row, index, label) => (
                 <Select
@@ -76,7 +76,7 @@ function Statuses({ initial, maxRows }: { initial: Status[]; maxRows?: number })
             },
             {
               id: 'decision',
-              header: 'Decision',
+              header: 'Besluit',
               width: 'fit',
               cell: (row, index, label) => (
                 <Checkbox
@@ -102,8 +102,8 @@ export default {
   group: 'patterns',
   title: 'EditableTable',
   states: {
-    'Statuses of a spec': () => <Statuses initial={STATUSES} />,
-    'One row left: nothing to remove': () => <Statuses initial={STATUSES.slice(0, 1)} />,
-    'Full: nothing to add': () => <Statuses initial={STATUSES.slice(0, 2)} maxRows={2} />,
+    'Statussen van een spec': () => <Statuses initial={STATUSES} />,
+    'Eén rij over: niets te verwijderen': () => <Statuses initial={STATUSES.slice(0, 1)} />,
+    'Vol: niets toe te voegen': () => <Statuses initial={STATUSES.slice(0, 2)} maxRows={2} />,
   },
 } satisfies Story

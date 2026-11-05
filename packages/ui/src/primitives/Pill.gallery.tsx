@@ -10,23 +10,23 @@ export default {
     // The two pills of the composer: the model by its name alone, the access level with its shield.
     // The composer's model pill adds the mark of the agent as a `glyph`; see the story
     // of the model menu.
-    'Model and access': () => (
+    'Model en toegang': () => (
       <div className="flex items-center gap-2">
         <Pill label="Model">Claude Sonnet</Pill>
-        <Pill label="Access" icon="shield">
-          Edits
+        <Pill label="Toegang" icon="shield">
+          Bewerken
         </Pill>
       </div>
     ),
     // After the first message: the same box without border and plane, and a
     // fact beside it as text in that box.
-    Quiet: () => (
+    Rustig: () => (
       <div className="flex items-center gap-2">
         <Pill label="Model" quiet>
           Claude Sonnet
         </Pill>
-        <PillText label="Access" icon="shield">
-          Edits
+        <PillText label="Toegang" icon="shield">
+          Bewerken
         </PillText>
       </div>
     ),
@@ -36,28 +36,28 @@ export default {
         Claude Sonnet
       </Pill>
     ),
-    'Long value in a narrow row': () => (
+    'Lange waarde in een smalle rij': () => (
       <div className="flex w-40 min-w-0">
-        <Pill label="Model">A very long name of a model that does not fit</Pill>
+        <Pill label="Model">Een heel lange modelnaam die niet past</Pill>
       </div>
     ),
-    Disabled: () => (
-      <Pill label="Access" icon="shield" disabled>
-        Edits
+    Uitgeschakeld: () => (
+      <Pill label="Toegang" icon="shield" disabled>
+        Bewerken
       </Pill>
     ),
     // The toolbar of the composer: the round "+", the pills, and on the
     // right the send button with its key. A composition of three primitives, to judge them together.
-    'In the toolbar of the composer': () => (
+    'In de werkbalk van de invoer': () => (
       <div className="flex w-full max-w-[560px] items-center gap-2 rounded-lg border border-border-strong bg-composer p-3">
-        <IconButton icon="plus" label="Add" shape="round" outlined />
+        <IconButton icon="plus" label="Toevoegen" shape="round" outlined />
         <Pill label="Model">Claude Sonnet</Pill>
-        <Pill label="Access" icon="shield">
+        <Pill label="Toegang" icon="shield">
           Worktree
         </Pill>
         <span className="flex-1" />
         <Button variant="primary" shortcut="Enter">
-          Send
+          Versturen
         </Button>
       </div>
     ),

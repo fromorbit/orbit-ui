@@ -1,6 +1,6 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import packageJson from '../../package.json'
 import { stories, storyId } from '../../src/gallery'
 import { DocsPage } from './DocsPage'
@@ -16,6 +16,7 @@ function goTo(hash: string): void {
 }
 
 afterEach(() => {
+  localStorage.clear()
   history.replaceState(null, '', '#')
   document.documentElement.removeAttribute('data-theme')
   document.documentElement.removeAttribute('data-product')
@@ -44,7 +45,35 @@ describe('the docs page', () => {
     goTo('#/primitives-button')
     render(<DocsPage stories={stories} />)
     expect(screen.getByRole('heading', { level: 1, name: 'Button' })).toBeInTheDocument()
-    expect(screen.getByText('Variants')).toBeInTheDocument()
+    expect(screen.getByText('Varianten')).toBeInTheDocument()
+  })
+
+  test('names the route in the title, so tabs and history tell the pages apart', () => {
+    goTo('#/primitives-statusmark')
+    render(<DocsPage stories={stories} />)
+    expect(document.title).toBe('StatusMark · Bouwstenen · Orbit UI')
+    goTo('#/demo/team')
+    expect(document.title).toBe("Team en rechten · Demo's · Orbit UI")
+    goTo('#/demo/ontbrekend')
+    expect(document.title).toBe("Wensenlijst · Demo's · Orbit UI")
+  })
+
+  test('an open layer of a story does not hold the keyboard: it takes no focus on load', async () => {
+    goTo('#/overlays-dialog')
+    render(<DocsPage stories={stories} />)
+    const dialog = await screen.findByRole('dialog', { name: 'Plan ter goedkeuring' })
+    await act(() => new Promise((done) => requestAnimationFrame(() => done(undefined))))
+    expect(dialog.contains(document.activeElement)).toBe(false)
+  })
+
+  test('closing a staged layer hands the focus to the button that opens it again', async () => {
+    goTo('#/overlays-dialog')
+    render(<DocsPage stories={stories} />)
+    await screen.findByRole('dialog', { name: 'Plan ter goedkeuring' })
+    await userEvent.click(screen.getByRole('button', { name: 'Blijf plannen' }))
+    await userEvent.keyboard('{Escape}')
+    const reopen = await screen.findByRole('button', { name: 'Plan bekijken' })
+    await vi.waitFor(() => expect(reopen).toHaveFocus())
   })
 
   test('follows a change of the hash', () => {
@@ -72,6 +101,21 @@ describe('the docs page', () => {
     expect(document.documentElement.dataset.theme).toBe('dark')
     await userEvent.click(screen.getByRole('radio', { name: 'Licht' }))
     expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  test('keeps the chosen theme for the next visit', async () => {
+    const { unmount } = render(<DocsPage stories={stories} />)
+    await userEvent.click(screen.getByRole('radio', { name: 'Licht' }))
+    unmount()
+    document.documentElement.removeAttribute('data-theme')
+    render(<DocsPage stories={stories} />)
+    expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  test('names the groups of the catalogue in Dutch above a story', () => {
+    goTo('#/primitives-button')
+    render(<DocsPage stories={stories} />)
+    expect(screen.getAllByText('Bouwstenen').length).toBeGreaterThan(0)
   })
 
   test('switches the satellite between the products of the family', async () => {

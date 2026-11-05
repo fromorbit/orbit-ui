@@ -2,10 +2,13 @@ import { type ReactNode, useEffect, useState } from 'react'
 import {
   Avatar,
   Button,
+  Checkbox,
+  CheckboxField,
   ConfirmDialog,
   DataTable,
   type DataTableColumn,
   DropdownMenu,
+  Icon,
   IconButton,
   PageHeader,
   RelativeTime,
@@ -155,15 +158,97 @@ function BranchMenu({ branch }: { branch: Branch }): ReactNode {
   if (branch.fate === 'base') return null
   return (
     <DropdownMenu
-      trigger={<IconButton icon="more-horizontal" size="sm" label={`Meer over ${branch.name}`} />}
+      trigger={
+        <IconButton
+          icon="more-horizontal"
+          size="sm"
+          variant="secondary"
+          label={`Meer over ${branch.name}`}
+        />
+      }
       label={branch.name}
       align="end"
       items={[
         { id: 'open', label: 'Openen in een gesprek', icon: 'messages-square' },
-        { id: 'adopt', label: 'Overnemen in main', icon: 'git-branch' },
+        { id: 'adopt', label: 'Samenvoegen in main', icon: 'git-branch' },
         { id: 'drop', label: 'Weggooien…', icon: 'trash-2', tone: 'danger', separated: true },
       ]}
     />
+  )
+}
+
+/** How far a branch is from main, in words: the arrows of the column, said out. */
+function distance(branch: Branch): string {
+  return `${branch.ahead} ${branch.ahead === 1 ? 'commit' : 'commits'} voor, ${branch.behind} achter`
+}
+
+/** The names in a sentence: "a, b en c". */
+function listed(names: readonly string[]): string {
+  return names.length < 2
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} en ${names[names.length - 1]}`
+}
+
+/**
+ * A branch as a phone shows it: the box and the whole name on the first line, its state, the last
+ * commit and the time under it (the commit cut before the time, never after), so the name reads
+ * whole and why a row is ticked stays in sight.
+ */
+function BranchCard({
+  branch,
+  checked,
+  onCheckedChange,
+}: {
+  branch: Branch
+  checked: boolean
+  onCheckedChange: (next: boolean) => void
+}): ReactNode {
+  const fate = FATES[branch.fate]
+  return (
+    <div className="flex items-start gap-3 px-4 py-3">
+      <span className="flex h-5 w-4 shrink-0 items-center">
+        {branch.fate === 'base' ? null : (
+          <Checkbox
+            label={`Kies ${branch.name}`}
+            checked={checked}
+            onCheckedChange={onCheckedChange}
+          />
+        )}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {/* The name has the whole width, and wraps rather than being cut: it is what the row is. */}
+        <span className="flex min-w-0 items-start gap-1.5 font-mono text-[13px] leading-5 text-fg">
+          <span aria-hidden="true" className="flex h-5 w-3 shrink-0 items-center">
+            {branch.worktree ? <Icon name="folder-git-2" size="xs" tone="faint" /> : null}
+          </span>
+          <span className="min-w-0 [overflow-wrap:anywhere]">{branch.name}</span>
+        </span>
+        <span className="flex min-w-0 items-center gap-1.5 text-[12px] text-muted">
+          <Tag {...(fate.tone === undefined ? {} : { tone: fate.tone })}>{fate.label}</Tag>
+          <span className="min-w-0 flex-1 truncate text-secondary">{branch.commit}</span>
+          <span className="shrink-0">
+            <RelativeTime labels={galleryLabels.time} at={branch.at} now={NOW} />
+          </span>
+        </span>
+      </div>
+      {/* The acts of the table's last column, on the card too; the slot stays for main. */}
+      <span className="flex w-7 shrink-0 justify-end">
+        <BranchMenu branch={branch} />
+      </span>
+    </div>
+  )
+}
+
+/**
+ * The name of a branch with the slot of its worktree glyph kept on every row, so the mono names of
+ * a column share one left edge whether a branch has a worktree or not.
+ */
+function BranchName({ branch }: { branch: Branch }): ReactNode {
+  return (
+    <>
+      {branch.worktree ? null : <span aria-hidden="true" className="w-3 shrink-0" />}
+      <StackedRowBranch name={branch.name} worktree={branch.worktree} />
+    </>
   )
 }
 
@@ -175,8 +260,8 @@ const COLUMNS: DataTableColumn<Branch>[] = [
     sortValue: (branch) => branch.name,
     cell: (branch) => (
       <div className="flex min-w-0 flex-col gap-1">
-        <span className="flex min-w-0 items-center gap-2 font-mono text-[13px] text-fg">
-          <StackedRowBranch name={branch.name} worktree={branch.worktree} />
+        <span className="flex min-w-0 items-center gap-1.5 font-mono text-[13px] text-fg">
+          <BranchName branch={branch} />
           {branch.pr === undefined ? null : (
             <span className="hidden text-[12px] text-accent-text @xl:inline">{branch.pr}</span>
           )}
@@ -194,18 +279,20 @@ const COLUMNS: DataTableColumn<Branch>[] = [
   },
   {
     id: 'distance',
-    header: 't.o.v. main',
+    header: 'Voor / achter op main',
     hideBelow: 'md',
     sortValue: (branch) => branch.ahead,
-    cell: (branch) => (
-      <span className="font-mono text-[12px] text-muted tabular-nums">
-        {branch.fate === 'base' ? '' : `↑${branch.ahead} ↓${branch.behind}`}
-      </span>
-    ),
+    cell: (branch) =>
+      branch.fate === 'base' ? null : (
+        <span title={distance(branch)} className="font-mono text-[12px] text-muted tabular-nums">
+          <span aria-hidden="true">{`↑${branch.ahead} ↓${branch.behind}`}</span>
+          <span className="sr-only">{distance(branch)}</span>
+        </span>
+      ),
   },
   {
     id: 'fate',
-    header: 'Staat',
+    header: 'Status',
     sortValue: (branch) => FATES[branch.fate].label,
     cell: (branch) => {
       const fate = FATES[branch.fate]
@@ -232,6 +319,7 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
   const [asking, setAsking] = useState(variant === 'bevestigen')
   useEffect(() => setAsking(variant === 'bevestigen'), [variant])
   const rows = BRANCHES.filter((branch) => shown(branch, filter))
+  const choosable = rows.filter((branch) => branch.fate !== 'base').map((branch) => branch.name)
   const worktrees = BRANCHES.filter(
     (branch) => selected.includes(branch.name) && branch.worktree,
   ).length
@@ -239,21 +327,14 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
     <AppFrame product="orbit" current="branches">
       <ScrollArea>
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
+          {/* No act in the head: the bar under a selection is the one place to clean up from. */}
           <PageHeader
             title="Branches"
             meta={`${REPO} · ${BRANCHES.length} branches · ${BRANCHES.filter((b) => b.worktree).length} worktrees`}
-            actions={
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={selected.length === 0}
-                onClick={() => setAsking(true)}
-              >
-                Opruimen…
-              </Button>
-            }
           />
-          <div className="grid grid-cols-3 gap-3">
+          {/* Three tiles in one row at every width: the figure on top and its words under it,
+              side by side only where a tile is wide enough to keep its words whole. */}
+          <div className="grid grid-cols-3 gap-2 @xl:gap-3">
             {[
               { label: 'Samengevoegd', short: 'kunnen weg', value: '3', note: 'kunnen weg' },
               {
@@ -262,27 +343,35 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
                 value: '2,4 GB',
                 note: 'in 5 mappen',
               },
-              { label: 'Oudste branch', short: 'oudste', value: '41 dagen', note: 'oude-kassa' },
+              {
+                label: 'Oudste branch',
+                short: 'oudste: oude-kassa',
+                value: '5 wk',
+                note: 'oude-kassa',
+              },
             ].map((fact) => (
               <div
                 key={fact.label}
-                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay px-3 py-2.5 @3xl:flex-row @3xl:items-baseline @3xl:gap-2 @3xl:px-4 @3xl:py-3"
+                className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-overlay shadow-plane px-3 py-2.5 @3xl:px-4 @3xl:py-3 @5xl:flex-row @5xl:items-baseline @5xl:gap-2"
               >
                 <span className="whitespace-nowrap font-heading text-[20px] text-fg tabular-nums">
                   {fact.value}
                 </span>
-                <span className="min-w-0 truncate text-[12px] text-muted @3xl:text-[12px]">
+                <span className="min-w-0 text-[12px] text-muted">
                   <span className="@3xl:hidden">{fact.short}</span>
                   <span className="hidden @3xl:inline">{`${fact.label.toLowerCase()} · ${fact.note}`}</span>
                 </span>
               </div>
             ))}
           </div>
+          {/* Its own container, as the table is: the filter in the head and the bar of the cards
+              trade places at the width where the table turns into cards. */}
           <Panel
-            title="Branches van Orbit"
+            title="Alle branches"
             meta={`${rows.length} van ${BRANCHES.length}`}
+            className="@container"
             actions={
-              <div className="hidden @2xl:block">
+              <div className="hidden @3xl:block">
                 <SegmentedControl<Filter>
                   label="Filter"
                   size="sm"
@@ -294,6 +383,36 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
             }
             flush
           >
+            {/* The cards have no head row: the box for all and the filter stand above them, so a
+                phone keeps every way the table has to choose. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-border border-b px-4 pb-3 @3xl:hidden">
+              <CheckboxField
+                label="Kies alles"
+                checked={
+                  choosable.length > 0 && choosable.every((name) => selected.includes(name))
+                    ? true
+                    : choosable.some((name) => selected.includes(name))
+                      ? 'indeterminate'
+                      : false
+                }
+                onCheckedChange={(next) =>
+                  setSelected((now) =>
+                    next
+                      ? [...new Set([...now, ...choosable])]
+                      : now.filter((name) => !choosable.includes(name)),
+                  )
+                }
+              />
+              <div className="ml-auto">
+                <SegmentedControl<Filter>
+                  label="Filter"
+                  size="sm"
+                  value={filter}
+                  options={FILTERS}
+                  onValueChange={setFilter}
+                />
+              </div>
+            </div>
             <DataTable
               label="Branches"
               columns={COLUMNS}
@@ -304,16 +423,30 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
               selected={selected}
               onSelectedChange={setSelected}
               canSelect={(branch) => branch.fate !== 'base'}
+              card={(branch) => (
+                <BranchCard
+                  branch={branch}
+                  checked={selected.includes(branch.name)}
+                  onCheckedChange={(next) =>
+                    setSelected((now) =>
+                      next ? [...now, branch.name] : now.filter((name) => name !== branch.name),
+                    )
+                  }
+                />
+              )}
             />
           </Panel>
         </div>
       </ScrollArea>
+      {/* Docked under the list rather than floating over it: the bar takes its own strip, so no
+          row is ever hidden behind the one action that matters. */}
       {selected.length > 0 ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4">
-          <div className="pointer-events-auto flex items-center gap-3 rounded-lg border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
-            <span className="text-[13px] text-fg tabular-nums">{`${selected.length} geselecteerd`}</span>
-            <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
-              Wissen
+        <div className="flex shrink-0 justify-center px-4 pt-2 pb-4">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-overlay py-1.5 pr-1.5 pl-4 shadow-menu">
+            <span className="whitespace-nowrap text-[13px] text-fg tabular-nums">{`${selected.length} geselecteerd`}</span>
+            <Button variant="secondary" size="sm" onClick={() => setSelected([])}>
+              <span className="@md:hidden">Opheffen</span>
+              <span className="hidden @md:inline">Selectie opheffen</span>
             </Button>
             <Button variant="primary" size="sm" onClick={() => setAsking(true)}>
               Opruimen…
@@ -324,9 +457,13 @@ function Branches({ variant = 'lijst' }: DemoScreenProps): ReactNode {
       <ConfirmDialog
         open={asking}
         onOpenChange={setAsking}
-        title={`${selected.length} branches opruimen?`}
-        body={`De branches gaan weg, lokaal en op GitHub, en ${worktrees === 1 ? 'één worktree' : `${worktrees} worktrees`} met ${worktrees === 1 ? 'zijn' : 'hun'} map. Wat samengevoegd is, staat al in main.`}
-        confirmLabel="Opruimen"
+        title={
+          selected.length === 1 ? '1 branch opruimen?' : `${selected.length} branches opruimen?`
+        }
+        body={`${selected.length === 1 ? 'De branch' : 'De branches'} ${listed(selected)} ${selected.length === 1 ? 'gaat' : 'gaan'} weg, lokaal en op GitHub, en ${worktrees === 1 ? 'één worktree' : `${worktrees} worktrees`} met ${worktrees === 1 ? 'zijn' : 'hun'} map. Wat samengevoegd is, staat al in main. Dit kun je niet ongedaan maken.`}
+        confirmLabel={
+          selected.length === 1 ? '1 branch verwijderen' : `${selected.length} branches verwijderen`
+        }
         cancelLabel="Annuleren"
         tone="danger"
         onConfirm={() => {

@@ -5,14 +5,14 @@ export default {
   group: 'primitives',
   title: 'ChoiceRow',
   states: {
-    'One of several': () => (
+    'Eén uit meerdere': () => (
       <div className="flex w-full max-w-[360px] flex-col gap-0.5">
         <ChoiceRow
           kind="radio"
           number={1}
-          label="By rate"
-          tag="Recommended"
-          description="The tax per rate leads."
+          label="Per tarief"
+          tag="Aanbevolen"
+          description="De btw per tarief is leidend."
           checked
           tabbable
           onChoose={() => {}}
@@ -20,28 +20,21 @@ export default {
         <ChoiceRow
           kind="radio"
           number={2}
-          label="Every line apart"
-          description="May be a cent off."
+          label="Elke regel apart"
+          description="Kan een cent afwijken."
           checked={false}
           tabbable={false}
           onChoose={() => {}}
         />
       </div>
     ),
-    'Any number': () => (
+    'Elk aantal': () => (
       <div className="flex w-full max-w-[360px] flex-col gap-0.5">
-        <ChoiceRow
-          kind="checkbox"
-          number={1}
-          label="Headings"
-          checked
-          tabbable
-          onChoose={() => {}}
-        />
+        <ChoiceRow kind="checkbox" number={1} label="Koppen" checked tabbable onChoose={() => {}} />
         <ChoiceRow
           kind="checkbox"
           number={2}
-          label="Open items"
+          label="Openstaande punten"
           checked={false}
           tabbable={false}
           onChoose={() => {}}

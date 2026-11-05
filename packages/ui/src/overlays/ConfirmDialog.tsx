@@ -1,9 +1,9 @@
 import { cva } from 'class-variance-authority'
-import { AlertDialog as RadixAlertDialog } from 'radix-ui'
+import { AlertDialog as RadixAlertDialog, Dialog as RadixDialog } from 'radix-ui'
 import { Button } from '../primitives/Button'
 import { controlSize } from '../primitives/control-size'
 import { PANEL } from './panel'
-import { usePortalContainer } from './portal'
+import { useContainedLayers, usePortalContainer } from './portal'
 
 /** The props of `ConfirmDialog`. */
 export interface ConfirmDialogProps {
@@ -76,12 +76,50 @@ export function ConfirmDialog({
   tone = 'default',
 }: ConfirmDialogProps) {
   const container = usePortalContainer()
+  const contained = useContainedLayers()
+  const panelClass = `${PANEL} fixed top-1/2 left-1/2 w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 p-5`
+  if (contained) {
+    // A showcase's open question: the same panel on Radix's plain dialog, not modal, so the page
+    // around its container stays usable. The role and the buttons are those of the alert dialog.
+    return (
+      <RadixDialog.Root open={open} onOpenChange={onOpenChange} modal={false}>
+        <RadixDialog.Portal container={container}>
+          <div aria-hidden="true" className="no-drag fixed inset-0 z-(--nt-z-popover) bg-scrim" />
+          <RadixDialog.Content
+            role="alertdialog"
+            className={panelClass}
+            {...(body === undefined ? { 'aria-describedby': undefined } : {})}
+            onInteractOutside={(event) => event.preventDefault()}
+          >
+            <RadixDialog.Title className="m-0 text-[15px] leading-6 font-heading text-fg">
+              {title}
+            </RadixDialog.Title>
+            {body === undefined ? null : (
+              <RadixDialog.Description className="mt-1 text-[12px] text-muted">
+                {body}
+              </RadixDialog.Description>
+            )}
+            <div className="mt-5 flex justify-end gap-2">
+              <RadixDialog.Close asChild>
+                <Button variant="secondary">{cancelLabel}</Button>
+              </RadixDialog.Close>
+              <RadixDialog.Close asChild>
+                <button type="button" onClick={onConfirm} className={confirm({ tone })}>
+                  {confirmLabel}
+                </button>
+              </RadixDialog.Close>
+            </div>
+          </RadixDialog.Content>
+        </RadixDialog.Portal>
+      </RadixDialog.Root>
+    )
+  }
   return (
     <RadixAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixAlertDialog.Portal container={container}>
         <RadixAlertDialog.Overlay className="no-drag fixed inset-0 z-(--nt-z-popover) bg-scrim" />
         <RadixAlertDialog.Content
-          className={`${PANEL} fixed top-1/2 left-1/2 w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 p-5`}
+          className={panelClass}
           // Without a body there is no description; Radix is told so rather than pointing at none.
           {...(body === undefined ? { 'aria-describedby': undefined } : {})}
         >

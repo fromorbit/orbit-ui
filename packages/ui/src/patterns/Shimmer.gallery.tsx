@@ -6,24 +6,24 @@ export default {
   group: 'patterns',
   title: 'Shimmer',
   states: {
-    Quiet: () => (
+    Rustig: () => (
       <div className="flex items-center gap-2 text-[12px] text-muted">
-        <Shimmer active={false}>Waiting for its turn</Shimmer>
+        <Shimmer active={false}>Wacht op zijn beurt</Shimmer>
       </div>
     ),
-    Running: () => (
+    Bezig: () => (
       <div className="flex items-center gap-2 text-[12px] text-muted">
-        <Shimmer active={true}>Fetching a very long imaginary changelog</Shimmer>
+        <Shimmer active={true}>Een heel lange verzonnen wijzigingslijst ophalen</Shimmer>
       </div>
     ),
-    'Running over an icon': () => (
+    'Bezig over een icoon': () => (
       // The band also has to read over a shape, not only over letters — the reason background
       // clipped text was rejected. A glyph of the registry, as every icon in the app.
       <div className="flex items-center gap-2 text-[12px] text-muted">
         <Shimmer active={true}>
           <span className="flex items-center gap-2">
             <Icon name="file-text" size="sm" />
-            Reading three imaginary files
+            Drie verzonnen bestanden lezen
           </span>
         </Shimmer>
       </div>

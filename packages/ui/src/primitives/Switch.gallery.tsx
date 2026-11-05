@@ -5,13 +5,13 @@ export default {
   group: 'primitives',
   title: 'Switch',
   states: {
-    On: () => <Switch label="Network access" checked onCheckedChange={() => {}} />,
-    Off: () => <Switch label="Network access" checked={false} onCheckedChange={() => {}} />,
-    Disabled: () => (
+    Aan: () => <Switch label="Network access" checked onCheckedChange={() => {}} />,
+    Uit: () => <Switch label="Network access" checked={false} onCheckedChange={() => {}} />,
+    Uitgeschakeld: () => (
       <Switch label="Network access" checked={false} disabled onCheckedChange={() => {}} />
     ),
     // Disabled keeps the colour of its state, on the lower opacity of every control (A52).
-    'Disabled, on': () => (
+    'Uitgeschakeld, aan': () => (
       <Switch label="Network access" checked disabled onCheckedChange={() => {}} />
     ),
   },

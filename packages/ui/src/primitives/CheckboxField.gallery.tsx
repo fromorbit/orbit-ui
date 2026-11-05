@@ -25,9 +25,9 @@ export default {
   group: 'primitives',
   title: 'CheckboxField',
   states: {
-    Checked: () => <Remember />,
-    'With a description': () => <Described />,
-    'With an error': () => (
+    Aangevinkt: () => <Remember />,
+    'Met een beschrijving': () => <Described />,
+    'Met een fout': () => (
       <div className="w-full max-w-80">
         <CheckboxField
           label="Ik ga akkoord met de voorwaarden"
@@ -38,6 +38,8 @@ export default {
         />
       </div>
     ),
-    Disabled: () => <CheckboxField label="Gezien" checked disabled onCheckedChange={() => {}} />,
+    Uitgeschakeld: () => (
+      <CheckboxField label="Gezien" checked disabled onCheckedChange={() => {}} />
+    ),
   },
 } satisfies Story

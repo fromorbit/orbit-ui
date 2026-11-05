@@ -3,16 +3,15 @@ import type { ReactNode } from 'react'
 import { Icon, type IconName } from './Icon'
 
 /**
- * A tag is a tinted plane without a frame. `success` is the exception: its words alone, in the
- * success colour inside a hairline, used for a single confirmed state such as an authenticated
- * provider. No plane, because the deep green of light falls under AA on any tint (4.2:1 on the
- * frame), and no `-subtle` token exists for it, unlike `attention` and `danger`.
+ * A tag is a tinted plane without a frame, every tone alike: the words in `text-fg`, the tone in
+ * the tint (regions by tint, not frames). Neutral is the quietest plane, so a status tag never
+ * outshines the row's own hover.
  */
 const tag = cva('inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-medium', {
   variants: {
     tone: {
-      neutral: 'bg-surface-hover text-fg',
-      success: 'border border-border text-success',
+      neutral: 'bg-surface text-secondary',
+      success: 'bg-success-subtle text-fg',
       attention: 'bg-attention-subtle text-fg',
       danger: 'bg-danger-subtle text-fg',
     },

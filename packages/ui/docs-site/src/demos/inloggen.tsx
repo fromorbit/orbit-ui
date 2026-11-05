@@ -8,7 +8,6 @@ import {
   FormField,
   Icon,
   Input,
-  OrbitSymbol,
   OrbitWordmark,
   OtpInput,
   ProjectMark,
@@ -27,16 +26,17 @@ const CODE = '481'
 /** The workspaces the made-up person belongs to, to pick one after signing in. */
 const WORKSPACES = [
   { name: WORKSPACE, detail: '6 leden · 4 repositories', role: 'Eigenaar', last: true },
-  { name: 'Studio Noord', detail: '3 leden · 1 repository', role: 'Bewerker', last: false },
-  { name: 'Moestuin Vereniging', detail: '12 leden · 2 repositories', role: 'Lezer', last: false },
+  { name: 'Studio Noord', detail: '3 leden · 1 repository', role: 'Lid', last: false },
+  { name: 'Moestuin Vereniging', detail: '12 leden · 2 repositories', role: 'Gast', last: false },
 ] as const
 
 /** The small print under the form. */
 const FOOTER = ['Voorwaarden', 'Privacy', 'Status'] as const
 
 /** The classes of a quiet link in the accent text colour. */
+/** A link in running text: underlined at rest, so colour is never its only mark (WCAG 1.4.1). */
 const LINK =
-  'rounded-sm text-accent-text no-underline outline-focus hover:underline focus-visible:outline-2 focus-visible:outline-offset-2'
+  'rounded-sm text-accent-text underline decoration-1 underline-offset-2 outline-focus hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2'
 
 /** A line with a word in the middle, between the buttons of a provider and the form. */
 function Divider({ children }: { children: string }): ReactNode {
@@ -80,7 +80,7 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
   const passwordError =
     checked && password === ''
       ? failed
-        ? 'Vul je wachtwoord opnieuw in.'
+        ? 'Typ je wachtwoord opnieuw.'
         : 'Vul je wachtwoord in.'
       : undefined
   return (
@@ -90,14 +90,14 @@ function SignIn({ failed }: { failed: boolean }): ReactNode {
       <div className="flex flex-col gap-2.5">
         <Wide>
           <Button variant="secondary" size="lg">
-            <OrbitSymbol className="size-(--nt-icon-sm) shrink-0" />
-            Inloggen met Orbit
+            <Icon name="lock" size="sm" />
+            Inloggen met je organisatie (SSO)
           </Button>
         </Wide>
         <Wide>
           <Button variant="secondary" size="lg">
             <BrandIcon brand="github" />
-            Doorgaan met GitHub
+            Inloggen met GitHub
           </Button>
         </Wide>
       </div>
@@ -231,10 +231,10 @@ function Workspaces(): ReactNode {
           <Icon name="plus" size="sm" />
           Nieuwe werkruimte
         </Button>
-        <span className="flex items-center gap-1.5 text-[12px] text-muted">
-          <ProjectMark name="Studio Noord" />
-          Nog 1 uitnodiging open
-        </span>
+        <a href="#/demo/inloggen" className={`flex items-center gap-1.5 text-[12px] ${LINK}`}>
+          <ProjectMark name="Studio Zuid" />
+          Uitnodiging van Studio Zuid bekijken
+        </a>
       </div>
     </>
   )
@@ -256,7 +256,7 @@ function Galaxy(): ReactNode {
       </div>
       <OrbitWordmark className="relative h-5 w-fit" />
       <div className="relative flex max-w-sm flex-col gap-3">
-        <p className="m-0 font-heading text-[30px] leading-[1.15] tracking-[-0.02em]">
+        <p className="m-0 font-heading text-[20px] leading-snug tracking-[-0.01em]">
           Werk samen met je agents, op je eigen repository.
         </p>
         <p className="m-0 text-(--nt-brand-mist) text-[15px] leading-relaxed opacity-80">
@@ -265,7 +265,7 @@ function Galaxy(): ReactNode {
         </p>
       </div>
       <p className="relative m-0 flex items-center gap-2 text-(--nt-brand-mist) text-[12px] opacity-80">
-        <StatusMark kind="running" />
+        <StatusMark kind="running" size="sm" />
         Alle diensten werken · versie 0.42
       </p>
     </aside>
@@ -290,12 +290,22 @@ function Login({ variant = 'standaard' }: DemoScreenProps): ReactNode {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-overlay">
         <div className="flex shrink-0 items-center justify-between min-h-5 gap-3 px-6 pt-6 text-[12px] @xl:px-10 @xl:pt-10">
           <OrbitWordmark className="h-4 text-fg @4xl:invisible" />
-          <span className="text-muted">
-            Nog geen account?{' '}
-            <a href="#/demo/inloggen" className={LINK}>
-              Aanmelden
-            </a>
-          </span>
+          {/* Once logged in, the way out fits the step, not the way in. */}
+          {variant === 'werkruimte' ? (
+            <span className="text-muted">
+              Niet jij?{' '}
+              <a href="#/demo/inloggen" className={LINK}>
+                Uitloggen
+              </a>
+            </span>
+          ) : (
+            <span className="text-muted">
+              Nog geen account?{' '}
+              <a href="#/demo/inloggen" className={LINK}>
+                Aanmelden
+              </a>
+            </span>
+          )}
         </div>
         <div className="flex flex-1 items-center justify-center px-6 py-10 @xl:px-10">
           <div className="flex w-full max-w-[420px] flex-col gap-6">

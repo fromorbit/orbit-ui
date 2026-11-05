@@ -9,6 +9,9 @@ import { createContext, type ReactNode, useContext } from 'react'
  */
 const PortalContainerContext = createContext<HTMLElement | null>(null)
 
+/** Whether a modal layer below stays inside its container instead of taking the window. */
+const ContainedContext = createContext(false)
+
 /**
  * Names the element that floating layers below it mount into.
  *
@@ -22,14 +25,30 @@ const PortalContainerContext = createContext<HTMLElement | null>(null)
  */
 export function PortalContainerProvider({
   container,
+  contained = false,
   children,
 }: {
   container: HTMLElement | null
+  /**
+   * For a showcase, never for an app: a dialog, sheet or spotlight below opens inside
+   * `container` and leaves the rest of the page alone. Not modal (no focus trap, nothing outside
+   * made inert, no click outside that closes it) and its scrim covers the container only, which
+   * must then be a containing block (`transform`, as the gallery's stage of an open layer has),
+   * so a reader can still switch the theme or go to another story while the layer stands open.
+   */
+  contained?: boolean
   children: ReactNode
 }) {
   return (
-    <PortalContainerContext.Provider value={container}>{children}</PortalContainerContext.Provider>
+    <PortalContainerContext.Provider value={container}>
+      <ContainedContext.Provider value={contained}>{children}</ContainedContext.Provider>
+    </PortalContainerContext.Provider>
   )
+}
+
+/** Whether modal layers below are kept inside their container (`PortalContainerProvider contained`). */
+export function useContainedLayers(): boolean {
+  return useContext(ContainedContext)
 }
 
 /** Where this subtree's floating layers belong; `null` means "wherever the layer itself defaults". */

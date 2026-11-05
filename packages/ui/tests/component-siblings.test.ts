@@ -35,13 +35,25 @@ describe('findMissingSiblings', () => {
 
 describe('findStaleHelpers', () => {
   test('a helper that still exists is not stale', () => {
-    expect(findStaleHelpers(['overlays/portal.tsx', 'provider/UiProvider.tsx'])).toEqual([])
+    expect(
+      findStaleHelpers([
+        'overlays/portal.tsx',
+        'overlays/menu-rows.tsx',
+        'provider/UiProvider.tsx',
+        'gallery/layer-stage.tsx',
+      ]),
+    ).toEqual([])
   })
 
   test('a listed helper that is gone is reported, so the list cannot rot', () => {
-    expect(findStaleHelpers(['overlays/Popover.tsx', 'provider/UiProvider.tsx'])).toEqual([
-      'overlays/portal.tsx',
-    ])
+    expect(
+      findStaleHelpers([
+        'overlays/Popover.tsx',
+        'overlays/menu-rows.tsx',
+        'provider/UiProvider.tsx',
+        'gallery/layer-stage.tsx',
+      ]),
+    ).toEqual(['overlays/portal.tsx'])
   })
 })
 

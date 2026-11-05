@@ -1,138 +1,206 @@
-import type { ReactNode } from 'react'
-import { Icon, type IconName, ShareBar, type ShareTone } from '../../../../src'
-import { Missing } from '../../demo-kit/Missing'
-
-/** How much a finding of the review agent weighs. */
-export type Severity = 'blocking' | 'problem' | 'note'
+import { type ReactNode, useId, useState } from 'react'
+import { Button, Dialog, FindingCard, type FindingSeverity, SeverityBar } from '../../../../src'
+import { galleryLabels } from '../../../../src/gallery'
 
 /** One finding: what the agent saw, where, and the screenshot it took, if any. */
 export interface Finding {
-  severity: Severity
+  severity: FindingSeverity
   title: string
   detail: string
   /** The page of the shop it happened on. */
   url?: string
+  /** The file and line of the code behind it: "src/kassa/Kassa.tsx:88". */
+  file?: string
+  /** The step of the recording (of 23) where the agent saw it. */
+  step: number
   /** A screenshot, drawn here as a small sketch of what it shows. */
   screenshot?: 'fout' | 'klein'
 }
 
-/** The word, colours and glyph of each weight; a finding is never told apart by colour alone. */
-const WEIGHT: Record<
-  Severity,
-  {
-    one: string
-    many: string
-    text: string
-    tone: ShareTone
-    icon: IconName
-  }
-> = {
-  blocking: {
-    one: 'blokkerend',
-    many: 'blokkerend',
-    text: 'text-danger',
-    tone: 'danger',
-    icon: 'octagon-alert',
-  },
-  problem: {
-    one: 'probleem',
-    many: 'problemen',
-    text: 'text-attention',
-    tone: 'attention',
-    icon: 'alert-triangle',
-  },
-  note: {
-    one: 'opmerking',
-    many: 'opmerkingen',
-    text: 'text-muted',
-    tone: 'neutral',
-    icon: 'message-square',
-  },
-}
+/** The words a screen reader hears for each screenshot. */
+const SHOT_NAME = {
+  fout: 'foutmelding op de kassa',
+  klein: 'klein totaalbedrag',
+} as const
 
-const ORDER: Severity[] = ['blocking', 'problem', 'note']
-
-/** The band above the findings: how many there are per weight, as words and as one bar. */
-export function SeverityBand({ findings }: { findings: readonly Finding[] }): ReactNode {
-  const segments = ORDER.map((severity) => {
-    const count = findings.filter((finding) => finding.severity === severity).length
-    const weight = WEIGHT[severity]
-    return {
-      id: severity,
-      label: `${count} ${count === 1 ? weight.one : weight.many}`,
-      value: count,
-      tone: weight.tone,
-      icon: weight.icon,
-    }
-  })
+/**
+ * A screenshot of the shop as a small drawing: the checkout, with what went wrong on it. A tint
+ * against the card, no frame. `large` is the same drawing in the dialog of the recording.
+ */
+function Sketch({ kind, large = false }: { kind: 'fout' | 'klein'; large?: boolean }): ReactNode {
+  const bar = large ? 'h-2' : 'h-1.5'
   return (
-    <div className="flex flex-col gap-2.5 rounded-lg bg-overlay px-4 py-3.5">
-      <h3 className="m-0 font-medium text-[13px] text-fg">Bevindingen</h3>
-      <ShareBar label="Bevindingen per gewicht" segments={segments} />
-    </div>
-  )
-}
-
-/** A screenshot of the shop as a small drawing: the checkout, with what went wrong on it. */
-function Shot({ kind }: { kind: 'fout' | 'klein' }): ReactNode {
-  return (
-    <div
-      role="img"
-      aria-label={
-        kind === 'fout'
-          ? 'Schermafbeelding: foutmelding op de kassa'
-          : 'Schermafbeelding: klein totaalbedrag'
-      }
-      className="flex h-24 w-36 shrink-0 flex-col gap-1.5 overflow-hidden rounded-md border border-border bg-canvas p-2"
+    <span
+      aria-hidden="true"
+      className={`flex size-full flex-col overflow-hidden rounded-md bg-canvas ${large ? 'gap-3 p-5' : 'gap-1.5 p-2'}`}
     >
-      <div className="flex items-center gap-1">
+      <span className="flex w-full items-center gap-1">
         <span className="size-1 rounded-full bg-border-strong" />
         <span className="size-1 rounded-full bg-border-strong" />
         <span className="size-1 rounded-full bg-border-strong" />
-        <span className="ml-1 h-1.5 flex-1 rounded-full bg-surface-active" />
-      </div>
-      <span className="h-1.5 w-12 rounded-full bg-border-strong" />
+        <span className={`ml-1 flex-1 rounded-full bg-surface-active ${bar}`} />
+      </span>
+      <span className={`w-1/3 rounded-full bg-border-strong ${bar}`} />
       {kind === 'fout' ? (
-        <span className="flex flex-1 flex-col justify-center gap-1 rounded border border-danger-border bg-danger-subtle px-1.5">
-          <span className="h-1 w-16 rounded-full bg-danger" />
-          <span className="h-1 w-20 rounded-full bg-danger/50" />
+        <span
+          className={`flex w-full flex-1 flex-col justify-center rounded-sm bg-danger/12 ${large ? 'gap-2 px-4' : 'gap-1 px-1.5'}`}
+        >
+          <span className={`w-1/2 rounded-full bg-danger ${large ? 'h-1.5' : 'h-1'}`} />
+          <span className={`w-2/3 rounded-full bg-danger/50 ${large ? 'h-1.5' : 'h-1'}`} />
         </span>
       ) : (
-        <span className="flex flex-1 flex-col justify-end gap-1">
-          <span className="h-3 rounded border border-border bg-surface" />
-          <span className="h-0.5 w-6 self-end rounded-full bg-attention outline outline-attention outline-offset-2" />
+        <span className={`flex w-full flex-1 flex-col ${large ? 'gap-3' : 'gap-1.5'}`}>
+          <span className={`w-full rounded-sm bg-surface-active ${large ? 'h-6' : 'h-3'}`} />
+          {/* The total itself: a short line, ringed where the agent saw it too small. */}
+          <span className="flex items-center gap-1.5">
+            <span className={`w-1/4 rounded-full bg-border-strong ${bar}`} />
+            <span className="rounded-sm p-0.5 outline-1 outline-attention outline-solid">
+              <span className={`block rounded-full bg-fg/50 ${large ? 'h-1 w-8' : 'h-0.5 w-4'}`} />
+            </span>
+          </span>
+          <span
+            className={`mt-auto w-2/5 self-end rounded-sm bg-border-strong ${large ? 'h-5' : 'h-2.5'}`}
+          />
         </span>
       )}
-    </div>
+    </span>
   )
 }
 
 /**
- * One finding as a card, drawn as the missing `FindingCard`: the weight as a sign and a word,
- * the title, what the agent saw, the page, and the screenshot beside it.
+ * The thumbnail of a finding, a button that opens the recording at its screenshot: 144×96 beside
+ * the words, and the same under them on a narrow card, so the words lead.
  */
-export function ReviewFinding({ finding }: { finding: Finding }): ReactNode {
-  const weight = WEIGHT[finding.severity]
+function Shot({ kind, onOpen }: { kind: 'fout' | 'klein'; onOpen(): void }): ReactNode {
   return (
-    <Missing name="FindingCard">
-      <article className="flex gap-4 rounded-lg bg-overlay px-4 py-3.5">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className={`m-0 flex items-center gap-1.5 font-medium text-[12px] ${weight.text}`}>
-            <Icon name={weight.icon} size="sm" />
-            {weight.one}
-          </p>
-          <h4 className="m-0 font-medium text-[13px] text-fg">{finding.title}</h4>
-          <p className="m-0 text-[13px] text-secondary leading-relaxed">{finding.detail}</p>
-          {finding.url === undefined ? null : (
-            <p className="m-0 mt-0.5 font-mono text-[11px] text-muted">{finding.url}</p>
+    <button
+      type="button"
+      aria-label={`Open schermafbeelding: ${SHOT_NAME[kind]}`}
+      onClick={onOpen}
+      className="block h-24 w-36 rounded-md text-left outline-focus transition-[filter] duration-(--nt-duration-fast) hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2"
+    >
+      <Sketch kind={kind} />
+    </button>
+  )
+}
+
+/** The page every finding shares, or nothing when they differ. */
+function sharedPage(findings: readonly Finding[]): string | undefined {
+  const first = findings[0]?.url
+  return first !== undefined && findings.every((finding) => finding.url === first)
+    ? first
+    : undefined
+}
+
+/**
+ * The findings of the review as one group: a quiet count with the page they share, the count per
+ * weight, and 24px under that the cards heavy to light, 8px apart. A card with a screenshot opens
+ * the recording at its step through the thumbnail; a card without one has the quiet "In opname
+ * bekijken" instead, so no card offers the same thing twice. The dialog hands the focus back when
+ * it closes. When every finding is on one page the group says it once and the cards name the file.
+ */
+export function ReviewFindings({ findings }: { findings: readonly Finding[] }): ReactNode {
+  const headingId = useId()
+  // The finding stays while the dialog fades out, so its title does not empty on the way.
+  const [opened, setOpened] = useState<Finding | null>(null)
+  const [open, setOpen] = useState(false)
+  const show = (finding: Finding) => {
+    setOpened(finding)
+    setOpen(true)
+  }
+  const counts = {
+    blocking: findings.filter((finding) => finding.severity === 'blocking').length,
+    problem: findings.filter((finding) => finding.severity === 'problem').length,
+    note: findings.filter((finding) => finding.severity === 'note').length,
+  }
+  const page = sharedPage(findings)
+  const placeOf = (finding: Finding) =>
+    finding.file !== undefined
+      ? { location: finding.file, locationLabel: 'bestand' }
+      : finding.url !== undefined && page === undefined
+        ? { location: finding.url, locationLabel: 'pagina' }
+        : {}
+  return (
+    <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-6">
+      <div className="flex min-w-0 flex-col gap-2">
+        <h3 id={headingId} className="m-0 font-normal text-[12px] text-secondary leading-4">
+          {findings.length === 1 ? '1 bevinding' : `${findings.length} bevindingen`}
+          {page === undefined ? null : (
+            <>
+              {' op pagina '}
+              <span className="font-mono text-[11px]">{page}</span>
+            </>
           )}
-        </div>
-        {finding.screenshot === undefined ? null : (
-          <div className="hidden @2xl:block">
-            <Shot kind={finding.screenshot} />
-          </div>
+        </h3>
+        <SeverityBar
+          label="Bevindingen naar ernst"
+          counts={counts}
+          labels={galleryLabels.severity}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-2">
+        {findings.map((finding) => (
+          <FindingCard
+            key={finding.title}
+            severity={finding.severity}
+            severityLabel={galleryLabels.severityWord[finding.severity]}
+            title={finding.title}
+            headingLevel={4}
+            {...placeOf(finding)}
+            {...(finding.screenshot === undefined
+              ? {
+                  actions: (
+                    // A framed button, its edge on the content column.
+                    <span className="flex">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-label={`In opname bekijken: ${finding.title}`}
+                        onClick={() => show(finding)}
+                      >
+                        In opname bekijken
+                      </Button>
+                    </span>
+                  ),
+                }
+              : { media: <Shot kind={finding.screenshot} onOpen={() => show(finding)} /> })}
+          >
+            {finding.detail}
+          </FindingCard>
+        ))}
+      </div>
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        title={opened?.title ?? ''}
+        description={`Stap ${opened?.step ?? 0} van 23${opened?.url === undefined ? '' : ` · pagina ${opened.url}`}`}
+        closeLabel="Sluiten"
+        initialFocus="panel"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Sluiten
+            </Button>
+            <Button variant="primary" onClick={() => setOpen(false)}>
+              {`Opname openen bij stap ${opened?.step ?? 0}`}
+            </Button>
+          </>
+        }
+      >
+        {opened?.screenshot === undefined ? (
+          <p className="m-0 text-[13px] text-secondary leading-5">
+            Bij deze stap nam de agent geen schermafbeelding; de opname toont wat hij deed.
+          </p>
+        ) : (
+          <span
+            role="img"
+            aria-label={`Schermafbeelding: ${SHOT_NAME[opened.screenshot]}`}
+            className="block aspect-[3/2] w-full"
+          >
+            <Sketch kind={opened.screenshot} large />
+          </span>
         )}
-      </article>
-    </Missing>
+      </Dialog>
+    </section>
   )
 }

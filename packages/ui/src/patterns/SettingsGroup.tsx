@@ -32,7 +32,7 @@ export function SettingsGroup({ title, action, children }: SettingsGroupProps) {
   const card = hasRows ? (
     <div
       data-nt-settings-card
-      className="rounded-lg bg-surface [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
+      className="rounded-lg bg-plane shadow-plane [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
     >
       {children}
     </div>
@@ -60,7 +60,9 @@ export function SettingsGroup({ title, action, children }: SettingsGroupProps) {
       aria-labelledby={titleId}
       className={`flex flex-col gap-2 ${vanishes}`.trim()}
     >
-      <div className="flex min-h-7 items-center justify-between gap-2">
+      {/* 8px in, on top of the heading's own 8px: its words start on the 16px edge of the row
+          titles in the card, so a group has one left edge rather than two a step apart. */}
+      <div className="flex min-h-7 items-center justify-between gap-2 px-2">
         <SectionHeading level={2} id={titleId}>
           {title}
         </SectionHeading>

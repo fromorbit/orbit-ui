@@ -246,7 +246,7 @@ describe('tokens.css', () => {
   })
 })
 
-describe.each(palettes)('the %s palette', (_name, palette) => {
+describe.each(palettes)('the %s palette', (theme, palette) => {
   // The contrast requirements of the palette, computed from the file rather than from fixed
   // figures: they hold whatever a value later becomes.
   test('the words on the accent fill reach AA (≥ 4.5)', () => {
@@ -269,6 +269,29 @@ describe.each(palettes)('the %s palette', (_name, palette) => {
       ).toBeGreaterThanOrEqual(4.5)
     },
   )
+
+  test('--nt-text-secondary, the meta of a lit row, reaches AA on it, on the canvas and on a card', () => {
+    // Muted stays 3:1 under the caret row's words, so a lit row lifts its meta to secondary.
+    for (const ground of ['--nt-canvas', '--nt-overlay-background']) {
+      const row = composite(palette.get('--nt-row-active') ?? '', hexIn(palette, ground))
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text-secondary'), row),
+        ground,
+      ).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  test('--nt-control-border parts an empty box from the canvas, the frame and a card (≥ 3)', () => {
+    for (const ground of ['--nt-canvas', '--nt-frame', '--nt-overlay-background']) {
+      const edge = composite(palette.get('--nt-control-border') ?? '', hexIn(palette, ground))
+      expect(contrastRatio(edge, hexIn(palette, ground)), ground).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  test('--nt-text on a success tag reaches AA (≥ 4.5)', () => {
+    const plane = composite(palette.get('--nt-success-subtle') ?? '', hexIn(palette, '--nt-canvas'))
+    expect(contrastRatio(hexIn(palette, '--nt-text'), plane)).toBeGreaterThanOrEqual(4.5)
+  })
 
   test('--nt-text-muted on a card or menu reaches AA (≥ 4.5)', () => {
     expect(
@@ -360,10 +383,22 @@ describe.each(palettes)('the %s palette', (_name, palette) => {
     },
   )
 
-  test('the frame (sidebar, window) is darker than the canvas (conversation, panel)', () => {
-    expect(relativeLuminance(hexIn(palette, '--nt-frame'))).toBeLessThan(
-      relativeLuminance(hexIn(palette, '--nt-canvas')),
-    )
+  test('the frame and the canvas differ; a hairline parts them only where white meets Paper', () => {
+    const frame = relativeLuminance(hexIn(palette, '--nt-frame'))
+    const canvas = relativeLuminance(hexIn(palette, '--nt-canvas'))
+    if (theme === 'dark') {
+      // The sidebar recedes and the content leads; the brightness is the separation.
+      expect(frame).toBeLessThan(canvas)
+      expect(palette.get('--nt-frame-edge')).toBe('transparent')
+      expect(palette.get('--nt-shadow-plane')).toBe('0 0 #0000')
+    } else {
+      // White regions on a page of Paper, a touch off-white: a hairline is the edge, not a fill.
+      expect(palette.get('--nt-frame')).toBe('#ffffff')
+      expect(palette.get('--nt-plane')).toBe('#ffffff')
+      expect(palette.get('--nt-overlay-background')).toBe('#ffffff')
+      expect(frame).toBeGreaterThan(canvas)
+      expect(palette.get('--nt-frame-edge')).toBe('var(--nt-border)')
+    }
     // `bg` stays an alias of the canvas until every use has moved over.
     expect(palette.get('--nt-bg')).toBe('var(--nt-canvas)')
   })

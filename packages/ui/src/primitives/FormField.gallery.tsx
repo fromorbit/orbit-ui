@@ -13,14 +13,14 @@ export default {
   group: 'primitives',
   title: 'FormField',
   states: {
-    'With a description': () => (
+    'Met een beschrijving': () => (
       <Column>
         <FormField label="Naam" description="Zoals je collega's je kennen.">
           {(field) => <Input label="Naam" placeholder="Noor de Vries" {...field} />}
         </FormField>
       </Column>
     ),
-    'With an error': () => (
+    'Met een fout': () => (
       <Column>
         <FormField
           label="E-mailadres"
@@ -32,7 +32,7 @@ export default {
         </FormField>
       </Column>
     ),
-    'Optional, with a link beside the label': () => (
+    'Optioneel, met een link naast het label': () => (
       <Column>
         <FormField
           label="Wachtwoord"
@@ -50,7 +50,7 @@ export default {
         </FormField>
       </Column>
     ),
-    'Other controls': () => (
+    'Andere bedieningen': () => (
       <Column>
         <FormField label="Rol" description="Wat iemand in de werkruimte mag.">
           {(field) => (

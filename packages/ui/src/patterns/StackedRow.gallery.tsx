@@ -25,31 +25,31 @@ interface Chat {
 const chats: Chat[] = [
   {
     project: 'webshop',
-    time: '2m',
+    time: '2 min',
     title: 'Zoekfilter herbouwen',
     branch: 'nt/zoekfilter-server',
     worktree: true,
-    status: ['running', 'Running'],
+    status: ['running', 'Loopt'],
   },
   {
     project: 'boekhoud-api',
-    time: '8m',
+    time: '8 min',
     title: 'Facturen importeren',
     branch: 'nt/import-facturen',
     worktree: true,
-    status: ['attention', 'Waiting for you'],
+    status: ['attention', 'Wacht op jou'],
   },
   {
     project: 'interne-tools',
-    time: '11m',
+    time: '11 min',
     title: 'Slack-meldingen bundelen',
     branch: 'main',
     worktree: false,
-    status: ['running', 'Running'],
+    status: ['running', 'Loopt'],
   },
   {
     project: 'webshop',
-    time: '1u',
+    time: '1 u',
     title: 'Prijsregels cachen',
     branch: 'nt/prijsregels-cache',
     worktree: true,
@@ -59,11 +59,11 @@ const chats: Chat[] = [
   },
   {
     project: 'webshop',
-    time: '2u',
+    time: '2 u',
     title: 'Checkout-test repareren',
     branch: 'main',
     worktree: false,
-    status: ['failed', 'Failed'],
+    status: ['failed', 'Mislukt'],
   },
   {
     project: 'docs-site',
@@ -75,11 +75,11 @@ const chats: Chat[] = [
   },
   {
     project: 'interne-tools',
-    time: '2d',
+    time: '2 d',
     title: 'CI-cache verkleinen',
     branch: 'main',
     worktree: false,
-    status: ['queued', 'Queued'],
+    status: ['queued', 'In de wachtrij'],
     seen: true,
   },
 ]
@@ -157,7 +157,7 @@ function ChatList({
   return (
     <TooltipProvider>
       <div className={`${width} bg-frame p-2`}>
-        <List label="Chats">
+        <List label="Gesprekken">
           {items.map((chat, index) => (
             <ChatRow
               key={chat.title}
@@ -179,22 +179,22 @@ export default {
   states: {
     // The column of the sidebar: the first chat chosen (the soft card, no hairline beside it), a busy
     // arc, an amber outline, a pinned chat with its PR, a failure, and seen titles a step back.
-    'The chat list of design 6c': () => <ChatList items={chats} />,
+    'De gesprekkenlijst': () => <ChatList items={chats} />,
     // Unseen (bright), seen (secondary) and chosen (bright on the card), one after the other.
-    'Unseen, seen and current': () => (
+    'Ongezien, gezien en huidig': () => (
       <ChatList
         items={[
-          { ...(chats[5] as Chat), title: 'Chosen', seen: true },
-          { ...(chats[5] as Chat), title: 'Unseen: news since you looked', seen: false },
-          { ...(chats[5] as Chat), title: 'Seen: nothing new', seen: true },
+          { ...(chats[5] as Chat), title: 'Gekozen', seen: true },
+          { ...(chats[5] as Chat), title: 'Ongezien: nieuws sinds je keek', seen: false },
+          { ...(chats[5] as Chat), title: 'Gezien: niets nieuws', seen: true },
         ]}
       />
     ),
     // With a menu per row: `⋯` takes the place of the time under the pointer or the focus, beside
     // the button rather than inside it.
-    'With a menu per row': () => <ChatList items={chats.slice(0, 3)} menu />,
+    'Met een menu per rij': () => <ChatList items={chats.slice(0, 3)} menu />,
     // Everything that could run long loses its tail; the time, the pin and the status stay.
-    'Long words in a narrow column': () => (
+    'Lange woorden in een smalle kolom': () => (
       <ChatList
         width="w-48"
         items={[
@@ -204,7 +204,7 @@ export default {
             title: 'Een titel die veel langer is dan de kolom',
             branch: 'nt/een-branch-met-een-hele-lange-naam',
             worktree: true,
-            status: ['attention', 'Waiting for you'],
+            status: ['attention', 'Wacht op jou'],
             pinned: true,
             pr: '#1024',
           },

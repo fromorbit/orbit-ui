@@ -33,9 +33,9 @@ export interface ChoiceCardProps {
 /**
  * One choice as a card of one row: icon, name, and the key that makes the same choice.
  *
- * A fill rather than a border, one step lighter than the panel it lies on and another step on hover
- * and focus: the app draws no outlines around things, and a card of 32px is
- * a row of a list, not a box on a page. A dimmed card stays in its place and in the focus order —
+ * The plane of a region (`bg-plane shadow-plane`): the tint of `surface` in dark, a white card with
+ * a hairline in light, so on the off-white page the clickable area reads as a card and a dimmed
+ * one fades frame and all. Hover and focus take one step of fill. A dimmed card stays in its place and in the focus order —
  * a list that never changes shape is calmer than one that grows when a kind becomes available —
  * with `aria-disabled` rather than `disabled`, so it can still be reached and tell why.
  */
@@ -68,7 +68,7 @@ export function ChoiceCard({
       }}
       {...(onKeyDown ? { onKeyDown } : {})}
       {...(onFocus ? { onFocus } : {})}
-      className="no-drag flex h-(--nt-control-lg) w-full items-center gap-2 rounded-md bg-surface px-3 text-left outline-focus hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 aria-disabled:opacity-40"
+      className="no-drag flex h-(--nt-control-lg) w-full items-center gap-2 rounded-md bg-plane px-3 text-left shadow-plane outline-focus hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 aria-disabled:opacity-40"
     >
       <span className="flex shrink-0 text-muted">
         <Icon name={icon} size="sm" />

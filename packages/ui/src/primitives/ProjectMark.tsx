@@ -32,8 +32,8 @@ export interface ProjectMarkProps {
 }
 
 /**
- * The small block before a project name on the first line of a chat: 14px, radius 4,
- * a white plane of 8% with the first letter in 9px/600 `text-secondary`.
+ * The small block before a project name on the first line of a chat: 16px, radius 4,
+ * a white plane of 8% with the first letter in 11px/600, the smallest size of the scale `text-secondary`.
  *
  * Muted and without colour on purpose: in the sidebar only
  * the status shapes carry colour, so two projects with the same letter draw the same block, and the
@@ -45,7 +45,7 @@ export function ProjectMark({ name }: ProjectMarkProps) {
     <span
       aria-hidden="true"
       data-nt-project-mark
-      className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-sm bg-mark text-[9px] leading-none font-semibold text-secondary"
+      className="inline-flex size-4 shrink-0 items-center justify-center rounded-sm bg-mark text-[11px] leading-none font-semibold text-secondary"
     >
       {initial(name)}
     </span>

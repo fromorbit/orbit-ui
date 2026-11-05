@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button } from '../primitives/Button'
 import { Icon } from '../primitives/Icon'
+import { useUi } from '../provider/UiProvider'
 
 /** The words of a `SummaryBar`, in the host's language. */
 export interface SummaryBarLabels {
@@ -79,10 +80,14 @@ export function SummaryRow({
  * More rows (`children`) stand under it in the same frame: the card of a turn is one list.
  */
 export function SummaryBar({ files, added, removed, labels, onOpen, children }: SummaryBarProps) {
+  // The figures in the host's own digits and separators ("51.203" in Dutch), as every count of
+  // the kit is written.
+  const { locale } = useUi()
+  const figure = (value: number) => value.toLocaleString(locale)
   return (
     <div
       data-nt-summary-bar
-      className="flex min-w-0 flex-col divide-y divide-border rounded-md bg-surface"
+      className="flex min-w-0 flex-col divide-y divide-border rounded-md bg-plane shadow-plane"
     >
       <SummaryRow
         icon={<Icon name="file-diff" size="sm" tone="faint" />}
@@ -90,16 +95,16 @@ export function SummaryBar({ files, added, removed, labels, onOpen, children }: 
         figures={
           <>
             <span aria-hidden="true" className="shrink-0 font-mono text-[12px] text-success">
-              +{added}
+              +{figure(added)}
             </span>
             <span aria-hidden="true" className="shrink-0 font-mono text-[12px] text-danger">
-              −{removed}
+              −{figure(removed)}
             </span>
             <span className="sr-only">{labels.lines(added, removed)}</span>
           </>
         }
         action={
-          <Button variant="quiet" size="sm" onClick={onOpen}>
+          <Button variant="secondary" size="sm" onClick={onOpen}>
             {labels.open}
             <Icon name="chevron-right" size="xs" />
           </Button>

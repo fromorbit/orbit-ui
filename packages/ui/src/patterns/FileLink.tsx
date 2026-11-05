@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactElement } from 'react'
+import { Fragment, type MouseEvent, type ReactElement, type ReactNode, useId } from 'react'
 import { isCommandClick } from '../provider/platform'
 import { useUi } from '../provider/UiProvider'
 import { PierreFileIcon } from './PierreFileIcon'
@@ -19,13 +19,31 @@ export interface FileLinkProps {
   path: string
   line?: number
   column?: number
-  /** The link's accessible name, path and line in the host's words: "Open src/app.ts, regel 12". */
+  /** The link's description, what it does in the host's words: "Open src/app.ts, regel 12". Its name is `text`, as it reads. */
   label: string
   onOpen(event: FileLinkOpen): void
 }
 
 /** `:12` or `:12:5` at the end of what the agent wrote. */
 const LINE = /:\d+(?::\d+)?$/
+
+/**
+ * The folders of a path with a chance to break after every `/`, so a long path wraps at its
+ * separators in a narrow column instead of running past the edge (and the icon stays with the
+ * first folder rather than standing alone on a line).
+ */
+function breakable(folders: string): ReactNode[] {
+  return folders.split('/').flatMap((part, index, parts): ReactNode[] =>
+    index === parts.length - 1
+      ? [part]
+      : [
+          // biome-ignore lint/suspicious/noArrayIndexKey: the folders of one path, never reordered; two may share a name.
+          <Fragment key={`${index}-${part}`}>
+            {part}/<wbr />
+          </Fragment>,
+        ],
+  )
+}
 
 /**
  * A path the agent named, as a quiet button in running text: the type icon of the file, the folder
@@ -44,6 +62,7 @@ const LINE = /:\d+(?::\d+)?$/
  */
 export function FileLink({ text, path, line, column, label, onOpen }: FileLinkProps): ReactElement {
   const { platform } = useUi()
+  const descriptionId = useId()
   const suffix = LINE.exec(text)?.[0] ?? ''
   const written = text.slice(0, text.length - suffix.length)
   const nameStart = written.lastIndexOf('/') + 1
@@ -53,20 +72,29 @@ export function FileLink({ text, path, line, column, label, onOpen }: FileLinkPr
     onOpen({ modifier: isCommandClick(event, platform), target: event.currentTarget })
   }
   return (
-    <button
-      type="button"
-      data-nt-file-link
-      aria-label={label}
-      title={title}
-      onClick={open}
-      className="inline cursor-pointer rounded-sm px-1 py-0.5 font-mono text-[12px] text-fg outline-focus box-decoration-clone transition-colors duration-(--nt-duration-fast) hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
-    >
-      <span className="mr-1 inline-flex translate-y-[2px] text-fg">
-        <PierreFileIcon path={path} />
+    <>
+      <button
+        type="button"
+        data-nt-file-link
+        // Named by the path and line it shows, so a voice user can say what they see (WCAG 2.5.3);
+        // the caller's words ("Open …, regel 42") describe it.
+        aria-label={text}
+        aria-describedby={descriptionId}
+        title={title}
+        onClick={open}
+        className="inline cursor-pointer rounded-sm px-1 text-left [overflow-wrap:anywhere] py-0.5 font-mono text-[12px] text-fg outline-focus box-decoration-clone transition-colors duration-(--nt-duration-fast) hover:bg-surface-active focus-visible:outline-2 focus-visible:outline-offset-1 motion-reduce:transition-none"
+      >
+        <span className="mr-1 inline-flex translate-y-[2px] text-fg">
+          <PierreFileIcon path={path} />
+        </span>
+        <span className="text-muted">{breakable(written.slice(0, nameStart))}</span>
+        <span>{written.slice(nameStart)}</span>
+        {suffix ? <span className="text-muted">{suffix}</span> : null}
+      </button>
+      {/* Beside the button, not in it: the link's words stay the path alone. */}
+      <span id={descriptionId} hidden>
+        {label}
       </span>
-      <span className="text-muted">{written.slice(0, nameStart)}</span>
-      <span>{written.slice(nameStart)}</span>
-      {suffix ? <span className="text-muted">{suffix}</span> : null}
-    </button>
+    </>
   )
 }

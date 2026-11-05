@@ -5,14 +5,14 @@ export default {
   group: 'primitives',
   title: 'ShareBar',
   states: {
-    'Findings per weight': () => (
+    'Bevindingen per ernst': () => (
       <div className="w-full max-w-96">
         <ShareBar
           label="Bevindingen"
           segments={[
             {
               id: 'blocking',
-              label: '1 blokkerend',
+              label: '1 blokkade',
               value: 1,
               tone: 'danger',
               icon: 'octagon-alert',
@@ -29,7 +29,7 @@ export default {
         />
       </div>
     ),
-    'Tests per outcome': () => (
+    'Tests per uitkomst': () => (
       <div className="w-full max-w-96">
         <ShareBar
           label="Tests"

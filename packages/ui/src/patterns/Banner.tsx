@@ -11,7 +11,7 @@ import { Spinner } from '../primitives/Spinner'
  * One line lands on exactly 40px (`--nt-control-lg`), so it still lines up with the controls beside it.
  */
 const banner = cva(
-  'flex min-h-(--nt-control-lg) w-full items-center gap-2 rounded-md px-3 py-1.5 text-[12px]',
+  'flex min-h-(--nt-control-lg) w-full flex-wrap items-center gap-x-2 gap-y-1.5 rounded-md px-3 py-1.5 text-[12px]',
   {
     variants: {
       tone: {
@@ -80,9 +80,11 @@ export function Banner({ tone, busy, announce = true, action, children }: Banner
       <span className="flex shrink-0 items-center">
         {busy ? <Spinner size="sm" decorative /> : <Icon name="alert-triangle" size="sm" />}
       </span>
-      {/* `min-w-0` so a long sentence wraps inside the bar instead of pushing the action out. */}
-      <p className="m-0 min-w-0 flex-1">{children}</p>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {/* `min-w-0` so a long sentence wraps inside the bar instead of pushing the action out; at
+          least 12rem, so in a narrow bar the action moves under the sentence, at the end, rather
+          than squeezing it to a word a line. */}
+      <p className="m-0 min-w-0 flex-1 basis-48">{children}</p>
+      {action ? <div className="ml-auto shrink-0">{action}</div> : null}
     </div>
   )
 }

@@ -143,18 +143,19 @@ export function ChipListField({
     undefined
 
   return (
-    <div className="flex min-w-0 flex-col items-end gap-1">
-      <div className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1">
+    <div className="flex min-w-0 flex-col items-start gap-1">
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1">
         {value.length === 0 ? null : (
           <ul
             ref={list}
             aria-label={label}
             {...(labelledBy ? { 'aria-labelledby': labelledBy } : {})}
-            className="m-0 flex min-w-0 list-none flex-wrap justify-end gap-1 p-0"
+            className="m-0 flex min-w-0 max-w-full list-none flex-wrap gap-1 p-0"
           >
             {value.map((item, index) => (
-              <li key={item} className="flex min-w-0">
+              <li key={item} className="flex max-w-full shrink-0">
                 <Chip
+                  size="sm"
                   label={item}
                   {...(removable
                     ? {

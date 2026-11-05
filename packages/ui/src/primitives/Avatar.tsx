@@ -48,8 +48,8 @@ const avatar = cva(
   {
     variants: {
       size: {
-        // In a row of the sidebar's foot or a menu: the 9px of `ProjectMark`, for two letters.
-        sm: 'size-5 text-[9px] font-semibold',
+        // In a row of the sidebar's foot or a menu: the 11px of `ProjectMark`, the smallest of the scale, for two letters.
+        sm: 'size-5 text-[11px] font-semibold',
         // The identity at the head of the account menu (design A): 30px beside two lines of text.
         md: 'size-7.5 text-[11px] font-semibold',
         // The head of the account page.

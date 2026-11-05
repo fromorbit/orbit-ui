@@ -95,7 +95,7 @@ export function Collapsible({
           {...(shown ? { 'aria-controls': contentId } : {})}
           data-state={state}
           onClick={() => onOpenChange(!open)}
-          className="no-drag group flex h-6 w-full items-center gap-2 rounded-sm text-left outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:-outline-offset-2"
+          className="no-drag group flex h-6 w-full items-center gap-2 rounded-sm text-left text-[13px] outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:-outline-offset-2"
         >
           {chevron ? (
             <span

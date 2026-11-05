@@ -78,6 +78,15 @@ test.each(kinds)('%s sits in the same slot, the sweet inside it', (kind) => {
   expect(mark.querySelector('.nt-status-mark-body')).not.toBeNull()
 })
 
+test('the quiet size keeps the 14px slot and says its size', () => {
+  const quiet = markOf(render(<StatusMark kind="running" size="sm" />).container)
+  expect(quiet).toHaveAttribute('data-size', 'sm')
+  expect(quiet).toHaveClass('nt-status-mark')
+  expect(rule('.nt-status-mark[data-size="sm"] .nt-status-mark-body')).toContain(
+    'inline-size: 8px;',
+  )
+})
+
 test('without a label the mark stays decorative, for a row that says its status in words', () => {
   const mark = markOf(render(<StatusMark kind="fault" />).container)
   expect(mark).toHaveAttribute('aria-hidden', 'true')

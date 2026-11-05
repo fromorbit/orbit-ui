@@ -11,7 +11,9 @@ function Demo() {
     <div className="flex flex-col gap-2">
       <FileInput ref={ref} onFiles={(files) => setNames(files.map((file) => file.name))} />
       <Button onClick={() => ref.current?.click()}>Bestand kiezen</Button>
-      <p className="text-fg">{names.length > 0 ? names.join(', ') : 'Nog niets gekozen'}</p>
+      <p className="m-0 text-[13px] text-fg">
+        {names.length > 0 ? names.join(', ') : 'Nog niets gekozen'}
+      </p>
     </div>
   )
 }
@@ -20,6 +22,6 @@ export default {
   group: 'primitives',
   title: 'FileInput',
   states: {
-    'Behind a visible trigger': () => <Demo />,
+    'Achter een zichtbare knop': () => <Demo />,
   },
 } satisfies Story

@@ -27,6 +27,12 @@ export interface StatusMarkProps {
    * `Tooltip` itself.
    */
   label?: string
+  /**
+   * `md` (the default) draws the shape at 14px with its full glow; `sm` draws it at 8px with a
+   * softer glow, for a state that is the norm in its column (a paid invoice, a linked repository),
+   * so the one exception at `md` stands out (Von Restorff). Both keep the 14px slot.
+   */
+  size?: 'md' | 'sm'
 }
 
 /**
@@ -40,9 +46,9 @@ export interface StatusMarkProps {
  * pointer. All of it is drawn by `theme.css` (`nt-status-mark`), not by an SVG: the glow of the
  * triangle is a `drop-shadow` on the outer element, because its `clip-path` cuts a `box-shadow` off.
  *
- * Always the same 14px slot, so a column of names beside it stays in line.
+ * Always the same 14px slot, so a column of names beside it stays in line, at either size.
  */
-export function StatusMark({ kind, label }: StatusMarkProps): ReactNode {
+export function StatusMark({ kind, label, size = 'md' }: StatusMarkProps): ReactNode {
   const body = <span className="nt-status-mark-body" />
   return label ? (
     <span
@@ -51,6 +57,7 @@ export function StatusMark({ kind, label }: StatusMarkProps): ReactNode {
       data-nt-status-mark
       data-kind={kind}
       data-shape={SHAPES[kind]}
+      data-size={size}
       className="nt-status-mark"
     >
       {body}
@@ -61,6 +68,7 @@ export function StatusMark({ kind, label }: StatusMarkProps): ReactNode {
       data-nt-status-mark
       data-kind={kind}
       data-shape={SHAPES[kind]}
+      data-size={size}
       className="nt-status-mark"
     >
       {body}

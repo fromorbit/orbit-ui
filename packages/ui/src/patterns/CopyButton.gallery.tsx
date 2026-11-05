@@ -40,7 +40,7 @@ function HeldStill({ answer }: { answer: () => Promise<void> }) {
   }, [answer])
   return (
     <div ref={holder}>
-      <CopyButton {...nl.copy} text="Held still by the gallery" />
+      <CopyButton {...nl.copy} text="Vastgehouden door de galerij" />
     </div>
   )
 }
@@ -52,11 +52,11 @@ export default {
   group: 'patterns',
   title: 'CopyButton',
   states: {
-    Idle: () => <CopyButton {...nl.copy} text="Plain text for the clipboard" />,
-    Confirmed: () => <HeldStill answer={accepts} />,
+    'In rust': () => <CopyButton {...nl.copy} text="Gewone tekst voor het klembord" />,
+    Bevestigd: () => <HeldStill answer={accepts} />,
     // A refusal is a warning sign in the danger colour, and the hidden region says the word: the
     // two together, because a status may never be carried by colour on its own.
-    Failed: () => <HeldStill answer={refuses} />,
+    Mislukt: () => <HeldStill answer={refuses} />,
     // The two places it is used, in the frame each of them gives it. In the app both only appear
     // on hover or focus; here they stand still, so the image shows how the button lands on that
     // surface. The appearing itself is layout and opacity, which Orbit's end-to-end tests measure.
@@ -65,7 +65,7 @@ export default {
     // and from `Timeline.tsx` (`ROW`): a story may not import a component's private classes, so
     // whoever changes the look there has to come past here too, or these images stop telling the
     // truth about the app.
-    'Inside a code block': () => (
+    'In een codeblok': () => (
       <div className="relative w-full max-w-80">
         <div className="rounded-md border border-border bg-surface p-3">
           <pre className="m-0 font-mono text-[12px] leading-normal">const x = 1</pre>
@@ -75,12 +75,12 @@ export default {
         </div>
       </div>
     ),
-    'Under a message': () => (
+    'Onder een bericht': () => (
       <div className="flex w-full max-w-80 flex-col gap-1">
-        <p className="m-0 text-[13px] leading-normal">Yes, that is what the log says.</p>
+        <p className="m-0 text-[13px] leading-normal">Ja, dat staat ook in het log.</p>
         <div className="flex h-6 items-center gap-2 text-[11px] text-muted">
           <time className="tabular-nums">14:32</time>
-          <CopyButton {...nl.copy} text="Yes, that is what the log says." />
+          <CopyButton {...nl.copy} text="Ja, dat staat in het logboek." />
         </div>
       </div>
     ),

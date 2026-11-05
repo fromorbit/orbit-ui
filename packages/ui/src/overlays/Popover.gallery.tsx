@@ -42,7 +42,7 @@ function Stage({ children }: { children: ReactNode }) {
 /** The plain case: a control, and a panel that is not up yet. */
 function Closed() {
   return (
-    <Popover trigger={<Button>Projects</Button>} label="Projects">
+    <Popover trigger={<Button>Projecten</Button>} label="Projecten">
       <Rows names={PROJECTS} />
     </Popover>
   )
@@ -61,15 +61,16 @@ function Open() {
   return (
     <Stage>
       <Popover
-        trigger={<Button>Projects</Button>}
-        label="Projects"
+        trigger={<Button>Projecten</Button>}
+        label="Projecten"
         open={open}
         onOpenChange={setOpen}
       >
         <Rows names={PROJECTS} />
       </Popover>
-      <p data-nt-popover-behind className="mt-3 text-[12px] text-muted">
-        Text that the panel covers: a layer is opaque, never a hole in the window material.
+      {/* Narrower than the panel, so the open panel hides all of it: a layer is opaque. */}
+      <p data-nt-popover-behind className="mt-3 max-w-40 text-[12px] text-muted">
+        Deze tekst ligt onder het paneel.
       </p>
     </Stage>
   )
@@ -123,9 +124,9 @@ function BesideAField() {
       <Popover trigger={<Button>Model</Button>} label="Model">
         <Rows names={MODELS} />
       </Popover>
-      <p className="m-0 text-[12px] text-muted">
-        Unclaimed Escapes — bubble: <span data-nt-escape-count>{bubbled}</span>, capture:{' '}
-        <span data-nt-escape-capture-count>{captured}</span>
+      <p className="m-0 text-[11px] text-muted">
+        Escape die het paneel liet gaan: <span data-nt-escape-count>{bubbled}</span> op het venster,{' '}
+        <span data-nt-escape-capture-count>{captured}</span> vooraf
       </p>
     </div>
   )
@@ -135,9 +136,9 @@ export default {
   group: 'overlays',
   title: 'Popover',
   states: {
-    Closed,
-    Open,
-    'A long list scrolls inside the panel': LongList,
-    'Inside a field that also listens to Escape': BesideAField,
+    Dicht: Closed,
+    Open: Open,
+    'Een lange lijst scrolt in het paneel': LongList,
+    'In een veld dat ook naar Escape luistert': BesideAField,
   },
 } satisfies Story

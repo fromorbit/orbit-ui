@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Avatar,
   DropdownMenu,
@@ -7,9 +7,6 @@ import {
   type IconName,
   OrbitWordmark,
   ProjectMark,
-  SearchList,
-  type SearchListItem,
-  type SearchListLabels,
 } from '../../../../src'
 
 /** The made-up organisation every demo belongs to. */
@@ -41,11 +38,17 @@ export const MINUTE = 60_000
 export const HOUR = 60 * MINUTE
 export const DAY = 24 * HOUR
 
-const LABELS: SearchListLabels = {
-  empty: 'Niets',
-  noResults: (query) => `Geen treffers voor ‘${query}’`,
-  loading: 'Laden…',
-  error: 'Kon de lijst niet laden',
+/**
+ * How long ago, in words as a sentence has them: "2 uur geleden", "gisteren". The short units of
+ * `RelativeTime` ("2 u") are for narrow table cells; running text spells them out.
+ */
+export function ago(ms: number): string {
+  if (ms < HOUR) return `${Math.max(1, Math.round(ms / MINUTE))} min geleden`
+  if (ms < DAY) return `${Math.round(ms / HOUR)} uur geleden`
+  const days = Math.round(ms / DAY)
+  if (days === 1) return 'gisteren'
+  if (days === 2) return 'eergisteren'
+  return `${days} dagen geleden`
 }
 
 /** One place in an app's sidebar; `demo` is the slug of the demo that shows it, if one does. */
@@ -59,9 +62,9 @@ export interface Place {
 
 /** The places of Orbit, the desktop app for working with agents on a repository. */
 export const ORBIT_PLACES: readonly Place[] = [
-  { id: 'chat', label: 'Gesprekken', icon: 'messages-square', trailing: '3', demo: 'chat' },
+  { id: 'chat', label: 'Gesprekken', icon: 'messages-square', trailing: '2', demo: 'chat' },
   { id: 'review', label: 'Review', icon: 'scan-search', trailing: '2', demo: 'review' },
-  { id: 'taken', label: 'Specs', icon: 'clipboard-list', demo: 'taken' },
+  { id: 'specs', label: 'Specs', icon: 'clipboard-list', demo: 'specs' },
   { id: 'branches', label: 'Branches', icon: 'git-branch', demo: 'branches' },
   { id: 'team', label: 'Team', icon: 'users', demo: 'team' },
   { id: 'gebruik', label: 'Gebruik', icon: 'sliders-horizontal', demo: 'gebruik' },
@@ -101,6 +104,57 @@ function AppName({ product }: { product: 'orbit' | 'halo' }): ReactNode {
   )
 }
 
+const PLACE =
+  'flex h-(--nt-control-md) items-center gap-2 rounded-md px-2 text-[13px] no-underline outline-focus focus-visible:outline-2 focus-visible:-outline-offset-2'
+
+/**
+ * The places of the sidebar: links in a `nav`, the open one marked with `aria-current="page"` and
+ * the row-active plane. The focus is its own ring, never that plane, so walking the list with Tab
+ * never hides where the reader is.
+ */
+function Places({ places, current }: { places: readonly Place[]; current: string }): ReactNode {
+  // Named after the open place, so the sidebars of the demos on one page are told apart
+  // (axe: landmark-unique) and the name says where the reader is.
+  const here = places.find((place) => place.id === current)?.label
+  return (
+    <nav aria-label={here === undefined ? 'Navigatie' : `Navigatie, ${here}`}>
+      <ul className="m-0 flex list-none flex-col gap-px p-0">
+        {places.map((place) => {
+          const here = place.id === current
+          const body = (
+            <>
+              <Icon name={place.icon} size="sm" {...(here ? {} : { tone: 'faint' as const })} />
+              <span className="min-w-0 flex-1 truncate">{place.label}</span>
+              {place.trailing === undefined ? null : (
+                <span
+                  className={`font-mono text-[11px] tabular-nums ${here ? 'text-secondary' : 'text-muted'}`}
+                >
+                  {place.trailing}
+                </span>
+              )}
+            </>
+          )
+          return (
+            <li key={place.id}>
+              {place.demo === undefined ? (
+                <span className={`${PLACE} text-secondary`}>{body}</span>
+              ) : (
+                <a
+                  href={`#/demo/${place.demo}`}
+                  aria-current={here ? 'page' : undefined}
+                  className={`${PLACE} ${here ? 'bg-row-active text-fg' : 'text-secondary hover:bg-row-hover hover:text-fg'}`}
+                >
+                  {body}
+                </a>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
 /**
  * The window the demos share: a sidebar with the app, the workspace, the places and the person,
  * and the screen beside it.
@@ -116,22 +170,14 @@ export function AppFrame({
   aside,
   children,
 }: AppFrameProps): ReactNode {
-  const [selected, setSelected] = useState(current)
   const open = (id: string) => {
-    setSelected(id)
     const place = places.find((entry) => entry.id === id)
     if (place?.demo !== undefined && place.demo !== current) location.hash = `#/demo/${place.demo}`
   }
-  const items: SearchListItem[] = places.map(({ id, label, icon, trailing }) => ({
-    id,
-    label,
-    icon,
-    ...(trailing === undefined ? {} : { trailing }),
-  }))
   const here = places.find((place) => place.id === current)
   return (
     <div className="flex h-full min-h-0 w-full flex-col @3xl:flex-row">
-      <div className="hidden w-60 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) @3xl:flex">
+      <div className="hidden w-60 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) shadow-frame-edge @3xl:flex">
         <div className="flex h-12 shrink-0 items-center px-4">
           <AppName product={product} />
         </div>
@@ -141,15 +187,7 @@ export function AppFrame({
           <Icon name="chevrons-up-down" size="sm" tone="faint" />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-2">
-          <SearchList
-            items={items}
-            selectedId={selected}
-            onSelect={open}
-            label="Navigatie"
-            labels={LABELS}
-            searchable={false}
-            checkSlot={false}
-          />
+          <Places places={places} current={current} />
           {aside}
         </div>
         <div className="flex h-14 shrink-0 items-center gap-2 px-4">
@@ -168,7 +206,7 @@ export function AppFrame({
           />
         </div>
       </div>
-      <div className="flex h-12 shrink-0 items-center gap-2 bg-frame px-2 @3xl:hidden">
+      <div className="flex h-12 shrink-0 items-center gap-2 bg-frame px-2 shadow-[inset_0_-1px_0_var(--nt-frame-edge)] @3xl:hidden">
         <DropdownMenu
           trigger={<IconButton icon="panel-left" size="sm" label="Navigatie" />}
           label="Navigatie"

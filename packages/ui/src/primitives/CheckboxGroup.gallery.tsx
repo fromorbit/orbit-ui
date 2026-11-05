@@ -29,7 +29,7 @@ export default {
   group: 'primitives',
   title: 'CheckboxGroup',
   states: {
-    'Two checked': () => <Notifications />,
-    'With an error': () => <Notifications error="Kies er minstens één." />,
+    'Twee aangevinkt': () => <Notifications />,
+    'Met een fout': () => <Notifications error="Kies er minstens één." />,
   },
 } satisfies Story

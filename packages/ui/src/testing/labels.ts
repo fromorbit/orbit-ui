@@ -1,5 +1,7 @@
 import type { ComboboxLabels } from '../overlays/Combobox'
+import type { ChartFigureLabels } from '../patterns/ChartFigure'
 import type { ChipListFieldLabels } from '../patterns/ChipListField'
+import type { ComposerLabels } from '../patterns/Composer'
 import type { CopyButtonLabels } from '../patterns/CopyButton'
 import type { CreditCardFieldLabels } from '../patterns/CreditCardField'
 import type { EditableTableLabels } from '../patterns/EditableTable'
@@ -8,8 +10,12 @@ import type { ProseLabels } from '../patterns/Prose'
 import type { RelativeTimeLabels } from '../patterns/RelativeTime'
 import type { SearchListLabels } from '../patterns/SearchList'
 import type { SettingRowLabels } from '../patterns/SettingRow'
+import type { FindingSeverity, SeverityBarLabels } from '../patterns/SeverityBar'
 import type { SummaryBarLabels } from '../patterns/SummaryBar'
 import type { SecretFieldLabels } from '../primitives/SecretField'
+
+/** A count in Dutch figures: 1.204, with a point between the thousands. */
+const dutchCount = (count: number): string => count.toLocaleString('nl-NL')
 
 /**
  * Dutch words for the library's own tests and gallery stories: the components hold no text of
@@ -30,6 +36,12 @@ export const nl = {
     copiedLabel: 'Gekopieerd',
     failedLabel: 'Kopiëren mislukt',
   } satisfies CopyButtonLabels,
+  composer: {
+    field: 'Bericht',
+    send: 'Verstuur',
+    stop: 'Stop',
+    keys: 'Enter verstuurt, Shift+Enter voor een nieuwe regel',
+  } satisfies ComposerLabels,
   secret: {
     set: 'Ingesteld',
     unset: 'Niet ingesteld',
@@ -42,7 +54,7 @@ export const nl = {
     minutes: (count) => `${count} min`,
     hours: (count) => `${count} u`,
     days: (count) => `${count} d`,
-    weeks: (count) => `${count} w`,
+    weeks: (count) => `${count} wk`,
   } satisfies RelativeTimeLabels,
   list: {
     empty: 'Niets om te kiezen',
@@ -62,8 +74,10 @@ export const nl = {
     cell: (column, row) => `${column}, rij ${row}`,
   } satisfies EditableTableLabels,
   summary: {
-    files: (count) => (count === 1 ? `${count} bestand gewijzigd` : `${count} bestanden gewijzigd`),
-    lines: (added, removed) => `${added} regels erbij, ${removed} eraf`,
+    files: (count) =>
+      count === 1 ? '1 bestand gewijzigd' : `${count.toLocaleString('nl-NL')} bestanden gewijzigd`,
+    lines: (added, removed) =>
+      `${added.toLocaleString('nl-NL')} regels erbij, ${removed.toLocaleString('nl-NL')} eraf`,
     open: 'Bekijk',
   } satisfies SummaryBarLabels,
   treeMarks: {
@@ -126,4 +140,33 @@ export const nl = {
       nameMissing: 'Vul de naam op de kaart in.',
     },
   } satisfies CreditCardFieldLabels,
+  severity: {
+    blocking: (count) => (count === 1 ? '1 blokkade' : `${dutchCount(count)} blokkades`),
+    problem: (count) => (count === 1 ? '1 probleem' : `${dutchCount(count)} problemen`),
+    note: (count) => (count === 1 ? '1 opmerking' : `${dutchCount(count)} opmerkingen`),
+    none: 'Geen bevindingen; niets houdt het samenvoegen tegen',
+  } satisfies SeverityBarLabels,
+  chartFigure: {
+    label: (title) => `Grafiek ${title}`,
+    untitled: 'zonder titel',
+    types: {
+      bar: 'staafdiagram',
+      line: 'lijndiagram',
+      area: 'vlakdiagram',
+      pie: 'taartdiagram',
+      scatter: 'spreidingsdiagram',
+    },
+    loading: 'Gegevens laden…',
+    empty: 'Deze grafiek heeft geen gegevens om te tonen',
+    hidden: (count, max) =>
+      `${count === 1 ? '1 reeks' : `${dutchCount(count)} reeksen`} niet getoond: meer dan ${max} reeksen lezen niet`,
+    rest: 'Overig',
+    legend: 'Legenda',
+    dataTable: 'Gegevens van de grafiek',
+  } satisfies ChartFigureLabels,
+  severityWord: {
+    blocking: 'Blokkade',
+    problem: 'Probleem',
+    note: 'Opmerking',
+  } satisfies Record<FindingSeverity, string>,
 }

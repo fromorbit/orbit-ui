@@ -36,8 +36,8 @@ export default {
   group: 'overlays',
   title: 'DatePicker',
   states: {
-    Empty: () => <Deadline initial={null} />,
-    Chosen: () => <Deadline initial="2026-11-20" />,
-    Invalid: () => <Deadline initial={null} error="Kies een datum." />,
+    Leeg: () => <Deadline initial={null} />,
+    Gekozen: () => <Deadline initial="2026-11-20" />,
+    Ongeldig: () => <Deadline initial={null} error="Kies een datum." />,
   },
 } satisfies Story

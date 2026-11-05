@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   Avatar,
-  AvatarGroup,
   Button,
   Checkbox,
   Chip,
@@ -10,18 +9,18 @@ import {
   Dialog,
   DropdownMenu,
   FormField,
+  Icon,
   IconButton,
   Input,
   PageHeader,
-  RelativeTime,
   ScrollArea,
+  SegmentedControl,
   Select,
   Tag,
   Textarea,
 } from '../../../src'
-import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
-import { AppFrame, DAY, HOUR, NOW } from './parts/AppFrame'
+import { AppFrame, ago, DAY, HOUR } from './parts/AppFrame'
 import { Panel } from './parts/Panel'
 
 type Role = 'owner' | 'admin' | 'member' | 'guest'
@@ -44,7 +43,7 @@ interface Member {
   name: string
   email: string
   role: Role
-  /** When the member was last active, before {@link NOW}. */
+  /** When the member was last active, how long ago, in ms. */
   seen: number
 }
 
@@ -61,10 +60,10 @@ const MEMBERS: Member[] = [
 const RIGHTS = [
   'Agents laten werken',
   'Specs goedkeuren',
-  'Overnemen in main',
+  'Samenvoegen in main',
   'Reviews plaatsen',
   'Leden uitnodigen',
-  'Abonnement wijzigen',
+  'Plan wijzigen',
 ] as const
 
 /** Who may do what by default: rows are rights, columns roles. */
@@ -204,6 +203,59 @@ function InviteDialog({
   )
 }
 
+/**
+ * Whether a role has a right, as a quiet mark for reading: a check in the secondary text colour or
+ * a faint dash, never a filled box. The matrix is read far more often than changed, so the boxes
+ * only come out under "Aanpassen" and the page keeps "Uitnodigen" as its one emphasis.
+ */
+function RightMark({ on, label }: { on: boolean; label: string }): ReactNode {
+  return (
+    <span
+      role="img"
+      aria-label={`${label}: ${on ? 'ja' : 'nee'}`}
+      className="inline-flex size-4 items-center justify-center align-middle"
+    >
+      {on ? (
+        <span className="flex text-secondary">
+          <Icon name="check" size="sm" />
+        </span>
+      ) : (
+        <Icon name="minus" size="sm" tone="faint" />
+      )}
+    </span>
+  )
+}
+
+/** A box to change a right, or its quiet mark while the matrix is only read. */
+function RightCell({
+  role,
+  right,
+  on,
+  editing,
+  onChange,
+}: {
+  role: Role
+  right: string
+  on: boolean
+  editing: boolean
+  onChange(on: boolean): void
+}): ReactNode {
+  const label = `${ROLE_LABEL[role]}: ${right}`
+  if (!editing) return <RightMark on={on} label={label} />
+  return (
+    <span className="inline-flex align-middle">
+      <Checkbox
+        label={label}
+        checked={on}
+        disabled={role === 'owner'}
+        onCheckedChange={(next) => {
+          if (role !== 'owner') onChange(next)
+        }}
+      />
+    </span>
+  )
+}
+
 /** One right, as a row of the table of rights. */
 interface RightRow {
   right: string
@@ -218,9 +270,11 @@ const RIGHT_ROWS: readonly RightRow[] = RIGHTS.map((right, index) => ({ right, i
  */
 function Permissions({
   matrix,
+  editing,
   onChange,
 }: {
   matrix: Record<Assignable, boolean[]>
+  editing: boolean
   onChange(role: Assignable, index: number, on: boolean): void
 }): ReactNode {
   const roles: Role[] = ['owner', 'admin', 'member', 'guest']
@@ -236,29 +290,88 @@ function Permissions({
         header: ROLE_LABEL[role],
         align: 'center',
         cell: (row) => (
-          <span className="inline-flex align-middle">
-            <Checkbox
-              label={`${ROLE_LABEL[role]}: ${row.right}`}
-              checked={role === 'owner' ? true : (matrix[role][row.index] ?? false)}
-              disabled={role === 'owner'}
-              onCheckedChange={(on) => {
-                if (role !== 'owner') onChange(role, row.index, on)
-              }}
-            />
-          </span>
+          <RightCell
+            role={role}
+            right={row.right}
+            on={role === 'owner' ? true : (matrix[role][row.index] ?? false)}
+            editing={editing}
+            onChange={(on) => {
+              if (role !== 'owner') onChange(role, row.index, on)
+            }}
+          />
         ),
       }),
     ),
   ]
   return (
-    <DataTable
-      label="Rechten per rol"
-      columns={columns}
-      rows={RIGHT_ROWS}
-      rowKey={(row) => row.right}
-      labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
-    />
+    <>
+      {/* A phone has no room for four columns of boxes: one role at a time, its rights a list. */}
+      <div className="@xl:hidden">
+        <RoleRights matrix={matrix} editing={editing} onChange={onChange} />
+      </div>
+      <div className="hidden @xl:block">
+        <DataTable
+          label="Rechten per rol"
+          columns={columns}
+          rows={RIGHT_ROWS}
+          rowKey={(row) => row.right}
+          labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
+        />
+      </div>
+    </>
   )
+}
+
+const ROLE_OPTIONS = [{ value: 'owner', label: 'Eigenaar' }, ...ROLES] as const
+
+/** The rights of one role, picked with a segmented control: the narrow form of the matrix. */
+function RoleRights({
+  matrix,
+  editing,
+  onChange,
+}: {
+  matrix: Record<Assignable, boolean[]>
+  editing: boolean
+  onChange(role: Assignable, index: number, on: boolean): void
+}): ReactNode {
+  const [role, setRole] = useState<Role>('member')
+  return (
+    <div className="flex flex-col gap-2 px-4 pb-3">
+      <div className="*:w-full">
+        <SegmentedControl<Role>
+          label="Rol"
+          size="sm"
+          value={role}
+          options={ROLE_OPTIONS}
+          onValueChange={setRole}
+        />
+      </div>
+      <ul className="m-0 list-none p-0">
+        {RIGHTS.map((right, index) => (
+          <li
+            key={right}
+            className="flex min-h-10 items-center justify-between gap-3 border-border border-t first:border-t-0"
+          >
+            <span className="text-[13px] text-secondary">{right}</span>
+            <RightCell
+              role={role}
+              right={right}
+              on={role === 'owner' ? true : (matrix[role][index] ?? false)}
+              editing={editing}
+              onChange={(on) => {
+                if (role !== 'owner') onChange(role, index, on)
+              }}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** When a member was last active, as the row says it. */
+function seenText(ms: number): string {
+  return ms === 0 ? 'Nu actief' : `Actief ${ago(ms)}`
 }
 
 /** One member: face, name and address, when last seen, the role and a menu. */
@@ -272,51 +385,61 @@ function MemberRow({
   return (
     <li className="flex items-center gap-3 border-border border-t px-4 py-2.5 first:border-t-0">
       <Avatar name={member.name} size="md" />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[13px] text-fg">{member.name}</span>
-        <span className="truncate text-[12px] text-muted">{member.email}</span>
+      {/* On a phone the role goes under the address, so the name and the address keep the width
+          of the row; from 512px on they stand side by side as columns. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-2 @lg:flex-row @lg:items-center @lg:gap-3">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-[13px] text-fg">{member.name}</span>
+          <span className="truncate text-[12px] text-muted">{member.email}</span>
+        </div>
+        {/* The name and address take the room; when the row is short of it, the activity goes
+            first, so an address is never cut while a column of times keeps its space. */}
+        <span className="hidden w-36 shrink-0 whitespace-nowrap text-[12px] text-muted @3xl:block">
+          {seenText(member.seen)}
+        </span>
+        {/* One width for every role at every width, the tag of the owner on the same left edge,
+            so the roles stand as a column. */}
+        <div className="flex w-28 shrink-0 justify-start">
+          {member.role === 'owner' ? (
+            <Tag>Eigenaar</Tag>
+          ) : (
+            <div className="flex w-full *:w-full">
+              <Select<Assignable>
+                label={`Rol van ${member.name}`}
+                size="sm"
+                value={member.role}
+                options={ROLES}
+                onValueChange={onRole}
+              />
+            </div>
+          )}
+        </div>
       </div>
-      <span className="hidden w-24 shrink-0 text-[12px] text-muted @2xl:block">
-        {member.seen === 0 ? (
-          'Nu actief'
-        ) : (
-          <RelativeTime labels={galleryLabels.time} at={NOW - member.seen} now={NOW} />
-        )}
-      </span>
-      <div className="flex shrink-0 justify-end @2xl:w-28">
-        {member.role === 'owner' ? (
-          <Tag>Eigenaar</Tag>
-        ) : (
-          <Select<Assignable>
-            label={`Rol van ${member.name}`}
+      {/* At every width: on a phone too, the menu is the only way to a member's acts. */}
+      <DropdownMenu
+        trigger={
+          <IconButton
+            icon="more-horizontal"
             size="sm"
-            value={member.role}
-            options={ROLES}
-            onValueChange={onRole}
+            variant="secondary"
+            label={`Acties voor ${member.name}`}
           />
-        )}
-      </div>
-      <span className="hidden @lg:contents">
-        <DropdownMenu
-          trigger={
-            <IconButton icon="more-horizontal" size="sm" label={`Acties voor ${member.name}`} />
-          }
-          label={`Acties voor ${member.name}`}
-          align="end"
-          items={[
-            { id: 'profile', label: 'Profiel bekijken', icon: 'user' },
-            { id: 'mail', label: 'E-mail sturen', icon: 'at-sign' },
-            {
-              id: 'remove',
-              label: 'Uit het team halen',
-              icon: 'trash-2',
-              tone: 'danger',
-              separated: true,
-              disabled: member.role === 'owner',
-            },
-          ]}
-        />
-      </span>
+        }
+        label={`Acties voor ${member.name}`}
+        align="end"
+        items={[
+          { id: 'profile', label: 'Profiel bekijken', icon: 'user' },
+          { id: 'mail', label: 'E-mail sturen', icon: 'at-sign' },
+          {
+            id: 'remove',
+            label: 'Uit het team halen',
+            icon: 'trash-2',
+            tone: 'danger',
+            separated: true,
+            disabled: member.role === 'owner',
+          },
+        ]}
+      />
     </li>
   )
 }
@@ -332,6 +455,7 @@ function Team({ variant }: DemoScreenProps): ReactNode {
   useEffect(() => setInviting(variant === 'uitnodigen'), [variant])
   const [query, setQuery] = useState('')
   const [matrix, setMatrix] = useState(MATRIX)
+  const [editingRights, setEditingRights] = useState(false)
   const shown = members.filter((member) =>
     `${member.name} ${member.email}`.toLowerCase().includes(query.trim().toLowerCase()),
   )
@@ -347,27 +471,20 @@ function Team({ variant }: DemoScreenProps): ReactNode {
             title="Team"
             meta={`${members.length} leden · ${invited.length === 1 ? '1 uitnodiging' : `${invited.length} uitnodigingen`} open`}
             actions={
-              <>
-                <span className="hidden @xl:inline-flex">
-                  <AvatarGroup
-                    names={members.map((member) => member.name)}
-                    label={`${members.length} leden`}
-                  />
-                </span>
-                <Button variant="primary" size="sm" onClick={() => setInviting(true)}>
-                  Uitnodigen
-                </Button>
-              </>
+              <Button variant="primary" size="sm" onClick={() => setInviting(true)}>
+                Uitnodigen
+              </Button>
             }
           />
-          <div className="grid grid-cols-1 items-start gap-5 @6xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 items-start gap-5 @6xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <div className="flex min-w-0 flex-col gap-5">
               <Panel
                 title="Leden"
                 meta={String(members.length)}
                 flush
                 actions={
-                  <div className="hidden w-56 *:w-full @xl:block">
+                  // Narrower on a phone, never gone: finding a member works at every width.
+                  <div className="w-36 *:w-full @md:w-44 @xl:w-56">
                     <Input
                       label="Zoek een lid"
                       icon="search"
@@ -405,26 +522,53 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                       <div className="flex min-w-0 flex-1 flex-col">
                         <span className="truncate text-[13px] text-fg">{invite.email}</span>
                         <span className="truncate text-[12px] text-muted">
-                          {`${ROLE_LABEL[invite.role]} · verstuurd `}
-                          <RelativeTime
-                            labels={galleryLabels.time}
-                            at={NOW - invite.sent}
-                            now={NOW}
-                          />
+                          {`${ROLE_LABEL[invite.role]} · verstuurd ${invite.sent === 0 ? 'zojuist' : ago(invite.sent)}`}
                         </span>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        Opnieuw sturen
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setInvited((now) => now.filter((entry) => entry.email !== invite.email))
-                        }
-                      >
-                        Intrekken
-                      </Button>
+                      {/* Beside the address where there is room; behind ⋯ on a phone, so the
+                          address itself stays readable. */}
+                      <span className="hidden shrink-0 items-center gap-1 @xl:flex">
+                        <Button variant="secondary" size="sm">
+                          Opnieuw sturen
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() =>
+                            setInvited((now) => now.filter((entry) => entry.email !== invite.email))
+                          }
+                        >
+                          Intrekken
+                        </Button>
+                      </span>
+                      <span className="@xl:hidden">
+                        <DropdownMenu
+                          trigger={
+                            <IconButton
+                              icon="more-horizontal"
+                              size="sm"
+                              variant="secondary"
+                              label={`Acties voor ${invite.email}`}
+                            />
+                          }
+                          label={`Acties voor ${invite.email}`}
+                          align="end"
+                          items={[
+                            { id: 'resend', label: 'Opnieuw sturen', icon: 'rotate-cw' },
+                            {
+                              id: 'revoke',
+                              label: 'Intrekken',
+                              icon: 'x',
+                              tone: 'danger',
+                              separated: true,
+                              onSelect: () =>
+                                setInvited((now) =>
+                                  now.filter((entry) => entry.email !== invite.email),
+                                ),
+                            },
+                          ]}
+                        />
+                      </span>
                     </li>
                   ))}
                   {invited.length === 0 ? (
@@ -435,10 +579,24 @@ function Team({ variant }: DemoScreenProps): ReactNode {
                 </ul>
               </Panel>
             </div>
-            <Panel title="Rechten per rol" meta="voor de hele werkruimte" flush>
+            <Panel
+              title="Rechten per rol"
+              meta="voor de hele werkruimte"
+              flush
+              actions={
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditingRights((now) => !now)}
+                >
+                  {editingRights ? 'Klaar' : 'Aanpassen'}
+                </Button>
+              }
+            >
               <div>
                 <Permissions
                   matrix={matrix}
+                  editing={editingRights}
                   onChange={(role, index, on) =>
                     setMatrix((now) => ({
                       ...now,

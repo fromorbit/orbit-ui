@@ -5,7 +5,6 @@ import {
   type DataTableColumn,
   DropdownMenu,
   EmptyState,
-  Icon,
   IconButton,
   Input,
   PageHeader,
@@ -19,14 +18,14 @@ import {
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
-import { AppFrame, DAY, HOUR, MINUTE, NOW } from './parts/AppFrame'
+import { AppFrame, ago, DAY, HOUR, MINUTE, NOW } from './parts/AppFrame'
 
 type Filter = 'all' | 'running' | 'fault' | 'stopped'
 
 const FILTERS = [
   { value: 'all', label: 'Alle' },
   { value: 'running', label: 'Draait' },
-  { value: 'fault', label: 'Fout' },
+  { value: 'fault', label: 'Start niet' },
   { value: 'stopped', label: 'Gestopt' },
 ] as const
 
@@ -139,7 +138,12 @@ function RowMenu({ space }: { space: Space }): ReactNode {
   return (
     <DropdownMenu
       trigger={
-        <IconButton icon="more-horizontal" size="sm" label={`Acties voor ${space.branch}`} />
+        <IconButton
+          icon="more-horizontal"
+          size="sm"
+          variant="secondary"
+          label={`Acties voor ${space.branch}`}
+        />
       }
       label={`Acties voor ${space.branch}`}
       align="end"
@@ -169,7 +173,7 @@ function SpaceName({ space }: { space: Space }): ReactNode {
 const COLUMNS: DataTableColumn<Space>[] = [
   {
     id: 'space',
-    header: 'Space',
+    header: 'App en branch',
     sortValue: (space) => `${space.app}/${space.branch}`,
     cell: (space) => (
       <div className="flex min-w-0 flex-col gap-0.5">
@@ -192,7 +196,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
   {
     id: 'stack',
     header: 'Stack',
-    hideBelow: 'xl',
+    hideBelow: 'lg',
     cell: (space) => (
       <span className="flex flex-wrap gap-1">
         {space.stack.map((part) => (
@@ -203,7 +207,7 @@ const COLUMNS: DataTableColumn<Space>[] = [
   },
   {
     id: 'deployed',
-    header: 'Laatste deploy',
+    header: 'Laatst uitgerold',
     hideBelow: 'lg',
     sortValue: (space) => -space.deployed,
     cell: (space) => (
@@ -223,9 +227,9 @@ const COLUMNS: DataTableColumn<Space>[] = [
 
 /** The spaces as a table: sortable, rows to select, and narrow every row a card. */
 function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
-  const [picked, setPicked] = useState<readonly string[]>(['s2'])
+  const [picked, setPicked] = useState<readonly string[]>([])
   return (
-    <div className="overflow-hidden rounded-lg bg-overlay">
+    <div className="overflow-hidden rounded-lg bg-overlay shadow-plane">
       <DataTable
         label="Spaces"
         columns={COLUMNS}
@@ -238,15 +242,15 @@ function SpaceTable({ spaces }: { spaces: readonly Space[] }): ReactNode {
         defaultSort={{ column: 'deployed', direction: 'descending' }}
         card={(space) => (
           <div className="flex items-start gap-3 px-3.5 py-3">
+            {/* The quiet size on a card: the mark sits beside a 13px title, not in a table row. */}
             <span className="flex h-5 items-center">
-              <StatusMark kind={space.kind} />
+              <StatusMark kind={space.kind} size="sm" />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13px]">
               <SpaceName space={space} />
               <span className="truncate font-mono text-[11px] text-muted">{space.host}</span>
               <span className="text-[12px] text-secondary">
-                {space.status} ·{' '}
-                <RelativeTime labels={galleryLabels.time} at={NOW - space.deployed} now={NOW} />
+                {`${space.status} · uitgerold ${ago(space.deployed)}`}
               </span>
             </div>
             <RowMenu space={space} />
@@ -289,16 +293,20 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <PageHeader
             title="Apps"
-            meta={empty ? 'Zilverberg · nog geen apps' : 'Zilverberg · 4 apps · 12 spaces'}
-            actions={
-              // Empty, the action of the empty state is the one filled button.
-              <Button variant={empty ? 'secondary' : 'primary'} size="sm">
-                Nieuwe space
-              </Button>
-            }
+            meta={empty ? 'Zilverberg · nog geen spaces' : 'Zilverberg · 4 apps · 12 spaces'}
+            // Empty, the empty state's own "Repository koppelen" is the one next step.
+            {...(empty
+              ? {}
+              : {
+                  actions: (
+                    <Button variant="primary" size="sm">
+                      Nieuwe space
+                    </Button>
+                  ),
+                })}
           />
           {empty ? (
-            <div className="flex min-h-96 items-center justify-center rounded-lg bg-overlay p-6">
+            <div className="flex min-h-96 items-center justify-center rounded-lg bg-overlay p-6 shadow-plane">
               <EmptyState
                 icon="rows"
                 title="Nog geen spaces"
@@ -332,7 +340,7 @@ function Apps({ variant }: DemoScreenProps): ReactNode {
                 />
               </div>
               {shown.length === 0 ? (
-                <div className="rounded-lg bg-overlay p-8">
+                <div className="rounded-lg bg-overlay p-8 shadow-plane">
                   <EmptyState
                     icon="search"
                     title="Geen spaces gevonden"

@@ -3,13 +3,26 @@ import { IconButton } from './IconButton'
 import { Input } from './Input'
 import { Tabs } from './Tabs'
 
-const appearanceTab = { id: 'appearance', label: 'Appearance', content: <p>Appearance settings</p> }
-const agentsTab = { id: 'agents', label: 'Agents', content: <p>Agent settings</p> }
-const providersTab = { id: 'providers', label: 'Providers', content: <p>Provider settings</p> }
+const appearanceTab = {
+  id: 'appearance',
+  label: 'Weergave',
+  content: <p>Instellingen voor de weergave</p>,
+}
+const agentsTab = { id: 'agents', label: 'Agents', content: <p>Instellingen voor agents</p> }
+const providersTab = {
+  id: 'providers',
+  label: 'Providers',
+  content: <p>Instellingen voor providers</p>,
+}
 const tabs = [appearanceTab, agentsTab, providersTab]
 
 const pillTabs = [
-  { id: 'changes', label: 'Changes', icon: 'file-diff' as const, content: <p>Changed files</p> },
+  {
+    id: 'changes',
+    label: 'Wijzigingen',
+    icon: 'file-diff' as const,
+    content: <p>Gewijzigde bestanden</p>,
+  },
   { id: 'browser', label: 'Browser', icon: 'globe' as const, content: <p>Browser</p> },
   { id: 'terminal', label: 'Terminal', icon: 'terminal' as const, content: <p>Terminal</p> },
 ]
@@ -26,9 +39,9 @@ const page = (id: string, label: string) => ({
 
 const changesPill = {
   id: 'changes',
-  label: 'Changes',
+  label: 'Wijzigingen',
   icon: 'file-diff' as const,
-  content: <p>Changed files</p>,
+  content: <p>Gewijzigde bestanden</p>,
 }
 
 const noop = () => {}
@@ -37,20 +50,20 @@ export default {
   group: 'primitives',
   title: 'Tabs',
   states: {
-    Default: () => (
+    Standaard: () => (
       <div className="h-64">
-        <Tabs label="Settings sections" tabs={tabs} />
+        <Tabs label="Onderdelen van de instellingen" tabs={tabs} />
       </div>
     ),
-    Horizontal: () => (
+    Horizontaal: () => (
       <div className="h-64">
-        <Tabs label="Panel sections" tabs={tabs} orientation="horizontal" />
+        <Tabs label="Onderdelen van het paneel" tabs={tabs} orientation="horizontal" />
       </div>
     ),
-    Pill: () => (
+    Pil: () => (
       <div className="h-64">
         <Tabs
-          label="Panel sections"
+          label="Onderdelen van het paneel"
           tabs={pillTabs}
           orientation="horizontal"
           variant="pill"
@@ -58,37 +71,45 @@ export default {
         />
       </div>
     ),
-    'One tab': () => (
-      <div className="h-32">
-        <Tabs label="Panel sections" tabs={[changesPill]} orientation="horizontal" variant="pill" />
-      </div>
-    ),
-    'Long title': () => (
+    'Eén tab': () => (
       <div className="h-32">
         <Tabs
-          label="Panel sections"
+          label="Onderdelen van het paneel"
+          tabs={[changesPill]}
+          orientation="horizontal"
+          variant="pill"
+        />
+      </div>
+    ),
+    'Lange titel': () => (
+      <div className="h-32">
+        <Tabs
+          label="Onderdelen van het paneel"
           orientation="horizontal"
           variant="pill"
           onClose={noop}
           value="tab-1"
-          tabs={[changesPill, page('tab-1', 'A very long page title that never fits on one pill')]}
+          tabs={[
+            changesPill,
+            page('tab-1', 'Een heel lange paginatitel die nooit op één pil past'),
+          ]}
         />
       </div>
     ),
-    Count: () => (
+    Aantal: () => (
       <div className="h-32">
         <Tabs
-          label="Panel sections"
+          label="Onderdelen van het paneel"
           orientation="horizontal"
           variant="pill"
           tabs={[{ ...changesPill, count: 12 }]}
         />
       </div>
     ),
-    'Closable, focused': () => (
+    'Sluitbaar, met focus': () => (
       <div className="h-32">
         <Tabs
-          label="Panel sections"
+          label="Onderdelen van het paneel"
           orientation="horizontal"
           variant="pill"
           onClose={noop}
@@ -100,10 +121,10 @@ export default {
     // The right panel's strip: level with the title bar, a drag region, holding the corner where
     // Windows lays its window controls. Switch the platform to win32 to see the room it keeps at
     // its end; six pages then shrink to their cut titles instead of running under that room.
-    'Title bar strip': () => (
+    Titelbalk: () => (
       <div className="h-32 w-full max-w-[360px] border border-border">
         <Tabs
-          label="Panel sections"
+          label="Onderdelen van het paneel"
           orientation="horizontal"
           variant="pill"
           strip="titlebar"
@@ -113,7 +134,7 @@ export default {
           tabs={[
             changesPill,
             page('tab-1', 'Shop'),
-            page('tab-2', 'Documentation of the checkout'),
+            page('tab-2', 'Documentatie van het afrekenen'),
             page('tab-3', 'Dashboard'),
             page('tab-4', 'Status'),
             page('tab-5', 'Login'),
@@ -124,11 +145,11 @@ export default {
     ),
     // The settings screen while it searches: a field above the list, the hits counted per tab,
     // and a tab without hits dimmed.
-    'Field above, counts, dimmed': () => (
+    'Veld erboven, aantallen, gedimd': () => (
       <div className="h-64">
         <Tabs
-          label="Settings sections"
-          before={<Input label="Search" placeholder="Search" icon="search" size="sm" />}
+          label="Onderdelen van de instellingen"
+          before={<Input label="Zoeken" placeholder="Zoeken" icon="search" size="sm" />}
           tabs={[
             { ...appearanceTab, count: 3 },
             { ...agentsTab, count: 1 },

@@ -9,7 +9,7 @@ export default {
   title: 'ProgressMeter',
   states: {
     // The plans under a spec: a fixed bar and the count, so the counts of a column line up.
-    'Plans in a column': () => (
+    'Plannen in een kolom': () => (
       <div className="flex flex-col gap-2">
         <ProgressMeter valueText={meterText} value={0} max={3} label="PLAN-11" />
         <ProgressMeter valueText={meterText} value={2} max={5} label="PLAN-10" />
@@ -18,13 +18,13 @@ export default {
       </div>
     ),
     // Acceptance: the bar takes its column, the count is said in words beside it.
-    'Filling its column, without the count': () => (
+    'Vult de kolom, zonder aantal': () => (
       <div className="flex w-64">
         <ProgressMeter
           valueText={meterText}
           value={9}
           max={12}
-          label="Acceptance"
+          label="Criteria"
           width="fill"
           count={false}
         />

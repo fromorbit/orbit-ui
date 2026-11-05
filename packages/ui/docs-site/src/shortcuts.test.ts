@@ -47,6 +47,13 @@ describe('the shortcuts of the docs page', () => {
     expect(docsShortcuts('windows').label('sdd.scope.all')).toBeUndefined()
   })
 
+  test('give the made-up commands of the stories a key and a spoken form per platform', () => {
+    expect(docsShortcuts('mac').label('file.open')).toBe('⌘O')
+    expect(docsShortcuts('windows').label('file.open')).toBe('Ctrl+O')
+    expect(docsShortcuts('mac').aria('file.delete')).toBe('Meta+Backspace')
+    expect(docsShortcuts('linux').aria('canvas.zoomIn')).toBe('Control+Plus')
+  })
+
   test('draw a written-out key as it stands', () => {
     expect(docsShortcuts('mac').label('⌘K')).toBe('⌘K')
   })

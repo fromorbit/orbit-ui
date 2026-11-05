@@ -15,8 +15,8 @@ function Thinking() {
     <Rail>
       <article className="text-muted">
         <RailInset columns={2}>
-          <p className="m-0 text-[11px] font-medium">Thinking</p>
-          <p className="m-0">I am weighing two ways of doing this before I touch anything.</p>
+          <p className="m-0 text-[11px] font-medium">Denkt na</p>
+          <p className="m-0">Ik weeg twee aanpakken af voordat ik iets aanraak.</p>
         </RailInset>
       </article>
     </Rail>
@@ -50,7 +50,7 @@ function Steps({ start }: { start: boolean }) {
               <span className="flex text-muted">
                 <Icon name="check" size="sm" />
               </span>
-              <span className="shrink-0">2 steps</span>
+              <span className="shrink-0">2 stappen</span>
               <span className="min-w-0 truncate font-mono text-muted">read, bash</span>
             </span>
           }
@@ -71,7 +71,7 @@ function Technical() {
     <Rail line="hidden">
       <div className="flex flex-col gap-0.5">
         <RailInset>
-          <p className="m-0 text-[11px] text-muted">2 technical events · status, limit</p>
+          <p className="m-0 text-[11px] text-muted">2 technische gebeurtenissen · status, limiet</p>
         </RailInset>
       </div>
     </Rail>
@@ -84,22 +84,22 @@ export default {
   states: {
     // The order that showed the bug: a run of steps, a thought, another run. One line, one indent
     // for the first text of each, whether a block is folded or open.
-    'Steps, thinking, steps': () => (
+    'Stappen, denken, stappen': () => (
       <Answer>
-        <p className="m-0">Here is what I did.</p>
+        <p className="m-0">Dit heb ik gedaan.</p>
         <Steps start={false} />
         <Thinking />
         <Steps start={false} />
       </Answer>
     ),
-    'An open run beside a folded one': () => (
+    'Een open run naast een ingeklapte': () => (
       <Answer>
         <Steps start />
         <Thinking />
         <Steps start={false} />
       </Answer>
     ),
-    'Without a line, for what is not the work': () => (
+    'Zonder lijn, voor wat niet het werk is': () => (
       <Answer>
         <Steps start={false} />
         <Technical />

@@ -18,7 +18,7 @@ function Live({
   const [value, setValue] = useState<readonly string[]>(initial)
   return (
     <TooltipProvider>
-      <div className="flex w-[360px] justify-end">
+      <div className="flex w-full max-w-[360px]">
         <ChipListField
           labels={nl.chipList}
           label="Hosts"
@@ -26,7 +26,9 @@ function Live({
           maxItems={maxItems}
           maxLength={60}
           {...(minItems !== undefined ? { minItems } : {})}
-          check={(item) => (refuse && item.includes(' ') ? 'No spaces in a host' : undefined)}
+          check={(item) =>
+            refuse && item.includes(' ') ? 'Een host heeft geen spaties' : undefined
+          }
           onChange={(next) => setValue(next)}
         />
       </div>
@@ -38,14 +40,14 @@ export default {
   group: 'patterns',
   title: 'ChipListField',
   states: {
-    Empty: () => <Live initial={[]} />,
-    'A few values': () => <Live initial={['shop.test', 'api.shop.test']} />,
-    'Many values wrap': () => (
+    Leeg: () => <Live initial={[]} />,
+    'Een paar waarden': () => <Live initial={['shop.test', 'api.shop.test']} />,
+    'Veel waarden lopen door': () => (
       <Live
         initial={['shop.test', 'api.shop.test', 'cdn.shop.test', 'admin.shop.test', 'localhost']}
       />
     ),
-    'Full: no field to add': () => <Live initial={['draft', 'review']} maxItems={2} />,
-    'Keeps at least one': () => <Live initial={['draft']} minItems={1} />,
+    'Vol: geen veld om toe te voegen': () => <Live initial={['draft', 'review']} maxItems={2} />,
+    'Houdt er minstens één': () => <Live initial={['draft']} minItems={1} />,
   },
 } satisfies Story

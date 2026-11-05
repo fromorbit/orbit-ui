@@ -3,7 +3,7 @@ import { Button } from './Button'
 import { ScrollArea } from './ScrollArea'
 
 /** More rows than fit in the fixed-height container below, so the scrollbar is always visible. */
-const rows = Array.from({ length: 30 }, (_, index) => `Row ${index + 1}`)
+const rows = Array.from({ length: 30 }, (_, index) => `Regel ${index + 1}`)
 
 function Rows() {
   return (
@@ -45,10 +45,10 @@ function TruncatingRows() {
   return (
     <div className="flex flex-col p-1">
       <div className="truncate px-2 text-[13px] text-fg">
-        A line of text far too long to fit inside this narrow column
+        Een regel tekst die veel te lang is voor deze smalle kolom
       </div>
       <div className="truncate px-2 text-[13px] text-muted">
-        And a second one, just as long, that has to end in an ellipsis
+        En nog een, net zo lang, die op een beletselteken moet eindigen
       </div>
       {rows.map((row) => (
         <Button key={row} variant="ghost" size="sm" block onClick={() => {}}>
@@ -63,45 +63,45 @@ export default {
   group: 'primitives',
   title: 'ScrollArea',
   states: {
-    Default: () => (
+    Standaard: () => (
       // The fixed height lives here, in the story: `ScrollArea` itself only fills whatever box
       // it is given.
-      <div className="h-48 w-64 rounded-md border border-border bg-surface">
-        <ScrollArea label="Rows">
+      <div className="h-48 w-64 rounded-md border border-border bg-plane">
+        <ScrollArea label="Rijen">
           <Rows />
         </ScrollArea>
       </div>
     ),
-    'With focusable content': () => (
+    'Met focusbare inhoud': () => (
       // No label: the buttons are the tab stops, so the viewport adds none of its own.
-      <div className="h-48 w-64 rounded-md border border-border bg-surface">
+      <div className="h-48 w-64 rounded-md border border-border bg-plane">
         <ScrollArea>
           <ButtonRows />
         </ScrollArea>
       </div>
     ),
-    'With a row that must truncate': () => (
+    'Met een rij die moet inkorten': () => (
       // The sidebar's case: the column has a fixed width and a row's text does not. It has to
       // truncate inside the column, never widen it — see the Radix note in ScrollArea.tsx.
-      <div className="h-48 w-56 rounded-md border border-border bg-surface">
+      <div className="h-48 w-56 rounded-md border border-border bg-plane">
         <ScrollArea>
           <TruncatingRows />
         </ScrollArea>
       </div>
     ),
-    'Long list': () => (
+    'Lange lijst': () => (
       // The two shapes, one above the other, which should not be told apart: `ScrollArea` draws its own
       // bar over the content, and a plain `overflow-y-auto` gets the global one from `index.css`
       // (8px, the same thumb, no track, no arrows). Point at either to see its thumb.
       <div className="flex flex-col gap-4">
-        <div className="h-48 w-64 rounded-md border border-border bg-surface">
-          <ScrollArea label="Rows in a ScrollArea">
+        <div className="h-48 w-64 rounded-md border border-border bg-plane">
+          <ScrollArea label="Rijen in een ScrollArea">
             <Rows />
           </ScrollArea>
         </div>
         <div
           data-nt-plain-scroller
-          className="h-48 w-64 overflow-y-auto rounded-md border border-border bg-surface"
+          className="h-48 w-64 overflow-y-auto rounded-md border border-border bg-plane"
         >
           <ButtonRows />
         </div>

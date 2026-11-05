@@ -81,16 +81,16 @@ export function OtpInput({
 
   return (
     <span
-      className={`no-drag relative inline-flex items-center gap-2 ${disabled ? 'opacity-40' : ''}`}
+      className={`no-drag relative inline-flex max-w-full items-center gap-2 ${disabled ? 'opacity-40' : ''}`}
     >
       {Array.from({ length }, (_, index) => {
         const sign = code[index]
         const active = focused && index === current
         const box = ariaInvalid
-          ? 'flex h-(--nt-control-lg) w-(--nt-control-lg) items-center justify-center rounded-md border border-danger bg-surface font-mono text-[20px] text-fg tabular-nums'
+          ? 'flex h-(--nt-control-lg) w-(--nt-control-lg) min-w-7 shrink items-center justify-center rounded-md border border-danger bg-surface font-mono text-[20px] text-fg tabular-nums'
           : active
-            ? 'flex h-(--nt-control-lg) w-(--nt-control-lg) items-center justify-center rounded-md border border-accent-border bg-surface font-mono text-[20px] text-fg tabular-nums outline-2 outline-focus outline-offset-2'
-            : 'flex h-(--nt-control-lg) w-(--nt-control-lg) items-center justify-center rounded-md border border-border bg-surface font-mono text-[20px] text-fg tabular-nums'
+            ? 'flex h-(--nt-control-lg) w-(--nt-control-lg) min-w-7 shrink items-center justify-center rounded-md border border-accent-border bg-surface font-mono text-[20px] text-fg tabular-nums outline-2 outline-focus outline-offset-2'
+            : 'flex h-(--nt-control-lg) w-(--nt-control-lg) min-w-7 shrink items-center justify-center rounded-md border border-border bg-surface font-mono text-[20px] text-fg tabular-nums'
         return (
           // biome-ignore lint/suspicious/noArrayIndexKey: a fixed row of boxes, never reordered.
           <Fragment key={index}>

@@ -1,21 +1,27 @@
-import { cva } from 'class-variance-authority'
 import { DropdownMenu as RadixDropdownMenu } from 'radix-ui'
-import { createContext, type ReactElement, type ReactNode, useContext, useId } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { handBackOnlyLostFocus } from '../primitives/hand-back'
-import { Icon, type IconName } from '../primitives/Icon'
-import { Kbd } from '../primitives/Kbd'
+import type { IconName } from '../primitives/Icon'
 import type { ShortcutLabel } from '../primitives/shortcut'
+import { DROPDOWN_PARTS, MENU_WIDTH, MenuBody } from './menu-rows'
 import { PANEL } from './panel'
 import { usePortalContainer } from './portal'
 import { Tooltip } from './Tooltip'
 
-/** One row of the menu: the handful of things a caller may do to whatever the trigger sits on. */
+/**
+ * One row of the menu: the handful of things a caller may do to whatever the trigger sits on.
+ *
+ * The item model of `ContextMenu` as well: one array can feed the `⋯` of a row and a right click
+ * on it, which then offer the same acts in the same order, drawn the same way.
+ */
 export interface DropdownMenuItem {
   id: string
   label: string
   /**
    * The glyph in front of a plain row. **Ignored on a choice row** (a `checkbox` or `radio`, or a
    * row with `checked`): its slot holds the check instead, so the rows of a menu stay aligned.
+   * A row without one, in a panel where another row has an icon, a glyph or a check at the start,
+   * keeps the slot empty, so every label of the panel starts on one line.
    */
   icon?: IconName
   /**
@@ -69,6 +75,10 @@ export interface DropdownMenuItem {
   /**
    * What choosing this row costs, in a `Tooltip` rather than as a line in the menu: explanation
    * stays out of sight until someone hovers or walks to the row.
+   *
+   * On a `disabled` row it is the reason instead, and in sight: a quiet 12px line under the row
+   * ("Verwijderen kan zodra het opslaan klaar is"), which also describes it (`aria-describedby`).
+   * The row stays a stop of the walk, and choosing it does nothing.
    */
   hint?: string
   /**
@@ -166,30 +176,6 @@ export interface DropdownMenuProps {
   tooltip?: string
 }
 
-const item = cva(
-  // `cursor-default` and `select-none` per Radix's own `MenuItem` (a row is chosen, not read), and
-  // `data-[highlighted]` is the roving-focus state Radix moves through the list — no focus ring of
-  // our own here, for the same reason `Select`'s `ITEM` has none.
-  'flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
-  {
-    variants: {
-      tone: {
-        default: 'text-fg data-[highlighted]:bg-surface-hover',
-        danger: 'text-danger data-[highlighted]:bg-danger-subtle',
-        quiet: 'text-secondary data-[highlighted]:bg-surface-hover',
-      },
-      density: {
-        default: 'h-(--nt-control-md)',
-        comfortable: 'h-9',
-      },
-    },
-    defaultVariants: { tone: 'default', density: 'default' },
-  },
-)
-
-/** How roomy the rows of the menu at hand are; read by every row below, submenus included. */
-const Density = createContext<'default' | 'comfortable'>('default')
-
 /**
  * A menu at its trigger, for the handful of actions on one row: the second layer of
  * `shared/ui/overlays/`, beside `Popover`. Radix `DropdownMenu` underneath, wrapped once here; a
@@ -231,8 +217,7 @@ export function DropdownMenu({
   density = 'default',
 }: DropdownMenuProps) {
   const container = usePortalContainer()
-  const headId = useId()
-  const frame = height === 'available' ? TALL_PANEL : PANEL
+  const frame = height === 'available' ? DROPDOWN_PARTS.tallPanel : PANEL
   return (
     <RadixDropdownMenu.Root
       modal={false}
@@ -263,7 +248,7 @@ export function DropdownMenu({
           // Same air and collision handling as Popover's panel; see its JSDoc.
           sideOffset={4}
           collisionPadding={8}
-          className={header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')}
+          className={`${header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')} ${MENU_WIDTH}`}
           // Radix hands the focus back to the trigger one task after the menu is gone
           // (`FocusScope` defers it with a `setTimeout`), and by then the focus may be somewhere
           // on purpose: in the address of the tab the panel's `+` → Browser just opened, or — with
@@ -272,338 +257,15 @@ export function DropdownMenu({
           // went down with the menu; one held elsewhere stays where it is.
           onCloseAutoFocus={handBackOnlyLostFocus}
         >
-          <Density.Provider value={density}>
-            {header === undefined ? (
-              <Rows items={items} checks={checks} />
-            ) : (
-              <>
-                <Head header={header} id={headId} />
-                <Separator />
-                <RadixDropdownMenu.Group
-                  aria-labelledby={
-                    header.detail === undefined
-                      ? `${headId}-title`
-                      : `${headId}-title ${headId}-detail`
-                  }
-                >
-                  <Rows items={items} checks={checks} />
-                </RadixDropdownMenu.Group>
-              </>
-            )}
-          </Density.Provider>
+          <MenuBody
+            parts={DROPDOWN_PARTS}
+            items={items}
+            checks={checks}
+            density={density}
+            header={header}
+          />
         </RadixDropdownMenu.Content>
       </RadixDropdownMenu.Portal>
     </RadixDropdownMenu.Root>
-  )
-}
-
-/**
- * The head of a menu ({@link DropdownMenuHeader}): the glyph, and beside it the title in `fg` and
- * the detail in `muted` on one left line, 8px from the frame.
- *
- * `aria-hidden` like a `Heading`, for the same reason (a text child of `role="menu"` is what axe
- * reports as `aria-required-children`); the group under it takes its name from both lines through
- * `aria-labelledby`, which reads hidden text, so nothing it says is lost to a reader.
- */
-function Head({ header, id }: { header: DropdownMenuHeader; id: string }) {
-  return (
-    <div data-nt-menu-head aria-hidden="true" className="flex items-center gap-2.5 p-2 select-none">
-      {header.glyph}
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <span id={`${id}-title`} className="truncate text-[13px] leading-4 font-medium text-fg">
-          {header.title}
-        </span>
-        {header.detail === undefined ? null : (
-          <span id={`${id}-detail`} className="truncate text-[12px] leading-4 text-muted">
-            {header.detail}
-          </span>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/**
- * The panel of a menu or a submenu that may use the room there is: the frame of `PANEL` with the
- * height Radix measured instead of its 288px. Both variables are Radix' own; the submenu's panel is
- * a `SubContent` of the same menu and reads the same one.
- */
-const TALL_PANEL = PANEL.replace(
-  'max-h-72',
-  'max-h-(--radix-dropdown-menu-content-available-height)',
-)
-
-/** The rows of a menu or a submenu, adjacent radio rows of one group in one `RadioGroup`. */
-function Rows({ items, checks }: { items: readonly DropdownMenuItem[]; checks: 'start' | 'end' }) {
-  return segments(items).map((segment) =>
-    segment.group === null ? (
-      segment.rows.map((row) => <Row key={row.id} row={row} checks={checks} />)
-    ) : (
-      <RadixDropdownMenu.RadioGroup
-        key={`group-${segment.rows[0]?.id}`}
-        value={segment.rows.find((row) => row.checked)?.id ?? ''}
-      >
-        {segment.rows.map((row) => (
-          <Row key={row.id} row={row} checks={checks} />
-        ))}
-      </RadixDropdownMenu.RadioGroup>
-    ),
-  )
-}
-
-/** A run of rows: loose rows (`group: null`) or the adjacent radio rows of one group. */
-interface Segment {
-  group: string | null
-  rows: DropdownMenuItem[]
-}
-
-/** Splits the rows into runs, so adjacent radio rows of one group share one `RadioGroup`. */
-function segments(items: readonly DropdownMenuItem[]): Segment[] {
-  const result: Segment[] = []
-  for (const row of items) {
-    const group = kindOf(row) === 'radio' ? (row.group ?? '') : null
-    const last = result.at(-1)
-    if (last && last.group === group) last.rows.push(row)
-    else result.push({ group, rows: [row] })
-  }
-  return result
-}
-
-/** The kind a row is, with a `checked` row without `kind` counting as a `checkbox`. */
-function kindOf(row: DropdownMenuItem): NonNullable<DropdownMenuItem['kind']> {
-  return row.kind ?? (row.checked === undefined ? 'action' : 'checkbox')
-}
-
-/** The accessible name of a row: its label, with its count after a comma when it has one. */
-function nameOf(row: DropdownMenuItem): string {
-  if (row.value !== undefined) return `${row.label}: ${row.value}`
-  return row.count === undefined ? row.label : `${row.label}, ${row.count}`
-}
-
-/** Whether a row is a choice, whose check the menu draws. */
-function isChoice(row: DropdownMenuItem): boolean {
-  const kind = kindOf(row)
-  return kind === 'checkbox' || kind === 'radio'
-}
-
-/** The check of a choice row, shown only while it is on. */
-function Check() {
-  // The slot keeps its 14px when the row is off, so the labels of a group stay in one column
-  // with each other and with the icons of the plain rows.
-  return (
-    <span
-      data-nt-menu-check
-      className="flex size-(--nt-icon-sm) shrink-0 items-center justify-center"
-    >
-      <RadixDropdownMenu.ItemIndicator className="contents">
-        <Icon name="check" size="sm" />
-      </RadixDropdownMenu.ItemIndicator>
-    </span>
-  )
-}
-
-/**
- * The glyph slot of a row: the caller's own drawing, its icon, or for a choice with the checks at
- * the start a check that shows only when it is on.
- */
-function Glyph({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end' }) {
-  const density = useContext(Density)
-  if (row.glyph !== undefined) return row.glyph
-  if (isChoice(row)) return checks === 'start' ? <Check /> : null
-  if (row.icon === undefined) return null
-  // In a comfortable menu the icon steps back to `muted` and the words lead (design A).
-  return density === 'comfortable' ? (
-    <span data-nt-menu-icon className="flex text-muted">
-      <Icon name={row.icon} size="sm" />
-    </span>
-  ) : (
-    <Icon name={row.icon} size="sm" />
-  )
-}
-
-/** The line above a row that asks for one (`separated`). */
-function Separator() {
-  return <RadixDropdownMenu.Separator className="-mx-1 my-1 h-px bg-border" />
-}
-
-/**
- * A heading over the rows under it: the name of a group of models under "Meer modellen".
- *
- * Not a Radix `Label` and not a stop of the walk: it is `aria-hidden`, because a text child of
- * `role="menu"` without a role of its own is what axe reports as `aria-required-children` (see the
- * reason span in `Choice`), and what it says is in the trigger's accessible name already.
- */
-function Heading({ row }: { row: DropdownMenuItem }) {
-  return (
-    <>
-      {row.separated ? <Separator /> : null}
-      <div
-        data-nt-menu-heading
-        aria-hidden="true"
-        className="flex h-(--nt-control-md) items-center gap-2 px-2 text-[12px] text-muted select-none"
-      >
-        {row.glyph ?? (row.icon === undefined ? null : <Icon name={row.icon} size="sm" />)}
-        <span className="truncate">{row.label}</span>
-      </div>
-    </>
-  )
-}
-
-/**
- * A row that opens rows of its own (Radix `Sub`): its label, its value quiet on the right and a
- * chevron, and a panel beside it in the same frame and the same portal container as the menu.
- */
-function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end' }) {
-  const container = usePortalContainer()
-  const density = useContext(Density)
-  return (
-    <>
-      {row.separated ? <Separator /> : null}
-      <RadixDropdownMenu.Sub>
-        <RadixDropdownMenu.SubTrigger
-          {...(row.disabled ? { disabled: true } : {})}
-          {...(row.value === undefined ? {} : { 'aria-label': nameOf(row), textValue: row.label })}
-          className={`${item({ tone: 'default', density })} data-[state=open]:bg-surface-hover`}
-        >
-          {row.glyph ?? (row.icon === undefined ? null : <Icon name={row.icon} size="sm" />)}
-          <span className="truncate">{row.label}</span>
-          {row.value === undefined ? null : (
-            <span
-              data-nt-menu-value
-              className="ml-auto flex min-w-0 items-center gap-1.5 ps-4 text-muted"
-            >
-              {row.valueGlyph}
-              <span className="truncate">{row.value}</span>
-            </span>
-          )}
-          <span className={row.value === undefined ? 'ml-auto flex ps-4' : 'flex'}>
-            <Icon name="chevron-right" size="sm" tone="faint" />
-          </span>
-        </RadixDropdownMenu.SubTrigger>
-        <RadixDropdownMenu.Portal container={container}>
-          <RadixDropdownMenu.SubContent
-            aria-label={row.label}
-            // As on the menu itself: Radix names a submenu after its trigger, which here also
-            // carries the value ("Agent: Relay"); the panel is named for what it lists.
-            aria-labelledby={undefined}
-            sideOffset={4}
-            collisionPadding={8}
-            className={TALL_PANEL}
-          >
-            <Rows items={row.items ?? []} checks={checks} />
-          </RadixDropdownMenu.SubContent>
-        </RadixDropdownMenu.Portal>
-      </RadixDropdownMenu.Sub>
-    </>
-  )
-}
-
-/** One row of the menu, in whichever Radix form its kind asks for. */
-function Row({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end' }) {
-  const kind = kindOf(row)
-  if (kind === 'heading') return <Heading row={row} />
-  if (kind === 'submenu') return <Submenu row={row} checks={checks} />
-  return <Choice row={row} checks={checks} />
-}
-
-/** A row that does something when chosen: an action, a checkbox or a radio. */
-function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end' }) {
-  const reasonId = useId()
-  const density = useContext(Density)
-  // A row that is `disabled` *and* carries a reason (`hint`) stays a real stop of the menu instead:
-  // Radix's own `disabled` both removes a row from the roving-
-  // focus walk — so ArrowDown skips straight over it — and sets `pointer-events: none` on it (the
-  // `item` class below), so neither a real keyboard walk nor a hover could ever reach the row
-  // whose reason they were meant to read. Guarded by hand instead, the same shape `PickTools`'s own
-  // point button already uses: `aria-disabled` for assistive tech, `aria-describedby` at a hidden
-  // sibling (never a child — inside the row it would join the row's own accessible *name*, not
-  // just its description) so the reason reads without an open tooltip, dimmed without Radix's own
-  // hook, and the action itself refused in `onSelect`.
-  const guarded = row.disabled === true && row.hint !== undefined
-  const common = {
-    ...(row.disabled === undefined || guarded ? {} : { disabled: row.disabled }),
-    ...(guarded ? { 'aria-disabled': true, 'aria-describedby': reasonId } : {}),
-    // `aria-label` wins over content in the accessible-name algorithm, and `textValue` does the
-    // same for Radix' typeahead — which otherwise reads the rendered text content, key included.
-    // Both keep the row at just its label. Only set where they change anything, so a
-    // row without a `shortcut` renders exactly as before.
-    ...(row.shortcut === undefined && row.count === undefined
-      ? {}
-      : { 'aria-label': nameOf(row), textValue: row.label }),
-    onSelect: (event: Event) => {
-      if (guarded) {
-        // Keeps the menu open, exactly what Radix's own `disabled` would have done by never
-        // letting the select happen at all.
-        event.preventDefault()
-        return
-      }
-      row.onSelect?.()
-    },
-    className: guarded
-      ? `${item({ tone: row.tone ?? 'default', density })} opacity-40`
-      : item({ tone: row.tone ?? 'default', density }),
-  }
-  const content: ReactNode = (
-    <>
-      <Glyph row={row} checks={checks} />
-      <span className="truncate">{row.label}</span>
-      {row.count === undefined ? null : (
-        <span data-nt-menu-count className="font-mono text-[11px] text-muted tabular-nums">
-          {row.count}
-        </span>
-      )}
-      {row.shortcut === undefined ? null : (
-        <span className="ml-auto flex ps-4">
-          {/* One cap around the whole shortcut ("⌘,"), never loose keys (design A). */}
-          <Kbd tone="menu" shortcut={row.shortcut} />
-        </span>
-      )}
-      {checks === 'end' && isChoice(row) ? (
-        <span className="ml-auto flex ps-4">
-          <Check />
-        </span>
-      ) : null}
-    </>
-  )
-  const kind = kindOf(row)
-  const element =
-    kind === 'checkbox' ? (
-      <RadixDropdownMenu.CheckboxItem checked={row.checked === true} {...common}>
-        {content}
-      </RadixDropdownMenu.CheckboxItem>
-    ) : kind === 'radio' ? (
-      <RadixDropdownMenu.RadioItem value={row.id} {...common}>
-        {content}
-      </RadixDropdownMenu.RadioItem>
-    ) : (
-      <RadixDropdownMenu.Item {...common}>{content}</RadixDropdownMenu.Item>
-    )
-  const hinted = row.hint === undefined ? element : <Tooltip label={row.hint}>{element}</Tooltip>
-  // The reason, read as the row's description whether or not the tooltip is open — a sibling, not
-  // a child of `element`: inside it the accessible-name algorithm would fold this text into the
-  // row's own name instead of leaving it as a separate description.
-  //
-  // `hidden`, not `sr-only` (review, 3e ronde): `sr-only` keeps the span in the accessibility tree
-  // as ordinary text, so a reader walking the menu in document order would hear it once on its own
-  // and again as the row's `aria-describedby` — and axe reads a bare `<span>` sitting directly in
-  // `role="menu"` as a child without one of the roles a menu requires (`aria-required-children`).
-  // The HTML `hidden` attribute takes the span out of the tree entirely; `aria-describedby` still
-  // reaches its text regardless; that reference is the one thing that does.
-  const reason = guarded ? (
-    <span id={reasonId} hidden>
-      {row.hint}
-    </span>
-  ) : null
-  return row.separated ? (
-    <>
-      <Separator />
-      {reason}
-      {hinted}
-    </>
-  ) : (
-    <>
-      {reason}
-      {hinted}
-    </>
   )
 }

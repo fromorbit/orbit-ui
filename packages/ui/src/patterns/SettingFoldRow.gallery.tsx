@@ -11,10 +11,10 @@ import { SettingsGroup } from './SettingsGroup'
 function ProgramRow() {
   const [value, setValue] = useState('')
   return (
-    <SettingRow labels={nl.settingRow} label="Program">
+    <SettingRow labels={nl.settingRow} label="Programma">
       {({ labelId, describedById }) => (
         <Input
-          label="Program"
+          label="Programma"
           aria-labelledby={labelId}
           aria-describedby={describedById}
           value={value}
@@ -35,37 +35,37 @@ function Agents({ open }: { open: boolean }) {
         <SettingsGroup title="Agents">
           <SettingFoldRow
             label="Nova"
-            description="4 models"
-            status={{ tone: 'success', label: 'Ready' }}
+            description="4 modellen"
+            status={{ tone: 'success', label: 'Klaar' }}
           />
           <SettingFoldRow
             label="Lumen"
-            description="2 models"
-            status={{ tone: 'success', label: 'Ready' }}
+            description="2 modellen"
+            status={{ tone: 'success', label: 'Klaar' }}
             defaultOpen={open}
           >
             <ProgramRow />
           </SettingFoldRow>
           <SettingFoldRow
             label="Orbit"
-            description="Signed out: run orbit login"
-            status={{ tone: 'attention', label: 'Sign-in needed' }}
+            description="Afgemeld: voer orbit login uit"
+            status={{ tone: 'attention', label: 'Aanmelden nodig' }}
           />
           <SettingFoldRow
             label="Vega"
-            description="vega is not on the PATH"
-            status={{ tone: 'off', label: 'Not found' }}
+            description="vega staat niet in het PATH"
+            status={{ tone: 'off', label: 'Niet gevonden' }}
           />
         </SettingsGroup>
-        <SettingsGroup title="Queue">
+        <SettingsGroup title="Wachtrij">
           <SettingRow
             labels={nl.settingRow}
-            label="Concurrent turns"
-            description="What comes above waits in line"
+            label="Beurten tegelijk"
+            description="Wat erboven komt, wacht op zijn beurt"
           >
             {({ labelId, describedById }) => (
               <NumberField
-                label="Concurrent turns"
+                label="Beurten tegelijk"
                 aria-labelledby={labelId}
                 aria-describedby={describedById}
                 value={4}
@@ -75,10 +75,10 @@ function Agents({ open }: { open: boolean }) {
               />
             )}
           </SettingRow>
-          <SettingRow labels={nl.settingRow} label="Waiting time">
+          <SettingRow labels={nl.settingRow} label="Wachttijd">
             {({ labelId, describedById }) => (
               <NumberField
-                label="Waiting time"
+                label="Wachttijd"
                 aria-labelledby={labelId}
                 aria-describedby={describedById}
                 value={5}
@@ -99,7 +99,26 @@ export default {
   group: 'patterns',
   title: 'SettingFoldRow',
   states: {
-    'Agents, folded': () => <Agents open={false} />,
-    'Agents, one open': () => <Agents open />,
+    'Agents, ingeklapt': () => <Agents open={false} />,
+    'Agents, één open': () => <Agents open />,
+    // As wide as a phone: the status goes under the name, the chevron stays at the end.
+    'Smal, als op een telefoon': () => (
+      <TooltipProvider>
+        <div className="w-full max-w-[358px]">
+          <SettingsGroup title="Koppeling">
+            <SettingFoldRow label="Omgeving" description="Wat Review op deze machine nodig heeft">
+              <ProgramRow />
+            </SettingFoldRow>
+            <SettingFoldRow
+              label="Vega"
+              description="vega staat niet in het PATH"
+              status={{ tone: 'off', label: 'Niet gevonden' }}
+            >
+              <ProgramRow />
+            </SettingFoldRow>
+          </SettingsGroup>
+        </div>
+      </TooltipProvider>
+    ),
   },
 } satisfies Story

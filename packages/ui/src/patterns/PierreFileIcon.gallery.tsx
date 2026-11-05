@@ -13,7 +13,7 @@ export default {
   title: 'PierreFileIcon',
   states: {
     // A language with a builtin icon, one of ours, a build file and a type without an icon.
-    'Known and unknown types': () => (
+    'Bekende en onbekende soorten': () => (
       <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[12px] text-muted">
         {['src/winkel.ts', 'src/Winkel.java', 'build.gradle', 'notities.onbekend'].map((path) => (
           <li key={path} className="flex items-center gap-1.5">

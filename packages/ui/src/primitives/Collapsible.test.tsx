@@ -191,7 +191,7 @@ test('mounting reads no style or layout, open or closed', () => {
   const styles = vi.spyOn(window, 'getComputedStyle')
   const rects = vi.spyOn(Element.prototype, 'getBoundingClientRect')
   render(
-    <>
+    <div>
       {STEPS.map((index) => (
         <Collapsible
           key={`stap ${index}`}
@@ -202,7 +202,7 @@ test('mounting reads no style or layout, open or closed', () => {
           <p>regel {index}</p>
         </Collapsible>
       ))}
-    </>,
+    </div>,
   )
   // Counted before any query: finding a role reads computed style itself.
   const styleReads = styles.mock.calls.length

@@ -1,18 +1,15 @@
 import { Children, type ReactNode, useId, useState } from 'react'
 import { Icon } from '../primitives/Icon'
+import { StatusMark } from '../primitives/StatusMark'
 
-/** The tone of a status dot: filled in `success` or `attention`, or an empty ring for off. */
+/**
+ * The tone of the status: the quiet `StatusMark` of a running thing (`success`), or of a blocked
+ * one (`attention`, a diamond, so it does not lean on colour), or an empty ring for off.
+ */
 export type SettingFoldTone = 'success' | 'attention' | 'off'
 
-/** One complete class string per tone (Tailwind reads source text). */
-const DOT: Record<SettingFoldTone, string> = {
-  success: 'bg-success',
-  attention: 'bg-attention',
-  off: 'border border-muted',
-}
-
 /** The frame of the row: the height and insets of every `SettingRow`. */
-const ROW = 'flex min-h-12 w-full items-center gap-6 px-4 py-3'
+const ROW = 'flex min-h-12 w-full items-center gap-x-6 gap-y-2 px-4 py-3 @max-[30rem]:flex-wrap'
 
 /** The props of `SettingFoldRow`. */
 export interface SettingFoldRowProps {
@@ -33,7 +30,7 @@ export interface SettingFoldRowProps {
  * status on the right and its own rows folded under it.
  *
  * The same box as `SettingRow` (48px at least, 16px at the sides), so it stands in a card among
- * them. The status is a dot and a word, not a framed badge. The chevron
+ * them. The status is a quiet `StatusMark` and a word, not a framed badge. The chevron
  * stands in the 24px slot where a `SettingRow` keeps its reset, so the status ends on the line
  * where every control of the card ends; it turns a quarter when the rows are open. With rows the
  * whole row is the button (`aria-expanded`), without them it is plain text. Closed, the rows are
@@ -51,8 +48,11 @@ export function SettingFoldRow({
   const foldable = Children.toArray(children).length > 0
   const head = (
     <>
+      {/* Under 480px the status goes under the label, as a `SettingRow` puts its control there,
+          so the explanation is not cut to a word or two; the chevron stays at the end of the
+          first line, centred on the label, so the row still says where it opens. */}
       <span className="min-w-0 flex-1">
-        <span className="block truncate leading-5 text-fg">{label}</span>
+        <span className="block truncate text-[13px] leading-5 text-fg">{label}</span>
         {description === undefined || description.trim() === '' ? null : (
           <span className="block truncate text-[12px] leading-4 text-muted" title={description}>
             {description}
@@ -61,18 +61,29 @@ export function SettingFoldRow({
       </span>
       {/* The status and the 24px slot stand 8px apart, as a control and its reset in a
           `SettingRow`, so the word ends on the line where every control of the card ends. */}
-      <span className="flex shrink-0 items-center gap-2">
+      <span className="flex shrink-0 items-center gap-2 @max-[30rem]:contents">
         {status === undefined ? null : (
-          <span className="flex shrink-0 items-center gap-2 text-[12px] leading-4 text-secondary">
-            <span
-              aria-hidden="true"
-              data-nt-fold-status={status.tone}
-              className={`block size-2 shrink-0 rounded-full ${DOT[status.tone]}`}
-            />
+          <span
+            data-nt-fold-status-word
+            className="flex shrink-0 items-center gap-2 text-[12px] leading-4 text-secondary @max-[30rem]:order-last @max-[30rem]:basis-full"
+          >
+            {/* The quiet size of the mark, as a status beside it in the same card draws it. */}
+            <span aria-hidden="true" data-nt-fold-status={status.tone} className="flex shrink-0">
+              {status.tone === 'off' ? (
+                <span className="flex size-3.5 items-center justify-center">
+                  <span className="block size-2 rounded-full border border-muted" />
+                </span>
+              ) : (
+                <StatusMark kind={status.tone === 'success' ? 'running' : 'blocked'} size="sm" />
+              )}
+            </span>
             {status.label}
           </span>
         )}
-        <span className="flex size-6 shrink-0 items-center justify-center text-muted">
+        <span
+          data-nt-fold-slot
+          className="flex size-6 shrink-0 items-center justify-center text-muted"
+        >
           {foldable ? (
             <span
               data-nt-fold-chevron
@@ -90,7 +101,7 @@ export function SettingFoldRow({
     </>
   )
   return (
-    <div data-nt-setting-fold-row>
+    <div data-nt-setting-fold-row className="@container">
       {foldable ? (
         <button
           type="button"

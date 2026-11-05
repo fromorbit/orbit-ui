@@ -17,7 +17,7 @@ function Stage({ value }: { value: number }) {
         max={640}
         onValueChange={() => {}}
       />
-      <div className="w-56 bg-surface" />
+      <div className="w-56 bg-plane shadow-plane" />
     </div>
   )
 }
@@ -26,8 +26,8 @@ export default {
   group: 'primitives',
   title: 'ResizeHandle',
   states: {
-    Default: () => <Stage value={360} />,
-    'At its minimum': () => <Stage value={320} />,
-    'At its maximum': () => <Stage value={640} />,
+    Standaard: () => <Stage value={360} />,
+    'Op het minimum': () => <Stage value={320} />,
+    'Op het maximum': () => <Stage value={640} />,
   },
 } satisfies Story

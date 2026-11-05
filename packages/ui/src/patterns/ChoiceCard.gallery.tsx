@@ -5,7 +5,7 @@ import { ChoiceCard } from './ChoiceCard'
 function Plain() {
   return (
     <div className="w-full max-w-80">
-      <ChoiceCard icon="file-diff" title="Changes" />
+      <ChoiceCard icon="file-diff" title="Wijzigingen" />
     </div>
   )
 }
@@ -27,7 +27,7 @@ function Dimmed() {
           title="Terminal"
           shortcut="panel.start.terminal"
           disabled
-          reason="Coming later"
+          reason="Komt later"
         />
       </div>
     </TooltipProvider>
@@ -38,8 +38,8 @@ export default {
   group: 'patterns',
   title: 'ChoiceCard',
   states: {
-    Plain,
-    'With a key': WithKey,
-    Dimmed,
+    Eenvoudig: Plain,
+    'Met een toets': WithKey,
+    Gedimd: Dimmed,
   },
 } satisfies Story

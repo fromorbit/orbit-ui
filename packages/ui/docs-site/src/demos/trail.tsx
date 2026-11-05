@@ -1,8 +1,10 @@
-import { type ReactNode, useState } from 'react'
+import { Fragment, type ReactNode, useEffect, useState } from 'react'
 import {
+  adjacentMarker,
   Button,
   DataTable,
   type DataTableColumn,
+  DropdownMenu,
   Icon,
   IconButton,
   type IconName,
@@ -11,11 +13,15 @@ import {
   PropertyList,
   RoomyListRow,
   ScrollArea,
-  SegmentedControl,
+  Scrubber,
+  ScrubberMark,
+  type ScrubberMarker,
+  scrubberEventText,
   Tabs,
   Tag,
   Timeline,
   TimelineItem,
+  Tooltip,
 } from '../../../src'
 import type { DemoModule } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
@@ -25,32 +31,22 @@ import {
   type ConsoleLine,
   clock,
   DURATION,
+  ERRORS,
   EVENTS,
+  MARKERS,
   NETWORK,
   type NetworkRequest,
   POSITION,
   RECORDINGS,
   stamp,
+  TRAIL_KINDS,
   type TrailEventKind,
 } from './parts/TrailData'
 import { TrailReplay } from './parts/TrailReplay'
-import { TrailScrubber } from './parts/TrailScrubber'
 
 type Speed = '1' | '2' | '4'
 
-const SPEEDS = [
-  { value: '1', label: '1×' },
-  { value: '2', label: '2×' },
-  { value: '4', label: '4×' },
-] as const
-
-/** The glyph and tone of a line of the events, per kind. */
-const EVENT_LOOK: Record<TrailEventKind, { icon: IconName; word: string }> = {
-  klik: { icon: 'mouse-pointer-click', word: 'Klik' },
-  navigatie: { icon: 'globe', word: 'Navigatie' },
-  fout: { icon: 'octagon-alert', word: 'Fout' },
-  verzoek: { icon: 'alert-triangle', word: 'Mislukt verzoek' },
-}
+const SPEEDS: readonly Speed[] = ['1', '2', '4']
 
 /** The glyph and tone of a console line, per level. */
 const LEVEL_LOOK: Record<ConsoleLine['level'], { icon: IconName; row: string; text: string }> = {
@@ -59,35 +55,59 @@ const LEVEL_LOOK: Record<ConsoleLine['level'], { icon: IconName; row: string; te
   error: { icon: 'octagon-alert', row: 'bg-danger-subtle', text: 'text-danger' },
 }
 
+/** How close, in seconds, the playhead must be to count as standing on an event. */
+const ON = 0.05
+
 /**
- * What happened in the recording, as a timeline: what went wrong in red, the line the player is at
- * in full strength, and what the player has not reached yet as a dashed round.
+ * What happened in the recording, as a timeline that follows the playhead: each event with the shape
+ * its kind has on the timeline and in the legend (a diamond for a fault, a ring for a failed
+ * request), what went wrong in red, the last event the player passed in full strength (the current step), and what it has not
+ * reached yet as a dashed round; the current step's whole row (sign, words and time) also lies on a tint, so "you are
+ * here" holds at a glance. Each event is a button that seeks the player there, so the
+ * keyboard reaches every moment, not only the errors. The detail (a status, a file and line) is a
+ * unit of its own that wraps under the title on a narrow screen and is never cut off.
  */
-function Events(): ReactNode {
+function Events({
+  position,
+  onSeek,
+}: {
+  position: number
+  onSeek(seconds: number): void
+}): ReactNode {
+  const passed = EVENTS.filter((event) => event.at <= position + ON)
+  const last = passed.at(-1)
   return (
-    <div className="px-4 py-4">
+    // The tint of the current step and of a row under the pointer spans the whole row, from the
+    // sign to the time, at the same inset on both sides; the row's own margins undo the padding,
+    // so the signs stay on the line.
+    <div className="px-3 pt-2 pb-4 @3xl:px-4 [&_li]:-mx-1.5 [&_li]:-my-1 [&_li]:rounded-sm [&_li]:px-1.5 [&_li]:py-1 [&_li:has([aria-current=step])]:bg-surface-active [&_li:has(button:hover)]:bg-surface">
       <Timeline label="Gebeurtenissen">
         {EVENTS.map((event) => {
-          const look = EVENT_LOOK[event.kind]
-          const here = event.at === POSITION
-          const ahead = event.at > POSITION
+          const kind = TRAIL_KINDS[event.kind]
+          const here = event === last
+          const ahead = event.at > position + ON
           const wrong = event.kind === 'fout' || event.kind === 'verzoek'
           return (
             <TimelineItem
               key={`${event.kind}-${event.at}`}
-              marker={<Icon name={look.icon} size="sm" />}
+              marker={<ScrubberMark kind={kind} />}
               tone={ahead ? 'pending' : wrong ? 'danger' : 'default'}
               time={<span className="tabular-nums">{clock(event.at)}</span>}
             >
-              <span className="min-w-0 truncate">
+              <button
+                type="button"
+                aria-current={here ? 'step' : undefined}
+                onClick={() => onSeek(event.at)}
+                className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 rounded-sm text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
                 <span className={here ? 'font-medium text-fg' : ahead ? 'text-muted' : 'text-fg'}>
                   {event.title}
                 </span>
                 {event.detail === undefined ? null : (
-                  <span className="text-muted">{` · ${event.detail}`}</span>
+                  <span className="whitespace-nowrap text-[12px] text-muted">{event.detail}</span>
                 )}
-                <span className="sr-only">{` (${look.word})`}</span>
-              </span>
+                <span className="sr-only">{` (${kind.label})`}</span>
+              </button>
             </TimelineItem>
           )
         })}
@@ -124,27 +144,50 @@ function Console(): ReactNode {
   )
 }
 
+/** A path that may wrap after each slash and before its query, never inside a word. */
+function breakable(path: string): ReactNode {
+  return path.split(/(?<=\/)|(?=\?)/).map((part, index) => (
+    // The parts of one path never change order, so the index is their identity.
+    // biome-ignore lint/suspicious/noArrayIndexKey: see above
+    <Fragment key={index}>
+      {index === 0 ? null : <wbr />}
+      {part}
+    </Fragment>
+  ))
+}
+
 /** Whether a request failed: its path and status turn red. */
 const failed = (request: NetworkRequest) => request.status >= 400
 
-/** The columns of the requests; the waterfall runs over the whole recording. */
-function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
+/**
+ * The columns of the requests: when, in the time of the timeline, then the method as a quiet
+ * prefix of the path (one cell, so the status stays in sight on a phone), the status, how long it
+ * took, and a waterfall over the whole recording. A request the player has not reached yet is
+ * muted, as in the events.
+ */
+function networkColumns(longest: number, position: number): DataTableColumn<NetworkRequest>[] {
+  const ahead = (request: NetworkRequest) => request.at > position + ON
   return [
     {
-      id: 'method',
-      header: 'Methode',
-      sortValue: (request) => request.method,
+      id: 'at',
+      header: 'Tijd',
+      sortValue: (request) => request.at,
       cell: (request) => (
-        <span className="font-mono text-[11px] text-secondary">{request.method}</span>
+        <span className="text-muted tabular-nums">
+          {stamp(request.at)}
+          {ahead(request) ? <span className="sr-only">, nog niet afgespeeld</span> : null}
+        </span>
       ),
     },
     {
-      id: 'path',
-      header: 'Pad',
+      id: 'request',
+      header: 'Verzoek',
       sortValue: (request) => request.path,
       cell: (request) => (
-        <span className={`font-mono text-[11px] ${failed(request) ? 'text-danger' : 'text-fg'}`}>
-          {request.path}
+        <span
+          className={`font-mono text-[11px] ${ahead(request) ? 'text-muted' : failed(request) ? 'text-danger' : 'text-fg'}`}
+        >
+          <span className="text-muted">{request.method}</span> {breakable(request.path)}
         </span>
       ),
     },
@@ -154,19 +197,29 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
       align: 'end',
       sortValue: (request) => request.status,
       cell: (request) => (
-        <span className={failed(request) ? 'font-medium text-danger' : 'text-secondary'}>
+        <span
+          className={
+            ahead(request)
+              ? 'text-muted'
+              : failed(request)
+                ? 'font-medium text-danger'
+                : 'text-secondary'
+          }
+        >
           {request.status}
         </span>
       ),
     },
     {
-      id: 'time',
-      header: 'Tijd',
+      id: 'duration',
+      header: 'Duur',
       align: 'end',
       hideBelow: 'md',
       sortValue: (request) => request.ms,
       cell: (request) => (
-        <span className={request.ms > 1000 ? 'text-attention' : 'text-secondary'}>
+        <span
+          className={`whitespace-nowrap tabular-nums ${ahead(request) ? 'text-muted' : request.ms > 1000 ? 'text-attention' : 'text-secondary'}`}
+        >
           {`${request.ms.toLocaleString('nl-NL')} ms`}
         </span>
       ),
@@ -175,8 +228,8 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
       id: 'size',
       header: 'Grootte',
       align: 'end',
-      hideBelow: 'md',
-      cell: (request) => <span className="text-muted">{request.size}</span>,
+      hideBelow: 'lg',
+      cell: (request) => <span className="whitespace-nowrap text-muted">{request.size}</span>,
     },
     {
       id: 'waterfall',
@@ -185,7 +238,7 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
       cell: (request) => (
         <span className="relative block h-1.5 w-40 rounded-full bg-mark">
           <span
-            className={`absolute inset-y-0 min-w-1 rounded-full ${failed(request) ? 'bg-danger' : request.ms > 1000 ? 'bg-attention' : 'bg-secondary'}`}
+            className={`absolute inset-y-0 min-w-1 rounded-full ${ahead(request) ? 'bg-border-strong' : failed(request) ? 'bg-danger' : request.ms > 1000 ? 'bg-attention' : 'bg-secondary'}`}
             style={{
               left: `${((request.at * 1000) / longest) * 100}%`,
               width: `${(request.ms / longest) * 100}%`,
@@ -198,13 +251,13 @@ function networkColumns(longest: number): DataTableColumn<NetworkRequest>[] {
 }
 
 /** The requests of the page as a table with a waterfall, the failed ones in red. */
-function Network(): ReactNode {
+function Network({ position }: { position: number }): ReactNode {
   const longest = Math.max(...NETWORK.map((request) => request.at * 1000 + request.ms))
   return (
     <div className="p-2 text-[12px]">
       <DataTable
         label="Netwerk"
-        columns={networkColumns(longest)}
+        columns={networkColumns(longest, position)}
         rows={NETWORK}
         rowKey={(request) => `${request.method}-${request.at}`}
         labels={{ selectAll: 'Alles selecteren', selectRow: (name) => `Selecteer ${name}` }}
@@ -213,74 +266,218 @@ function Network(): ReactNode {
   )
 }
 
-/** The words of a recording's trigger, as a tag: an error is the only one that is red. */
+/**
+ * The words of a recording's trigger, as a quiet tag: the cause of the recording, not an event,
+ * so it leaves the red to the errors themselves.
+ */
 function TriggerTag({ trigger }: { trigger: string }): ReactNode {
-  return <Tag tone={trigger === 'Fout' ? 'danger' : 'neutral'}>{trigger}</Tag>
+  return <Tag tone="neutral">{trigger}</Tag>
+}
+
+/** The events at a moment, in the words of the legend, for the playhead's position in words. */
+function spoken(seconds: number, here: readonly ScrubberMarker<TrailEventKind>[]): string {
+  return [
+    `${clock(seconds)} van ${clock(DURATION)}`,
+    ...here.map((marker) => scrubberEventText(TRAIL_KINDS[marker.kind], marker, ': ')),
+  ].join(', ')
+}
+
+/** The heading of a group's hover card: how many, the span, and what went wrong in it. */
+function heading(count: number, markers: readonly ScrubberMarker<TrailEventKind>[]): string {
+  const first = markers[0]?.at ?? 0
+  const last = markers.at(-1)?.at ?? first
+  const errors = markers.filter((marker) => marker.kind === 'fout').length
+  const failed = markers.filter((marker) => marker.kind === 'verzoek').length
+  const wrong = [
+    errors === 0 ? '' : errors === 1 ? '1 fout' : `${errors} fouten`,
+    failed === 0 ? '' : failed === 1 ? '1 mislukt verzoek' : `${failed} mislukte verzoeken`,
+  ].filter(Boolean)
+  return [
+    `${count} gebeurtenissen`,
+    `${clock(first)}–${clock(last)}`,
+    ...(wrong.length === 0 ? [] : [wrong.join(', ')]),
+  ].join(' · ')
 }
 
 /**
  * Halo's trail: a recording of a browser session around an error, replayed with its timeline,
  * what happened, the console and the network, and the other recordings of the app beside it.
+ *
+ * Under the timeline the controls, every one a framed 28px button, wrap in three parts: the
+ * transport (5 seconds back, Afspelen as the one emphasis of the view, 5 seconds forward) with the
+ * time, the speed, and on the right the way between the errors ("Vorige fout", where the player is among them,
+ * "Volgende fout"). The legend stays a passive key. On a narrow screen the timeline and its
+ * controls stick to the bottom of the player while the replay scrolls past, so both stay in
+ * sight. A jump between errors is announced politely.
  */
 function Trail(): ReactNode {
   const [speed, setSpeed] = useState<Speed>('1')
   const [tab, setTab] = useState('gebeurtenissen')
   const [current, setCurrent] = useState('r1')
-  const errors = EVENTS.filter((event) => event.kind === 'fout').length
+  const [position, setPosition] = useState(POSITION)
+  const [playing, setPlaying] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
+  const errors = ERRORS.length
+  const reached = ERRORS.filter((at) => at <= position + ON).length
+  const previous = adjacentMarker(MARKERS, position, 'previous', ['fout'], ON)
+  const next = adjacentMarker(MARKERS, position, 'next', ['fout'], ON)
+  const seek = (seconds: number) => setPosition(Math.min(Math.max(seconds, 0), DURATION))
+  const jump = (marker: ScrubberMarker<TrailEventKind> | undefined) => {
+    if (marker === undefined) return
+    setPlaying(false)
+    seek(marker.at)
+    const index = ERRORS.indexOf(marker.at) + 1
+    setAnnouncement(`Fout ${index} van ${errors}: ${marker.label}, ${clock(marker.at)}`)
+  }
+  useEffect(() => {
+    if (!playing) return
+    const tick = window.setInterval(() => {
+      setPosition((now) => {
+        const later = Math.min(now + 0.1 * Number(speed), DURATION)
+        if (later >= DURATION) setPlaying(false)
+        return later
+      })
+    }, 100)
+    return () => window.clearInterval(tick)
+  }, [playing, speed])
   return (
     <AppFrame product="halo" current="trail">
       <ScrollArea>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 @3xl:px-8 @3xl:py-8">
           <PageHeader
             title="Kassa betaalt niet"
-            meta="webwinkel · main · bewaard tot 3 nov"
+            meta="webwinkel · main · wordt verwijderd na 3 nov"
             actions={
               <>
                 <div className="hidden @xl:block">
-                  <Button variant="ghost" size="sm">
-                    Ook op Orbit
+                  <Button variant="secondary" size="sm">
+                    Openen in Orbit Review
                   </Button>
                 </div>
                 <Button variant="secondary" size="sm">
-                  Deel opname
+                  Opname delen
                 </Button>
               </>
             }
           />
-          <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="flex min-w-0 flex-col gap-5">
+          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="flex min-w-0 flex-col gap-6">
               <section
                 aria-label="Speler"
-                className="flex flex-col gap-3 rounded-lg bg-overlay p-3 @3xl:p-4"
+                className="flex flex-col gap-3 rounded-lg bg-overlay p-3 shadow-plane @3xl:p-4"
               >
-                <TrailReplay />
-                <TrailScrubber events={EVENTS} duration={DURATION} position={POSITION} />
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                  <IconButton icon="rotate-ccw" size="sm" label="5 seconden terug" />
-                  <Button variant="primary" size="sm">
-                    Afspelen
-                  </Button>
-                  <IconButton icon="rotate-cw" size="sm" label="5 seconden vooruit" />
-                  <span className="px-1 font-mono text-[12px] text-secondary tabular-nums">
-                    {`${clock(POSITION)} / ${clock(DURATION)}`}
-                  </span>
-                  <div className="ml-auto flex items-center gap-2">
-                    <SegmentedControl<Speed>
-                      label="Snelheid"
-                      size="sm"
-                      value={speed}
-                      options={SPEEDS}
-                      onValueChange={setSpeed}
-                    />
-                    <IconButton icon="chevron-left" size="sm" label="Vorige fout" />
-                    <span className="hidden text-[12px] text-muted @lg:inline">{`Fout 1 van ${errors}`}</span>
-                    <IconButton icon="chevron-right" size="sm" label="Volgende fout" />
-                  </div>
+                <TrailReplay position={position} />
+                <div className="flex flex-col gap-2 bg-overlay @max-3xl:sticky @max-3xl:bottom-0 @max-3xl:z-10 @max-3xl:-mx-3 @max-3xl:-mb-3 @max-3xl:rounded-b-lg @max-3xl:px-3 @max-3xl:pt-2 @max-3xl:pb-3">
+                  <Scrubber
+                    label="Afspeelpositie"
+                    duration={DURATION}
+                    value={position}
+                    step={0.5}
+                    onValueChange={(seconds) => {
+                      setPlaying(false)
+                      seek(seconds)
+                    }}
+                    markers={MARKERS}
+                    kinds={TRAIL_KINDS}
+                    formatTime={clock}
+                    valueText={spoken}
+                    legendLabel="Markeringen"
+                    groupLabel={heading}
+                    controls={
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <Tooltip label="5 seconden terug">
+                            <IconButton
+                              icon="rewind"
+                              size="sm"
+                              variant="secondary"
+                              label="5 seconden terug"
+                              onClick={() => seek(position - 5)}
+                            />
+                          </Tooltip>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => {
+                              if (!playing && position >= DURATION) seek(0)
+                              setPlaying(!playing)
+                            }}
+                          >
+                            <Icon name={playing ? 'pause' : 'play'} size="sm" />
+                            {playing ? 'Pauzeren' : 'Afspelen'}
+                          </Button>
+                          <Tooltip label="5 seconden vooruit">
+                            <IconButton
+                              icon="fast-forward"
+                              size="sm"
+                              variant="secondary"
+                              label="5 seconden vooruit"
+                              onClick={() => seek(position + 5)}
+                            />
+                          </Tooltip>
+                          <span className="ml-1 font-medium text-[13px] text-fg tabular-nums whitespace-nowrap">
+                            {clock(position)}
+                            <span className="font-normal text-muted">{` / ${clock(DURATION)}`}</span>
+                          </span>
+                        </div>
+                        <DropdownMenu
+                          label="Snelheid"
+                          side="top"
+                          align="start"
+                          trigger={
+                            <Button variant="secondary" size="sm" aria-label={`Snelheid ${speed}×`}>
+                              {`${speed}×`}
+                              <Icon name="chevron-down" size="sm" tone="faint" />
+                            </Button>
+                          }
+                          items={SPEEDS.map((option) => ({
+                            id: option,
+                            label: `${option}×`,
+                            kind: 'radio' as const,
+                            group: 'snelheid',
+                            checked: speed === option,
+                            onSelect: () => setSpeed(option),
+                          }))}
+                        />
+                        <fieldset
+                          aria-label="Fouten"
+                          className="m-0 ml-auto flex min-w-0 items-center gap-1 border-0 p-0"
+                        >
+                          <Tooltip label="Vorige fout">
+                            <IconButton
+                              icon="chevron-left"
+                              size="sm"
+                              variant="secondary"
+                              label="Vorige fout"
+                              aria-disabled={previous === undefined}
+                              onClick={() => jump(previous)}
+                            />
+                          </Tooltip>
+                          <span className="min-w-22 px-1 text-center text-[13px] text-secondary tabular-nums whitespace-nowrap">
+                            {reached === 0 ? `${errors} fouten` : `Fout ${reached} van ${errors}`}
+                          </span>
+                          <Tooltip label="Volgende fout">
+                            <IconButton
+                              icon="chevron-right"
+                              size="sm"
+                              variant="secondary"
+                              label="Volgende fout"
+                              aria-disabled={next === undefined}
+                              onClick={() => jump(next)}
+                            />
+                          </Tooltip>
+                        </fieldset>
+                      </div>
+                    }
+                  />
+                  <p role="status" className="sr-only">
+                    {announcement}
+                  </p>
                 </div>
               </section>
               <section
                 aria-label="Wat er gebeurde"
-                className="flex flex-col overflow-hidden rounded-lg bg-overlay"
+                className="flex flex-col overflow-hidden rounded-lg bg-overlay shadow-plane"
               >
                 <Tabs
                   label="Wat er gebeurde"
@@ -292,7 +489,15 @@ function Trail(): ReactNode {
                       id: 'gebeurtenissen',
                       label: 'Gebeurtenissen',
                       count: EVENTS.length,
-                      content: <Events />,
+                      content: (
+                        <Events
+                          position={position}
+                          onSeek={(seconds) => {
+                            setPlaying(false)
+                            seek(seconds)
+                          }}
+                        />
+                      ),
                     },
                     {
                       id: 'console',
@@ -304,24 +509,24 @@ function Trail(): ReactNode {
                       id: 'netwerk',
                       label: 'Netwerk',
                       count: NETWORK.length,
-                      content: <Network />,
+                      content: <Network position={position} />,
                     },
                   ]}
                 />
               </section>
             </div>
-            <aside className="flex min-w-0 flex-col gap-5">
-              <Panel title="Details">
+            <aside className="flex min-w-0 flex-col gap-6">
+              <Panel title="Details" headingLevel={2}>
                 <PropertyList
                   label="Details van de opname"
                   groups={[
                     [
-                      { label: 'Bron', value: 'Halo-server' },
+                      { label: 'Vastgelegd door', value: 'Halo, op de server' },
                       {
                         label: 'Aanleiding',
                         value: (
                           <span className="inline-flex">
-                            <TriggerTag trigger="Fout" />
+                            <TriggerTag trigger="Na een fout" />
                           </span>
                         ),
                       },
@@ -329,7 +534,7 @@ function Trail(): ReactNode {
                       { label: 'Duur', value: clock(DURATION) },
                       {
                         label: 'Fouten',
-                        value: <span className="text-danger">{`${errors} fouten`}</span>,
+                        value: <span className="tabular-nums">{errors}</span>,
                       },
                     ],
                     [
@@ -342,22 +547,40 @@ function Trail(): ReactNode {
                   ]}
                 />
               </Panel>
-              <Panel title="Opnames" meta="van webwinkel" flush>
-                <div className="px-2 pb-2">
+              <Panel title="Opnames" meta="van webwinkel" headingLevel={2} flush>
+                {/* The open recording carries the selected tint, as a chosen row does elsewhere. */}
+                <div className="px-2 pb-2 [&_[aria-current=true]]:bg-surface-active">
                   <List label="Opnames">
-                    {RECORDINGS.map((recording) => (
-                      <RoomyListRow
-                        key={recording.id}
-                        title={recording.title}
-                        meta={recording.duration}
-                        note={`${recording.trigger} · ${recording.when}${recording.errors > 0 ? ` · ${recording.errors === 1 ? '1 fout' : `${recording.errors} fouten`}` : ''}`}
-                        {...(recording.errors > 0
-                          ? { kind: 'failed' as const, status: 'Met fouten' }
-                          : { kind: 'done' as const, status: 'Zonder fouten' })}
-                        aria-current={recording.id === current ? 'true' : undefined}
-                        onClick={() => setCurrent(recording.id)}
-                      />
-                    ))}
+                    {RECORDINGS.map((recording) => {
+                      const count =
+                        recording.errors === 0
+                          ? ''
+                          : recording.errors === 1
+                            ? '1 fout'
+                            : `${recording.errors} fouten`
+                      const note = [recording.trigger, recording.when, count].filter(Boolean)
+                      return (
+                        <RoomyListRow
+                          key={recording.id}
+                          title={recording.title}
+                          meta={recording.duration}
+                          note={note.join(' · ')}
+                          {...(recording.errors > 0
+                            ? { kind: 'failed' as const, status: 'Met fouten' }
+                            : { kind: 'done' as const, status: 'Zonder fouten' })}
+                          // One clean name, each part once: "Kassa betaalt niet, met fouten, 0:24,
+                          // na een fout, vandaag 13:52, 2 fouten".
+                          aria-label={[
+                            recording.title,
+                            recording.errors > 0 ? 'met fouten' : 'zonder fouten',
+                            recording.duration,
+                            ...note.map((part, index) => (index === 0 ? part.toLowerCase() : part)),
+                          ].join(', ')}
+                          aria-current={recording.id === current ? 'true' : undefined}
+                          onClick={() => setCurrent(recording.id)}
+                        />
+                      )
+                    })}
                   </List>
                 </div>
               </Panel>

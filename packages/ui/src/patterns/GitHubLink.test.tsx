@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 import { GitHubLink } from './GitHubLink'
 
-test('a chip is a button named after its kind and number, with the full reference as title', () => {
+test('a chip is a button named by the reference it shows, described by its kind and number, with the full reference as title', () => {
   render(
     <p>
       Zie{' '}
@@ -17,7 +17,7 @@ test('a chip is a button named after its kind and number, with the full referenc
       />
     </p>,
   )
-  const chip = screen.getByRole('button', { name: 'Pull request 123' })
+  const chip = screen.getByRole('button', { name: '#123', description: 'Pull request 123' })
   expect(chip).toHaveAttribute('title', 'voorbeeld/webwinkel#123')
   // The mark is decoration; the words are the reference as it reads.
   expect(chip.textContent).toBe('#123')
@@ -45,8 +45,12 @@ test('an issue and a bare number say what they are', () => {
       onOpen={() => {}}
     />,
   )
-  expect(screen.getByRole('button', { name: 'Issue 9' })).toHaveTextContent('kassa#9')
-  expect(screen.getByRole('button', { name: 'Pull request of issue 7' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'kassa#9', description: 'Issue 9' })).toHaveTextContent(
+    'kassa#9',
+  )
+  expect(
+    screen.getByRole('button', { name: '#7', description: 'Pull request of issue 7' }),
+  ).toBeInTheDocument()
 })
 
 test('a click and the keyboard both open it', async () => {
@@ -61,7 +65,7 @@ test('a click and the keyboard both open it', async () => {
       onOpen={onOpen}
     />,
   )
-  const chip = screen.getByRole('button', { name: 'Pull request 1' })
+  const chip = screen.getByRole('button', { name: '#1' })
   await userEvent.click(chip)
   chip.focus()
   await userEvent.keyboard('{Enter}')
@@ -80,7 +84,10 @@ test('with an answer of core the chip shows the state and carries the title', ()
       pull={{ title: 'Kassa sneller', state: 'merged' }}
     />,
   )
-  const chip = screen.getByRole('button', { name: 'Pull request 5, samengevoegd' })
+  const chip = screen.getByRole('button', {
+    name: '#5',
+    description: 'Pull request 5, samengevoegd',
+  })
   expect(chip).toHaveAttribute('title', 'voorbeeld/kassa#5 · Kassa sneller')
   expect(chip).toHaveAttribute('data-nt-pr-state', 'merged')
 })

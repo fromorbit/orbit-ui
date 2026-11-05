@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react'
+import { LayerStage } from '../gallery/layer-stage'
 import type { Story } from '../gallery/story'
 import { Button } from '../primitives/Button'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -13,8 +14,22 @@ import { ConfirmDialog } from './ConfirmDialog'
  * falls inside it wherever the stage has scrolled to, and the dimmed overlay is part of the
  * reference too.
  */
-function Stage({ children }: { children: ReactNode }) {
-  return <div className="h-[30rem] w-full max-w-[40rem]">{children}</div>
+function Stage({
+  reopenLabel,
+  children,
+}: {
+  reopenLabel: string
+  children: (open: boolean, setOpen: (open: boolean) => void) => ReactNode
+}) {
+  // Its own containing block and not modal (`LayerStage`): the open layer and its scrim stay in
+  // this box, and the gallery around it stays in reach, for the keyboard too.
+  return (
+    <div className="w-full max-w-[40rem]">
+      <LayerStage height={480} reopenLabel={reopenLabel}>
+        {children}
+      </LayerStage>
+    </div>
+  )
 }
 
 /** The plain case: the trigger, and a dialog that is not up yet. */
@@ -43,18 +58,19 @@ function Closed() {
  * alone in its own state rather than beside another one that also opens on mount.
  */
 function Open() {
-  const [open, setOpen] = useState(true)
   return (
-    <Stage>
-      <ConfirmDialog
-        open={open}
-        onOpenChange={setOpen}
-        title="Uitloggen"
-        body="Je moet opnieuw inloggen om verder te gaan."
-        confirmLabel="Uitloggen"
-        cancelLabel="Annuleren"
-        onConfirm={() => setOpen(false)}
-      />
+    <Stage reopenLabel="Uitloggen">
+      {(open, setOpen) => (
+        <ConfirmDialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Uitloggen"
+          body="Je moet opnieuw inloggen om verder te gaan."
+          confirmLabel="Uitloggen"
+          cancelLabel="Annuleren"
+          onConfirm={() => setOpen(false)}
+        />
+      )}
     </Stage>
   )
 }
@@ -72,11 +88,11 @@ function Dangerous() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Chat verwijderen</Button>
+      <Button onClick={() => setOpen(true)}>Gesprek verwijderen</Button>
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}
-        title="Chat verwijderen"
+        title="Gesprek verwijderen"
         body="Dit kan niet ongedaan worden gemaakt."
         confirmLabel="Verwijderen"
         cancelLabel="Annuleren"
@@ -90,5 +106,5 @@ function Dangerous() {
 export default {
   group: 'overlays',
   title: 'ConfirmDialog',
-  states: { Closed, Open, Dangerous },
+  states: { Dicht: Closed, Open: Open, Onomkeerbaar: Dangerous },
 } satisfies Story

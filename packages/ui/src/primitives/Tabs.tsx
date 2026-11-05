@@ -642,13 +642,13 @@ export function Tabs({
                   // here, unlike the other shapes: the rows and diffs of the changes tab run from
                   // edge to edge of the panel, and a gutter would leave an empty 8px strip at their
                   // right end whenever nothing scrolls.
-                  'min-h-0 flex-1 overflow-y-auto px-3 pt-0 pb-4 outline-none'
+                  'min-h-0 flex-1 overflow-y-auto px-3 pt-0 pb-4 text-[13px] outline-none'
                 : horizontal
-                  ? 'min-h-0 flex-1 overflow-y-auto px-6 py-4 outline-none [scrollbar-gutter:stable]'
+                  ? 'min-h-0 flex-1 overflow-y-auto px-6 py-4 text-[13px] outline-none [scrollbar-gutter:stable]'
                   : arranged
                     ? // The caller's column sets the reading width; this only scrolls it.
-                      'min-h-0 min-w-0 flex-1 overflow-y-auto px-6 pt-2 pb-10 outline-none [scrollbar-gutter:stable]'
-                    : 'min-w-0 flex-1 overflow-y-auto px-8 py-6 outline-none [scrollbar-gutter:stable]'
+                      'min-h-0 min-w-0 flex-1 overflow-y-auto px-6 pt-2 pb-10 text-[13px] outline-none [scrollbar-gutter:stable]'
+                    : 'min-w-0 flex-1 overflow-y-auto px-8 py-6 text-[13px] outline-none [scrollbar-gutter:stable]'
           }
         >
           {tab.content}

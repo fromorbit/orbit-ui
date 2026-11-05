@@ -10,6 +10,8 @@ export interface PanelProps {
   actions?: ReactNode
   /** No inner padding, for a list or a table that runs to the card's edges. */
   flush?: boolean
+  /** The level of its heading in the outline of the page: 2 right under the page title (the default), 3 under a section. */
+  headingLevel?: 2 | 3
   /** The layout of the card in its parent: a grid span, a height. */
   className?: string
   children: ReactNode
@@ -24,20 +26,26 @@ export function Panel({
   meta,
   actions,
   flush = false,
+  headingLevel = 2,
   className,
   children,
 }: PanelProps): ReactNode {
   const id = useId()
+  const Heading = headingLevel === 2 ? 'h2' : 'h3'
   return (
     <section
       aria-labelledby={id}
-      className={`flex min-w-0 flex-col rounded-lg bg-overlay ${className ?? ''}`}
+      className={`flex min-w-0 flex-col rounded-lg bg-overlay shadow-plane ${className ?? ''}`}
     >
       <header className="flex min-h-11 items-center gap-2 px-4 pt-1">
-        <h3 id={id} className="m-0 font-medium text-[13px] text-fg">
-          {title}
-        </h3>
-        {meta === undefined ? null : <span className="text-[12px] text-muted">{meta}</span>}
+        {/* The title keeps one line; where the head is short of room, the note goes under it
+            rather than breaking the title into a ragged column beside the actions. */}
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 py-1">
+          <Heading id={id} className="m-0 whitespace-nowrap font-medium text-[13px] text-fg">
+            {title}
+          </Heading>
+          {meta === undefined ? null : <span className="text-[12px] text-muted">{meta}</span>}
+        </div>
         {actions === undefined ? null : (
           <div className="ml-auto flex items-center gap-1.5">{actions}</div>
         )}

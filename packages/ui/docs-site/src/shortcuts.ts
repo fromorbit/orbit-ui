@@ -50,11 +50,33 @@ export const ORBIT_KEYS: Readonly<Record<string, PageCommand>> = {
   'sidebar.toggle': { mac: '⌘B', other: 'Ctrl+B', aria: { mac: 'Meta+B', other: 'Control+B' } },
 }
 
+/**
+ * The keys of the made-up commands of the stories that are no command of Orbit's: the acts on a file
+ * and on a drawing of the `ContextMenu` story. Ids rather than written-out keys, so they follow the
+ * platform switch of the page (⌘O or Ctrl+O) and a screen reader hears them (`aria-keyshortcuts`).
+ */
+export const STORY_KEYS: Readonly<Record<string, PageCommand>> = {
+  'file.open': { mac: '⌘O', other: 'Ctrl+O', aria: { mac: 'Meta+O', other: 'Control+O' } },
+  'file.duplicate': { mac: '⌘D', other: 'Ctrl+D', aria: { mac: 'Meta+D', other: 'Control+D' } },
+  'file.delete': {
+    mac: '⌘⌫',
+    other: 'Delete',
+    aria: { mac: 'Meta+Backspace', other: 'Delete' },
+  },
+  'canvas.zoomIn': {
+    mac: 'Meta++',
+    other: 'Ctrl++',
+    aria: { mac: 'Meta+Plus', other: 'Control+Plus' },
+  },
+  'canvas.zoomOut': { mac: 'Meta+-', other: 'Ctrl+-', aria: { mac: 'Meta+-', other: 'Control+-' } },
+  'canvas.fit': { mac: '⇧1', other: 'Shift+1', aria: { mac: 'Shift+1', other: 'Shift+1' } },
+}
+
 /** A value shaped like a command id (`chat.send`), as opposed to a written-out key (`⌘K`). */
 const ID_SHAPE = /^[a-z][a-zA-Z]*(\.[a-zA-Z]+)+$/
 
 /**
- * The `ShortcutPort` of the docs page: Orbit's keys for its ids, `fakeShortcuts` for `demo.*`, and
+ * The `ShortcutPort` of the docs page: Orbit's keys for its ids, the stories' own for theirs, `fakeShortcuts` for `demo.*`, and
  * no key for any other id-shaped value, which is what Orbit's adapter does with an id it does not
  * know (`chat.send` has no key in Orbit). A written-out key is drawn as it stands.
  */
@@ -63,13 +85,13 @@ export function docsShortcuts(platform: Platform): ShortcutPort {
   const convention = platform === 'mac' ? 'mac' : 'other'
   return {
     label(id) {
-      const known = ORBIT_KEYS[id]
+      const known = ORBIT_KEYS[id] ?? STORY_KEYS[id]
       if (known) return known[convention] ?? undefined
       if (id.startsWith('demo.')) return demo.label(id)
       return ID_SHAPE.test(id) ? undefined : id
     },
     aria(id) {
-      const known = ORBIT_KEYS[id]
+      const known = ORBIT_KEYS[id] ?? STORY_KEYS[id]
       if (known) return known.aria[convention] ?? undefined
       return id.startsWith('demo.') ? demo.aria(id) : undefined
     },

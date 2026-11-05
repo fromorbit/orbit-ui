@@ -29,39 +29,39 @@ export default {
   group: 'patterns',
   title: 'SettingsGroup',
   states: {
-    'Heading and rows': () => (
+    'Kop en rijen': () => (
       <TooltipProvider>
         <div className="w-full max-w-[560px]">
-          <SettingsGroup title="New chats">
-            <Row label="Network access" description="The default for a new chat" />
-            <Row label="Worktree per chat" />
+          <SettingsGroup title="Nieuwe gesprekken">
+            <Row label="Netwerktoegang" description="De standaard voor een nieuw gesprek" />
+            <Row label="Worktree per gesprek" />
           </SettingsGroup>
         </div>
       </TooltipProvider>
     ),
-    'An action in the heading': () => (
+    'Een actie in de kop': () => (
       <TooltipProvider>
         <div className="w-full max-w-[560px]">
           <SettingsGroup
-            title="Extensions"
+            title="Extensies"
             action={
               <Button size="sm" variant="secondary">
-                Add…
+                Toevoegen…
               </Button>
             }
           >
-            <Row label="Extensions" />
+            <Row label="Extensies" />
           </SettingsGroup>
         </div>
       </TooltipProvider>
     ),
-    'Empty: only the heading and its action': () => (
+    'Leeg: alleen de kop en zijn actie': () => (
       <div className="w-full max-w-[560px]">
         <SettingsGroup
-          title="Extensions"
+          title="Extensies"
           action={
             <Button size="sm" variant="secondary">
-              Add…
+              Toevoegen…
             </Button>
           }
         >
@@ -69,14 +69,14 @@ export default {
         </SettingsGroup>
       </div>
     ),
-    'Two groups, stacked': () => (
+    'Twee groepen, gestapeld': () => (
       <TooltipProvider>
         <div className="flex w-full max-w-[560px] flex-col gap-6">
-          <SettingsGroup title="New chats">
-            <Row label="Network access" />
+          <SettingsGroup title="Nieuwe gesprekken">
+            <Row label="Netwerktoegang" />
           </SettingsGroup>
           <SettingsGroup title="Git">
-            <Row label="Worktree per chat" />
+            <Row label="Worktree per gesprek" />
           </SettingsGroup>
         </div>
       </TooltipProvider>

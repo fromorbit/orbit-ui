@@ -68,7 +68,7 @@ export default {
   group: 'primitives',
   title: 'Form',
   states: {
-    Empty: () => <Invite />,
-    'After a submit with errors': () => <Invite initialErrors />,
+    Leeg: () => <Invite />,
+    'Na versturen met fouten': () => <Invite initialErrors />,
   },
 } satisfies Story

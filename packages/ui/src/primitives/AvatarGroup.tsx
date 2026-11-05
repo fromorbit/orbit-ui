@@ -28,7 +28,9 @@ export interface AvatarGroupProps {
  *
  * One image to a screen reader (`role="img"` with `label`), since a list of initials says nothing
  * that the label does not say better. Each face gets a ring in the colour of the plane behind it,
- * so the overlap reads as faces in a row rather than a smudge. The faces are `Avatar`s, with the
+ * so the overlap reads as faces in a row rather than a smudge. The overlap stays small (4px of 30,
+ * none at the small size, where the ring alone parts them) so no face hides the second letter of
+ * the one before it. The faces are `Avatar`s, with the
  * tone that belongs to each name.
  */
 export function AvatarGroup({
@@ -46,18 +48,18 @@ export function AvatarGroup({
       role="img"
       aria-label={label}
       data-nt-avatar-group
-      className={`inline-flex items-center ${size === 'sm' ? '-space-x-1.5' : '-space-x-2'}`}
+      className={`inline-flex items-center ${size === 'sm' ? 'gap-0.5' : '-space-x-1'}`}
     >
       {shown.map((name, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: two people may share a name; their place tells them apart.
-        <span key={`${name}-${index}`} className={`flex rounded-full ${ring}`}>
+        <span key={`${name}-${index}`} title={name} className={`flex rounded-full ${ring}`}>
           <Avatar name={name} size={size} />
         </span>
       ))}
       {rest > 0 ? (
         <span
           aria-hidden="true"
-          className={`flex items-center justify-center rounded-full bg-mark font-medium text-secondary tabular-nums ${ring} ${size === 'sm' ? 'size-5 text-[9px]' : 'size-7.5 text-[11px]'}`}
+          className={`flex items-center justify-center rounded-full bg-mark font-medium text-secondary tabular-nums ${ring} ${size === 'sm' ? 'size-5 text-[11px]' : 'size-7.5 text-[11px]'}`}
         >
           +{rest}
         </span>

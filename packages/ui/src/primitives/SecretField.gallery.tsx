@@ -29,9 +29,9 @@ export default {
   group: 'primitives',
   title: 'SecretField',
   states: {
-    'Not set': () => <Live initial={false} />,
-    Set: () => <Live initial />,
-    Disabled: () => (
+    'Niet ingesteld': () => <Live initial={false} />,
+    Ingesteld: () => <Live initial />,
+    Uitgeschakeld: () => (
       <SecretField
         label="API key"
         labels={LABELS}

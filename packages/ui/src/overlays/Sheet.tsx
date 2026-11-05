@@ -3,7 +3,7 @@ import { type ReactNode, useRef } from 'react'
 import { focusHeldElsewhere } from '../primitives/hand-back'
 import { IconButton } from '../primitives/IconButton'
 import { SHEET_PANEL_END, SHEET_PANEL_START } from './panel'
-import { usePortalContainer } from './portal'
+import { useContainedLayers, usePortalContainer } from './portal'
 import { Tooltip } from './Tooltip'
 
 /** The props of `Sheet`. */
@@ -44,20 +44,33 @@ export function Sheet({
   side = 'end',
 }: SheetProps) {
   const container = usePortalContainer()
+  const contained = useContainedLayers()
   const cameFrom = useRef<HTMLElement | null>(null)
   const panel = useRef<HTMLDivElement>(null)
   return (
-    <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
+    <RadixDialog.Root open={open} onOpenChange={onOpenChange} modal={!contained}>
       <RadixDialog.Portal container={container}>
-        <RadixDialog.Overlay
-          data-nt-sheet-overlay
-          className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim"
-        />
+        {/* Radix draws no overlay for a layer that is not modal; a contained one keeps its scrim,
+            over its container only. */}
+        {contained ? (
+          <div
+            aria-hidden="true"
+            data-nt-sheet-overlay
+            className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim"
+          />
+        ) : (
+          <RadixDialog.Overlay
+            data-nt-sheet-overlay
+            className="no-drag fixed inset-0 z-(--nt-z-dialog) bg-scrim"
+          />
+        )}
         <RadixDialog.Content
           ref={panel}
           className={side === 'start' ? SHEET_PANEL_START : SHEET_PANEL_END}
           data-nt-layer="modal"
           data-side={side}
+          // Contained in a showcase, a click on the page around it is not meant for the layer.
+          {...(contained ? { onInteractOutside: (event: Event) => event.preventDefault() } : {})}
           {...(description === undefined ? { 'aria-describedby': undefined } : {})}
           // The panel itself takes the focus, not its first control: that is the close button,
           // whose tooltip would open on focus and take the first Escape for itself. Tab goes on
@@ -98,7 +111,7 @@ export function Sheet({
               </RadixDialog.Close>
             </Tooltip>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 text-[13px]">
             {children}
           </div>
           {footer === undefined ? null : (

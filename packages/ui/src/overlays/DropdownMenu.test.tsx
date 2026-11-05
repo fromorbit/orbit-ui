@@ -253,6 +253,11 @@ test('a disabled row with a reason stays in the walk, keeps its reason, and stil
   expect(row).toHaveFocus()
   expect(row).toHaveAttribute('aria-disabled', 'true')
   expect(row).toHaveAccessibleDescription('Hoogstens vijf keer per dag')
+  // In sight under the row, not only in a tooltip: a dimmed row said nothing of what to wait for.
+  const reason = menu.querySelector('[data-nt-menu-reason]')
+  expect(reason).toHaveTextContent('Hoogstens vijf keer per dag')
+  expect(reason).toHaveAttribute('aria-hidden', 'true')
+  expect(row.nextElementSibling).toBe(reason)
   await userEvent.keyboard('{Enter}')
   expect(onSelect).not.toHaveBeenCalled()
   // Radix closes the menu on every choice unless the row's own `onSelect` says otherwise — exactly
@@ -306,6 +311,66 @@ test('a row shows the keys of its shortcut id', async () => {
   // Off macOS: Ctrl and Shift, then the letter.
   const keys = [...row.querySelectorAll('kbd')]
   expect(keys.map((key) => key.textContent)).toEqual(['Ctrl', '', 'R'])
+})
+
+test('a row with a shortcut id tells assistive tech its key, its name staying the label', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Meer</Button>}
+      label="Rijacties"
+      items={[{ id: 'hard', label: 'Herladen', shortcut: 'demo.reload', onSelect: () => {} }]}
+    />,
+    { wrapper: uiWrapper({ platform: 'windows' }) },
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const row = await screen.findByRole('menuitem', { name: 'Herladen' })
+  expect(row).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+R')
+})
+
+test('a written-out key the port does not announce adds no aria-keyshortcuts', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Meer</Button>}
+      label="Rijacties"
+      items={[{ id: 'hard', label: 'Herladen', shortcut: '⇧⌘R', onSelect: () => {} }]}
+    />,
+    { wrapper: uiWrapper({ platform: 'mac' }) },
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const row = await screen.findByRole('menuitem', { name: 'Herladen' })
+  expect(row).not.toHaveAttribute('aria-keyshortcuts')
+})
+
+test('the keyboard caret is a bar of the focus colour as well as a tint', async () => {
+  await open()
+  const row = await screen.findByRole('menuitem', { name: 'Hernoemen' })
+  const classes = row.className.split(' ')
+  // The tint alone measured 1.2:1 against the panel; the bar is the cue of 3:1 (WCAG 1.4.11).
+  expect(classes).toContain('focus-visible:bg-surface-active')
+  expect(classes).toContain('focus-visible:before:bg-focus')
+  expect(classes).toContain('focus-visible:before:w-0.5')
+})
+
+test('the chevron of a submenu is muted, not faint: it is the only sign of the submenu', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Model</Button>}
+      label="Model"
+      items={[
+        {
+          id: 'more',
+          label: 'Meer modellen',
+          kind: 'submenu',
+          items: [{ id: 'west', label: 'West 1', onSelect: () => {} }],
+        },
+      ]}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Model' }))
+  const trigger = await screen.findByRole('menuitem', { name: 'Meer modellen' })
+  const chevron = trigger.querySelector('[data-nt-menu-chevron]')
+  expect(chevron?.className.split(' ')).toContain('text-muted')
+  expect(chevron?.querySelector('svg')?.getAttribute('class') ?? '').not.toContain('faint')
 })
 
 test('a row without a key looks exactly as before', async () => {
@@ -422,6 +487,10 @@ test('a hint describes its row in a tooltip, not in the menu', async () => {
   expect(screen.queryByText('Wisselen kost de geschiedenis')).toBeNull()
   row.focus()
   await waitFor(() => expect(row).toHaveAccessibleDescription('Wisselen kost de geschiedenis'))
+  // Beside the row, not over the rows above it.
+  expect(await screen.findByRole('tooltip')).toBeInTheDocument()
+  const panel = document.querySelector('[data-nt-layer="passive"][data-side]')
+  expect(panel).toHaveAttribute('data-side', 'right')
 })
 
 test('a row with `checked` is a checkbox item that says whether it is on', async () => {
@@ -605,7 +674,8 @@ test('with checks at the end the check of a choice follows its label', async () 
   await userEvent.click(screen.getByRole('button', { name: 'Model' }))
   const row = await screen.findByRole('menuitemradio', { name: 'Alfa' })
   const check = row.querySelector('[data-nt-menu-check]')
-  expect(check?.querySelector('svg')).not.toBeNull()
+  // A radio row's mark is the dot of one choice, not the check of a switch.
+  expect(check?.querySelector('[data-nt-menu-dot]')).not.toBeNull()
   expect(row.lastElementChild?.contains(check ?? null)).toBe(true)
 })
 
@@ -692,7 +762,7 @@ test('opens from outside when a caller drives it, and reports its closing', asyn
   await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
 })
 
-test('a shortcut stands in one cap at the end of its row', async () => {
+test('a shortcut stands at the end of its row as plain quiet text, without a cap', async () => {
   render(
     <DropdownMenu
       trigger={<Button>Meer</Button>}
@@ -710,11 +780,14 @@ test('a shortcut stands in one cap at the end of its row', async () => {
   )
   await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
   const row = await screen.findByRole('menuitem', { name: 'Instellingen' })
+  // One run of keys in `muted`, as a native menu draws it: no frame around it, nor around a key
+  // (a cap per row put frames inside the frame of the panel).
   const caps = row.querySelectorAll('[data-nt-kbd]')
   expect(caps).toHaveLength(1)
-  expect(caps[0]?.className).toContain('border-border-strong')
-  expect(caps[0]?.className).toContain('rounded-sm')
-  // Both keys inside that one cap, none with a border of its own.
+  expect(caps[0]?.className).not.toContain('border')
+  expect(caps[0]?.className).toContain('text-muted')
+  // Gone under a coarse pointer, where nobody has the keys.
+  expect(row.querySelector('[data-nt-menu-shortcut]')?.className).toContain('pointer-coarse:hidden')
   const keys = [...row.querySelectorAll('kbd')]
   expect(keys).toHaveLength(2)
   expect(keys[1]).toHaveTextContent(',')
@@ -743,8 +816,10 @@ test('a head names the rows under it, without being a row of its own', async () 
   expect(head).toHaveAttribute('aria-hidden', 'true')
   expect(head?.querySelector('[data-testid="glyph"]')).not.toBeNull()
   expect(head?.querySelector('[tabindex]')).toBeNull()
-  // A line under the head, and room for a name beside its glyph.
-  expect(head?.nextElementSibling).toHaveAttribute('role', 'separator')
+  // A line under the head, drawn rather than announced (a reader would hear "separator" first,
+  // the head being hidden), and room for a name beside its glyph.
+  expect(head?.nextElementSibling).toHaveAttribute('aria-hidden', 'true')
+  expect(within(menu).queryByRole('separator')).toBeNull()
   expect(menu.className).toContain('min-w-58')
   // The walk starts at the first row, not at the head.
   await userEvent.keyboard('{ArrowDown}')
@@ -793,4 +868,29 @@ test('a menu without a head or density keeps its rows and frame', async () => {
   expect(row.className).toContain('h-(--nt-control-md)')
   expect(screen.queryByRole('group')).toBeNull()
   expect(screen.getByRole('menu').className).toContain('min-w-40')
+})
+
+test('a row without an icon among rows with one keeps an empty slot, so the labels line up', async () => {
+  render(
+    <DropdownMenu
+      trigger={<Button>Meer</Button>}
+      label="Rijacties"
+      items={[
+        { id: 'rename', label: 'Hernoemen', icon: 'pencil', onSelect: () => {} },
+        { id: 'archive', label: 'Archiveren', onSelect: () => {} },
+      ]}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const archive = await screen.findByRole('menuitem', { name: 'Archiveren' })
+  expect(archive.querySelector('[data-nt-menu-lead]')).toHaveAttribute('aria-hidden', 'true')
+  expect(
+    screen.getByRole('menuitem', { name: 'Hernoemen' }).querySelector('[data-nt-menu-lead]'),
+  ).toBeNull()
+})
+
+test('a menu of rows without icons keeps no empty slot', async () => {
+  await open()
+  const archive = screen.getByRole('menuitem', { name: 'Archiveren' })
+  expect(archive.querySelector('[data-nt-menu-lead]')).toBeNull()
 })

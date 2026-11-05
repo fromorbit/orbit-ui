@@ -6,11 +6,11 @@ export default {
   group: 'patterns',
   title: 'PageHeader',
   states: {
-    'Title only': () => <PageHeader title="Artifacts" />,
+    'Alleen een titel': () => <PageHeader title="Bestanden" />,
     // The meta line of Wacht op jou: two counts, one separator.
-    'With a meta line': () => <PageHeader title="Wacht op jou" meta="3 beslissen · 2 nakijken" />,
+    'Met een metaregel': () => <PageHeader title="Wacht op jou" meta="3 beslissen · 2 nakijken" />,
     // Gearchiveerd: the count under the title, the search field in the strip.
-    'With actions': () => (
+    'Met acties': () => (
       <PageHeader
         title="Gearchiveerd"
         meta="12"
@@ -22,7 +22,7 @@ export default {
       />
     ),
     // The trail a page within a page sets in the title strip.
-    Crumbs: () => (
+    Kruimelpad: () => (
       <PageCrumbs
         label="Kruimelpad"
         trail={[

@@ -26,7 +26,7 @@ export default {
   group: 'primitives',
   title: 'Calendar',
   states: {
-    'A day chosen': () => <Month />,
-    'Not before today, no weekends': () => <Month min="2026-11-03" weekends={false} />,
+    'Een dag gekozen': () => <Month />,
+    'Niet vóór vandaag, geen weekenden': () => <Month min="2026-11-03" weekends={false} />,
   },
 } satisfies Story

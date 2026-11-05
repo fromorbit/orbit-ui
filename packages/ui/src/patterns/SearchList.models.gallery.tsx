@@ -100,7 +100,7 @@ function rows(
       keywords: [model.agent, ...(model.provider ? [model.provider] : [])],
       ...(trailing ? { trailing } : {}),
       secondary: {
-        label: 'Favourite',
+        label: 'Favoriet',
         icon: 'star' as const,
         on: favourites.has(model.id),
         onRun: () => toggle(model.id),
@@ -111,7 +111,7 @@ function rows(
   return [
     ...[...favourites].flatMap((id) => {
       const model = find(id)
-      return model ? [row(model, 'Favourites', 'favourite:', true)] : []
+      return model ? [row(model, 'Favorieten', 'favourite:', true)] : []
     }),
     ...recent.flatMap((id) => {
       const model = find(id)
@@ -176,16 +176,16 @@ function Picker({ query = '' }: { query?: string }) {
 
 export default {
   group: 'patterns',
-  title: 'SearchList, 29 models',
+  title: 'SearchList, 29 modellen',
   states: {
     // The walk starts on the model in force, a favourite: its trailing words and its filled star
     // stand on the active fill, where nothing may be muted.
-    'Favourites, recent, three groups and an agent that is not signed in': () => <Picker />,
+    'Favorieten, recent, drie groepen en een agent die niet is ingelogd': () => <Picker />,
     // A query flattens the list to the rows it finds, by the label or by the agent and provider,
     // and marks the label only.
-    'A query over the model and its provider': () => <Picker query="zuid flash" />,
+    'Een zoekvraag over het model en de provider': () => <Picker query="zuid flash" />,
     // An agent that is not signed in can be searched for too: its heading is then the one stop of
     // the walk, reason and all on the active fill.
-    'A query that finds the agent that is not signed in': () => <Picker query="anker" />,
+    'Een zoekvraag die de niet ingelogde agent vindt': () => <Picker query="anker" />,
   },
 } satisfies Story

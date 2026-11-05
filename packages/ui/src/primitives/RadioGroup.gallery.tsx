@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'RadioGroup',
   states: {
-    Default: () => (
+    Standaard: () => (
       <RadioGroup
         label="Toegangsniveau"
         value="edits"
@@ -17,7 +17,7 @@ export default {
         onValueChange={() => {}}
       />
     ),
-    'With descriptions': () => (
+    'Met beschrijvingen': () => (
       <RadioGroup
         label="Toegangsniveau"
         value="edits"
@@ -29,7 +29,7 @@ export default {
         onValueChange={() => {}}
       />
     ),
-    'Long option that wraps': () => (
+    'Lange optie die doorloopt': () => (
       <div className="w-56">
         <RadioGroup
           label="Model"
@@ -46,7 +46,7 @@ export default {
         />
       </div>
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <RadioGroup
         label="Toegangsniveau"
         value="edits"

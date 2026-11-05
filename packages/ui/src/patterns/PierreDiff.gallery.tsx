@@ -19,7 +19,7 @@ const removed = [
 ].join('\n')
 
 const mixed = [
-  '@@ -1,4 +1,5 @@',
+  '@@ -1,3 +1,4 @@',
   ' export function greet(name: string): string {',
   "-  return 'Hi'",
   "+  if (!name) return 'Hi, stranger'",
@@ -33,7 +33,7 @@ const mixed = [
 const mixedLine3 = '  return `Hi, ${name}`'
 
 const long = [
-  '@@ -1,1 +1,30 @@',
+  '@@ -0,0 +1,30 @@',
   ...Array.from({ length: 30 }, (_, i) => `+export const line${i + 1} = ${i + 1}`),
 ].join('\n')
 
@@ -49,7 +49,7 @@ export default {
   group: 'patterns',
   title: 'PierreDiff',
   states: {
-    Added: () => (
+    Toegevoegd: () => (
       <PierreDiff
         diff={added}
         path="/work/lezer/src/greet.ts"
@@ -58,7 +58,7 @@ export default {
         emptyLabel="Geen wijziging"
       />
     ),
-    Removed: () => (
+    Verwijderd: () => (
       <PierreDiff
         diff={removed}
         path="/work/lezer/src/greet.ts"
@@ -67,7 +67,7 @@ export default {
         emptyLabel="Geen wijziging"
       />
     ),
-    Mixed: () => (
+    Gemengd: () => (
       <PierreDiff
         diff={mixed}
         path="/work/lezer/src/greet.ts"
@@ -76,7 +76,7 @@ export default {
         emptyLabel="Geen wijziging"
       />
     ),
-    Long: () => (
+    'Lange inhoud': () => (
       <div className="w-full max-w-96">
         <PierreDiff
           diff={long}
@@ -87,7 +87,7 @@ export default {
         />
       </div>
     ),
-    'Unknown language': () => (
+    'Onbekende taal': () => (
       <PierreDiff
         diff={unknownLanguage}
         path="/work/lezer/notes.zzz"
@@ -98,7 +98,7 @@ export default {
     ),
     // Last, so it moves no reference above it: lines 2–3 selected, with a stand-in where the
     // changes tab hangs its note box (`LineNote`, which `shared/ui/` may not import).
-    'Selected lines': () => (
+    'Gekozen regels': () => (
       <PierreDiff
         diff={mixed}
         path="/work/lezer/src/greet.ts"
@@ -116,7 +116,7 @@ export default {
           },
           onChange() {},
           note: (
-            <div className="mx-3 my-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-sans text-[13px] text-muted">
+            <div className="mx-3 my-1.5 rounded-lg border border-border bg-plane px-3 py-1.5 font-sans text-[13px] text-muted">
               Note box
             </div>
           ),

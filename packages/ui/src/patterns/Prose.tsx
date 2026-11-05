@@ -1,5 +1,14 @@
 import { DocProse, type DocProseLabels, type DocProseOptions } from '@fromorbit/doc-view'
-import { createContext, Fragment, type ReactNode, useContext, useMemo, useState } from 'react'
+import {
+  createContext,
+  Fragment,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import Markdown, { type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Tooltip } from '../overlays/Tooltip'
@@ -156,7 +165,29 @@ function InlineCode({ children }: { children: ReactNode }): ReactNode {
     const [match] = references.find(text, 'code')
     if (match) return references.render(match, text)
   }
-  return <code className="rounded-sm bg-surface px-1 py-0.5 font-mono text-[12px]">{children}</code>
+  // A path breaks after a `/`, between its folders, and `anywhere` is only the fallback for one
+  // segment that is wider than the column on its own.
+  return (
+    <code className="rounded-sm bg-surface px-1 py-px font-mono text-[12px] [overflow-wrap:anywhere]">
+      {text?.includes('/') ? withSlashBreaks(text) : children}
+    </code>
+  )
+}
+
+/** A path with a break opportunity (`<wbr>`) after every `/`, so it wraps at its folders. */
+function withSlashBreaks(text: string): ReactNode {
+  const parts = text.split('/')
+  return parts.map((part, index) =>
+    index === parts.length - 1 ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: the segments of one fixed string.
+      <Fragment key={index}>{part}</Fragment>
+    ) : (
+      // biome-ignore lint/suspicious/noArrayIndexKey: the segments of one fixed string.
+      <Fragment key={index}>
+        {part}/<wbr />
+      </Fragment>
+    ),
+  )
 }
 
 /**
@@ -227,6 +258,20 @@ function withoutLayoutBreaks(children: ReactNode): ReactNode {
   return children.filter(
     (child) => !(typeof child === 'string' && child.includes('\n') && child.trim() === ''),
   )
+}
+
+/**
+ * The words of a task item without the space GFM leaves between its box and them: the box keeps
+ * its own margin, and a space there would push the first line 4px past the wrapped ones under it.
+ */
+function withoutTaskSpace(children: ReactNode): ReactNode {
+  if (!Array.isArray(children)) return children
+  let trimmed = false
+  return children.map((child) => {
+    if (trimmed || typeof child !== 'string') return child
+    trimmed = true
+    return child.trimStart()
+  })
 }
 
 /**
@@ -322,18 +367,53 @@ function CodeBlock({ code, children }: { code: () => string; children: ReactNode
   // Long lines either scroll (a thumb that stays visible, since the app's own bar shows only on
   // hover and a block cut off at the edge looked like it ended there) or wrap, by choice.
   const [wrap, setWrap] = useState(false)
-  const region = wrap ? CODE_REGION_WRAPPED : CODE_REGION
+  // Whether a line runs on past the right edge: only then does the edge fade, so the end of a line
+  // that was scrolled into view stands sharp, and a block that fits never looks cut.
+  const scroller = useRef<HTMLDivElement>(null)
+  const [more, setMore] = useState(false)
+  // Whether anything runs past the edge at all, scrolled or not: only then is the block a tab stop.
+  const [overflows, setOverflows] = useState(false)
+  useEffect(() => {
+    const element = scroller.current
+    if (!element || wrap) {
+      setMore(false)
+      setOverflows(false)
+      return
+    }
+    const check = () => {
+      setMore(element.scrollLeft + element.clientWidth < element.scrollWidth - 1)
+      setOverflows(element.scrollWidth > element.clientWidth)
+    }
+    check()
+    element.addEventListener('scroll', check, { passive: true })
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(check)
+    observer?.observe(element)
+    return () => {
+      element.removeEventListener('scroll', check)
+      observer?.disconnect()
+    }
+  }, [wrap])
+  const region = wrap ? CODE_REGION_WRAPPED : more ? `${CODE_REGION} ${CODE_FADE}` : CODE_REGION
   return (
     // A named group: the message around this block is a `group` of its own (its own row of time
     // and copy button hangs off it), and an unnamed `group-hover` would answer to that one too,
     // so pointing at a sentence would light up every code block in the answer.
-    <div data-nt-code-block className="group/code relative">
+    <div data-nt-code-block className={wrap ? CODE_BLOCK_WRAPPED : CODE_BLOCK}>
       {/* `group`, not a landmark: an answer can hold several code blocks, and two landmarks with
           the same name are a fault of their own (axe: landmark-unique). A group still carries a
           name. */}
       {/* biome-ignore lint/a11y/useSemanticElements: a named group inside an answer, not a form. */}
-      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: a long line scrolls sideways, and WCAG 2.1.1 (axe: scrollable-region-focusable) wants the keyboard to reach that overflow too. */}
-      <div role="group" tabIndex={0} aria-label={labels.codeBlock} className={region}>
+      <div
+        ref={scroller}
+        role="group"
+        // A tab stop only while a line runs past the edge: WCAG 2.1.1 (axe: scrollable-region-focusable)
+        // wants the keyboard to reach that overflow, and a block that fits is a stop with nothing
+        // to do.
+        {...(overflows ? { tabIndex: 0 } : {})}
+        aria-label={labels.codeBlock}
+        data-more={more || undefined}
+        className={region}
+      >
         <InsideBlockContext.Provider value={true}>
           <pre className={wrap ? PRE_WRAPPED : PRE}>{children}</pre>
         </InsideBlockContext.Provider>
@@ -373,7 +453,7 @@ function MarkdownFence({ code }: { code: () => string }) {
   const labels = useProseLabels()
   return (
     <div data-nt-code-block data-nt-markdown-fence className="group/code relative">
-      <div className="rounded-md bg-surface p-3">
+      <div className="rounded-md bg-plane p-3 shadow-plane">
         <DocumentView markdown={code()} document={FENCE_DOCUMENT} labels={labels} />
       </div>
       <div data-nt-code-copy className={CODE_COPY}>
@@ -421,11 +501,30 @@ function FootnotesHeading({ id }: { id: string | undefined }) {
 /** A table wide enough to scroll sideways, named for the same reason as `CodeBlock`. */
 function TableRegion({ children }: { children: ReactNode }) {
   const labels = useProseLabels()
+  // A tab stop only while the table is wider than its column, as with `CodeBlock`.
+  const scroller = useRef<HTMLDivElement>(null)
+  const [overflows, setOverflows] = useState(false)
+  useEffect(() => {
+    const element = scroller.current
+    if (!element) return
+    const check = () => setOverflows(element.scrollWidth > element.clientWidth)
+    check()
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(check)
+    observer?.observe(element)
+    return () => observer?.disconnect()
+  }, [])
   return (
     // biome-ignore lint/a11y/useSemanticElements: a named group inside an answer, not a form.
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: the wrapper scrolls a wide table sideways; without tabIndex the keyboard never reaches that overflow.
-    <div role="group" tabIndex={0} aria-label={labels.table} className={SCROLLS}>
-      <table className="w-full border-collapse text-[13px]">{children}</table>
+    <div
+      ref={scroller}
+      role="group"
+      {...(overflows ? { tabIndex: 0 } : {})}
+      aria-label={labels.table}
+      className={SCROLLS}
+    >
+      {/* As wide as its columns, left on the prose, not stretched across the column: three short
+          figures 300px apart lose their row (Proximity). A wide table still scrolls. */}
+      <table className="w-auto border-collapse text-[13px]">{children}</table>
     </div>
   )
 }
@@ -433,21 +532,35 @@ function TableRegion({ children }: { children: ReactNode }) {
 // A block that can scroll sideways, focusable so the keyboard reaches its overflow too.
 const SCROLLS =
   'no-drag overflow-x-auto outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
-const CODE_REGION = `${SCROLLS} rounded-md bg-surface p-3 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)`
+/**
+ * A block whose lines scroll: the tint and the focus ring on the block, the scroller inside it
+ * without either, its last 40px fading out while a line runs on past the edge (`CODE_FADE`), so a
+ * line cut by the edge reads as "goes on" rather than as broken. The fade is a mask on the scroller, which stays put while the lines move under it, and
+ * a mask would clip a ring drawn outside the scroller, so the block draws it.
+ */
+const CODE_BLOCK =
+  'group/code relative rounded-md bg-plane shadow-plane outline-focus has-[>[role=group]:focus-visible]:outline-2 has-[>[role=group]:focus-visible]:outline-offset-2'
+const CODE_BLOCK_WRAPPED = 'group/code relative'
+const CODE_REGION =
+  'no-drag overflow-x-auto p-3 outline-none pointer-coarse:pt-9 [&::-webkit-scrollbar-thumb]:bg-(--nt-scrollbar-thumb)'
+const CODE_FADE = '[mask-image:linear-gradient(to_left,transparent,black_40px)]'
 // Quiet until you go there: 100 ms is the shortest step the guidelines allow, and under reduced
 // motion there is no step at all. Opacity only, so nothing moves when it appears — and no reach
 // while it is invisible, or it would swallow a selection drag that starts at the right end of the
 // first line. Focus is unaffected: `pointer-events` says nothing about the keyboard, and landing
 // on the button is itself what makes the block show it.
+// On a touch screen nothing hovers, so there the buttons stay in sight, on a band of their own
+// above the first line (`pointer-coarse:pt-9` on the scroller) rather than over it.
 const CODE_COPY =
-  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto motion-reduce:transition-none'
-// The thumb of a code block stays visible at rest, so a line that runs on past the edge says so;
-// the rest of the app shows its scrollbars only while they are pointed at (index.css).
+  'absolute top-1 right-1 flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-(--nt-duration-fast) ease-out group-hover/code:opacity-100 group-hover/code:pointer-events-auto group-focus-within/code:opacity-100 group-focus-within/code:pointer-events-auto pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto motion-reduce:transition-none'
 const CODE_REGION_WRAPPED =
-  'no-drag rounded-md border border-border bg-surface p-3 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
+  'no-drag rounded-md border border-border bg-plane p-3 pointer-coarse:pt-9 outline-focus focus-visible:outline-2 focus-visible:outline-offset-2'
 const PRE_WRAPPED =
   'm-0 font-mono text-[12px] leading-normal whitespace-pre-wrap break-words [&>code]:bg-transparent [&>code]:p-0'
-const PRE = 'm-0 font-mono text-[12px] leading-normal [&>code]:bg-transparent [&>code]:p-0'
+// `w-max`: the line is as long as it is, so the padding of the scroller stays at its end and the
+// last character never stands flush against the edge.
+const PRE =
+  'm-0 w-max min-w-full pe-3 font-mono text-[12px] leading-normal [&>code]:bg-transparent [&>code]:p-0'
 // The capped scale of a conversation: an answer is not a document, so a `#` heading must not tower
 // over the text around it.
 const HEADING_LARGE = 'm-0 mt-2 text-[15px] font-medium first:mt-0'
@@ -455,11 +568,14 @@ const HEADING_SMALL = 'm-0 mt-2 text-[13px] font-medium first:mt-0'
 // `whitespace-normal` undoes the `pre-line` a list inherits from the item it is nested in: a list
 // holds no text of its own, so the newlines to-hast puts between its items are layout only.
 const LIST = 'm-0 whitespace-normal pl-4'
-const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-normal'
-// A task item carries a checkbox instead of a marker, but keeps the indent of the list it is in,
-// so the boxes line up with the bullets and numbers around them. A hanging indent of the box's
-// width (14px and its 8px margin) lines a wrapped line up with the words, not under the box.
+const ITEM = 'm-0 whitespace-pre-line text-[13px] leading-5'
+// A task item carries a checkbox instead of a marker. A hanging indent of the box's width (14px
+// and its 8px margin) lines a wrapped line up with the words, not under the box.
 const TASK_ITEM = `${ITEM} list-none pl-[22px] -indent-[22px]`
+// A list of tasks only has no markers to make room for: its boxes stand on the left edge of the
+// text around it, as the label above them does. A mixed list keeps the indent, so its boxes line
+// up with its bullets.
+const TASK_LIST = 'm-0 whitespace-normal pl-0'
 
 /** A heading on the chat's capped scale. */
 function Heading({ level, children }: { level: 1 | 2 | 3 | 4 | 5 | 6; children: ReactNode }) {
@@ -492,7 +608,7 @@ const components: Options['components'] = {
   // `pre-line`: an agent writes plain lines at least as often as markdown, and markdown itself
   // would fold a single newline into the previous line.
   p: ({ children }) => (
-    <p className="m-0 whitespace-pre-line text-[13px] leading-normal">
+    <p className="m-0 whitespace-pre-line text-[13px] leading-5">
       <Linked>{children}</Linked>
     </p>
   ),
@@ -506,13 +622,22 @@ const components: Options['components'] = {
       <Linked>{children}</Linked>
     </em>
   ),
-  ul: ({ children }) => <ul className={`${LIST} list-disc`}>{children}</ul>,
+  // `contains-task-list` is the class remark-gfm puts on a list whose items are all tasks.
+  ul: ({ children, className }) => (
+    <ul className={className?.includes('contains-task-list') ? TASK_LIST : `${LIST} list-disc`}>
+      {children}
+    </ul>
+  ),
   ol: ({ children }) => <ol className={`${LIST} list-decimal`}>{children}</ol>,
   // `class` is not something markdown can set; the only one that ever arrives here is the
   // `task-list-item` that remark-gfm puts on an item with a checkbox.
   li: ({ children, className }) => (
     <li className={className?.includes('task-list-item') ? TASK_ITEM : ITEM}>
-      <Linked>{withoutLayoutBreaks(children)}</Linked>
+      <Linked>
+        {className?.includes('task-list-item')
+          ? withoutTaskSpace(withoutLayoutBreaks(children))
+          : withoutLayoutBreaks(children)}
+      </Linked>
     </li>
   ),
   a: ({ children, href, ...rest }) => (
@@ -531,19 +656,24 @@ const components: Options['components'] = {
   // would build strings nobody has asked for.
   pre: ({ children, node }) => <FencedBlock node={node}>{children}</FencedBlock>,
   blockquote: ({ children }) => (
-    <blockquote className="m-0 whitespace-pre-line border-l border-border pl-3 text-[13px] leading-normal text-muted">
+    <blockquote className="m-0 whitespace-pre-line border-l border-border pl-3 text-[13px] leading-5 text-muted">
       {withoutLayoutBreaks(children)}
     </blockquote>
   ),
   hr: () => <Separator />,
   table: ({ children }) => <TableRegion>{children}</TableRegion>,
-  th: ({ children }) => (
-    <th className="border-b border-border px-3 py-1.5 text-left font-medium text-muted first:ps-0">
+  // The alignment of a column (`| ---: |`) comes in as `style`; numbers line up on the right, in
+  // tabular figures, under a header in the quiet label style.
+  th: ({ children, style }) => (
+    <th
+      style={style}
+      className="h-8 border-b border-border px-3 py-0 text-left font-medium text-[12px] text-muted first:ps-0"
+    >
       <Linked>{children}</Linked>
     </th>
   ),
-  td: ({ children }) => (
-    <td className="border-b border-border px-3 py-1.5 first:ps-0">
+  td: ({ children, style }) => (
+    <td style={style} className="h-8 border-b border-border px-3 py-0 tabular-nums first:ps-0">
       <Linked>{children}</Linked>
     </td>
   ),
@@ -593,7 +723,15 @@ function DocumentView({
     () => (code: () => string) => <CopyButton text={code} {...copy} />,
     [copy],
   )
-  return <DocProse markdown={markdown} labels={labels} renderCopy={renderCopy} {...document} />
+  // A long line of code scrolls inside its own block, never the page around the document. The
+  // block that scrolls is the named, focusable region of `DocProse` ("Codeblok"), not the `pre`
+  // in it, so the keyboard reaches the overflow (axe: scrollable-region-focusable) and the ring of
+  // the kit shows where it is.
+  return (
+    <div className="min-w-0 [&_[data-nt-code-block]>[role=group]]:max-w-full [&_[data-nt-code-block]>[role=group]]:overflow-x-auto [&_[data-nt-code-block]>[role=group]]:outline-focus [&_[data-nt-code-block]>[role=group]:focus-visible]:outline-2 [&_[data-nt-code-block]>[role=group]:focus-visible]:outline-offset-2">
+      <DocProse markdown={markdown} labels={labels} renderCopy={renderCopy} {...document} />
+    </div>
+  )
 }
 
 /**

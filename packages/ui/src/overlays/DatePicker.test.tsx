@@ -29,8 +29,10 @@ function Deadline({ onChange = vi.fn() }: { onChange?(day: string): void }) {
 
 test('opens a calendar with the focus on today', async () => {
   render(<Deadline />)
-  const trigger = screen.getByRole('button', { name: 'Deadline' })
+  const trigger = screen.getByRole('button', { name: /^Deadline\b/ })
   expect(trigger).toHaveTextContent('Kies een datum')
+  // The name says what the trigger shows, not only what it is for (WCAG 2.5.3).
+  expect(trigger).toHaveAccessibleName('Deadline Kies een datum')
   await userEvent.click(trigger)
   expect(screen.getByRole('table', { name: 'november 2026' })).toBeInTheDocument()
   expect((document.activeElement as HTMLElement).dataset.day).toBe('2026-11-03')
@@ -39,23 +41,24 @@ test('opens a calendar with the focus on today', async () => {
 test('a day chosen with the keys closes the panel and shows in the trigger', async () => {
   const onChange = vi.fn()
   render(<Deadline onChange={onChange} />)
-  await userEvent.click(screen.getByRole('button', { name: 'Deadline' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Deadline\b/ }))
   await userEvent.keyboard('{ArrowDown}{Enter}')
   expect(onChange).toHaveBeenCalledWith('2026-11-10')
   expect(screen.queryByRole('table')).not.toBeInTheDocument()
-  const trigger = screen.getByRole('button', { name: 'Deadline' })
+  const trigger = screen.getByRole('button', { name: /^Deadline\b/ })
   expect(trigger).toHaveTextContent('10 nov 2026')
+  expect(trigger).toHaveAccessibleName('Deadline 10 nov 2026')
   expect(trigger).toHaveFocus()
 })
 
 test('Escape closes without a choice', async () => {
   const onChange = vi.fn()
   render(<Deadline onChange={onChange} />)
-  await userEvent.click(screen.getByRole('button', { name: 'Deadline' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Deadline\b/ }))
   await userEvent.keyboard('{Escape}')
   expect(screen.queryByRole('table')).not.toBeInTheDocument()
   expect(onChange).not.toHaveBeenCalled()
-  expect(screen.getByRole('button', { name: 'Deadline' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: /^Deadline\b/ })).toHaveFocus()
 })
 
 test('FormField names it and marks it invalid', () => {
@@ -73,7 +76,7 @@ test('FormField names it and marks it invalid', () => {
       )}
     </FormField>,
   )
-  const trigger = screen.getByRole('button', { name: 'Publicatiedatum' })
+  const trigger = screen.getByRole('button', { name: /^Publicatiedatum\b/ })
   expect(trigger).toHaveAttribute('aria-invalid', 'true')
   expect(trigger).toHaveAccessibleDescription('Kies een datum.')
 })

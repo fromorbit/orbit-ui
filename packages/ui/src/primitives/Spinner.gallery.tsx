@@ -5,7 +5,7 @@ export default {
   group: 'primitives',
   title: 'Spinner',
   states: {
-    Sizes: () => (
+    Maten: () => (
       <div className="flex items-center gap-4">
         <div className="flex flex-col items-center gap-1 text-[12px] text-muted">
           <Spinner size="sm" label="Laden…" />
@@ -17,6 +17,6 @@ export default {
         </div>
       </div>
     ),
-    'Custom label': () => <Spinner label="Loading chats" />,
+    'Eigen label': () => <Spinner label="Gesprekken laden" />,
   },
 } satisfies Story

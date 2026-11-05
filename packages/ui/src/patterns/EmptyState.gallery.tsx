@@ -6,25 +6,29 @@ export default {
   group: 'patterns',
   title: 'EmptyState',
   states: {
-    'Title only': () => <EmptyState icon="message-circle" title="No chats yet" />,
+    'Alleen een titel': () => <EmptyState icon="message-circle" title="Nog geen gesprekken" />,
     // The form a whole panel uses: the same drawing, with the title as the document's heading.
-    'As the heading of a panel': () => (
-      <EmptyState icon="message-circle" title="What do you want to work on?" titleAs="h1" />
+    'Als kop van een paneel': () => (
+      <EmptyState icon="message-circle" title="Waar wil je aan werken?" titleAs="h1" />
     ),
-    'With an action': () => (
+    'Met een actie': () => (
       <EmptyState
         icon="message-circle"
-        title="No chats yet"
-        description="Start one and it appears here, grouped by project."
+        title="Nog geen gesprekken"
+        description="Start een gesprek; het staat dan hier bij je project."
         action={
           <Button variant="primary" size="sm">
-            New chat
+            Nieuw gesprek
           </Button>
         }
       />
     ),
-    'Nothing found': () => (
-      <EmptyState icon="search" title="No results" description="Try a shorter search." />
+    'Niets gevonden': () => (
+      <EmptyState
+        icon="search"
+        title="Niets gevonden"
+        description="Probeer een kortere zoekterm."
+      />
     ),
   },
 } satisfies Story

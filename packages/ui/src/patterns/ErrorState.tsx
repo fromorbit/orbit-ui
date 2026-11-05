@@ -37,7 +37,10 @@ export interface ErrorStateProps {
   detail?: string
   /** `sm` is the compact line for inside a list or a popover; `md` fills a panel. */
   size?: 'md' | 'sm'
-  /** What to do about it, e.g. a `Button` that retries. */
+  /**
+   * What to do about it, e.g. a framed `Button` (`secondary`, `sm`) that retries. In the compact
+   * row it follows the message directly.
+   */
   action?: ReactNode
 }
 
@@ -73,7 +76,9 @@ export function ErrorState({ title, code, detail, size, action }: ErrorStateProp
           {words}
         </p>
       ) : null}
-      {action ? <div className={small ? 'ml-auto' : 'mt-1'}>{action}</div> : null}
+      {/* The compact action follows its message 8px on, never pushed to the far edge of the row,
+          where it would float away from what it answers. */}
+      {action ? <div className={small ? 'shrink-0' : 'mt-1'}>{action}</div> : null}
     </div>
   )
 }

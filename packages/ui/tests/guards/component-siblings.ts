@@ -9,9 +9,15 @@
 const HELPERS: readonly string[] = [
   // A React context plus the one-line provider around it; `portal.test.tsx` covers it.
   'overlays/portal.tsx',
+  // The rows `DropdownMenu` and `ContextMenu` share: no states of its own, it draws what their
+  // stories and tests show.
+  'overlays/menu-rows.tsx',
   // The ports a host hands the library: it draws nothing, so there is no story;
   // `UiProvider.test.tsx` covers it.
   'provider/UiProvider.tsx',
+  // The stage the open-on-load overlay stories stand in; shown by them, `layer-stage.test.tsx`
+  // covers it.
+  'gallery/layer-stage.tsx',
 ]
 
 /**

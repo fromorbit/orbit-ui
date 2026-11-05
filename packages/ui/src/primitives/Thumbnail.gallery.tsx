@@ -9,10 +9,10 @@ export default {
   group: 'primitives',
   title: 'Thumbnail',
   states: {
-    'With an image, and while it loads': () => (
+    'Met een afbeelding, en tijdens het laden': () => (
       <div className="flex items-center gap-3 p-2">
-        <Thumbnail label="Image of A1" src={PIXEL} />
-        <Thumbnail label="Image of A2" src={null} />
+        <Thumbnail label="Afbeelding van A1" src={PIXEL} />
+        <Thumbnail label="Afbeelding van A2" src={null} />
       </div>
     ),
   },

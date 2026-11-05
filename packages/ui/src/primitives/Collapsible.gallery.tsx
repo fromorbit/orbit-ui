@@ -82,23 +82,25 @@ function Summary({ count, names }: { count: string; names: string }) {
   )
 }
 
-const short = <Summary count="6 steps" names="read, bash ×5" />
+const short = <Summary count="6 stappen" names="read, bash ×5" />
 
-const long = <Summary count="12 steps" names="read ×4, bash ×3, grep, edit ×2, write, todo_write" />
+const long = (
+  <Summary count="12 stappen" names="read ×4, bash ×3, grep, edit ×2, write, todo_write" />
+)
 
 export default {
   group: 'primitives',
   title: 'Collapsible',
   states: {
-    Closed: () => <Example initial={false} summary={short} />,
+    Dicht: () => <Example initial={false} summary={short} />,
     Open: () => <Example initial summary={short} />,
-    'A long summary truncates': () => <Example initial={false} summary={long} />,
+    'Een lange samenvatting wordt ingekort': () => <Example initial={false} summary={long} />,
     // The other half of the contract: nothing to fold yet, so no trigger and the row simply
     // stands there. A single technical event in the timeline is this shape, and it stayed
     // invisible in the gallery as long as the story only showed summaries.
-    'No summary': () => <Example initial summary={null} names={['read']} />,
+    'Geen samenvatting': () => <Example initial summary={null} names={['read']} />,
     // The quiet lines of the timeline: the summary carries its own glyph and is the button on its
     // own, so the chevron is left out.
-    'Without a chevron': () => <Example initial={false} summary={short} chevron={false} />,
+    'Zonder pijltje': () => <Example initial={false} summary={short} chevron={false} />,
   },
 } satisfies Story

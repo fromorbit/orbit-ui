@@ -34,7 +34,7 @@ function SpecProperties() {
     <TooltipProvider>
       <div className="w-80 bg-canvas p-3">
         <PropertyList
-          label="Properties"
+          label="Eigenschappen"
           groups={[
             [
               {
@@ -46,7 +46,7 @@ function SpecProperties() {
                   </span>
                 ),
               },
-              { label: 'Owner', value: 'Sanne Visser' },
+              { label: 'Eigenaar', value: 'Sanne Visser' },
               {
                 label: 'Project',
                 value: (
@@ -59,7 +59,7 @@ function SpecProperties() {
             ],
             [
               {
-                label: 'Plans',
+                label: 'Plannen',
                 value: (
                   <>
                     <Plan label="PLAN-10" title="Betaalstap" done={2} of={5} />
@@ -68,28 +68,28 @@ function SpecProperties() {
                 ),
               },
               {
-                label: 'Chats',
+                label: 'Gesprekken',
                 value: (
                   <span className="flex items-center gap-1.5">
-                    <StatusShape kind="running" label="Running" />
+                    <StatusShape kind="running" label="Loopt" />
                     <span className="min-w-0 truncate">Betaalstap bouwen</span>
                   </span>
                 ),
               },
             ],
             [
-              { label: 'Check', value: 'Complete' },
+              { label: 'Controle', value: 'Volledig' },
               {
-                label: 'Acceptance',
+                label: 'Criteria',
                 value: (
                   <>
-                    <span>9 of 12 criteria</span>
+                    <span>9 van 12 criteria</span>
                     <span className="flex">
                       <ProgressMeter
                         valueText={(value, max) => `${value} van ${max}`}
                         value={9}
                         max={12}
-                        label="Acceptance"
+                        label="Criteria"
                         width="fill"
                         count={false}
                       />
@@ -109,15 +109,18 @@ export default {
   group: 'patterns',
   title: 'PropertyList',
   states: {
-    'The properties of a spec': () => <SpecProperties />,
+    'De eigenschappen van een spec': () => <SpecProperties />,
     // Labels keep their column even when a value is long and wraps under itself.
-    'A long value': () => (
+    'Een lange waarde': () => (
       <div className="w-80 bg-canvas p-3">
         <PropertyList
-          label="Properties"
+          label="Eigenschappen"
           groups={[
             [
-              { label: 'Owner', value: 'Someone with a name much longer than the column is wide' },
+              {
+                label: 'Eigenaar',
+                value: 'Iemand met een naam die veel langer is dan de kolom breed is',
+              },
               { label: 'Project', value: 'boekhoud-api' },
             ],
           ]}

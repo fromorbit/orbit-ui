@@ -14,16 +14,17 @@ import { HostedSurface, useSurfaceReporter } from './HostedSurface'
 
 /**
  * A made-up page as a frozen view would show it: a bar, a heading block and three cards, drawn as
- * an SVG so the story needs no image file and no network.
+ * an SVG so the story needs no image file and no network. In the family's paper, mist and slate,
+ * so the mock page brings no colours of its own.
  */
 const PAGE = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240">
-    <rect width="400" height="240" fill="#f4f1ea"/>
-    <rect width="400" height="36" fill="#2f5d50"/>
-    <rect x="20" y="56" width="220" height="20" rx="3" fill="#1f2a28"/>
-    <rect x="20" y="96" width="112" height="112" rx="6" fill="#d98c5f"/>
-    <rect x="144" y="96" width="112" height="112" rx="6" fill="#7aa6c2"/>
-    <rect x="268" y="96" width="112" height="112" rx="6" fill="#c9b458"/>
+    <rect width="400" height="240" fill="#f5f4f0"/>
+    <rect width="400" height="36" fill="#e7e9f2"/>
+    <rect x="20" y="56" width="220" height="20" rx="4" fill="#5a6185"/>
+    <rect x="20" y="96" width="112" height="112" rx="8" fill="#ffffff"/>
+    <rect x="144" y="96" width="112" height="112" rx="8" fill="#ffffff"/>
+    <rect x="268" y="96" width="112" height="112" rx="8" fill="#ffffff"/>
   </svg>`,
 )}`
 
@@ -47,7 +48,7 @@ function SendImage({ host }: { host: FakeHost }) {
     host.surfaces.emit({ type: 'frozen', id: 'tab_galerij_bevroren', seq: 1, image: PAGE })
   }, [host])
   return (
-    <div className="flex h-[240px] w-[400px] border border-border">
+    <div className="flex h-[240px] w-full max-w-[400px] overflow-hidden rounded-lg">
       <HostedSurface id="tab_galerij_bevroren" />
     </div>
   )
@@ -111,8 +112,15 @@ function Column() {
 
   return (
     <div className="flex h-[360px]">
-      <div className="flex flex-col border border-border" style={{ width: `${width}px` }}>
+      {/* The plane of a column: a tint in dark, a white card with a hairline in light. */}
+      <div
+        className="flex flex-col rounded-lg bg-plane shadow-plane"
+        style={{ width: `${width}px` }}
+      >
         <Bar>
+          <span className="min-w-0 flex-1 truncate px-1 font-mono text-[12px] text-muted">
+            winkel.voorbeeld.nl
+          </span>
           <DropdownMenu
             label="Tabacties"
             tooltip="Meer"
@@ -132,20 +140,28 @@ function Column() {
               />
             }
           />
-          <Button size="sm" variant="ghost" onClick={() => setDialog(true)}>
+          <Button size="sm" variant="secondary" onClick={() => setDialog(true)}>
             Profiel wissen
           </Button>
         </Bar>
-        <HostedSurface
-          id="tab_galerij"
-          onFocusChange={(focused) => {
-            inPage.current = focused
-          }}
-        />
+        {/* What lies under the view: main lays the real page over it, the gallery shows why the
+            plane is empty. */}
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <p className="absolute inset-0 m-0 flex items-center justify-center px-6 text-center text-[12px] text-muted">
+            Hier legt de app de webpagina van deze tab neer.
+          </p>
+          <HostedSurface
+            id="tab_galerij"
+            onFocusChange={(focused) => {
+              inPage.current = focused
+            }}
+          />
+        </div>
         <Bar>
           <Tooltip label="Uitleg over deze pagina">
-            <IconButton icon="x" size="sm" variant="ghost" label="Uitleg" />
+            <IconButton icon="info" size="sm" variant="ghost" label="Uitleg" />
           </Tooltip>
+          <span className="text-[12px] text-muted">F6 wisselt tussen de balk en de pagina</span>
         </Bar>
       </div>
       <ResizeHandle
@@ -177,7 +193,7 @@ export default {
   group: 'patterns',
   title: 'HostedSurface',
   states: {
-    Frozen,
-    'In a column': InAColumn,
+    Bevroren: Frozen,
+    'In een kolom': InAColumn,
   },
 } satisfies Story

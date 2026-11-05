@@ -46,7 +46,9 @@ describe('filterComboboxOptions', () => {
 describe('Combobox', () => {
   test('the trigger says the placeholder and opens a list with the focus in the search', async () => {
     render(<Single />)
-    const trigger = screen.getByRole('button', { name: 'Regio' })
+    const trigger = screen.getByRole('button', { name: /^Regio\b/ })
+    // Named by its label and then what it shows, so the choice is heard (WCAG 2.5.3).
+    expect(trigger.getAttribute('aria-labelledby')?.split(' ')).toHaveLength(2)
     expect(trigger).toHaveTextContent('Kies een regio')
     expect(trigger).toHaveAttribute('aria-haspopup', 'listbox')
     await userEvent.click(trigger)
@@ -58,18 +60,18 @@ describe('Combobox', () => {
   test('typing narrows the list; Enter picks the first match and closes', async () => {
     const onChange = vi.fn()
     render(<Single onChange={onChange} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     await userEvent.keyboard('fra{Enter}')
     expect(onChange).toHaveBeenCalledWith('fra')
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-    const trigger = screen.getByRole('button', { name: 'Regio' })
+    const trigger = screen.getByRole('button', { name: /^Regio\b/ })
     expect(trigger).toHaveTextContent('Frankfurt')
     expect(trigger).toHaveFocus()
   })
 
   test('the arrows move the active row past a disabled one, and wrap', async () => {
     render(<Single />)
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     const search = screen.getByRole('combobox', { name: 'Zoeken…' })
     const active = () =>
       document.getElementById(search.getAttribute('aria-activedescendant') ?? '')?.textContent
@@ -85,7 +87,7 @@ describe('Combobox', () => {
 
   test('says so when nothing matches', async () => {
     render(<Single />)
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     await userEvent.keyboard('tokio')
     expect(screen.getByText('Geen treffers voor ‘tokio’')).toBeInTheDocument()
     expect(screen.queryAllByRole('option')).toHaveLength(0)
@@ -94,7 +96,7 @@ describe('Combobox', () => {
   test('a click picks a row; a disabled row is not picked', async () => {
     const onChange = vi.fn()
     render(<Single onChange={onChange} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     await userEvent.click(screen.getByRole('option', { name: /New York/ }))
     expect(onChange).not.toHaveBeenCalled()
     await userEvent.click(screen.getByRole('option', { name: /Zürich/ }))
@@ -103,17 +105,17 @@ describe('Combobox', () => {
 
   test('Escape closes and hands the focus back to the trigger', async () => {
     render(<Single />)
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Regio' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: /^Regio\b/ })).toHaveFocus()
   })
 
   test('the chosen option is selected when the list opens again', async () => {
     render(<Single />)
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     await userEvent.click(screen.getByRole('option', { name: /Zürich/ }))
-    await userEvent.click(screen.getByRole('button', { name: 'Regio' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio\b/ }))
     expect(screen.getByRole('option', { name: /Zürich/ })).toHaveAttribute('aria-selected', 'true')
   })
 
@@ -133,7 +135,7 @@ describe('Combobox', () => {
         )}
       </FormField>,
     )
-    const trigger = screen.getByRole('button', { name: 'Datacenter' })
+    const trigger = screen.getByRole('button', { name: /^Datacenter\b/ })
     expect(trigger).toHaveAttribute('aria-invalid', 'true')
     expect(trigger).toHaveAccessibleDescription('Kies een regio.')
     expect(trigger.className).toContain('border-danger')
@@ -162,7 +164,7 @@ describe('MultiCombobox', () => {
   test('a pick toggles and keeps the panel open; the value keeps the order of the options', async () => {
     const onChange = vi.fn()
     render(<Multi onChange={onChange} />)
-    await userEvent.click(screen.getByRole('button', { name: "Regio's" }))
+    await userEvent.click(screen.getByRole('button', { name: /^Regio's\b/ }))
     expect(screen.getByRole('listbox')).toHaveAttribute('aria-multiselectable', 'true')
     await userEvent.keyboard('ams{Enter}')
     expect(onChange).toHaveBeenLastCalledWith(['ams', 'zrh'])
@@ -174,11 +176,11 @@ describe('MultiCombobox', () => {
 
   test('the trigger lists the chosen labels, then a count', async () => {
     render(<Multi />)
-    const trigger = screen.getByRole('button', { name: "Regio's" })
+    const trigger = screen.getByRole('button', { name: /^Regio's\b/ })
     expect(trigger).toHaveTextContent('Zürich')
     await userEvent.click(trigger)
     await userEvent.click(screen.getByRole('option', { name: /Amsterdam/ }))
     await userEvent.click(screen.getByRole('option', { name: /Frankfurt/ }))
-    expect(screen.getByRole('button', { name: "Regio's" })).toHaveTextContent('3 gekozen')
+    expect(screen.getByRole('button', { name: /^Regio's\b/ })).toHaveTextContent('3 gekozen')
   })
 })

@@ -7,7 +7,7 @@ export default {
   group: 'primitives',
   title: 'Timeline',
   states: {
-    Activity: () => (
+    Activiteit: () => (
       <div className="w-full max-w-[28rem]">
         <Timeline label="Activiteit">
           <TimelineItem marker={<Icon name="plus" size="sm" />} time="3 d">

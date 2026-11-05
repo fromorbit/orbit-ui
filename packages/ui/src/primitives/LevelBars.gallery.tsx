@@ -18,5 +18,5 @@ function OfThree() {
 export default {
   group: 'primitives',
   title: 'LevelBars',
-  states: { 'Of three': OfThree },
+  states: { 'Van drie': OfThree },
 } satisfies Story

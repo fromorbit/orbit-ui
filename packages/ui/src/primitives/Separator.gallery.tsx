@@ -5,20 +5,20 @@ export default {
   group: 'primitives',
   title: 'Separator',
   states: {
-    Horizontal: () => (
+    Horizontaal: () => (
       <div className="w-64">
-        <p className="m-0 text-[13px] text-fg">Above</p>
+        <p className="m-0 text-[13px] text-fg">Boven</p>
         <div className="my-2">
           <Separator />
         </div>
-        <p className="m-0 text-[13px] text-fg">Below</p>
+        <p className="m-0 text-[13px] text-fg">Onder</p>
       </div>
     ),
-    Vertical: () => (
+    Verticaal: () => (
       <div className="flex h-8 items-center gap-2">
-        <p className="m-0 text-[13px] text-fg">Left</p>
+        <p className="m-0 text-[13px] text-fg">Links</p>
         <Separator orientation="vertical" />
-        <p className="m-0 text-[13px] text-fg">Right</p>
+        <p className="m-0 text-[13px] text-fg">Rechts</p>
       </div>
     ),
   },

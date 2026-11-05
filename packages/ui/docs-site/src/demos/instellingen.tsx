@@ -11,6 +11,8 @@ import {
   List,
   ListRow,
   PageHeader,
+  PlanCard,
+  PlanCards,
   RadioGroup,
   ScrollArea,
   SearchList,
@@ -21,13 +23,12 @@ import {
   SettingFoldRow,
   SettingRow,
   SettingsGroup,
+  StatusMark,
   Switch,
-  Tag,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame, ME, REPO } from './parts/AppFrame'
-import { UsagePlanCard } from './parts/UsagePlanCard'
 
 const labels = galleryLabels.settingRow
 
@@ -45,7 +46,7 @@ const SECTIONS: readonly (SearchListItem & { id: Section })[] = [
   { id: 'repository', label: 'Repository', icon: 'folder-git-2' },
   { id: 'account', label: 'Account', icon: 'user' },
   { id: 'meldingen', label: 'Meldingen', icon: 'bell' },
-  { id: 'abonnement', label: 'Abonnement', icon: 'sliders-horizontal' },
+  { id: 'abonnement', label: 'Plan en betaling', icon: 'sliders-horizontal' },
 ]
 
 /** The intro under the title of every section. */
@@ -53,7 +54,7 @@ const INTRO: Record<Section, string> = {
   repository: `Hoe Orbit Review ${REPO} installeert, start en beoordeelt.`,
   account: 'Je profiel, je taal en hoe je inlogt.',
   meldingen: 'Wat je hoort, en wanneer niet.',
-  abonnement: 'Het plan van Zilverberg en wie het betaalt.',
+  abonnement: 'Het plan van Zilverberg en hoe het betaald wordt.',
 }
 
 /**
@@ -61,7 +62,11 @@ const INTRO: Record<Section, string> = {
  * `Select` grows (`max-w-56`).
  */
 function Wide({ children }: { children: ReactNode }): ReactNode {
-  return <div className="w-56 max-w-full *:w-full *:*:w-full *:text-left">{children}</div>
+  return (
+    <div className="w-56 max-w-full @max-[30rem]:w-full *:w-full *:*:w-full *:text-left">
+      {children}
+    </div>
+  )
 }
 
 /** A setting row around a switch that really switches. */
@@ -127,7 +132,7 @@ function TextSetting({
 const TOOLS = [
   { name: 'Bun 1.4.4', kind: 'done', status: 'Gevonden' },
   { name: 'Node 24.11', kind: 'done', status: 'Gevonden' },
-  { name: 'Docker', kind: 'failed', status: 'Draait niet' },
+  { name: 'Docker', kind: 'attention', status: 'Draait niet' },
 ] as const
 
 /** Orbit Review's settings for one repository, with the check of the machine on top. */
@@ -135,8 +140,10 @@ function Repository(): ReactNode {
   const [verdict, setVerdict] = useState('changes')
   return (
     <>
+      {/* One state, said once: the banner carries the words and the action; the Omgeving row below
+          only lists the tools when it is opened, so the warning does not stand twice. */}
       <Banner
-        tone="danger"
+        tone="attention"
         action={
           <Button variant="secondary" size="sm">
             Opnieuw controleren
@@ -148,17 +155,16 @@ function Repository(): ReactNode {
       <SettingsGroup title="Koppeling">
         <SettingRow labels={labels} label="Repository" description="Gekoppeld via GitHub">
           {() => (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="font-mono text-[12px] text-secondary">{REPO}</span>
-              <Tag tone="success">Gekoppeld</Tag>
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+                <StatusMark kind="running" size="sm" />
+                Gekoppeld
+              </span>
             </div>
           )}
         </SettingRow>
-        <SettingFoldRow
-          label="Omgeving"
-          description="Wat Review op deze machine nodig heeft"
-          status={{ tone: 'attention', label: 'Docker ontbreekt' }}
-        >
+        <SettingFoldRow label="Omgeving" description="Wat Review op deze machine nodig heeft">
           <List label="Omgeving">
             {TOOLS.map((tool) => (
               <ListRow key={tool.name} title={tool.name} kind={tool.kind} status={tool.status} />
@@ -182,7 +188,7 @@ function Repository(): ReactNode {
         />
         <SwitchSetting
           label="Vertrouwd"
-          description="Start zonder te vragen; alleen voor repositories van je eigen team"
+          description="Start zonder te vragen; alleen voor je eigen team"
           initial
         />
       </SettingsGroup>
@@ -198,19 +204,20 @@ function Repository(): ReactNode {
           description="Een goedkeuring plaatst Review nooit"
         >
           {({ labelId }) => (
-            <Wide>
+            <div className="w-56 max-w-full @max-[30rem]:w-full">
               <Select
                 label="Bij een blokkerende bevinding"
                 aria-labelledby={labelId}
                 size="sm"
                 value={verdict}
                 options={[
-                  { value: 'changes', label: 'Vraag om wijzigingen' },
-                  { value: 'comment', label: 'Alleen een comment' },
+                  { value: 'changes', label: 'Om wijzigingen vragen' },
+                  { value: 'comment', label: 'Alleen een opmerking' },
                 ]}
                 onValueChange={setVerdict}
+                block
               />
-            </Wide>
+            </div>
           )}
         </SettingRow>
       </SettingsGroup>
@@ -349,7 +356,7 @@ function Account(): ReactNode {
       <SettingsGroup title="Beveiliging">
         <SwitchSetting
           label="Tweestapsverificatie"
-          description="Een code uit je app bij elke nieuwe inlog"
+          description="Een code uit je authenticator-app bij elke nieuwe aanmelding"
           initial
         />
         <SettingRow labels={labels} label="API-sleutel" description="Voor de Orbit-CLI en je CI">
@@ -379,7 +386,7 @@ function Account(): ReactNode {
           </List>
         </SettingFoldRow>
       </SettingsGroup>
-      <SettingsGroup title="Account opheffen">
+      <SettingsGroup title="Account verwijderen">
         <SettingRow
           labels={labels}
           label="Account verwijderen"
@@ -450,25 +457,96 @@ function Notifications(): ReactNode {
   )
 }
 
-/** The plan in short; the whole of it lives on the page of usage and invoices. */
+/** The one way to pay the open invoice now, named as on Gebruik. */
+const PAY_NOW = 'Nu betalen met iDEAL'
+
+/**
+ * The failed direct debit first, as on Gebruik, with the one step that settles it; then the plan
+ * the workspace is on beside the one above it, and how it is paid: two plans rather than a table of
+ * every plan, so the choice stays small, and the whole of the usage on its own page. The plans lie
+ * on the tint of the settings groups under them, so the column speaks one region language.
+ */
 function Subscription(): ReactNode {
   return (
     <>
-      <div className="max-w-sm">
-        <UsagePlanCard />
-      </div>
-      <SettingsGroup title="Plan">
-        <SettingRow labels={labels} label="Team" description="€ 24 per lid per maand, excl. btw">
-          {() => <Tag tone="success">6 leden</Tag>}
-        </SettingRow>
-        <SettingRow labels={labels} label="Betaalwijze" description="SEPA-incasso, NL·· ···· 4021">
-          {() => (
+      <Banner
+        tone="danger"
+        action={
+          <Button variant="primary" size="sm">
+            {PAY_NOW}
+          </Button>
+        }
+      >
+        Incasso van € 174,24 voor september mislukt: onvoldoende saldo. Nieuwe poging 24{'\u00a0'}
+        okt.
+      </Banner>
+      <PlanCards label="Plannen">
+        <PlanCard
+          name="Team"
+          price="€ 24"
+          period="per lid per maand, excl. btw"
+          description="Voor een team dat samen bouwt en reviewt."
+          features={[
+            'Onbeperkt gesprekken en specs',
+            '250 agent-uren per maand',
+            'Orbit Review op 10 repositories',
+            '50 GB opslag voor opnames',
+          ]}
+          current
+          currentLabel="Huidig plan"
+          plane="surface"
+          summary="6 leden · € 174,24 per maand incl. btw"
+        />
+        <PlanCard
+          name="Bedrijf"
+          price="€ 39"
+          period="per lid per maand, excl. btw"
+          description="Voor meer teams, met inloggen via je eigen provider."
+          features={[
+            'Alles van Team',
+            '1.000 agent-uren per maand',
+            'Orbit Review op elke repository',
+            '250 GB opslag voor opnames',
+            'Inloggen met SSO',
+          ]}
+          plane="surface"
+          summary="6 leden · € 283,14 per maand incl. btw"
+          action={
             <Button variant="secondary" size="sm">
-              Wijzigen
+              Naar Bedrijf
             </Button>
+          }
+        />
+      </PlanCards>
+      <SettingsGroup title="Betaling">
+        <SettingRow
+          labels={labels}
+          label="Betaalwijze"
+          description={'SEPA-incasso, NL •••• 4021 · nieuwe poging 24\u00a0okt'}
+        >
+          {() => (
+            <span className="inline-flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+                <StatusMark kind="fault" />
+                Incasso mislukt
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  location.hash = '#/demo/gebruik'
+                }}
+              >
+                Wijzigen
+              </Button>
+            </span>
           )}
         </SettingRow>
-        <SettingRow labels={labels} label="Gebruik en facturen">
+        <SettingRow
+          labels={labels}
+          label="Gebruik en facturen"
+          description="Het gebruik, de facturen en de betaalwijze"
+        >
           {() => (
             <Button
               variant="secondary"
@@ -499,18 +577,19 @@ function SettingsPage({ initial }: { initial: Section }): ReactNode {
   const Content = CONTENT[section]
   const current = SECTIONS.find((entry) => entry.id === section)
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5 text-[13px] @3xl:px-8 @3xl:py-7">
-      <PageHeader title="Instellingen" meta={`Zilverberg · ${REPO}`} />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 text-[13px] @3xl:px-8 @3xl:py-7">
+      <PageHeader
+        title="Instellingen"
+        meta={section === 'repository' ? `Zilverberg · ${REPO}` : 'Zilverberg'}
+      />
       <div className="@4xl:hidden">
-        <Wide>
-          <Select<Section>
-            label="Onderdeel"
-            size="sm"
-            value={section}
-            options={SECTIONS.map(({ id, label }) => ({ value: id, label }))}
-            onValueChange={setSection}
-          />
-        </Wide>
+        <Select<Section>
+          label="Onderdeel"
+          value={section}
+          options={SECTIONS.map(({ id, label }) => ({ value: id, label }))}
+          onValueChange={setSection}
+          block
+        />
       </div>
       <div className="flex gap-8">
         <div className="hidden w-48 shrink-0 @4xl:block">
@@ -559,6 +638,7 @@ export default {
   variants: [
     { value: 'repository', label: 'Repository' },
     { value: 'account', label: 'Account' },
+    { value: 'abonnement', label: 'Plan en betaling' },
   ],
   Screen: Settings,
 } satisfies DemoModule

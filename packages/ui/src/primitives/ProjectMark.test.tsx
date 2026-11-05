@@ -2,16 +2,16 @@ import { render } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { ProjectMark } from './ProjectMark'
 
-test('is a 14px block with the first letter of the project, in capitals', () => {
+test('is a 16px block with the first letter of the project, in capitals', () => {
   const { container } = render(<ProjectMark name="webshop" />)
   const mark = container.querySelector('[data-nt-project-mark]')
   expect(mark?.textContent).toBe('W')
   expect(mark?.className.split(' ')).toEqual(
     expect.arrayContaining([
-      'size-3.5',
+      'size-4',
       'rounded-sm',
       'bg-mark',
-      'text-[9px]',
+      'text-[11px]',
       'font-semibold',
       'text-secondary',
     ]),

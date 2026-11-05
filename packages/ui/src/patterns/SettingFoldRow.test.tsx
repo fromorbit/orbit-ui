@@ -48,3 +48,20 @@ test('it can start open', () => {
   expect(screen.getByRole('button', { name: /Lumen/ })).toHaveAttribute('aria-expanded', 'true')
   expect(screen.getByText('Programma')).toBeInTheDocument()
 })
+
+test('on a narrow row the chevron keeps its place at the end and only the status wraps', () => {
+  render(
+    <SettingFoldRow label="Omgeving" status={{ tone: 'off', label: 'Niet gevonden' }}>
+      <p>Docker</p>
+    </SettingFoldRow>,
+  )
+  // jsdom lays nothing out, so the rule is read from the row's parts: under 480px the group of
+  // status and chevron dissolves into the row, the status alone goes to a line of its own, and
+  // the label no longer takes the whole first line, so the chevron stays beside it.
+  const word = document.querySelector('[data-nt-fold-status-word]')
+  expect(word).toHaveClass('@max-[30rem]:order-last', '@max-[30rem]:basis-full')
+  expect(word?.parentElement).toHaveClass('@max-[30rem]:contents')
+  const slot = document.querySelector('[data-nt-fold-slot]')
+  expect(slot).not.toHaveClass('@max-[30rem]:basis-full')
+  expect(screen.getByText('Omgeving').parentElement).not.toHaveClass('@max-[30rem]:basis-full')
+})

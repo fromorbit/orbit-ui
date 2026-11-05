@@ -29,18 +29,18 @@ function WithIcon() {
       label="totaal.ts"
       title="src/winkelmand/totaal.ts"
       icon={<PierreFileIcon path="src/winkelmand/totaal.ts" />}
-      remove={{ label: 'Remove: src/winkelmand/totaal.ts', onRemove: () => {} }}
+      remove={{ label: 'Verwijder: src/winkelmand/totaal.ts', onRemove: () => {} }}
     />
   )
 }
 
 function Plain() {
-  return <Chip label="Plain chip" />
+  return <Chip label="Gewone chip" />
 }
 
 function WithThumbnail() {
   return (
-    <Chip label="button ‘Save’ on shop.test" image={CROP} panel={{ label: 'Crop' }}>
+    <Chip label="knop ‘Opslaan’ op winkel.test" image={CROP} panel={{ label: 'Uitsnede' }}>
       <img src={CROP} alt="" className="w-48" />
     </Chip>
   )
@@ -49,10 +49,10 @@ function WithThumbnail() {
 function Removable() {
   return (
     <Chip
-      label="Screenshot of shop.test"
+      label="Schermafbeelding van winkel.test"
       image={PAGE}
-      panel={{ label: 'Screenshot' }}
-      remove={{ label: 'Remove: Screenshot of shop.test', onRemove: () => {} }}
+      panel={{ label: 'Schermafbeelding' }}
+      remove={{ label: 'Verwijder: Schermafbeelding van winkel.test', onRemove: () => {} }}
     >
       <img src={PAGE} alt="" className="w-48" />
     </Chip>
@@ -62,9 +62,9 @@ function Removable() {
 function Long() {
   return (
     <Chip
-      label="link ‘Read everything about the terms of delivery and returns’ on shop.test"
+      label="link ‘Lees alles over de leverings- en retourvoorwaarden’ op winkel.test"
       image={CROP}
-      remove={{ label: 'Remove', onRemove: () => {} }}
+      remove={{ label: 'Verwijder', onRemove: () => {} }}
     />
   )
 }
@@ -74,23 +74,26 @@ function Numbered() {
   return (
     // As narrow as the row story, so this state does not widen the column of all the others.
     <div className="w-full max-w-80">
-      <ChipRow label="Attachments">
+      <ChipRow label="Bijlagen">
         <Chip
           key="a"
-          label="button ‘Save’ on shop.test"
+          label="knop ‘Opslaan’ op winkel.test"
           image={CROP}
-          number={{ value: 1, label: 'Annotation 1 of 2' }}
-          panel={{ label: 'Annotation 1 of 2' }}
+          number={{ value: 1, label: 'Aantekening 1 van 2' }}
+          panel={{ label: 'Aantekening 1 van 2' }}
         >
           <img src={CROP} alt="" className="w-48" />
         </Chip>
-        <Chip key="b" label="Screenshot of shop.test" image={PAGE} />
+        <Chip key="b" label="Schermafbeelding van winkel.test" image={PAGE} />
         <Chip
           key="c"
-          label="Area on shop.test"
+          label="Gebied op winkel.test"
           image={PAGE}
-          number={{ value: 2, label: 'Annotation 2 of 2' }}
-          remove={{ label: 'Remove: Annotation 2 of 2: Area on shop.test', onRemove: () => {} }}
+          number={{ value: 2, label: 'Aantekening 2 van 2' }}
+          remove={{
+            label: 'Verwijder: Aantekening 2 van 2: Gebied op winkel.test',
+            onRemove: () => {},
+          }}
         />
       </ChipRow>
     </div>
@@ -102,13 +105,13 @@ function Marked() {
   return (
     <TooltipProvider>
       <Chip
-        label="button ‘Save’ on shop.test"
+        label="knop ‘Opslaan’ op winkel.test"
         image={CROP}
-        number={{ value: 2, label: 'Annotation 2 of 3' }}
-        mark={{ icon: 'sliders-horizontal', label: '2 adjustments' }}
-        panel={{ label: 'Annotation 2 of 3' }}
+        number={{ value: 2, label: 'Aantekening 2 van 3' }}
+        mark={{ icon: 'sliders-horizontal', label: '2 aanpassingen' }}
+        panel={{ label: 'Aantekening 2 van 3' }}
         remove={{
-          label: 'Remove: Annotation 2 of 3: button ‘Save’ on shop.test',
+          label: 'Verwijder: Aantekening 2 van 3: knop ‘Opslaan’ op winkel.test',
           onRemove: () => {},
         }}
       >
@@ -122,12 +125,12 @@ function Marked() {
 function Row() {
   return (
     <div className="w-full max-w-80">
-      <ChipRow label="Attachments">
-        <Chip key="a" label="button ‘Save’ on shop.test" image={CROP} />
-        <Chip key="b" label="Screenshot of shop.test" image={PAGE} />
-        <Chip key="c" label="Area on shop.test" image={PAGE} />
-        <Chip key="d" label="link ‘Cart’ on shop.test" image={CROP} />
-        <Chip key="e" label="heading ‘Shoes’ on shop.test" image={CROP} />
+      <ChipRow label="Bijlagen">
+        <Chip key="a" label="knop ‘Opslaan’ op winkel.test" image={CROP} />
+        <Chip key="b" label="Schermafbeelding van winkel.test" image={PAGE} />
+        <Chip key="c" label="Gebied op winkel.test" image={PAGE} />
+        <Chip key="d" label="link ‘Winkelmand’ op winkel.test" image={CROP} />
+        <Chip key="e" label="kop ‘Schoenen’ op winkel.test" image={CROP} />
       </ChipRow>
     </div>
   )
@@ -137,13 +140,13 @@ export default {
   group: 'patterns',
   title: 'Chip',
   states: {
-    Plain,
-    'With a thumbnail': WithThumbnail,
-    'With a cross': Removable,
-    'A long name': Long,
-    Numbered,
-    'With a mark': Marked,
-    'A row that wraps': Row,
-    'With an icon': WithIcon,
+    Eenvoudig: Plain,
+    'Met een miniatuur': WithThumbnail,
+    'Met een kruisje': Removable,
+    'Een lange naam': Long,
+    Genummerd: Numbered,
+    'Met een markering': Marked,
+    'Een rij die doorloopt': Row,
+    'Met een icoon': WithIcon,
   },
 } satisfies Story

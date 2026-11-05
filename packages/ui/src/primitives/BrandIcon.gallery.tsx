@@ -17,9 +17,9 @@ const ACP_MAKERS = BRANDS.filter((brand) => !['anthropic', 'openai', 'github'].i
 
 export default {
   group: 'primitives',
-  title: 'Brand Icon',
+  title: 'BrandIcon',
   states: {
-    Marks: () => (
+    Merktekens: () => (
       // Both marks and the neutral glyph of an agent without a brand, in the tone of the text.
       <div className="flex items-center gap-6 text-fg">
         <Cell brand="anthropic" name="anthropic" />
@@ -29,7 +29,7 @@ export default {
     ),
     // The makers of the ACP agents the app knows, in a story of their own so the row
     // above keeps its reference image.
-    'ACP agents': () => (
+    'ACP-agents': () => (
       // Wrapped within the width of the first story, so its reference keeps its size.
       <div className="flex max-w-68 flex-wrap items-center gap-6 text-fg">
         {ACP_MAKERS.map((brand) => (
@@ -44,7 +44,7 @@ export default {
         <Cell brand="github" name="github" />
       </div>
     ),
-    'Beside a model name': () => (
+    'Naast een modelnaam': () => (
       // The size and tone they take in the model pill: 14px in the secondary text colour.
       <div className="flex flex-col gap-2 text-[12px] font-medium text-secondary">
         <span className="flex items-center gap-1.5">

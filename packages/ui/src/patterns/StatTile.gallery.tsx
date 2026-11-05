@@ -7,7 +7,7 @@ export default {
   group: 'patterns',
   title: 'StatTile',
   states: {
-    'A row of tiles': () => (
+    'Een rij tegels': () => (
       <div className="grid w-full max-w-[48rem] grid-cols-3 gap-3">
         <StatTile
           label="Actieve spaces"
@@ -29,7 +29,7 @@ export default {
         />
       </div>
     ),
-    'With a meter': () => (
+    'Met een meter': () => (
       <div className="w-64">
         <StatTile label="Opslag" value="38 GB">
           <ProgressMeter

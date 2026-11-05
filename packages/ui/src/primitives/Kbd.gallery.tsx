@@ -28,7 +28,7 @@ export default {
     // The same text, drawn on macOS and elsewhere: signs as icons there, Ctrl and Alt as words
     // here. Each row is the size it has in a menu, so the height of the keys can be judged
     // against the 28px row they stand in.
-    Shortcuts: () => (
+    Sneltoetsen: () => (
       <div className="grid w-full max-w-96 grid-cols-[1fr_auto_auto] items-center gap-x-6 gap-y-1 text-[12px]">
         <span className="text-muted">Text</span>
         <span className="text-muted">macOS</span>
@@ -44,7 +44,7 @@ export default {
     ),
     // On the fill of a row a list has walked to, where the quiet keys would be 3.40:1. The box
     // below is that fill, so the pair can be judged side by side rather than described.
-    'On a filled row': () => (
+    'Op een gevulde rij': () => (
       <div className="flex w-64 flex-col gap-1 rounded-lg bg-overlay p-2">
         <div className="flex h-7 items-center gap-2 rounded-md bg-surface-active px-2 text-[13px] text-fg">
           <span className="flex-1">Hard herladen</span>
@@ -60,11 +60,11 @@ export default {
     ),
     // The four forms side by side. Enter is always the icon, never
     // the glyph: the stories here spell it as a word, and a test holds that no story shows one.
-    'Four forms': () => (
+    'Vier vormen': () => (
       <div className="flex w-full max-w-[28rem] flex-col gap-3 text-[12px] text-muted">
         <div className="flex h-7 items-center gap-2">
           <span className="w-20">quiet</span>
-          <span className="flex-1 text-[13px] text-fg">Nieuwe chat</span>
+          <span className="flex-1 text-[13px] text-fg">Nieuw gesprek</span>
           <KbdKeys platform="mac">⌘N</KbdKeys>
         </div>
         <div className="flex h-7 items-center gap-2 rounded-md bg-surface-active px-2">
@@ -108,7 +108,7 @@ export default {
     ),
     // `menu`: the whole shortcut in one cap at the end of a menu row (design A of the account
     // menu), on both platforms, so the comma and the words of Windows can be judged in it.
-    'In one cap, beside a menu row': () => (
+    'In één toets, naast een menurij': () => (
       <div className="flex w-64 flex-col gap-1 rounded-lg bg-overlay p-1">
         {(
           [

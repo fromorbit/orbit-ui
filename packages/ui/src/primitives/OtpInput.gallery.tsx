@@ -24,10 +24,10 @@ export default {
   group: 'primitives',
   title: 'OtpInput',
   states: {
-    Empty: () => <Code initial="" />,
-    'Half typed': () => <Code initial="482" />,
-    Refused: () => <Code initial="482913" error="Deze code klopt niet. Probeer het opnieuw." />,
-    'Letters and digits': () => (
+    Leeg: () => <Code initial="" />,
+    'Half getypt': () => <Code initial="482" />,
+    Geweigerd: () => <Code initial="482913" error="Deze code klopt niet. Probeer het opnieuw." />,
+    'Letters en cijfers': () => (
       <OtpInput
         label="Herstelcode"
         value="K7Q"

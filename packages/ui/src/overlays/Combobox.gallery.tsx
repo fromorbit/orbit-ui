@@ -64,10 +64,10 @@ export default {
   group: 'overlays',
   title: 'Combobox',
   states: {
-    Empty: () => <Region initial={null} />,
-    Chosen: () => <Region initial="zrh" />,
-    'Several chosen': () => <Labels />,
-    Invalid: () => (
+    Leeg: () => <Region initial={null} />,
+    Gekozen: () => <Region initial="zrh" />,
+    'Meerdere gekozen': () => <Labels />,
+    Ongeldig: () => (
       <div className="w-full max-w-72">
         <FormField label="Regio" error="Kies een regio.">
           {(field) => (

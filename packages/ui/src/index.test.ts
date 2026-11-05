@@ -13,6 +13,8 @@ const UI = import.meta.dirname
  */
 const INTERNAL: Record<string, string> = {
   'overlays/layers': 'how HostedSurface measures the layers above it',
+  'overlays/menu-rows': 'the rows DropdownMenu and ContextMenu share',
+  'patterns/chart-fixtures': 'the Dutch examples the ChartFigure story and tests share',
   'patterns/file-icons': 'the icon table of PierreTree and PierreFileIcon',
   'patterns/ignore-whitespace': 'the whitespace switch of PierreDiff',
   'patterns/markdown-cache': 'the parse cache of Prose',

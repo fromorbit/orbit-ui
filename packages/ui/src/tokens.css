@@ -49,6 +49,9 @@
   --nt-frame: #0c1229;
   --nt-canvas: var(--nt-brand-midnight);
   --nt-bg: var(--nt-canvas);
+  /* The edge between the frame and the canvas, drawn as an inset shadow (`shadow-frame-edge`) so it
+     takes no room: none in dark, where the brightness is the separation; a hairline in light. */
+  --nt-frame-edge: transparent;
   /* Planes and lines in Mist, so they stay blue on Midnight. */
   --nt-surface: rgb(231 233 242 / 0.04);
   --nt-surface-hover: rgb(231 233 242 / 0.07);
@@ -56,14 +59,30 @@
      1.18:1 on a panel — a shade rather than a place, which is why that row used to need an accent
      outline on top. Neutral by design: an open panel carries no accent. */
   --nt-surface-active: rgb(231 233 242 / 0.12);
+  /* The plane of a region that holds a group of its own on the canvas (a settings group, a code
+     block, a summary): the tint of `surface` in dark, white in light. Its edge (`shadow-plane`) is
+     a hairline and a soft shadow in light, where white on Paper needs one, and nothing in dark,
+     where the tint is the edge. */
+  --nt-plane: rgb(231 233 242 / 0.04);
+  --nt-shadow-plane: 0 0 #0000;
   /* The quiet items of a list (the chats of the sidebar): a softer
      hover and a soft card for the chosen one, without border or accent. */
   --nt-row-hover: rgb(231 233 242 / 0.05);
   --nt-row-active: rgb(231 233 242 / 0.08);
+  /* The one chosen card among cards of one kind (the current plan): in dark the tint of a lit row
+     over the plane of a card lifts it a step, and its quiet words step up to secondary, as muted
+     falls under 4.5:1 on that tint. In light the card stays white like the cards beside it, with
+     a firmer hairline as its edge and its words as quiet as theirs: never a grey fill. */
+  --nt-lift: rgb(231 233 242 / 0.08);
+  --nt-shadow-lift: 0 0 #0000;
+  --nt-text-lift: var(--nt-text-secondary);
   /* A hairline between things that belong together; `strong` for what has to stand as an object
      of its own: a pill, the round "+", the composer's plane, a key cap. */
   --nt-border: rgb(231 233 242 / 0.08);
   --nt-border-strong: rgb(231 233 242 / 0.14);
+  /* The edge of a control that is only an edge at rest, an unchecked box: 3:1 against the canvas,
+     the frame and a card (WCAG 1.4.11), where the hairline would all but vanish. */
+  --nt-control-border: rgb(231 233 242 / 0.42);
   /* The plane inside a pill with a border (the model and the access level in the composer), and
      that plane lit on hover or while its menu is open. */
   --nt-pill: rgb(231 233 242 / 0.05);
@@ -72,6 +91,18 @@
   --nt-bubble: rgb(231 233 242 / 0.06);
   /* The plane of a small mark: the letter block of a project, the track of a progress meter. */
   --nt-mark: rgb(231 233 242 / 0.09);
+  /* The marks of a chart (`Chart`, `Sparkline`): Mist at 52%, quieter than the accent and than
+     the figures above it, so a row of bars is calm and a status part is the one emphasis. 4.5:1
+     on a card. A line has less mass than a bar and takes the full
+     ink. The wash under a line is the mark's ink at 8%; the shapes of a chart that loads are a
+     step above the plane of a control. */
+  --nt-chart-mark: rgb(231 233 242 / 0.52);
+  --nt-chart-line: var(--nt-text);
+  --nt-chart-wash: rgb(231 233 242 / 0.08);
+  --nt-chart-skeleton: rgb(231 233 242 / 0.18);
+  /* A line to measure against (a plan, a limit): a step above the faint ink, a graphic and never
+     a word; 3.7:1 on a card, with room above the 3:1 of WCAG 1.4.11. */
+  --nt-chart-reference: #737a98;
   /* The plane of the composer, a step above the canvas it lies on: the plane of a card. */
   --nt-composer: #19223f;
   /* The border of a large input surface with the focus in it (the composer, a note in a diff): a
@@ -134,8 +165,12 @@
   --nt-danger: #ff7b7b;
 
   --nt-success: #4cb782;
+  /* The plane of a tag that says something went well, a tint like attention's and danger's. */
+  --nt-success-subtle: rgb(76 183 130 / 0.1);
   --nt-attention-subtle: rgb(229 164 69 / 0.08);
   --nt-attention-border: rgb(229 164 69 / 0.28);
+  /* Attention as a fill (a share of a bar), not as words: the amber itself in dark. */
+  --nt-attention-fill: var(--nt-attention);
   --nt-danger-subtle: rgb(255 123 123 / 0.08);
   --nt-danger-border: rgb(255 123 123 / 0.28);
   /* The soft underline under a commented passage of a markdown document: the
@@ -309,32 +344,48 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  /* Paper, with a frame a step darker than the canvas, as in dark: the sidebar recedes, the content
-     leads. A card, a menu and the composer are white on it. */
-  --nt-frame: #efeee9;
+  /* White regions on a page of Paper, a touch off-white: the sidebar, a card, a menu, the composer
+     and a region of its own are white, and the small difference, a hairline or a soft shadow parts
+     them, never a grey fill. The frame (sidebar, window) is white too, parted from the canvas by
+     the hairline of `frame-edge`. */
+  --nt-frame: #ffffff;
   --nt-canvas: var(--nt-brand-paper);
   --nt-bg: var(--nt-canvas);
+  --nt-frame-edge: var(--nt-border);
   /* Planes and lines in Midnight at low strength, so they stay blue on Paper. */
   --nt-surface: rgb(17 25 54 / 0.03);
   --nt-surface-hover: rgb(17 25 54 / 0.05);
   --nt-surface-active: rgb(17 25 54 / 0.09);
+  --nt-plane: #ffffff;
+  --nt-shadow-plane: 0 0 0 1px rgb(17 25 54 / 0.07), 0 1px 2px rgb(17 25 54 / 0.04);
   --nt-row-hover: rgb(17 25 54 / 0.04);
   --nt-row-active: rgb(17 25 54 / 0.06);
+  --nt-lift: rgb(17 25 54 / 0);
+  --nt-shadow-lift: 0 0 0 1px rgb(17 25 54 / 0.18), 0 1px 2px rgb(17 25 54 / 0.05);
+  --nt-text-lift: var(--nt-text-muted);
   --nt-border: rgb(17 25 54 / 0.09);
   --nt-border-strong: rgb(17 25 54 / 0.14);
+  --nt-control-border: rgb(17 25 54 / 0.52);
   --nt-pill: rgb(17 25 54 / 0.03);
   --nt-pill-hover: rgb(17 25 54 / 0.06);
-  --nt-bubble: rgb(17 25 54 / 0.04);
+  /* Your own message is white on Paper, with the edge of a plane (`shadow-plane`). */
+  --nt-bubble: #ffffff;
   --nt-mark: rgb(17 25 54 / 0.07);
+  /* Midnight at 56% on white: 4.0:1, the same quiet step below the accent as in dark. */
+  --nt-chart-mark: rgb(17 25 54 / 0.56);
+  --nt-chart-line: var(--nt-text);
+  --nt-chart-wash: rgb(17 25 54 / 0.06);
+  --nt-chart-skeleton: rgb(17 25 54 / 0.1);
+  --nt-chart-reference: var(--nt-text-faint);
   /* The composer lies a step above the canvas: white. */
   --nt-composer: #ffffff;
   /* 3.3:1 against the canvas, the focus indicator on its own as in dark. */
   --nt-border-focus: rgb(17 25 54 / 0.5);
-  /* The code area of a diff a shade under the canvas, as in dark. `PierreDiff` paints the
+  /* The code area of a diff is white, as a card is: it lies in one. `PierreDiff` paints the
      library's ground with it. */
-  --nt-diff-bg: #efeee9;
+  --nt-diff-bg: #ffffff;
   /* Four levels against the canvas: `text` Midnight 15.7:1, `secondary` (Midnight at 80% over
-     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (5.2:1 on the frame), `faint` 3.3:1 — again only
+     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (6.0:1 on the white frame), `faint` 3.3:1 — again only
      icons and decoration. */
   --nt-text: var(--nt-brand-midnight);
   --nt-text-secondary: #3f455b;
@@ -372,8 +423,12 @@
   --nt-attention: #965a00;
   --nt-danger: #bf3030;
   --nt-success: #1f7a4a;
+  --nt-success-subtle: rgb(31 122 74 / 0.09);
   --nt-attention-subtle: rgb(150 90 0 / 0.08);
   --nt-attention-border: rgb(150 90 0 / 0.3);
+  /* A fill carries no words, so it needs no AA: a clear amber where the deep ochre of the words
+     would look muddy beside the red. */
+  --nt-attention-fill: #d9952b;
   --nt-danger-subtle: rgb(191 48 48 / 0.07);
   --nt-danger-border: rgb(191 48 48 / 0.3);
   --nt-comment-underline: rgb(150 90 0 / 0.55);
@@ -393,7 +448,7 @@
     0 0 0 1px rgb(17 25 54 / 0.08), 0 4px 12px rgb(17 25 54 / 0.08),
     0 16px 40px rgb(17 25 54 / 0.12);
 
-  /* Violet: 5.7:1 on the canvas, 5.4:1 on the frame. */
+  /* Violet: 5.7:1 on the canvas, 6.2:1 on the white frame. */
   --nt-focus-ring: var(--nt-brand-violet);
   --nt-scrollbar-thumb: var(--nt-border);
   --nt-scrollbar-thumb-hover: var(--nt-text-muted);
@@ -417,22 +472,25 @@
   --nt-terminal-ansi-14: #095f73; /* bright cyan */
   --nt-terminal-ansi-15: #000000; /* bright white */
 
-  /* The code of a document reads the light ANSI colours above: Shiki's css-variables theme in
+  /* The code of a document reads the colours below: Shiki's css-variables theme in
      `@fromorbit/doc-view` needs no theme of its own for light. */
   --nt-code-foreground: var(--nt-text);
   --nt-code-background: transparent;
-  --nt-code-token-keyword: var(--nt-terminal-ansi-5);
-  --nt-code-token-string: var(--nt-terminal-ansi-2);
-  --nt-code-token-string-expression: var(--nt-terminal-ansi-2);
-  --nt-code-token-comment: var(--nt-text-muted);
-  --nt-code-token-constant: var(--nt-terminal-ansi-3);
-  --nt-code-token-function: var(--nt-terminal-ansi-4);
+  /* A step darker than the terminal's colours: code also sits on the green and red tint of a
+     changed line, and on the stronger tint of a changed word inside it, where the terminal's
+     greens and purples fell under 4,5:1. */
+  --nt-code-token-keyword: #7c37aa;
+  --nt-code-token-string: #1a683d;
+  --nt-code-token-string-expression: #1a683d;
+  --nt-code-token-comment: #515778;
+  --nt-code-token-constant: #7c5300;
+  --nt-code-token-function: #2759a6;
   --nt-code-token-parameter: var(--nt-terminal-ansi-7);
   --nt-code-token-punctuation: var(--nt-terminal-ansi-7);
-  --nt-code-token-link: var(--nt-accent-text);
-  --nt-code-token-inserted: var(--nt-success);
-  --nt-code-token-deleted: var(--nt-danger);
-  --nt-code-token-changed: var(--nt-attention);
+  --nt-code-token-link: #493ada;
+  --nt-code-token-inserted: #1a683f;
+  --nt-code-token-deleted: #ac2b2b;
+  --nt-code-token-changed: #875100;
 
   --nt-app-background: var(--nt-frame);
   --nt-sidebar-background: var(--nt-frame);
@@ -461,9 +519,9 @@
   --nt-panel-background: rgb(17 25 54 / 0.7);
 }
 
-/* The same strengths over the light material: the frame and the canvas of the light block. */
+/* The same strengths over the light material: the frame (white) and the canvas of the light block. */
 :root[data-translucent="true"][data-theme="light"] {
-  --nt-app-background: rgb(239 238 233 / 0.6);
+  --nt-app-background: rgb(255 255 255 / 0.6);
   --nt-panel-background: rgb(245 244 240 / 0.7);
 }
 

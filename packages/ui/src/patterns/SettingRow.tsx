@@ -212,8 +212,10 @@ export function SettingRow({
     <div
       className={`flex items-center gap-x-6 gap-y-2 px-4 @max-[30rem]:flex-col @max-[30rem]:items-start ${dense ? 'min-h-8 py-1' : 'min-h-12 py-3'}`}
     >
-      <div className="min-w-0 flex-1">
-        <p className="m-0 flex flex-wrap items-center gap-x-1.5 gap-y-1 min-h-6 text-fg">
+      {/* Stacked under 480px, the label column takes the row's width, so its line is cut at the
+          edge of the card rather than running past it. */}
+      <div className="min-w-0 flex-1 @max-[30rem]:self-stretch">
+        <p className="m-0 flex flex-wrap items-center gap-x-1.5 gap-y-1 min-h-6 text-[13px] text-fg">
           <span id={labelId} className="leading-5">
             {labelContent === undefined ? (
               label
@@ -268,7 +270,7 @@ export function SettingRow({
           </span>
         )}
       </div>
-      <div className="flex max-w-full shrink-0 items-center gap-2">
+      <div className="flex max-w-full shrink-0 items-center gap-2 @max-[30rem]:self-stretch">
         {modified && onReset && reason === undefined ? (
           // Under the label (a narrow row) the control starts on the label's edge; reset follows it.
           <span
@@ -286,7 +288,7 @@ export function SettingRow({
             </Tooltip>
           </span>
         ) : null}
-        <div ref={controlRef} className="flex max-w-full items-center gap-2">
+        <div ref={controlRef} className="flex max-w-full items-center gap-2 @max-[30rem]:flex-1">
           {children({
             labelId,
             describedById: describedBy.length === 0 ? undefined : describedBy.join(' '),

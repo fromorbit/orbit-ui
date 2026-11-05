@@ -1,5 +1,6 @@
 import comboboxStory from '../overlays/Combobox.gallery'
 import confirmDialogStory from '../overlays/ConfirmDialog.gallery'
+import contextMenuStory from '../overlays/ContextMenu.gallery'
 import datePickerStory from '../overlays/DatePicker.gallery'
 import dialogStory from '../overlays/Dialog.gallery'
 import dropdownMenuCountsStory from '../overlays/DropdownMenu.counts.gallery'
@@ -11,10 +12,14 @@ import spotlightStory from '../overlays/Spotlight.gallery'
 import toastStory from '../overlays/Toast.gallery'
 import tooltipStory from '../overlays/Tooltip.gallery'
 import bannerStory from '../patterns/Banner.gallery'
+import chartStory from '../patterns/Chart.gallery'
+import chartFigureStory from '../patterns/ChartFigure.gallery'
+import chatMessageStory from '../patterns/ChatMessage.gallery'
 import chipStory from '../patterns/Chip.gallery'
 import chipListFieldStory from '../patterns/ChipListField.gallery'
 import choiceCardStory from '../patterns/ChoiceCard.gallery'
 import choiceCardsStory from '../patterns/ChoiceCards.gallery'
+import composerStory from '../patterns/Composer.gallery'
 import copyButtonStory from '../patterns/CopyButton.gallery'
 import creditCardFieldStory from '../patterns/CreditCardField.gallery'
 import dataTableStory from '../patterns/DataTable.gallery'
@@ -23,6 +28,7 @@ import emptyStateStory from '../patterns/EmptyState.gallery'
 import errorStateStory from '../patterns/ErrorState.gallery'
 import fileDropStory from '../patterns/FileDrop.gallery'
 import fileLinkStory from '../patterns/FileLink.gallery'
+import findingCardStory from '../patterns/FindingCard.gallery'
 import gitHubLinkStory from '../patterns/GitHubLink.gallery'
 import hostedSurfaceStory from '../patterns/HostedSurface.gallery'
 import listStory from '../patterns/List.gallery'
@@ -37,17 +43,20 @@ import pierreDiffStory from '../patterns/PierreDiff.gallery'
 import pierreFileStory from '../patterns/PierreFile.gallery'
 import pierreFileIconStory from '../patterns/PierreFileIcon.gallery'
 import pierreTreeStory from '../patterns/PierreTree.gallery'
+import planCardStory from '../patterns/PlanCard.gallery'
 import propertyListStory from '../patterns/PropertyList.gallery'
 import proseStory from '../patterns/Prose.gallery'
 import railStory from '../patterns/Rail.gallery'
 import relativeTimeStory from '../patterns/RelativeTime.gallery'
 import roomyListRowStory from '../patterns/RoomyListRow.gallery'
+import scrubberStory from '../patterns/Scrubber.gallery'
 import searchListStory from '../patterns/SearchList.gallery'
 import searchListModelsStory from '../patterns/SearchList.models.gallery'
 import selectionBarStory from '../patterns/SelectionBar.gallery'
 import settingFoldRowStory from '../patterns/SettingFoldRow.gallery'
 import settingRowStory from '../patterns/SettingRow.gallery'
 import settingsGroupStory from '../patterns/SettingsGroup.gallery'
+import severityBarStory from '../patterns/SeverityBar.gallery'
 import shelfGroupStory from '../patterns/ShelfGroup.gallery'
 import shimmerStory from '../patterns/Shimmer.gallery'
 import stackedRowStory from '../patterns/StackedRow.gallery'
@@ -130,6 +139,7 @@ export { collectStories, type Story, stateId, storyId } from './story'
  */
 export const stories: Story[] = collectStories([
   confirmDialogStory,
+  contextMenuStory,
   dialogStory,
   dropdownMenuCountsStory,
   dropdownMenuStory,
@@ -139,15 +149,20 @@ export const stories: Story[] = collectStories([
   toastStory,
   tooltipStory,
   bannerStory,
+  chartStory,
+  chartFigureStory,
+  chatMessageStory,
   chipStory,
   chipListFieldStory,
   choiceCardStory,
   choiceCardsStory,
+  composerStory,
   copyButtonStory,
   editableTableStory,
   emptyStateStory,
   errorStateStory,
   fileLinkStory,
+  findingCardStory,
   gitHubLinkStory,
   hostedSurfaceStory,
   listStory,
@@ -161,17 +176,20 @@ export const stories: Story[] = collectStories([
   pierreFileStory,
   pierreFileIconStory,
   pierreTreeStory,
+  planCardStory,
   propertyListStory,
   proseStory,
   railStory,
   relativeTimeStory,
   roomyListRowStory,
+  scrubberStory,
   searchListStory,
   searchListModelsStory,
   selectionBarStory,
   settingFoldRowStory,
   settingRowStory,
   settingsGroupStory,
+  severityBarStory,
   shelfGroupStory,
   shimmerStory,
   stackedRowStory,

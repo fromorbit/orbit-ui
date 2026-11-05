@@ -7,7 +7,7 @@ function Live({ initial, placeholder }: { initial: string | null; placeholder?: 
   const [value, setValue] = useState(initial)
   return (
     <TooltipProvider>
-      <div className="flex w-[360px] justify-end">
+      <div className="flex w-full max-w-[360px] justify-end">
         <PathField
           label="Folder"
           chooseLabel="Kies…"
@@ -26,15 +26,15 @@ export default {
   group: 'patterns',
   title: 'PathField',
   states: {
-    'Not chosen': () => <Live initial={null} />,
-    'A placeholder that says what empty means': () => (
-      <Live initial={null} placeholder="From PATH" />
+    'Niet gekozen': () => <Live initial={null} />,
+    'Een placeholder die zegt wat leeg betekent': () => (
+      <Live initial={null} placeholder="Uit je PATH" />
     ),
-    Chosen: () => <Live initial="/work/shop" />,
-    'A long path in a narrow row': () => (
+    Gekozen: () => <Live initial="/work/shop" />,
+    'Een lang pad in een smalle rij': () => (
       <Live initial="/work/clients/north/shop/packages/storefront/docs" />
     ),
-    Disabled: () => (
+    Uitgeschakeld: () => (
       <TooltipProvider>
         <PathField
           label="Folder"

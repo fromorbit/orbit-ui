@@ -36,6 +36,7 @@ import {
   Delete,
   Eye,
   EyeOff,
+  FastForward,
   File,
   FileDiff,
   FileText,
@@ -77,13 +78,16 @@ import {
   PanelLeft,
   PanelRight,
   Paperclip,
+  Pause,
   Pencil,
   PenLine,
   Pilcrow,
   Pin,
+  Play,
   Plug,
   Plus,
   Repeat,
+  Rewind,
   RotateCcw,
   RotateCw,
   Rows3,
@@ -340,6 +344,13 @@ const registry = {
   repeat: Repeat,
   flag: Flag,
   'corner-down-right': CornerDownRight,
+  // The transport of a player (Trail's replay): play and pause on its one emphasis, and the
+  // double triangles of a skip back and forward, which no reader takes for "reload" as they did
+  // the round arrows.
+  play: Play,
+  pause: Pause,
+  rewind: Rewind,
+  'fast-forward': FastForward,
 } satisfies Record<string, LucideIcon>
 
 /** Names in the registry above; adding an icon is one line there, so the bundle stays small. */

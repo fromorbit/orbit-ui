@@ -153,24 +153,45 @@ test('inline code gets no button of its own', () => {
   expect(screen.queryByRole('button', { name: 'Kopiëren' })).toBeNull()
 })
 
+/** Every element as wide inside as given, against a box of 300px: jsdom lays nothing out. */
+function widths(scroll: number): () => void {
+  const scrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth')
+  const clientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+  Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+    configurable: true,
+    get: () => scroll,
+  })
+  Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+    configurable: true,
+    get: () => 300,
+  })
+  return () => {
+    if (scrollWidth) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', scrollWidth)
+    if (clientWidth) Object.defineProperty(HTMLElement.prototype, 'clientWidth', clientWidth)
+  }
+}
+
+const SCROLLING = '```\nlang\n```\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n'
+
 test('whatever scrolls horizontally is a named region the keyboard can reach', () => {
   // A scroll region that only the mouse can reach hides its overflow from a keyboard user; axe
   // calls that `scrollable-region-focusable`. A tab stop without a name is just as opaque, so
   // each one says what it is, the way `ScrollArea` does.
-  render(
-    <Prose
-      labels={nl.prose}
-      markdown={'```\nlang\n```\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n'}
-    />,
-  )
+  const restore = widths(900)
+  try {
+    render(<Prose labels={nl.prose} markdown={SCROLLING} />)
+  } finally {
+    restore()
+  }
   const code = screen.getByRole('group', { name: 'Codeblok' })
   const table = screen.getByRole('group', { name: 'Tabel' })
   expect(code.querySelector('pre')).toHaveTextContent('lang')
   expect(within(table).getByRole('table')).toBeInTheDocument()
-  for (const node of [code, table]) {
-    expect(node).toHaveAttribute('tabindex', '0')
-    expect(node.className).toContain('focus-visible:outline-2')
-  }
+  for (const node of [code, table]) expect(node).toHaveAttribute('tabindex', '0')
+  expect(table.className).toContain('focus-visible:outline-2')
+  // The scroller of a code block fades out at its edge with a mask, which would clip a ring drawn
+  // around it, so the block around the scroller shows the ring while the focus is in it.
+  expect(code.parentElement?.className).toContain('has-[>[role=group]:focus-visible]:outline-2')
 })
 
 test('a single line break stays a line break', () => {
@@ -272,6 +293,21 @@ test('a task list from GFM draws its own boxes, with a name', () => {
   expect(container.querySelector('input')).toBeNull()
   // A box replaces the marker; a bullet next to it would be a second marker.
   for (const item of screen.getAllByRole('listitem')) expect(item.className).toContain('list-none')
+})
+
+test('a task item starts its words at the box, on the edge of the text around the list', () => {
+  const { container } = render(
+    <Prose
+      labels={nl.prose}
+      markdown={'- [ ] Een bon van € 25 laat € 15 te betalen\n- [x] Klaar\n'}
+    />,
+  )
+  const [first] = screen.getAllByRole('listitem')
+  // No space between the box and the words: the hanging indent lines the wrapped line up with
+  // the first one only when the first starts right after the box's own margin.
+  expect(first?.textContent?.startsWith('Een bon')).toBe(true)
+  // A list of tasks only has no markers to make room for.
+  expect(container.querySelector('ul')).toHaveClass('pl-0')
 })
 
 test('a plain list item keeps its bullet', () => {
@@ -639,4 +675,16 @@ describe('as a document', () => {
       [35, 52],
     ])
   })
+})
+
+test('a code block or table that fits its column is no tab stop: nothing there to scroll', () => {
+  const restore = widths(200)
+  try {
+    render(<Prose labels={nl.prose} markdown={SCROLLING} />)
+  } finally {
+    restore()
+  }
+  for (const name of ['Codeblok', 'Tabel']) {
+    expect(screen.getByRole('group', { name })).not.toHaveAttribute('tabindex')
+  }
 })

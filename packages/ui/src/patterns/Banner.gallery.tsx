@@ -19,55 +19,55 @@ export default {
   group: 'patterns',
   title: 'Banner',
   states: {
-    Attention: () => (
+    'Let op': () => (
       <Panel>
-        <Banner tone="attention">Core is restarting</Banner>
+        <Banner tone="attention">Core start opnieuw</Banner>
       </Panel>
     ),
-    'Attention, busy': () => (
+    'Let op, bezig': () => (
       <Panel>
         <Banner tone="attention" busy>
-          Core is restarting
+          Core start opnieuw
         </Banner>
       </Panel>
     ),
-    'Attention, announced elsewhere': () => (
+    'Let op, elders aangekondigd': () => (
       <Panel>
         <Banner tone="attention" announce={false}>
-          Core is restarting
+          Core start opnieuw
         </Banner>
       </Panel>
     ),
-    Danger: () => (
+    Gevaar: () => (
       <Panel>
-        <Banner tone="danger">The command could not be sent</Banner>
+        <Banner tone="danger">Het commando is niet verstuurd</Banner>
       </Panel>
     ),
-    'Danger with an action': () => (
+    'Gevaar met een actie': () => (
       <Panel>
         <Banner
           tone="danger"
           action={
             <Button size="sm" variant="secondary">
-              Try again
+              Opnieuw proberen
             </Button>
           }
         >
-          The command could not be sent
+          Het commando is niet verstuurd
         </Banner>
       </Panel>
     ),
-    'A long message wraps to a second line': () => (
+    'Een lang bericht loopt door op een tweede regel': () => (
       <Panel>
         <Banner
           tone="danger"
           action={
             <Button size="sm" variant="secondary">
-              Try again
+              Opnieuw proberen
             </Button>
           }
         >
-          The run could not be started because the provider did not answer within thirty seconds
+          De run kon niet starten, omdat de provider binnen dertig seconden niet antwoordde
         </Banner>
       </Panel>
     ),

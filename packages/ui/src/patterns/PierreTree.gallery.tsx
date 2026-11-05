@@ -33,14 +33,14 @@ export default {
   group: 'patterns',
   title: 'PierreTree',
   states: {
-    'Files across three folders': () => (
+    'Bestanden in drie mappen': () => (
       <div className="w-72">
-        <PierreTree entries={entries} onSelect={() => {}} label="Bestanden van deze chat" />
+        <PierreTree entries={entries} onSelect={() => {}} label="Bestanden van dit gesprek" />
       </div>
     ),
     // The same icons outside the tree, the way a row of the changes tab shows them:
     // the glyph only, in the colour of the text beside it.
-    'File icons beside their names': () => (
+    'Bestandsiconen naast hun naam': () => (
       <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[12px] text-muted">
         {['src/greet.ts', 'docs/notes.md', 'package.json', 'assets/logo.png', 'LICENSE'].map(
           (path) => (
@@ -58,12 +58,13 @@ export default {
     // `patterns-pierretree--file-icons-beside-their-names` its own reference image when this state
     // stood before it — a state earlier on the page never moves once captured, whatever is added
     // below it.
-    werkmap: () => (
-      <div className="h-[400px] w-72 border border-border">
+    Werkmap: () => (
+      // A tinted plane, not a frame: the region reads by its tint, as every region of the kit.
+      <div className="h-[280px] w-72 overflow-hidden rounded-lg bg-plane shadow-plane">
         <PierreTree
           entries={workDirectory}
           onSelect={() => {}}
-          label="Bestanden van deze chat"
+          label="Bestanden van dit gesprek"
           fill
           expansion="closed"
         />
@@ -72,7 +73,7 @@ export default {
     // The tab Bestanden's own marks: a changed file (`M`), a
     // staged one (`A`), a new one (`U`), a folder above a changed path with a dot even though its
     // contents are not loaded, and what git ignores dimmed, a folder and a file.
-    'status marks': () => (
+    Statusmarkeringen: () => (
       <div className="h-[220px] w-72 border border-border">
         <PierreTree
           entries={[
@@ -85,7 +86,7 @@ export default {
             { path: 'winkelmand', kind: 'dir' },
           ]}
           onSelect={() => {}}
-          label="Bestanden van deze chat"
+          label="Bestanden van dit gesprek"
           fill
           markLabels={nl.treeMarks}
           statuses={[

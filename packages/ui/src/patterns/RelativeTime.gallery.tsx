@@ -7,7 +7,7 @@ const LABELS: RelativeTimeLabels = {
   minutes: (count) => `${count} min`,
   hours: (count) => `${count} u`,
   days: (count) => `${count} d`,
-  weeks: (count) => `${count} w`,
+  weeks: (count) => `${count} wk`,
 }
 
 /** A fixed moment, not the clock: a screenshot reference must read the same tomorrow. */
@@ -17,18 +17,18 @@ const hour = 60 * minute
 const day = 24 * hour
 
 const ages: [string, number][] = [
-  ['Seconds', 30_000],
-  ['Minutes', 5 * minute],
-  ['Hours', 2 * hour],
-  ['Days', 3 * day],
-  ['Weeks', 30 * day],
+  ['Seconden', 30_000],
+  ['Minuten', 5 * minute],
+  ['Uren', 2 * hour],
+  ['Dagen', 3 * day],
+  ['Weken', 30 * day],
 ]
 
 export default {
   group: 'patterns',
   title: 'RelativeTime',
   states: {
-    'How long ago': () => (
+    'Hoe lang geleden': () => (
       <div className="flex flex-col gap-1 text-[11px] text-muted">
         {ages.map(([label, ago]) => (
           <div key={label} className="flex gap-3">

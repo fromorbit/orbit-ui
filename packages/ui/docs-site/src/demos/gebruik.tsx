@@ -1,81 +1,130 @@
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   Banner,
   Button,
   type CardValue,
+  Chart,
+  type ChartPoint,
   CopyButton,
   CreditCardField,
   DataTable,
   type DataTableColumn,
   Form,
   Icon,
-  IconButton,
   type IconName,
   PageHeader,
+  PlanCard,
   PropertyList,
   ScrollArea,
-  Tag,
+  StatusMark,
+  type StatusMarkKind,
   Timeline,
   TimelineItem,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
 import { AppFrame } from './parts/AppFrame'
-import { type Bar, ChartSketch } from './parts/ChartSketch'
 import { type Figure, KpiTile } from './parts/KpiTile'
 import { Panel } from './parts/Panel'
-import { UsagePlanCard } from './parts/UsagePlanCard'
 
-/** What the workspace used this month, against September. */
+/** Agent hours per day of October so far, made up: quiet in the weekends. 182 in all. */
+const DAILY = [11, 12, 2, 1, 13, 12, 14, 11, 10, 2, 3, 14, 13, 12, 15, 12, 2, 1, 13, 9]
+
+/** The agent hours of the plan per month, and the days of October. */
+const PLAN_HOURS = 250
+const DAYS = 31
+
+/** What the workspace used this month, against the same 20 days of September. */
 const KPIS: Figure[] = [
   {
     label: 'Agent-uren',
     value: '182 u',
     delta: '14%',
-    good: true,
+    // More hours is not good news on its own: at this pace the month ends over the plan.
+    tone: 'neutral',
     rising: true,
-    against: 't.o.v. september',
+    against: 'tegenover 1–20 sep',
+    // The first 20 days of each month, so the line compares the same stretch as the delta.
+    trail: [131, 138, 129, 146, 152, 149, 160, 182],
   },
   {
     label: 'Reviews',
     value: '46',
     delta: '9',
-    good: true,
+    // Every chip stays neutral: the change is news, whether it is good depends on the reader.
+    tone: 'neutral',
     rising: true,
-    against: 't.o.v. september',
+    against: 'tegenover 1–20 sep',
+    trail: [31, 34, 29, 38, 35, 41, 37, 46],
   },
   {
     label: 'Opnames',
     value: '128',
     delta: '31',
-    good: true,
+    tone: 'neutral',
     rising: false,
-    against: 't.o.v. september',
+    against: 'tegenover 1–20 sep',
+    trail: [204, 196, 188, 181, 172, 166, 159, 128],
   },
   {
     label: 'Opslag',
     value: '18,4 GB',
     delta: '2,1 GB',
-    good: false,
+    // Normal growth at 37% of the limit: no alarm until it nears the 50 GB.
+    tone: 'neutral',
     rising: true,
-    against: 'van 50 GB',
+    against: 'tegenover 20 sep',
+    meter: { value: 18.4, max: 50, text: '18,4 van 50 GB', note: '37% van 50 GB' },
   },
 ]
 
-/** Agent hours per day of October so far, made up: quiet in the weekends. */
-const HOURS: Bar[] = Array.from({ length: 20 }, (_, index) => {
-  const day = index + 1
-  const weekend = [3, 4, 10, 11, 17, 18].includes(day)
-  const value = weekend ? 1 + (day % 3) : Math.round(9 + Math.sin(day / 1.8) * 3 + (day % 4))
-  return { label: `${day} okt`, value }
-})
+/**
+ * The agent hours of October added up per day, against the pace that ends the month at the plan's
+ * 250: the days to come have no use yet, the pace runs on to the 31st.
+ */
+const HOURS: ChartPoint[] = Array.from({ length: DAYS }, (_, index) => ({
+  label: `${index + 1} okt`,
+  title: `${index + 1} oktober`,
+  values: [
+    index < DAILY.length ? DAILY.slice(0, index + 1).reduce((sum, hours) => sum + hours, 0) : null,
+    Math.round((PLAN_HOURS * (index + 1)) / DAYS),
+  ],
+}))
 
-type InvoiceStatus = 'open' | 'paid' | 'failed'
+/** Where the month ends at this pace: 182 hours in 20 days is about 282 by the 31st. */
+const USED = DAILY.reduce((sum, hours) => sum + hours, 0)
+const PROJECTED = Math.round((USED / DAILY.length) * DAYS)
+/** What an agent hour above the plan costs, in cents, excluding VAT. */
+const EXTRA_HOUR = 80
+/** The plan of six members and the expected hours above it, in cents, excluding VAT. */
+const PLAN_NET = 6 * 2_400
+const EXTRA_NET = (PROJECTED - PLAN_HOURS) * EXTRA_HOUR
 
-const STATUS: Record<InvoiceStatus, { label: string; tone: 'neutral' | 'success' | 'danger' }> = {
-  open: { label: 'Open', tone: 'neutral' },
-  paid: { label: 'Betaald', tone: 'success' },
-  failed: { label: 'Mislukt', tone: 'danger' },
+/** The open invoice of September: six members, incl. VAT, in cents. */
+const OPEN_GROSS = Math.round(6 * 2_400 * 1.21)
+
+/** A number and its unit, kept on one line. */
+const unit = (value: number, name: string) => `${value.toLocaleString('nl-NL')}\u00a0${name}`
+
+type InvoiceStatus = 'paid' | 'failed'
+
+/** The status of an invoice as the flat mark with its glow and a word, as every status here. */
+const STATUS: Record<InvoiceStatus, { label: string; kind: StatusMarkKind }> = {
+  paid: { label: 'Betaald', kind: 'running' },
+  failed: { label: 'Mislukt', kind: 'fault' },
+}
+
+/**
+ * The mark and the word of an invoice's status, every mark at the quiet size so the column has one
+ * optical weight; the failed one stands out by its shape, its colour and its word (Von Restorff).
+ */
+function InvoiceState({ status }: { status: InvoiceStatus }): ReactNode {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[12px] text-secondary">
+      <StatusMark kind={STATUS[status].kind} size="sm" />
+      {STATUS[status].label}
+    </span>
+  )
 }
 
 /** One step in the life of an invoice. */
@@ -103,25 +152,6 @@ interface Invoice {
 
 const INVOICES: readonly Invoice[] = [
   {
-    number: 'ZB-2026-0110',
-    period: 'oktober 2026',
-    date: '1 nov 2026',
-    members: 6,
-    net: 14_400,
-    status: 'open',
-    method: 'SEPA-incasso',
-    reference: 'inc_7Qm2Lx9TfK',
-    steps: [
-      {
-        icon: 'clock',
-        label: 'Wordt aangemaakt',
-        at: '1 nov',
-        note: 'Op basis van 6 leden',
-        tone: 'muted',
-      },
-    ],
-  },
-  {
     number: 'ZB-2026-0098',
     period: 'september 2026',
     date: '1 okt 2026',
@@ -137,14 +167,13 @@ const INVOICES: readonly Invoice[] = [
         icon: 'x',
         label: 'Incasso mislukt',
         at: '3 okt, 09:14',
-        note: 'Onvoldoende saldo (AM04)',
+        note: 'Onvoldoende saldo op de rekening',
         tone: 'danger',
       },
       {
         icon: 'rotate-cw',
         label: 'Nieuwe poging',
-        at: '24 okt',
-        note: 'Of betaal nu met iDEAL',
+        at: '24\u00a0okt',
         tone: 'muted',
       },
     ],
@@ -239,29 +268,47 @@ function invoiceColumns(onSelect: (number: string) => void): DataTableColumn<Inv
     {
       id: 'status',
       header: 'Status',
-      cell: (invoice) => (
-        <Tag tone={STATUS[invoice.status].tone}>{STATUS[invoice.status].label}</Tag>
-      ),
-    },
-    {
-      id: 'download',
-      header: 'Downloaden',
-      headerHidden: true,
-      align: 'end',
-      cell: (invoice) => (
-        <IconButton
-          icon="arrow-down"
-          size="sm"
-          label={`Download ${invoice.number} als pdf`}
-          disabled={invoice.status === 'open'}
-          onClick={(event) => event.stopPropagation()}
-        />
-      ),
+      cell: (invoice) => <InvoiceState status={invoice.status} />,
     },
   ]
 }
 
-/** The invoices as a table, the newest first; a row opens beside it. */
+/**
+ * One invoice as a row of two lines, for a narrow table: number and month at the start, amount and
+ * status at the end, so nothing scrolls sideways on a phone. The whole row is the one target that
+ * opens the invoice; the download stands in its header (Fitts).
+ */
+function InvoiceCard({
+  invoice,
+  current,
+  onSelect,
+}: {
+  invoice: Invoice
+  current: boolean
+  onSelect(number: string): void
+}): ReactNode {
+  return (
+    <div className={`flex items-center py-2 pr-4 pl-4 ${current ? 'bg-row-active' : ''}`}>
+      <button
+        type="button"
+        onClick={() => onSelect(invoice.number)}
+        {...(current ? { 'aria-current': 'true' as const } : {})}
+        className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-sm text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
+      >
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate font-mono text-[12px] text-fg">{invoice.number}</span>
+          <span className="truncate text-[12px] text-muted">{invoice.period}</span>
+        </span>
+        <span className="flex shrink-0 flex-col items-end">
+          <span className="text-[13px] text-fg tabular-nums">{euro(gross(invoice))}</span>
+          <InvoiceState status={invoice.status} />
+        </span>
+      </button>
+    </div>
+  )
+}
+
+/** The invoices as a table, the newest first; a row opens beside it. Narrow, a list of rows. */
 function InvoiceTable({
   selected,
   onSelect,
@@ -280,12 +327,22 @@ function InvoiceTable({
         defaultSort={{ column: 'date', direction: 'descending' }}
         current={selected}
         onRowClick={(invoice) => onSelect(invoice.number)}
+        card={(invoice) => (
+          <InvoiceCard
+            invoice={invoice}
+            current={invoice.number === selected}
+            onSelect={onSelect}
+          />
+        )}
       />
     </div>
   )
 }
 
-/** What happened to an invoice, step by step. */
+/** The one way to pay the open invoice now, named the same wherever it stands. */
+const PAY_NOW = 'Nu betalen met iDEAL'
+
+/** What happened to an invoice, step by step; the step to come is a status, the pay action is the banner's. */
 function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
   return (
     <Timeline label="Verloop">
@@ -310,33 +367,22 @@ function InvoiceTimeline({ steps }: { steps: readonly Step[] }): ReactNode {
 }
 
 /** One invoice in full: the amount, its parts, the reference and its history. */
-function InvoiceDetail({
-  invoice,
-  toPayment,
-}: {
-  invoice: Invoice
-  toPayment: () => void
-}): ReactNode {
-  const status = STATUS[invoice.status]
+function InvoiceDetail({ invoice }: { invoice: Invoice }): ReactNode {
   return (
-    <Panel
-      title={invoice.number}
-      meta={invoice.period}
-      actions={
-        <IconButton
-          icon="arrow-down"
-          size="sm"
-          label="Download als pdf"
-          disabled={invoice.status === 'open'}
-        />
-      }
-    >
+    <Panel headingLevel={2} title={invoice.number} meta={invoice.period}>
       <div className="flex flex-col gap-5">
-        <div className="flex items-center gap-3">
+        {/* The download is the one action of the invoice, a framed button at the end of its
+            amount, so the number keeps its line on a phone and the rows above stay one target. */}
+        <div className="flex flex-wrap items-center gap-3">
           <span className="font-heading text-[20px] text-fg leading-none tabular-nums">
             {euro(gross(invoice))}
           </span>
-          <Tag tone={status.tone}>{status.label}</Tag>
+          <InvoiceState status={invoice.status} />
+          <span className="ml-auto">
+            <Button variant="secondary" size="sm">
+              Pdf downloaden
+            </Button>
+          </span>
         </div>
         <PropertyList
           label="Factuur"
@@ -361,94 +407,242 @@ function InvoiceDetail({
           ]}
         />
         <InvoiceTimeline steps={invoice.steps} />
-        {invoice.status === 'failed' ? (
-          <div className="flex flex-wrap gap-2">
-            <Button variant="primary" size="sm">
-              Nu betalen met iDEAL
-            </Button>
-            <Button variant="secondary" size="sm" onClick={toPayment}>
-              Betaalwijze wijzigen
-            </Button>
-          </div>
-        ) : null}
       </div>
     </Panel>
   )
 }
 
-/** Where the panel of the payment method is, for the button of a failed invoice. */
+/** Where the panel of the payment method is, for the variant that opens the page there. */
 const PAYMENT_ID = 'betaalwijze'
 
-/** A card being entered after the failed direct debit: number and expiry typed, the code not yet. */
-const NEW_CARD: CardValue = {
-  number: '4242424242424242',
-  expiry: '0829',
-  cvc: '',
-  name: 'Iris Kamphorst',
-}
+/** A card not yet entered: the form waits for one. */
+const NO_CARD: CardValue = { number: '', expiry: '', cvc: '', name: '' }
 
 /**
- * The payment method: what pays now, and a card to pay with instead. The picture of the card fills
- * in as it is typed and turns over for the code.
+ * The payment method: how Zilverberg pays now, named once in the subtitle, with the account and the
+ * last attempt; under it the way out of the failed debit, a card, behind one button that opens the
+ * form in place (progressive disclosure), so the longest part of the page is not an alternative
+ * path. The one-off iDEAL payment is the banner's. The variant "Betaalwijze" opens with the form.
  */
-function PaymentMethod(): ReactNode {
-  const [card, setCard] = useState<CardValue>(NEW_CARD)
+function PaymentMethod({ initialOpen }: { initialOpen: boolean }): ReactNode {
+  const [open, setOpen] = useState(initialOpen)
+  const [card, setCard] = useState<CardValue>(NO_CARD)
   const [submitted, setSubmitted] = useState(false)
+  const form = useRef<HTMLDivElement>(null)
+  const focusForm = useRef(false)
+  // Opened by its button, the form takes the focus at its first field; the button is gone.
+  useEffect(() => {
+    if (!open || !focusForm.current) return
+    focusForm.current = false
+    form.current?.querySelector<HTMLInputElement>('input')?.focus()
+  }, [open])
   return (
     <section id={PAYMENT_ID} className="scroll-mt-4">
-      <Panel title="Betaalwijze" meta="wat Zilverberg betaalt">
-        <div className="grid grid-cols-1 gap-8 @4xl:grid-cols-[20rem_minmax(0,1fr)]">
-          <Form
-            label="Betalen met een kaart"
-            onSubmit={() => setSubmitted(true)}
-            actions={
-              <Button type="submit" variant="secondary">
-                Kaart gebruiken
-              </Button>
-            }
+      <Panel headingLevel={2} title="Betaalwijze" meta="SEPA-incasso">
+        <div className="flex flex-col gap-6">
+          <PropertyList
+            label="SEPA-incasso"
+            groups={[
+              [
+                { label: 'Rekening', value: 'NL •••• 4021' },
+                { label: 'Op naam van', value: 'Zilverberg B.V.' },
+                {
+                  label: 'Laatste poging',
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <StatusMark kind="fault" size="sm" />
+                      Mislukt op 3 oktober
+                    </span>
+                  ),
+                },
+              ],
+            ]}
+          />
+          <section
+            aria-labelledby="kaart-toevoegen"
+            className="flex flex-col gap-3 border-border border-t pt-6 [&>*]:max-w-md"
           >
-            <CreditCardField
-              value={card}
-              onValueChange={setCard}
-              labels={galleryLabels.creditCard}
-              showErrors={submitted}
-              now={new Date(2026, 9, 20)}
-            />
-          </Form>
-          <div className="flex flex-col gap-4">
-            <PropertyList
-              label="Nu"
-              groups={[
-                [
-                  { label: 'Betaalwijze', value: 'SEPA-incasso' },
-                  { label: 'Rekening', value: 'NL·· ···· 4021' },
-                  { label: 'Op naam van', value: 'Zilverberg B.V.' },
-                  { label: 'Laatste poging', value: 'mislukt op 3 oktober' },
-                ],
-              ]}
-            />
-            <p className="m-0 max-w-md text-[12px] text-muted leading-relaxed">
-              Met een kaart gaan de volgende facturen van de kaart af. De incasso stopt dan, en de
-              open factuur van september betaalt de kaart meteen.
-            </p>
-          </div>
+            <div className="flex flex-col gap-1">
+              <h3 id="kaart-toevoegen" className="m-0 font-heading text-[13px] text-fg leading-5">
+                Liever met een kaart
+              </h3>
+              <p className="m-0 text-[12px] text-muted leading-relaxed">
+                Met een kaart gaan de volgende facturen voortaan van de kaart af en stopt de
+                incasso. De open factuur van september schrijven we dan meteen af.
+              </p>
+            </div>
+            {open ? (
+              <div ref={form}>
+                <Form
+                  label="Kaart toevoegen"
+                  onSubmit={() => setSubmitted(true)}
+                  actions={
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        // Keeps the focus in the field: its check on blur would add a line and move
+                        // the button away under the pointer before the click lands.
+                        onPointerDown={(event) => event.preventDefault()}
+                        onClick={() => setOpen(false)}
+                      >
+                        Annuleren
+                      </Button>
+                      <Button type="submit" variant="secondary">
+                        Kaart gebruiken
+                      </Button>
+                    </>
+                  }
+                >
+                  <CreditCardField
+                    value={card}
+                    onValueChange={setCard}
+                    labels={galleryLabels.creditCard}
+                    showErrors={submitted}
+                    now={new Date(2026, 9, 20)}
+                  />
+                </Form>
+              </div>
+            ) : (
+              <span className="flex">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    focusForm.current = true
+                    setOpen(true)
+                  }}
+                >
+                  <Icon name="plus" size="sm" />
+                  Kaart toevoegen
+                </Button>
+              </span>
+            )}
+          </section>
         </div>
       </Panel>
     </section>
   )
 }
 
+/** "≈" as the eye reads it and "ongeveer" as a voice says it: some voices skip the sign. */
+function About({ children }: { children: ReactNode }): ReactNode {
+  return (
+    <>
+      <span aria-hidden="true">≈</span>
+      <span className="sr-only">ongeveer</span> {children}
+    </>
+  )
+}
+
+/**
+ * What the next invoice will be at this pace: the plan, the hours above it, and the total with VAT,
+ * the figures in a column at the end like the use of the plan above it.
+ */
+function NextInvoice(): ReactNode {
+  const net = PLAN_NET + EXTRA_NET
+  const total = Math.round(net * 1.21)
+  const rows: { label: string; value: ReactNode; sum?: boolean }[] = [
+    { label: 'Plan, 6 leden', value: euro(PLAN_NET) },
+    {
+      label: `${unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan`,
+      value: <About>{euro(EXTRA_NET)}</About>,
+    },
+    { label: 'Excl. btw', value: <About>{euro(net)}</About>, sum: true },
+    { label: 'Btw 21%', value: <About>{euro(total - net)}</About> },
+  ]
+  return (
+    <section aria-labelledby="volgende-factuur" className="flex flex-col gap-2">
+      <h3 id="volgende-factuur" className="m-0 font-normal text-[12px] text-muted">
+        Volgende factuur, 1 november
+      </h3>
+      <dl className="m-0 flex flex-col gap-2 text-[13px] leading-5">
+        {rows.map((row) => (
+          <div
+            key={row.label}
+            className={`flex items-baseline justify-between gap-3 ${row.sum ? 'border-border border-t pt-2' : ''}`}
+          >
+            <dt className="text-secondary">{row.label}</dt>
+            <dd className="m-0 text-secondary tabular-nums">{row.value}</dd>
+          </div>
+        ))}
+        <div className="flex items-baseline justify-between gap-3">
+          <dt className="font-medium text-fg">Verwacht, incl. btw</dt>
+          <dd className="m-0 font-medium text-fg tabular-nums">
+            <About>{euro(total)}</About>
+          </dd>
+        </div>
+      </dl>
+    </section>
+  )
+}
+
+/** The least and the most height of the Agent-uren plot. */
+const PLOT_MIN = 192
+const PLOT_MAX = 420
+
+/**
+ * The height of the Agent-uren plot: 192px, and beside the plan as much more as the card has
+ * spare under its words, so the chart fills its card to the plan's bottom instead of ending in
+ * mid-air. Stacked, the card is as tall as its content and the plot keeps 192px.
+ */
+function usePlotHeight(
+  card: RefObject<HTMLDivElement | null>,
+  content: RefObject<HTMLDivElement | null>,
+): number {
+  const [height, setHeight] = useState(PLOT_MIN)
+  // The height asked for and the height on screen: a measure taken before the last ask is painted
+  // would add the same spare twice and push the plan's row past its own height.
+  const asked = useRef(PLOT_MIN)
+  const painted = useRef(PLOT_MIN)
+  useLayoutEffect(() => {
+    painted.current = height
+  }, [height])
+  useLayoutEffect(() => {
+    const ask = (next: number) => {
+      asked.current = next
+      setHeight(next)
+    }
+    const box = card.current
+    const inner = content.current
+    if (!box || !inner || typeof ResizeObserver !== 'function') return
+    let width = 0
+    let frame = 0
+    const measure = () => {
+      const row = box.parentElement?.getBoundingClientRect()
+      const own = box.getBoundingClientRect()
+      // A new width starts again from the least, so the plot can shrink with its row.
+      if (row && Math.abs(row.width - width) > 1) {
+        width = row.width
+        ask(PLOT_MIN)
+        frame = requestAnimationFrame(measure)
+        return
+      }
+      const beside = row !== undefined && own.width < row.width - 1
+      if (!beside) return ask(PLOT_MIN)
+      if (asked.current !== painted.current) return
+      const spare = own.bottom - 16 - inner.getBoundingClientRect().bottom
+      if (spare > 2) ask(Math.min(PLOT_MAX, painted.current + Math.floor(spare)))
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(box)
+    if (box.parentElement) observer.observe(box.parentElement)
+    measure()
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [card, content])
+  return height
+}
+
 /** The plan, what of it was used this month, and the invoices with one opened beside them. */
 function Usage({ variant }: DemoScreenProps): ReactNode {
   const [selected, setSelected] = useState('ZB-2026-0098')
   const invoice = INVOICES.find((entry) => entry.number === selected) ?? INVOICES[0]
-  const toPayment = () => {
-    const field = document.getElementById(PAYMENT_ID)
-    field?.scrollIntoView({ block: 'start' })
-    field?.querySelector<HTMLInputElement>('input[autocomplete="cc-number"]')?.focus({
-      preventScroll: true,
-    })
-  }
+  const hoursCard = useRef<HTMLDivElement>(null)
+  const hoursContent = useRef<HTMLDivElement>(null)
+  const plotHeight = usePlotHeight(hoursCard, hoursContent)
   // The variant "Betaalwijze" opens the page at the card; only the scroll area moves, not the page.
   useEffect(() => {
     if (variant !== 'betaalwijze') return
@@ -461,10 +655,10 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
   return (
     <AppFrame product="orbit" current="gebruik">
       <ScrollArea>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 @3xl:px-8 @3xl:py-7">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-5 @3xl:px-8 @3xl:py-7">
           <PageHeader
             title="Gebruik en facturen"
-            meta="Zilverberg · oktober tot en met de 20e"
+            meta="Zilverberg · 1–20 oktober"
             actions={
               <Button variant="secondary" size="sm">
                 Factuurgegevens
@@ -474,36 +668,136 @@ function Usage({ variant }: DemoScreenProps): ReactNode {
           <Banner
             tone="danger"
             action={
-              <Button variant="secondary" size="sm" onClick={() => setSelected('ZB-2026-0098')}>
-                Bekijk factuur
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="secondary" size="sm" onClick={() => setSelected('ZB-2026-0098')}>
+                  Factuur bekijken
+                </Button>
+                <Button variant="primary" size="sm">
+                  {PAY_NOW}
+                </Button>
+              </div>
             }
           >
-            De incasso van september is mislukt. We proberen het op 24 oktober opnieuw.
+            Incasso van {euro(OPEN_GROSS)} voor september mislukt: onvoldoende saldo. Nieuwe poging
+            24{'\u00a0'}okt.
           </Banner>
           <div className="grid grid-cols-2 gap-3 @5xl:grid-cols-4">
             {KPIS.map((kpi) => (
-              <KpiTile key={kpi.label} figure={kpi} />
+              <KpiTile
+                key={kpi.label}
+                figure={kpi}
+                period="de eerste 20 dagen van elke maand, de afgelopen 8 maanden"
+              />
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-5 @4xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-            <UsagePlanCard />
-            <Panel title="Agent-uren" meta="per dag, deze maand">
-              <ChartSketch
-                bars={HOURS}
-                legend={{ value: 'Agent-uren' }}
-                unit="uur"
-                note="Staafgrafiek met as, raster en tooltip per dag"
-              />
-            </Panel>
+          {/* One column grid for both rows, 3 to 2: the chart and the payment method in the
+              wide column, the plan and the opened invoice, the money, in the narrow one, so the
+              rows share their edges. The chart comes first, also on a phone, as it explains the
+              hours above the plan that the plan card warns of. Stacked, every card takes the
+              whole column, as the tiles above do. */}
+          <div className="grid grid-cols-1 gap-6 @5xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div ref={hoursCard} className="flex min-w-0 flex-col [&>*]:flex-1">
+              <Panel headingLevel={2} title="Agent-uren" meta="opgeteld, deze maand">
+                <div ref={hoursContent} className="flex flex-col gap-3">
+                  <Chart
+                    kind="line"
+                    label="Agent-uren in oktober, opgeteld per dag"
+                    series={[
+                      { id: 'used', label: 'Gebruikt' },
+                      {
+                        id: 'pace',
+                        label: `Op koers voor ${unit(PLAN_HOURS, 'u')}`,
+                        reference: true,
+                      },
+                    ]}
+                    points={HOURS}
+                    limit={{ value: PLAN_HOURS, label: `Plan ${unit(PLAN_HOURS, 'u')}` }}
+                    forecast={{
+                      series: 'used',
+                      value: PROJECTED,
+                      label: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')}`,
+                      text: `verwacht eind oktober: ${unit(PROJECTED, 'u')}`,
+                      legend: 'Verwachting',
+                    }}
+                    format={(value) => unit(value, 'u')}
+                    none="nog niet bekend"
+                    keys="Pijltjes links en rechts om de dagen te lezen, Home en End voor de eerste en de laatste"
+                    roleDescription="grafiek"
+                    height={plotHeight}
+                  />
+                  <p className="m-0 text-[12px] text-muted leading-relaxed">
+                    Op dit tempo kom je eind oktober rond {unit(PROJECTED, 'u')} uit,{' '}
+                    {unit(PROJECTED - PLAN_HOURS, 'u')} boven je plan. Elk uur daarboven kost{' '}
+                    {euro(EXTRA_HOUR)}, excl. btw.
+                  </p>
+                </div>
+              </Panel>
+            </div>
+            {/* The one plan of the page: on the plane of every card beside it, no tag, as there
+                is nothing to compare it to. */}
+            <div className="flex w-full min-w-0 flex-col [&>*]:flex-1">
+              <PlanCard
+                name="Team"
+                price="€ 24"
+                period="per lid per maand, excl. btw"
+                description="Het plan van Zilverberg, voor 6 leden."
+                headingLevel={2}
+                features={[
+                  'Onbeperkt gesprekken en specs',
+                  {
+                    label: `${unit(PLAN_HOURS, 'agent-uren')} per maand`,
+                    detail: `${USED.toLocaleString('nl-NL')} van ${unit(PLAN_HOURS, 'u')}`,
+                    used: { value: USED, max: PLAN_HOURS },
+                    over: `Verwacht ≈\u00a0${unit(PROJECTED, 'u')} eind oktober`,
+                  },
+                  {
+                    label: 'Orbit Review op 10 repositories',
+                    detail: '7 van 10',
+                    used: { value: 7, max: 10 },
+                  },
+                  {
+                    label: '50 GB opslag voor opnames',
+                    detail: '18,4 van 50\u00a0GB',
+                    used: { value: 18.4, max: 50 },
+                  },
+                ]}
+                action={
+                  <Button variant="secondary" size="sm">
+                    Plan wijzigen
+                  </Button>
+                }
+              >
+                <NextInvoice />
+              </PlanCard>
+            </div>
           </div>
-          <div className="grid grid-cols-1 items-start gap-5 @5xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-            <Panel title="Facturen" meta={`${INVOICES.length} van 11`} flush>
+          {/* Wide, the payment method and under it the list stand in the first column and the
+              opened invoice beside both, so neither column ends in an empty field; narrow, the
+              payment method comes first and the invoice follows its list. */}
+          <div className="grid grid-cols-1 items-start gap-6 @5xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @5xl:grid-rows-[auto_1fr]">
+            <div className="min-w-0 @5xl:col-start-1 @5xl:row-start-1">
+              <PaymentMethod key={variant} initialOpen={variant === 'betaalwijze'} />
+            </div>
+            <Panel
+              headingLevel={2}
+              title="Facturen"
+              meta={`${INVOICES.length} van 10`}
+              className="@5xl:col-start-1 @5xl:row-start-2"
+              actions={
+                <Button variant="secondary" size="sm">
+                  Alle facturen
+                </Button>
+              }
+              flush
+            >
               <InvoiceTable selected={selected} onSelect={setSelected} />
             </Panel>
-            {invoice ? <InvoiceDetail invoice={invoice} toPayment={toPayment} /> : null}
+            {invoice ? (
+              <div className="min-w-0 @5xl:sticky @5xl:top-4 @5xl:col-start-2 @5xl:row-span-2 @5xl:row-start-1">
+                <InvoiceDetail invoice={invoice} />
+              </div>
+            ) : null}
           </div>
-          <PaymentMethod />
         </div>
       </ScrollArea>
     </AppFrame>

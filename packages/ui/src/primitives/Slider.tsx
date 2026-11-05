@@ -32,7 +32,9 @@ export interface SliderProps {
  * Radix supplies the `slider` role and the keys: the arrows move one `step`, Page Up and Page Down
  * ten, Home and End to the ends. The thumb is the one tab stop and carries the name; a screen
  * reader hears `valueText` ("512 MB") rather than a bare number. The filled part of the track is
- * the accent, like a checked box: it is the value that was chosen. For a value that must be exact
+ * the accent, like a checked box: it is the value that was chosen. The thumb is a dot in the
+ * foreground colour with a rim of the card plane, so it stands out on the track in both themes
+ * (the accent's own foreground is Midnight in dark, where it vanished). For a value that must be exact
  * use `NumberField`; a slider is for a value one gets roughly right by eye.
  */
 export function Slider({
@@ -81,7 +83,7 @@ export function Slider({
           aria-invalid={ariaInvalid}
           aria-valuetext={valueText(value)}
           id={id}
-          className="block size-4 rounded-full bg-accent-fg shadow-menu ring-1 ring-border-strong outline-focus transition-transform duration-(--nt-duration-fast) hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
+          className="block size-4 rounded-full border-2 border-overlay bg-fg outline-focus transition-transform duration-(--nt-duration-fast) hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
         />
       </RadixSlider.Root>
       {showValue ? (

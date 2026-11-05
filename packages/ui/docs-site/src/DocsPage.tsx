@@ -1,13 +1,16 @@
 import {
   type ComponentType,
   createElement,
+  type KeyboardEvent,
   type ReactNode,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
   CopyButton,
+  DropdownMenu,
   IconButton,
   OrbitWordmark,
   type Platform,
@@ -20,7 +23,7 @@ import {
   UiProvider,
 } from '../../src'
 import { type Story, stateId, storyId } from '../../src/gallery'
-import { DEMO_PREFIX, DemoGallery, demoSlugOf } from './demo-kit/DemoViews'
+import { DEMO_PREFIX, DemoGallery, demoSlugOf, demoTitleOf } from './demo-kit/DemoViews'
 import { Home } from './Home'
 import { docsShortcuts } from './shortcuts'
 
@@ -42,6 +45,37 @@ const THEME_OPTIONS = [
   { value: 'dark', label: 'Donker' },
   { value: 'light', label: 'Licht' },
 ] as const
+
+/** Where the page keeps the chosen theme, so a reload keeps it; per viewer, never required. */
+const THEME_KEY = 'orbit-ui-docs-theme'
+
+/** The theme of the last visit, or dark: storage may be missing or throw (a private window). */
+function storedTheme(): Theme {
+  try {
+    return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
+/** The groups of the catalogue in the page's language: a quiet eyebrow, not a folder name. */
+const GROUP_LABEL: Record<Story['group'], string> = {
+  primitives: 'Bouwstenen',
+  overlays: 'Lagen',
+  patterns: 'Patronen',
+  features: 'Schermen',
+}
+
+/**
+ * Keeps a click on the page's own switches from touching the story under them: no focus moves
+ * (a menu or a text selection of the story stays as it is) and the press never reaches the
+ * document, where an open layer would read it as a click outside and close. The keyboard still
+ * reaches the switches as ever.
+ */
+const KEEP_STORY_STATE = {
+  onMouseDown: (event: { preventDefault(): void }) => event.preventDefault(),
+  onPointerDown: (event: { stopPropagation(): void }) => event.stopPropagation(),
+}
 
 /** The products of the family, whose satellite `tokens.css` picks with `data-product`. */
 type Product = 'orbit' | 'halo' | 'fold'
@@ -90,6 +124,63 @@ function useHash(): string {
   return hash
 }
 
+/** A floating layer of a story: a menu, a popover, a listbox that stands open in the picture. */
+const FLOATING = '[data-radix-popper-content-wrapper]'
+
+/**
+ * Tab leaves a floating layer of a story as it leaves any other part of the page: the layer's own
+ * handling (a menu swallows Tab, a popover's focus scope loops it) is stopped on its way down, and
+ * the browser moves the focus on. The layer closes as the focus leaves it, as it would on a click
+ * beside it, so a keyboard user is never held in a picture.
+ */
+function leaveLayerOnTab(event: KeyboardEvent<HTMLElement>): void {
+  if (event.key !== 'Tab') return
+  if (event.target instanceof Element && event.target.closest(FLOATING) !== null) {
+    event.stopPropagation()
+  }
+}
+
+/**
+ * A story whose layer opens as it mounts shows it open, but does not take the focus with it: in
+ * the first second after mounting, and before the reader has pressed a key or the pointer, a focus
+ * that lands in a floating layer of the state is let go again (to the page's start, where a fresh
+ * load has it). Escape still closes the layer, and its trigger takes the focus then.
+ */
+function useQuietLayers(frame: HTMLElement | null): void {
+  useEffect(() => {
+    if (frame === null) return
+    let touched = false
+    const touch = () => {
+      touched = true
+    }
+    const release = (target: EventTarget | null) => {
+      if (touched || !(target instanceof HTMLElement)) return
+      if (target.closest(FLOATING) === null) return
+      queueMicrotask(() => {
+        if (document.activeElement === target) target.blur()
+      })
+    }
+    const onFocus = (event: FocusEvent) => release(event.target)
+    const settle = () => {
+      if (frame.contains(document.activeElement)) release(document.activeElement)
+    }
+    window.addEventListener('keydown', touch, true)
+    window.addEventListener('pointerdown', touch, true)
+    frame.addEventListener('focusin', onFocus)
+    const frameId = requestAnimationFrame(settle)
+    const stop = setTimeout(() => {
+      frame.removeEventListener('focusin', onFocus)
+    }, 1000)
+    return () => {
+      cancelAnimationFrame(frameId)
+      clearTimeout(stop)
+      window.removeEventListener('keydown', touch, true)
+      window.removeEventListener('pointerdown', touch, true)
+      frame.removeEventListener('focusin', onFocus)
+    }
+  }, [frame])
+}
+
 /**
  * The box one state of a story stands in (no frame: its caption and the space between states
  * group it, the Law of Proximity), which is also the container of its floating
@@ -101,8 +192,9 @@ function useHash(): string {
  */
 function StateFrame({ state }: { state: ComponentType }): ReactNode {
   const [frame, setFrame] = useState<HTMLElement | null>(null)
+  useQuietLayers(frame)
   return (
-    <div ref={setFrame} className="relative py-3">
+    <div ref={setFrame} className="relative" onKeyDownCapture={leaveLayerOnTab}>
       <PortalContainerProvider container={frame}>{createElement(state)}</PortalContainerProvider>
     </div>
   )
@@ -149,13 +241,18 @@ export interface DocsPageProps {
  */
 export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const hash = useHash()
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>(storedTheme)
   const [product, setProduct] = useState<Product>('orbit')
   const [platform, setPlatform] = useState<Platform>('mac')
   const shortcuts = useMemo(() => docsShortcuts(platform), [platform])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem(THEME_KEY, theme)
+    } catch {
+      // A private window: the theme simply lasts until the reload.
+    }
   }, [theme])
 
   useEffect(() => {
@@ -169,6 +266,34 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
   const chosenId = idOf(hash)
   const story = stories.find((entry) => storyId(entry) === chosenId) ?? stories[0]
   const currentId = story ? storyId(story) : undefined
+
+  // The title says where the reader is, so a tab, the history and a screen reader tell the routes
+  // apart (WCAG 2.4.2): "StatusMark · Bouwstenen · Orbit UI", "Team en rechten · Demo's · Orbit UI".
+  const where =
+    mode === 'demos'
+      ? [demoTitleOf(demoSlug), "Demo's"]
+      : mode === 'home' || story === undefined
+        ? []
+        : [story.title, GROUP_LABEL[story.group]]
+  const title = [...where.filter((part) => part !== undefined), 'Orbit UI'].join(' · ')
+  useEffect(() => {
+    document.title = title
+  }, [title])
+  // A story opens at its title. A state that takes the focus as it mounts (an active tab, a
+  // field) or a layer that opens would scroll the stage down to itself, and the reader would land
+  // mid-page; the stage goes back to the top once the states have settled, keeping their focus.
+  const stage = useRef<HTMLElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new story is what resets the stage.
+  useEffect(() => {
+    const top = () => stage.current?.scrollTo?.({ top: 0 })
+    top()
+    const frame = requestAnimationFrame(top)
+    const later = setTimeout(top, 150)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(later)
+    }
+  }, [currentId])
 
   // Where each tab was, so the tabs return to it rather than to its first entry.
   const [lastStory, setLastStory] = useState<string | undefined>(chosenId)
@@ -194,8 +319,8 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
       stories.map((entry) => ({
         id: storyId(entry),
         label: entry.title,
-        group: entry.group,
-        keywords: [entry.group, ...Object.keys(entry.states)],
+        group: GROUP_LABEL[entry.group],
+        keywords: [entry.group, GROUP_LABEL[entry.group], ...Object.keys(entry.states)],
       })),
     [stories],
   )
@@ -215,7 +340,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
         {mode === 'components' ? (
           <nav
             aria-label="Componenten"
-            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-none`}
+            className={`${navOpen ? 'fixed inset-y-0 left-0 z-40 flex shadow-menu' : 'hidden'} w-64 shrink-0 flex-col bg-frame bg-(image:--nt-sidebar-gradient) md:static md:z-auto md:flex md:shadow-frame-edge`}
           >
             <div className="flex h-12 shrink-0 items-center px-4">
               <HomeLink />
@@ -240,7 +365,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
           </nav>
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col bg-canvas">
-          <header className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-border border-b px-3 py-2 sm:px-4">
+          <header className="flex h-12 shrink-0 items-center gap-2 border-border border-b px-4 sm:gap-3">
             {mode === 'components' ? (
               <div className="md:hidden">
                 <IconButton
@@ -252,7 +377,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                 />
               </div>
             ) : (
-              <div className="flex items-center pr-1">
+              <div className="hidden items-center pr-1 sm:flex">
                 <HomeLink />
               </div>
             )}
@@ -263,30 +388,61 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
               options={MODE_OPTIONS}
               onValueChange={switchMode}
             />
-            <div className="hidden flex-1 sm:block" />
-            <div className="hidden lg:block">
-              <SegmentedControl<Platform>
-                label="Platform"
+            <div className="flex-1" />
+            <div className="flex items-center gap-2 sm:gap-3" {...KEEP_STORY_STATE}>
+              <div className="hidden lg:block">
+                <SegmentedControl<Platform>
+                  label="Platform"
+                  size="sm"
+                  value={platform}
+                  options={PLATFORM_OPTIONS}
+                  onValueChange={setPlatform}
+                />
+              </div>
+              <div className="hidden sm:block">
+                <SegmentedControl<Product>
+                  label="Product"
+                  size="sm"
+                  value={product}
+                  options={PRODUCT_OPTIONS}
+                  onValueChange={setProduct}
+                />
+              </div>
+              <div className="sm:hidden">
+                <DropdownMenu
+                  label="Product"
+                  align="end"
+                  trigger={
+                    <button
+                      type="button"
+                      aria-label={`Product: ${PRODUCT_OPTIONS.find((option) => option.value === product)?.label ?? ''}`}
+                      className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[12px] text-secondary outline-focus hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      {/* The satellite beside the product's name, never on its own. */}
+                      <span aria-hidden="true">
+                        {PRODUCT_OPTIONS.find((option) => option.value === product)?.label ?? ''}
+                      </span>
+                      <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
+                    </button>
+                  }
+                  items={PRODUCT_OPTIONS.map((option) => ({
+                    id: option.value,
+                    label: option.label,
+                    kind: 'radio' as const,
+                    group: 'product',
+                    checked: option.value === product,
+                    onSelect: () => setProduct(option.value),
+                  }))}
+                />
+              </div>
+              <SegmentedControl<Theme>
+                label="Thema"
                 size="sm"
-                value={platform}
-                options={PLATFORM_OPTIONS}
-                onValueChange={setPlatform}
+                value={theme}
+                options={THEME_OPTIONS}
+                onValueChange={setTheme}
               />
             </div>
-            <SegmentedControl<Product>
-              label="Product"
-              size="sm"
-              value={product}
-              options={PRODUCT_OPTIONS}
-              onValueChange={setProduct}
-            />
-            <SegmentedControl<Theme>
-              label="Thema"
-              size="sm"
-              value={theme}
-              options={THEME_OPTIONS}
-              onValueChange={setTheme}
-            />
           </header>
           {mode === 'home' ? (
             <main
@@ -304,6 +460,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
             </main>
           ) : (
             <main
+              ref={stage}
               key={currentId ?? 'empty'}
               // The stage scrolls, so the keyboard needs a stop on it (axe scrollable-region-focusable).
               // biome-ignore lint/a11y/noNoninteractiveTabindex: WCAG 2.1.1, the keyboard reaches what scrolls.
@@ -313,12 +470,10 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
             >
               {story ? (
                 <article className="max-w-4xl p-4 sm:p-8">
-                  <div className="mb-6 flex items-center gap-2">
-                    <div className="min-w-0">
-                      <p className="m-0 text-[11px] text-muted">{story.group}</p>
-                      <h1 className="m-0 text-[18px] font-medium text-fg">{story.title}</h1>
-                    </div>
-                    <div className="ml-auto">
+                  <div className="mb-6 flex flex-col gap-1">
+                    <p className="m-0 text-[12px] text-muted">{GROUP_LABEL[story.group]}</p>
+                    <div className="flex items-center gap-1.5">
+                      <h1 className="m-0 min-w-0 font-medium text-[20px] text-fg">{story.title}</h1>
                       <CopyButton
                         text={() => location.href}
                         label="Kopieer link"
@@ -334,7 +489,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                       aria-label={caption}
                       className="mb-10"
                     >
-                      <p className="m-0 mb-2 text-[12px] text-muted">{caption}</p>
+                      <h2 className="m-0 mb-2 font-normal text-[12px] text-muted">{caption}</h2>
                       <StateFrame state={state} />
                     </section>
                   ))}
