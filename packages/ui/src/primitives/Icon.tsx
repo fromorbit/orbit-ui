@@ -25,6 +25,7 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   ChevronUp,
+  CircleHelp,
   ClipboardList,
   Clock,
   Code,
@@ -50,6 +51,7 @@ import {
   Globe,
   GraduationCap,
   Hand,
+  House,
   Image,
   Info,
   Italic,
@@ -271,6 +273,9 @@ const registry = {
   // The hint of a registered setting: a quiet "i" behind the label, never a line
   // of explanation under it.
   info: Info,
+  // The places of an app rail that are no app (`AppRail`): the start page and help.
+  house: House,
+  'circle-help': CircleHelp,
   // The stands of a markdown document, for a file tab too narrow for their words: an
   // open book for Lezen, angle brackets for Code; Gesplitst reuses `columns`.
   'book-open': BookOpen,

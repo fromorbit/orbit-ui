@@ -24,10 +24,14 @@
   --nt-brand-slate-deep: #5a6185;
   --nt-brand-violet: #5140f2;
   /* The satellite of each product: the dot in its symbol and wordmark. Orbit orange, Halo mint,
-     Fold lavender. Never a word, a line, a plane or a role of the interface. */
+     Fold lavender, Lens gold, Trail the red of a recording, Comet sky blue. Never a word, a line,
+     a plane or a role of the interface. */
   --nt-brand-orbit: #ff7f2a;
   --nt-brand-halo: #2fd3a6;
   --nt-brand-fold: #9b87ff;
+  --nt-brand-lens: #ffb224;
+  --nt-brand-trail: #ff4d6d;
+  --nt-brand-comet: #4da3ff;
   /* The satellite of the product on this page: Orbit's unless a `data-product` says otherwise
      (the rules at the end of this file), or the host sets it itself. Only for a mark that says
      "this product" or "where you are now", always beside another sign: mint on Paper is 1.7:1. */
@@ -42,11 +46,15 @@
      an interface's titles a step lighter. */
   --nt-font-weight-heading: 600;
 
-  /* Two planes and no inset card: the frame is the window
-     and the sidebar, the darkest plane; the canvas carries the conversation and the right panel, a
-     step lighter, because the content comes first. The difference in brightness is the separation;
-     no line runs between the two. `bg` is an alias of the canvas until every use has moved over. */
+  /* Three layers, deepest first: the frame is the window, the app rail and the top bar; the side
+     panel is the middle layer, the navigation of one app; the canvas carries the content, the
+     lightest, because the content comes first. In the shell the side panel and the canvas float
+     together as one plane on the frame (`docs/family-style.md`, "The shell"). Two planes side by
+     side need no line: their brightness is the edge. `bg` is an alias of the canvas until every
+     use has moved over. */
   --nt-frame: #0c1229;
+  /* 10.2:1 for secondary and 5.7:1 for muted on it, between the frame and the canvas. */
+  --nt-side-panel: #0f1630;
   --nt-canvas: var(--nt-brand-midnight);
   --nt-bg: var(--nt-canvas);
   /* The edge between the frame and the canvas, drawn as an inset shadow (`shadow-frame-edge`) so it
@@ -344,11 +352,13 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  /* White regions on a page of Paper, a touch off-white: the sidebar, a card, a menu, the composer
-     and a region of its own are white, and the small difference, a hairline or a soft shadow parts
-     them, never a grey fill. The frame (sidebar, window) is white too, parted from the canvas by
-     the hairline of `frame-edge`. */
-  --nt-frame: #ffffff;
+  /* The same three layers on Paper: the frame a step deeper than Paper (`#e9e8e2`: muted 4.9:1,
+     secondary 7.7:1 on it; green as a word only 4.3:1, so a status on the frame is a glyph, never
+     a word), the side panel between them, the canvas Paper. What floats on the canvas is white: a
+     card, a menu, the composer and a region of its own, parted by a hairline or a soft shadow,
+     never a grey fill. */
+  --nt-frame: #e9e8e2;
+  --nt-side-panel: #efeee9;
   --nt-canvas: var(--nt-brand-paper);
   --nt-bg: var(--nt-canvas);
   --nt-frame-edge: var(--nt-border);
@@ -385,7 +395,7 @@
      library's ground with it. */
   --nt-diff-bg: #ffffff;
   /* Four levels against the canvas: `text` Midnight 15.7:1, `secondary` (Midnight at 80% over
-     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (6.0:1 on the white frame), `faint` 3.3:1 — again only
+     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (4.9:1 on the frame), `faint` 3.3:1 — again only
      icons and decoration. */
   --nt-text: var(--nt-brand-midnight);
   --nt-text-secondary: #3f455b;
@@ -403,7 +413,8 @@
   --nt-accent-key: rgb(245 244 240 / 0.18);
   --nt-accent-border: rgb(81 64 242 / 0.45);
 
-  /* The kinds of a document, darker for a light ground, all at least 4.2:1 on canvas and frame. */
+  /* The kinds of a document, darker for a light ground, at least 4.2:1 on the canvas and 3.8:1 on
+     the frame, above the 3:1 of a glyph. */
   --nt-kind-spec: #7a57d6;
   --nt-kind-plan: #c2397f;
   --nt-kind-decision: #0d8270;
@@ -448,7 +459,7 @@
     0 0 0 1px rgb(17 25 54 / 0.08), 0 4px 12px rgb(17 25 54 / 0.08),
     0 16px 40px rgb(17 25 54 / 0.12);
 
-  /* Violet: 5.7:1 on the canvas, 6.2:1 on the white frame. */
+  /* Violet: 5.7:1 on the canvas, 5.1:1 on the frame. */
   --nt-focus-ring: var(--nt-brand-violet);
   --nt-scrollbar-thumb: var(--nt-border);
   --nt-scrollbar-thumb-hover: var(--nt-text-muted);
@@ -510,6 +521,15 @@
 [data-product="fold"] {
   --nt-satellite: var(--nt-brand-fold);
 }
+[data-product="lens"] {
+  --nt-satellite: var(--nt-brand-lens);
+}
+[data-product="trail"] {
+  --nt-satellite: var(--nt-brand-trail);
+}
+[data-product="comet"] {
+  --nt-satellite: var(--nt-brand-comet);
+}
 
 /* The window material shimmers through the tint of a translucent window. The sidebar shows the material
    through the frame's tint, the main panel covers it further with the canvas for legibility. */
@@ -519,9 +539,9 @@
   --nt-panel-background: rgb(17 25 54 / 0.7);
 }
 
-/* The same strengths over the light material: the frame (white) and the canvas of the light block. */
+/* The same strengths over the light material: the frame and the canvas of the light block. */
 :root[data-translucent="true"][data-theme="light"] {
-  --nt-app-background: rgb(255 255 255 / 0.6);
+  --nt-app-background: rgb(233 232 226 / 0.6);
   --nt-panel-background: rgb(245 244 240 / 0.7);
 }
 
