@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import type { FamilyProduct } from '../../src'
 import {
   CopyButton,
   DropdownMenu,
@@ -78,13 +79,16 @@ const KEEP_STORY_STATE = {
 }
 
 /** The products of the family, whose satellite `tokens.css` picks with `data-product`. */
-type Product = 'orbit' | 'halo' | 'fold'
+type Product = FamilyProduct
 
 const PRODUCT_OPTIONS = [
   { value: 'orbit', label: 'Orbit' },
   { value: 'halo', label: 'Halo' },
   { value: 'fold', label: 'Fold' },
-] as const
+  { value: 'lens', label: 'Lens' },
+  { value: 'trail', label: 'Trail' },
+  { value: 'comet', label: 'Comet' },
+] as const satisfies readonly { value: Product; label: string }[]
 
 /** The parts of the page: the start, one component at a time, or whole screens built from them. */
 type Mode = 'home' | 'components' | 'demos'
@@ -399,7 +403,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                   onValueChange={setPlatform}
                 />
               </div>
-              <div className="hidden sm:block">
+              <div className="hidden xl:block">
                 <SegmentedControl<Product>
                   label="Product"
                   size="sm"
@@ -408,7 +412,7 @@ export function DocsPage({ stories }: DocsPageProps): ReactNode {
                   onValueChange={setProduct}
                 />
               </div>
-              <div className="sm:hidden">
+              <div className="xl:hidden">
                 <DropdownMenu
                   label="Product"
                   align="end"

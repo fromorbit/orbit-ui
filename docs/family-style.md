@@ -34,7 +34,7 @@ A product's own colour is never a role of the interface (never a word, a line, a
 - The product rules stand after the light block and the light block never repeats the satellite, so a `data-theme` further in cannot take it back.
 - A host can also set `--nt-satellite` itself.
 
-The gallery has a switch for it (Orbit, Halo, Fold): the dot beside "UI" in its head is the satellite.
+The gallery has a switch for it (Orbit, Halo, Fold, Lens, Trail, Comet): the dot beside "UI" in its head is the satellite.
 
 ## The shell: three layers
 
@@ -46,12 +46,15 @@ The window of an app of the family has three layers, deepest first, the same ord
 
 The side panel and the content float together as one plane on the frame: a 12px corner at the top start, a hairline in `border-strong` along the top and the start edge, and a hairline in `border` between the side panel and the content. Each step between three layers is half as large as the one step between two (1.03:1 to 1.06:1), too small to be an edge on its own; that is why the floating plane has lines where two planes side by side have none.
 
-- **`AppRail`**: 68px wide; each item a link of 56px wide and at least 52px high, radius 8px, an icon of 20px over its label in 11px/500. At rest muted, under the pointer `surface-hover`, open on `row-active` in `fg` with `aria-current="page"`. Beside the open item stands its satellite, a dot of 4px (`data-product` on the item), never the plane or the words. The narrow rail of 56px keeps only the icons, each still named by its label. Every icon and word is a prop: the kit draws no symbol of an app.
-- **`SideNav`**: a head on a row of 32px, groups 24px apart (`--nt-space-group`) under the `SectionHeading` of every list (12px/500 muted), rows of 32px (`--nt-control-md`) and 13px, radius 8px, 1px apart. At rest `secondary`, open on `row-active` in `fg` at 500, no check beside it. A count or short value at the end in 11px DM Mono, muted, secondary on the open row.
+- **`AppRail`**: 72px wide; each item 60px wide (6px of inset on either side) and at least 52px high, radius 8px, an icon of 20px over its label in 11px/500, never cut off ("Instellingen" is 55.6px in Outfit, more in a fallback font). At rest muted, under the pointer `surface-hover`, open on `row-active` in `fg` with `aria-current="page"`. Beside the open item stands its satellite, a dot of 4px (`data-product` on the item), never the plane or the words. The narrow rail of 56px (items of 44px) keeps only the icons, each named by its label and showing it in a tooltip; the host chooses it, the rail does not narrow itself. The rail scrolls in a short window, so its foot stays within reach. An item is a link (`href`, with `onNavigate` for a host that routes itself) or, with `onSelect`, a button of the same shape (help that opens a dialog). Every icon and word is a prop: the kit draws no symbol of an app.
+- **`SideNav`**: a head on a row of 32px, groups 24px apart (`--nt-space-group`) under the `SectionHeading` of every list (12px/500 muted), rows of 32px (`--nt-control-md`) and 13px, radius 8px, 1px apart. Its words stand 8px in (`px-2`), on the line of the group heading. At rest `secondary`, under the pointer `surface-hover`, open on `row-active` in `fg` at 500, no check beside it. A count or short value at the end in 11px DM Mono, muted, secondary on the open row.
+- **One hover for the shell**: `surface-hover` on the rail and in the side panel alike. Both take `onIntent(href)` on hover and focus, so a host can prefetch what an item leads to.
 
-**A status on the frame is a glyph, never a word.** The status colours as words are tested on the canvas and a card; on the light frame the green of a word reaches only 4.3:1. On the rail or the top bar a state is a `StatusMark` or a dot beside a word in `fg`, `secondary` or `muted`.
+**A status on the frame is a glyph, never a word.** The status colours as words are tested on the canvas, the side panel and a card; on the light frame the green of a word reaches only 4.3:1. On the rail or the top bar a state is a `StatusMark` or a dot beside a word in `fg`, `secondary` or `muted`. **The side panel is a ground for a status word**: green reaches 4.6:1 on it in light, ochre 4.8:1 and red 4.9:1 (`tokens.test.ts`), so a row of `SideNav` may say "Mislukt" in red.
 
 The canvas keeps everything that floats on it white in light: a card, a menu, the composer, a plane of its own (`--nt-plane`). The frame of 0.4.0 was white too; from the shell it is a step below Paper again, so the three layers do not turn round. A host that kept its own white column on the frame (a sidebar of its own), or that relied on the hairline beside it (`shadow-frame-edge`, still the edge in light), checks it against the deeper frame.
+
+Two things have no variant for the side panel, on purpose. `--nt-frame-edge` stays the hairline in light: it is the edge of a host's own column on the frame (the sidebar of the desktop app), which still meets the canvas there without a plane between them; the shell itself draws its lines from `border-strong` and `border`. And the translucent window tints only the frame and the canvas: the side panel lies inside the floating plane, which covers the material as the canvas does, so a tint of its own would only let the material shimmer through the middle of the content.
 
 ## Status marks (the minor after 0.2.0)
 

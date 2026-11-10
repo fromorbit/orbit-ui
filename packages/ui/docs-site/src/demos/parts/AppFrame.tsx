@@ -3,7 +3,9 @@ import {
   AppRail,
   AppRailItem,
   Avatar,
+  Button,
   DropdownMenu,
+  type FamilyProduct,
   Icon,
   IconButton,
   type IconName,
@@ -114,7 +116,7 @@ interface App {
   id: string
   label: string
   icon: IconName
-  product: string
+  product: FamilyProduct
   demo: string
 }
 
@@ -161,8 +163,6 @@ export function AppFrame({
     if (place?.demo !== undefined && place.demo !== current) location.hash = `#/demo/${place.demo}`
   }
   const here = places.find((place) => place.id === current)
-  // A place without a demo of its own stays on the screen that is open.
-  const self = here?.demo ?? places.find((place) => place.demo !== undefined)?.demo ?? ''
   const onRail = openOnRail(product, current)
   const app = product === 'orbit' ? 'Orbit' : 'Halo'
   return (
@@ -197,13 +197,9 @@ export function AppFrame({
         </span>
         <DropdownMenu
           trigger={
-            <button
-              type="button"
-              aria-label={`Account van ${ME}`}
-              className="no-drag flex rounded-full outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
+            <Button variant="ghost" size="sm" aria-label={`Account van ${ME}`}>
               <Avatar name={ME} size="sm" />
-            </button>
+            </Button>
           }
           label="Account"
           align="end"
@@ -258,15 +254,26 @@ export function AppFrame({
               }
             >
               <SideNavGroup>
-                {places.map((place) => (
-                  <SideNavLink
-                    key={place.id}
-                    label={place.label}
-                    href={`#/demo/${place.demo ?? self}`}
-                    current={place.id === current}
-                    {...(place.trailing === undefined ? {} : { meta: place.trailing })}
-                  />
-                ))}
+                {places.map((place) =>
+                  place.demo === undefined ? (
+                    // A place without a demo of its own is words, never a link to the screen
+                    // that is already open.
+                    <li
+                      key={place.id}
+                      className="flex h-(--nt-control-md) items-center px-2 text-[13px] text-secondary"
+                    >
+                      {place.label}
+                    </li>
+                  ) : (
+                    <SideNavLink
+                      key={place.id}
+                      label={place.label}
+                      href={`#/demo/${place.demo}`}
+                      current={place.id === current}
+                      {...(place.trailing === undefined ? {} : { meta: place.trailing })}
+                    />
+                  ),
+                )}
               </SideNavGroup>
             </SideNav>
             {aside === undefined ? null : <div className="px-2 pb-4">{aside}</div>}
