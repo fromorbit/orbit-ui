@@ -38,6 +38,19 @@ test('the rows stand in an outlined region without a fill, with a line between t
   expect(card?.className).not.toContain('divide-y')
 })
 
+test('clips the rows to its round corners', () => {
+  // The hover plane of a SettingFoldRow as the first or last row would stick out of the corner;
+  // the rows draw their focus rings inside (`-outline-offset-2`) or 16px in, so none is cut.
+  const { container } = render(
+    <SettingsGroup title="Agents">
+      <p>een</p>
+    </SettingsGroup>,
+  )
+  expect(container.querySelector('[data-nt-settings-card]')?.className.split(' ')).toContain(
+    'overflow-hidden',
+  )
+})
+
 test('a card whose rows all draw nothing is not drawn, nor is its heading', () => {
   // `:has()` is layout's business, so Orbit's end-to-end tests measure it; here the rule
   // that carries it is pinned to the card and the group.

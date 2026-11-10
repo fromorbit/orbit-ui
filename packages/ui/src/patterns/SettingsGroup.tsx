@@ -20,7 +20,9 @@ export interface SettingsGroupProps {
  * both themes: a hairline in `border` round the rows and between them, `rounded-lg`, and no fill or
  * shadow. It used to be a plane (a tint in dark, white with a shadow in light), which made every
  * group a box on the page; the line alone groups the rows, and a card that stands as an object of
- * its own (`PlanCard`, `StatTile`) keeps its plane. A group without rows draws no empty card, so
+ * its own (`PlanCard`, `StatTile`) keeps its plane. The card clips its rows to its corners
+ * (`overflow-hidden`), so the hover of a `SettingFoldRow` at the top or foot stays inside; the
+ * rows draw their focus rings inward or 16px in, so none is cut. A group without rows draws no empty card, so
  * "no extensions yet" is just the heading with its action. The space between groups (24px,
  * `gap-6`) belongs to the screen that stacks them.
  *
@@ -35,7 +37,7 @@ export function SettingsGroup({ title, action, children }: SettingsGroupProps) {
   const card = hasRows ? (
     <div
       data-nt-settings-card
-      className="rounded-lg border border-border [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
+      className="overflow-hidden rounded-lg border border-border [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
     >
       {children}
     </div>
