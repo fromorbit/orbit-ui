@@ -286,3 +286,22 @@ describe('the overview of what is missing', () => {
     expect(Object.keys(MISSING).filter((name) => !used.has(name as MissingName))).toEqual([])
   })
 })
+
+describe('the settings demo', () => {
+  test('the settings demo switches a setting from anywhere in its row', async () => {
+    const settings = DEMOS.find((demo) => demo.slug === 'instellingen')
+    if (!settings) throw new Error('No settings demo')
+    render(
+      <UiProvider locale="nl-NL">
+        {createElement(settings.Screen, { variant: 'repository' })}
+      </UiProvider>,
+    )
+    const trusted = screen.getByRole('switch', { name: 'Vertrouwd' })
+    expect(trusted).toBeChecked()
+    // The line under the title is part of the row's label, so a click on it switches too.
+    await userEvent.click(screen.getByText('Start zonder te vragen; alleen voor je eigen team'))
+    expect(trusted).not.toBeChecked()
+    await userEvent.click(screen.getByText('Vertrouwd'))
+    expect(trusted).toBeChecked()
+  })
+})
