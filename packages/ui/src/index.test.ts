@@ -20,6 +20,7 @@ const INTERNAL: Record<string, string> = {
   'patterns/markdown-cache': 'the parse cache of Prose',
   'patterns/patch-headers': 'how PierreDiff completes a patch',
   'patterns/scroll-to-line': 'how PierreFile scrolls to a line',
+  'patterns/setting-text': 'the text rules SettingRow and SettingSwitchRow share',
   'patterns/shiki-bundle': 'the Shiki alias of the build, never imported by name',
   'primitives/hand-back': 'how the overlays hand focus back',
 }

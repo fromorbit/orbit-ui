@@ -115,11 +115,31 @@ test('keeps the switch on the right at every width', () => {
   expect(row?.firstElementChild?.className).toContain('min-w-0')
 })
 
-test('is 32px at the least, taller only by its line', () => {
+test('stands as high as a SettingRow: 48px at the least, the title on a line of 24px', () => {
   const { container } = render(<Row />)
   const row = container.querySelector('label')
-  expect(row?.className).toContain('min-h-8')
-  expect(row?.className).toContain('px-4')
+  const classes = row?.className.split(' ') ?? []
+  expect(classes).toEqual(expect.arrayContaining(['min-h-12', 'py-3', 'px-4']))
+  expect(classes).not.toContain('min-h-8')
+  const title = screen.getByText('Elke nieuwe pull request beoordelen')
+  expect(title.className.split(' ')).toContain('leading-6')
+})
+
+test('ends the line without a full stop, as SettingRow does', () => {
+  render(<Row description="Lens begint als een pull request opent." />)
+  expect(screen.getByText('Lens begint als een pull request opent')).toBeVisible()
+  expect(control()).toHaveAccessibleDescription('Lens begint als een pull request opent')
+})
+
+test('leaves its words selectable, so a repository name can be copied', () => {
+  const { container } = render(<Row />)
+  expect(container.querySelector('label')?.className).not.toContain('select-none')
+})
+
+test('marks its wrapper as a switch row of its own, not as a SettingRow', () => {
+  const { container } = render(<Row />)
+  expect(container.querySelector('[data-nt-setting-switch-row]')).not.toBeNull()
+  expect(container.querySelector('[data-nt-setting-row]')).toBeNull()
 })
 
 test('turns the switch off and says why when the row is dimmed', async () => {

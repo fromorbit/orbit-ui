@@ -1,11 +1,7 @@
 import { type ReactNode, useId } from 'react'
 import { Tooltip } from '../overlays/Tooltip'
 import { Switch } from '../primitives/Switch'
-
-/** Blank text is no text: a value the caller does not have yet never becomes an empty line. */
-function present(text: string | undefined): string | undefined {
-  return text === undefined || text.trim() === '' ? undefined : text
-}
+import { present, withoutFullStop } from './setting-text'
 
 /** The props of `SettingSwitchRow`. */
 export interface SettingSwitchRowProps {
@@ -13,12 +9,15 @@ export interface SettingSwitchRowProps {
   label: string
   /**
    * Drawn in place of `label`, holding the same text: a repository in DM Mono, or the label with
-   * the letters a search hit in `<mark>`. The accessible name is still `label`.
+   * the letters a search hit in `<mark>`. The accessible name is still `label`. Words and marks
+   * only, never a link or a button: it is `aria-hidden` inside the row's `<label>`, so a control in
+   * it would be unreachable for a screen reader and its click would toggle the switch.
    */
   labelContent?: ReactNode
   /**
-   * The explanation under the title (12px, `muted`), read as the switch's description. It wraps
-   * onto as many lines as it needs: a row of a switch has room for a sentence, and is never cut.
+   * The explanation under the title (12px, `muted`), read as the switch's description, without a
+   * full stop at its end like the line of a `SettingRow`. It wraps onto as many lines as it needs:
+   * a row of a switch has room for a sentence, and is never cut.
    */
   description?: string
   /** A quiet word before the switch, such as the profile of a repository ("Assertief"). */
@@ -43,9 +42,13 @@ export interface SettingSwitchRowProps {
  * `CheckboxField` is clickable as a whole but sets its box on the left. Here the row is a
  * `<label>`, so a click anywhere in it toggles the switch, and the switch stays the one tab stop.
  *
- * The row is 32px at the least (`--nt-control-md`) with 16px at the sides, and grows by its
- * explanation: one with a line under the title stands as high as a `SettingRow`. The switch stays
- * on the right and centred at every width; the words wrap instead.
+ * The measures are those of a `SettingRow`: 12px above and under, 16px at the sides, the title on
+ * a line of 24px, so a row is 48px at the least and 64px with one line of explanation, and the two
+ * stand in one group at one rhythm. The switch stays on the right and centred at every width; the
+ * words wrap instead, and stay selectable, so a repository name can be copied.
+ *
+ * The wrapper carries `data-nt-setting-switch-row`, its own mark rather than `data-nt-setting-row`:
+ * a host that finds the rows of a `SettingRow` by that mark expects its inner structure.
  */
 export function SettingSwitchRow({
   label,
@@ -62,7 +65,7 @@ export function SettingSwitchRow({
   const metaId = useId()
   const reasonId = useId()
 
-  const line = present(description)
+  const line = withoutFullStop(present(description))
   const quiet = present(meta)
   const reason = present(dimmed)
   const off = disabled || reason !== undefined
@@ -75,10 +78,10 @@ export function SettingSwitchRow({
   const row = (
     // biome-ignore lint/a11y/noLabelWithoutControl: the control is the Switch inside, a button.
     <label
-      className={`flex min-h-8 items-center gap-x-6 px-4 py-1.5 select-none ${off ? '' : 'cursor-pointer'}`}
+      className={`flex min-h-12 items-center gap-x-6 px-4 py-3 ${off ? '' : 'cursor-pointer'}`}
     >
       <span className="flex min-w-0 flex-1 flex-col">
-        <span id={labelId} className="text-[13px] leading-5 text-fg">
+        <span id={labelId} className="text-[13px] leading-6 text-fg">
           {labelContent === undefined ? (
             label
           ) : (
@@ -119,7 +122,7 @@ export function SettingSwitchRow({
   )
 
   return (
-    <div data-nt-setting-row data-nt-setting-switch-row>
+    <div data-nt-setting-switch-row>
       {reason === undefined ? row : <Tooltip label={reason}>{row}</Tooltip>}
     </div>
   )

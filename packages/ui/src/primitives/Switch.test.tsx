@@ -103,6 +103,21 @@ test('on is the accent fill with a thumb in the colour of its words', () => {
   )
 })
 
+test('carries its state on the track and the thumb, and dims at 40% when disabled', () => {
+  // The `data-[state=checked]:` classes only take hold if Radix puts the state on both parts.
+  const { container, rerender } = render(
+    <Switch label="Netwerktoegang" checked onCheckedChange={vi.fn()} />,
+  )
+  const track = container.querySelector('button')
+  const thumb = container.querySelector('button > span')
+  expect(track).toHaveAttribute('data-state', 'checked')
+  expect(thumb).toHaveAttribute('data-state', 'checked')
+  rerender(<Switch label="Netwerktoegang" checked={false} disabled onCheckedChange={vi.fn()} />)
+  expect(track).toHaveAttribute('data-state', 'unchecked')
+  expect(thumb).toHaveAttribute('data-state', 'unchecked')
+  expect(track?.className.split(' ')).toContain('disabled:opacity-40')
+})
+
 test('never takes the violet of a link or the satellite of a product', () => {
   const { track, thumb } = parts(true)
   // Every colour class of the track and the thumb; the focus ring (`outline-focus`) is the one
