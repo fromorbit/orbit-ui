@@ -55,6 +55,7 @@ import searchListModelsStory from '../patterns/SearchList.models.gallery'
 import selectionBarStory from '../patterns/SelectionBar.gallery'
 import settingFoldRowStory from '../patterns/SettingFoldRow.gallery'
 import settingRowStory from '../patterns/SettingRow.gallery'
+import settingSwitchRowStory from '../patterns/SettingSwitchRow.gallery'
 import settingsGroupStory from '../patterns/SettingsGroup.gallery'
 import severityBarStory from '../patterns/SeverityBar.gallery'
 import shelfGroupStory from '../patterns/ShelfGroup.gallery'
@@ -188,6 +189,7 @@ export const stories: Story[] = collectStories([
   selectionBarStory,
   settingFoldRowStory,
   settingRowStory,
+  settingSwitchRowStory,
   settingsGroupStory,
   severityBarStory,
   shelfGroupStory,
