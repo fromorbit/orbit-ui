@@ -100,3 +100,33 @@ test('a click or Space chooses it, and focus or the pointer makes it active', as
   await userEvent.keyboard(' ')
   expect(onChoose).toHaveBeenCalledTimes(2)
 })
+
+test('number, tag and description step up to secondary on the plane of hover or choice', () => {
+  // Muted on `surface-hover` over a card falls under AA (`tokens.test.ts`); the row is the group
+  // whose hover and checked state lift its quiet parts.
+  render(
+    <ChoiceRow
+      kind="radio"
+      number={1}
+      label="Som per tarief"
+      tag="Aanbevolen"
+      description="Een regel per tarief"
+      checked={false}
+      tabbable
+      onChoose={() => {}}
+    />,
+  )
+  const row = screen.getByRole('radio', { name: /Som per tarief/ })
+  expect(row.className.split(' ')).toContain('group')
+  const quiet = [
+    within(row).getByText('1'),
+    within(row).getByText('Aanbevolen'),
+    within(row).getByText('Een regel per tarief'),
+  ]
+  for (const part of quiet) {
+    const classes = part.className.split(' ')
+    expect(classes).toContain('text-muted')
+    expect(classes).toContain('group-hover:text-secondary')
+    expect(classes).toContain('group-aria-checked:text-secondary')
+  }
+})

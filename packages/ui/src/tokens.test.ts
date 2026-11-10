@@ -348,6 +348,17 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     expect(contrastRatio(hexIn(palette, '--nt-text'), plane)).toBeGreaterThanOrEqual(4.5)
   })
 
+  test('the muted words of a hovered or chosen ChoiceRow on a card step up to secondary, which reaches AA there', () => {
+    // A question card lays its rows on a card; the plane of hover or choice (`surface-hover`) over
+    // it brings muted (slate) under AA for 12px text in dark, so `ChoiceRow` lifts its number, tag
+    // and description to secondary on that plane.
+    const row = composite(
+      palette.get('--nt-surface-hover') ?? '',
+      hexIn(palette, '--nt-overlay-background'),
+    )
+    expect(contrastRatio(hexIn(palette, '--nt-text-secondary'), row)).toBeGreaterThanOrEqual(4.5)
+  })
+
   test('--nt-text-muted on a card or menu reaches AA (≥ 4.5)', () => {
     expect(
       contrastRatio(hexIn(palette, '--nt-text-muted'), hexIn(palette, '--nt-overlay-background')),

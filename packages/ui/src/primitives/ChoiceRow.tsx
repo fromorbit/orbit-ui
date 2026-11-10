@@ -21,6 +21,13 @@ export interface ChoiceRowProps {
 }
 
 /**
+ * The quiet parts of a row (number, tag, description), one step brighter while the row carries the
+ * plane of hover or choice: muted on that plane over a card falls under AA for 12px text in the
+ * family style, secondary holds it (`tokens.test.ts`).
+ */
+const QUIET_ON_PLANE = 'text-muted group-hover:text-secondary group-aria-checked:text-secondary'
+
+/**
  * One option of a question as a full-width row: a number, the label with an optional tag, and a
  * line under it; a checkbox has its square in front of the label, a chosen radio a check at the end.
  *
@@ -61,11 +68,14 @@ export function ChoiceRow({
     onFocus: onActive,
     onMouseEnter: onActive,
     className:
-      'no-drag flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-[13px] outline-focus transition-colors duration-(--nt-duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] aria-checked:bg-surface-hover',
+      'group no-drag flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-[13px] outline-focus transition-colors duration-(--nt-duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] aria-checked:bg-surface-hover',
   }
   return (
     <button {...shared}>
-      <span aria-hidden="true" className="mt-px w-3 shrink-0 font-mono text-[12px] text-muted">
+      <span
+        aria-hidden="true"
+        className={`mt-px w-3 shrink-0 font-mono text-[12px] ${QUIET_ON_PLANE}`}
+      >
         {number ?? ''}
       </span>
       {kind === 'checkbox' ? (
@@ -87,7 +97,7 @@ export function ChoiceRow({
               {' '}
               <span
                 data-nt-choice-tag
-                className="ms-1 rounded-sm border border-border px-1.5 align-middle text-[11px] text-muted"
+                className={`ms-1 rounded-sm border border-border px-1.5 align-middle text-[11px] ${QUIET_ON_PLANE}`}
               >
                 {tag}
               </span>
@@ -95,7 +105,7 @@ export function ChoiceRow({
           )}
         </span>
         {description === undefined ? null : (
-          <span id={descriptionId} className="text-[12px] text-muted">
+          <span id={descriptionId} className={`text-[12px] ${QUIET_ON_PLANE}`}>
             {description}
           </span>
         )}
