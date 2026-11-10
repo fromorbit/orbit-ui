@@ -195,10 +195,6 @@ export function AppFrame({
         <span className="min-w-0 flex-1 truncate text-[13px] text-fg @3xl:invisible">
           {here?.label ?? ''}
         </span>
-        <span className="hidden items-center gap-2 text-[13px] text-secondary @3xl:flex">
-          <ProjectMark name={WORKSPACE} />
-          {WORKSPACE}
-        </span>
         <DropdownMenu
           trigger={
             <button

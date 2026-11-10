@@ -109,7 +109,7 @@ export function AppRailItem({
         <span aria-hidden="true" className="flex size-5 items-center justify-center [&_svg]:size-5">
           {icon}
         </span>
-        <span className={narrow ? 'sr-only' : 'max-w-full truncate px-1'}>{label}</span>
+        <span className={narrow ? 'sr-only' : 'whitespace-nowrap'}>{label}</span>
       </a>
     </li>
   )
