@@ -11,6 +11,7 @@ import sheetStory from '../overlays/Sheet.gallery'
 import spotlightStory from '../overlays/Spotlight.gallery'
 import toastStory from '../overlays/Toast.gallery'
 import tooltipStory from '../overlays/Tooltip.gallery'
+import appRailStory from '../patterns/AppRail.gallery'
 import bannerStory from '../patterns/Banner.gallery'
 import chartStory from '../patterns/Chart.gallery'
 import chartFigureStory from '../patterns/ChartFigure.gallery'
@@ -60,6 +61,7 @@ import settingsGroupStory from '../patterns/SettingsGroup.gallery'
 import severityBarStory from '../patterns/SeverityBar.gallery'
 import shelfGroupStory from '../patterns/ShelfGroup.gallery'
 import shimmerStory from '../patterns/Shimmer.gallery'
+import sideNavStory from '../patterns/SideNav.gallery'
 import stackedRowStory from '../patterns/StackedRow.gallery'
 import statTileStory from '../patterns/StatTile.gallery'
 import statusLineStory from '../patterns/StatusLine.gallery'
@@ -149,6 +151,7 @@ export const stories: Story[] = collectStories([
   spotlightStory,
   toastStory,
   tooltipStory,
+  appRailStory,
   bannerStory,
   chartStory,
   chartFigureStory,
@@ -193,6 +196,7 @@ export const stories: Story[] = collectStories([
   settingsGroupStory,
   severityBarStory,
   shelfGroupStory,
+  sideNavStory,
   shimmerStory,
   stackedRowStory,
   statusLineStory,

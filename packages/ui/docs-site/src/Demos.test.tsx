@@ -217,6 +217,49 @@ describe('every demo', () => {
     for (const name of shown) expect(inventory.missing).toContain(name)
   })
 
+  // Signing in comes before the app, so that one screen stands outside the shell.
+  const inTheApp = DEMOS.filter((demo) => demo.slug !== 'inloggen').map(
+    (demo) => [demo.slug, demo] as const,
+  )
+
+  test.each(inTheApp)(
+    'every demo stands in the shell: a rail, a top bar and one floating plane (%s)',
+    (_slug, demo) => {
+      const { container } = render(
+        <UiProvider locale="nl-NL">{createElement(demo.Screen, {})}</UiProvider>,
+      )
+      const shell = container.querySelector<HTMLElement>('[data-nt-shell]')
+      expect(shell?.className).toContain('bg-frame')
+      // The Midnight gradient of the old sidebar is gone: the frame is one flat layer.
+      expect(container.innerHTML).not.toContain('--nt-sidebar-gradient')
+      const bar = shell?.querySelector<HTMLElement>('[data-nt-shell-top-bar]')
+      expect(bar?.className).toContain('h-12')
+      // No line between the rail and the top bar: both stand on the frame without an edge.
+      expect(bar?.className).not.toMatch(/(^|\s)(bg-|border-|shadow-)/)
+      const rail = shell?.querySelector<HTMLElement>('[data-nt-app-rail]')
+      expect(rail?.querySelector('[aria-current="page"]')).not.toBeNull()
+      const planes = shell?.querySelectorAll<HTMLElement>('[data-nt-shell-plane]') ?? []
+      expect(planes).toHaveLength(1)
+      const plane = planes[0]
+      // A hairline in border-strong above and at the start, a 12px corner at the top start.
+      for (const name of [
+        'border-t',
+        '@3xl:border-s',
+        'border-border-strong',
+        '@3xl:rounded-ss-lg',
+      ]) {
+        expect(plane?.className, name).toContain(name)
+      }
+      // The side panel on its own layer, with a hairline in border towards the content.
+      const side = plane?.querySelector<HTMLElement>('[data-nt-shell-side]')
+      for (const name of ['bg-side-panel', 'border-e', 'border-border']) {
+        expect(side?.className, name).toContain(name)
+      }
+      expect(side?.querySelector('[data-nt-side-nav] [aria-current="page"]')).not.toBeNull()
+      expect(plane?.querySelector('[data-nt-shell-content]')?.className).toContain('bg-canvas')
+    },
+  )
+
   test.each(DEMOS.map((demo) => [demo.slug, demo] as const))(
     '%s says what it is',
     (_slug, demo) => {

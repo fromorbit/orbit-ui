@@ -125,6 +125,12 @@ describe('the docs page', () => {
     expect(document.documentElement.dataset.product).toBe('halo')
   })
 
+  test.each(['Lens', 'Trail', 'Comet'])('offers the satellite of %s as well', async (name) => {
+    render(<DocsPage stories={stories} />)
+    await userEvent.click(screen.getByRole('radio', { name }))
+    expect(document.documentElement.dataset.product).toBe(name.toLowerCase())
+  })
+
   test('folds the list behind a button of the header for a narrow screen', async () => {
     goTo('#/primitives-button')
     render(<DocsPage stories={stories} />)
