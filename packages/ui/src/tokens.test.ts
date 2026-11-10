@@ -291,19 +291,51 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     }
   })
 
-  test('--nt-control-border parts an empty box from the canvas, the frame and a card (≥ 3)', () => {
-    for (const ground of ['--nt-canvas', '--nt-frame', '--nt-overlay-background']) {
+  test('--nt-control-border parts an empty box and an off switch from the canvas, the frame, the side panel and a card (≥ 3)', () => {
+    for (const ground of [
+      '--nt-canvas',
+      '--nt-frame',
+      '--nt-side-panel',
+      '--nt-overlay-background',
+    ]) {
       const edge = composite(palette.get('--nt-control-border') ?? '', hexIn(palette, ground))
       expect(contrastRatio(edge, hexIn(palette, ground)), ground).toBeGreaterThanOrEqual(3)
     }
   })
 
+  test('an on switch and the words of a settings row read on the canvas, the frame, the side panel and a card', () => {
+    // The accent track holds the 3:1 of a control's part; the title and the muted line under it are
+    // text and hold AA, on every plane a row of `SettingSwitchRow` may stand on.
+    for (const ground of [
+      '--nt-canvas',
+      '--nt-frame',
+      '--nt-side-panel',
+      '--nt-overlay-background',
+    ]) {
+      expect(
+        contrastRatio(hexIn(palette, '--nt-accent'), hexIn(palette, ground)),
+        ground,
+      ).toBeGreaterThanOrEqual(3)
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text-muted'), hexIn(palette, ground)),
+        ground,
+      ).toBeGreaterThanOrEqual(4.5)
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text'), hexIn(palette, ground)),
+        ground,
+      ).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
   test('the thumb of an off switch stands out on the canvas, the frame, the side panel and a card (≥ 3)', () => {
     // An off switch is an outline with a muted thumb: the thumb is its one filled mark, so it holds
-    // the 3:1 of a control's part (WCAG 1.4.11) on every plane a row stands on. The side panel
-    // (`--nt-side-panel`) comes with the shell; it is measured as soon as the palette has it.
-    const grounds = ['--nt-canvas', '--nt-frame', '--nt-side-panel', '--nt-overlay-background']
-    for (const ground of grounds.filter((name) => palette.has(name))) {
+    // the 3:1 of a control's part (WCAG 1.4.11) on every plane a row stands on.
+    for (const ground of [
+      '--nt-canvas',
+      '--nt-frame',
+      '--nt-side-panel',
+      '--nt-overlay-background',
+    ]) {
       expect(
         contrastRatio(hexIn(palette, '--nt-text-muted'), hexIn(palette, ground)),
         ground,
