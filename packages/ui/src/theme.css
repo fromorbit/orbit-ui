@@ -18,6 +18,8 @@
   --font-weight-heading: var(--nt-font-weight-heading);
   --color-bg: var(--nt-bg);
   --color-frame: var(--nt-frame);
+  /* The middle layer of the shell: the navigation of one app, between the frame and the canvas. */
+  --color-side-panel: var(--nt-side-panel);
   --color-canvas: var(--nt-canvas);
   --color-row-hover: var(--nt-row-hover);
   --color-row-active: var(--nt-row-active);

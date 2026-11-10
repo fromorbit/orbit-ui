@@ -161,6 +161,7 @@ const requiredTokens = [
   '--nt-shadow-menu',
   '--nt-focus-ring',
   '--nt-frame',
+  '--nt-side-panel',
   '--nt-canvas',
   '--nt-text-secondary',
   '--nt-text-faint',
@@ -183,6 +184,9 @@ const requiredTokens = [
   '--nt-brand-orbit',
   '--nt-brand-halo',
   '--nt-brand-fold',
+  '--nt-brand-lens',
+  '--nt-brand-trail',
+  '--nt-brand-comet',
   '--nt-font-weight-heading',
   '--nt-sidebar-gradient',
 ]
@@ -383,24 +387,51 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     },
   )
 
-  test('the frame and the canvas differ; a hairline parts them only where white meets Paper', () => {
+  test('the frame lies a step below the canvas in both themes; planes, cards and menus stay white in light', () => {
+    // The shell's three layers: the rail and the top bar on the frame, the floating plane of the
+    // side panel and the content above it. The frame is the deepest in both themes; in light
+    // (0.4.0 made it white) it is a step below Paper again, and what floats on the canvas stays
+    // white.
     const frame = relativeLuminance(hexIn(palette, '--nt-frame'))
     const canvas = relativeLuminance(hexIn(palette, '--nt-canvas'))
+    expect(frame).toBeLessThan(canvas)
     if (theme === 'dark') {
-      // The sidebar recedes and the content leads; the brightness is the separation.
-      expect(frame).toBeLessThan(canvas)
+      // The brightness is the separation; no hairline, no shadow under a plane.
       expect(palette.get('--nt-frame-edge')).toBe('transparent')
       expect(palette.get('--nt-shadow-plane')).toBe('0 0 #0000')
     } else {
-      // White regions on a page of Paper, a touch off-white: a hairline is the edge, not a fill.
-      expect(palette.get('--nt-frame')).toBe('#ffffff')
-      expect(palette.get('--nt-plane')).toBe('#ffffff')
-      expect(palette.get('--nt-overlay-background')).toBe('#ffffff')
-      expect(frame).toBeGreaterThan(canvas)
+      for (const white of ['--nt-plane', '--nt-overlay-background', '--nt-composer']) {
+        expect(palette.get(white), white).toBe('#ffffff')
+      }
+      // The hairline beside a sidebar of a host that keeps its own column on the frame.
       expect(palette.get('--nt-frame-edge')).toBe('var(--nt-border)')
     }
     // `bg` stays an alias of the canvas until every use has moved over.
     expect(palette.get('--nt-bg')).toBe('var(--nt-canvas)')
+  })
+
+  test('the side panel lies between the frame and the canvas in both themes', () => {
+    const [frame, side, canvas] = ['--nt-frame', '--nt-side-panel', '--nt-canvas'].map((name) =>
+      relativeLuminance(hexIn(palette, name)),
+    )
+    expect(frame).toBeLessThan(side ?? 0)
+    expect(side).toBeLessThan(canvas ?? 0)
+    expect(themeCss).toContain('--color-side-panel: var(--nt-side-panel);')
+  })
+
+  test('text, secondary and muted text keep their contrast on the side panel', () => {
+    const side = hexIn(palette, '--nt-side-panel')
+    expect(contrastRatio(hexIn(palette, '--nt-text'), side)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(hexIn(palette, '--nt-text-secondary'), side)).toBeGreaterThanOrEqual(7)
+    expect(contrastRatio(hexIn(palette, '--nt-text-muted'), side)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  test('the accent as text, the focus ring and the edge of an empty box stand out on the side panel', () => {
+    const side = hexIn(palette, '--nt-side-panel')
+    expect(contrastRatio(hexIn(palette, '--nt-accent-text'), side)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(hexIn(palette, '--nt-focus-ring'), side)).toBeGreaterThanOrEqual(3)
+    const edge = composite(palette.get('--nt-control-border') ?? '', side)
+    expect(contrastRatio(edge, side)).toBeGreaterThanOrEqual(3)
   })
 
   test('the four text levels step down from text to faint', () => {
@@ -448,9 +479,14 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
   )
 
   test.each(['run', 'fail', 'block', 'stop'])(
-    'the %s mark stands out as a status glyph on canvas, frame and a card (≥ 3)',
+    'the %s mark stands out as a status glyph on canvas, frame, side panel and a card (≥ 3)',
     (kind) => {
-      for (const surface of ['--nt-canvas', '--nt-frame', '--nt-overlay-background']) {
+      for (const surface of [
+        '--nt-canvas',
+        '--nt-frame',
+        '--nt-side-panel',
+        '--nt-overlay-background',
+      ]) {
         expect(
           contrastRatio(hexIn(palette, `--nt-status-${kind}`), hexIn(palette, surface)),
           surface,
@@ -562,6 +598,27 @@ describe('the satellite of a product', () => {
     expect(hexIn(new Map([...tokens, ...rule]), '--nt-satellite')).toBe(hex)
   })
 
+  test('the satellites of Lens, Trail and Comet are fixed colours, declared once', () => {
+    for (const [name, hex] of [
+      ['--nt-brand-lens', '#ffb224'],
+      ['--nt-brand-trail', '#ff4d6d'],
+      ['--nt-brand-comet', '#4da3ff'],
+    ] as const) {
+      expect(tokens.get(name), name).toBe(hex)
+      expect(tokensCss.split(`${name}:`).length - 1, name).toBe(1)
+      expect(lightOnly.has(name), name).toBe(false)
+    }
+  })
+
+  test.each([
+    ['lens', '#ffb224'],
+    ['trail', '#ff4d6d'],
+    ['comet', '#4da3ff'],
+  ])('data-product picks the satellite of Lens, Trail or Comet: %s', (name, hex) => {
+    const rule = product(name)
+    expect(hexIn(new Map([...tokens, ...rule]), '--nt-satellite')).toBe(hex)
+  })
+
   test('is chosen after the light block, so a theme further in cannot take it back', () => {
     expect(tokensCss.indexOf('[data-product="halo"]')).toBeGreaterThan(
       tokensCss.indexOf('\n[data-theme="light"]'),
@@ -569,6 +626,8 @@ describe('the satellite of a product', () => {
   })
 
   test('is no role: no component draws a word, line or plane with it', () => {
-    expect(themeCss).not.toMatch(/--color-(accent|focus|border)[a-z-]*:\s*var\(--nt-satellite\)/)
+    expect(themeCss).not.toMatch(
+      /--color-(accent|focus|border)[a-z-]*:\s*var\(--nt-(satellite|brand-(orbit|halo|fold|lens|trail|comet))\)/,
+    )
   })
 })
