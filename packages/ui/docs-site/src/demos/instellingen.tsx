@@ -22,9 +22,9 @@ import {
   Select,
   SettingFoldRow,
   SettingRow,
+  SettingSwitchRow,
   SettingsGroup,
   StatusMark,
-  Switch,
 } from '../../../src'
 import { galleryLabels } from '../../../src/gallery'
 import type { DemoModule, DemoScreenProps } from '../demo-kit/types'
@@ -69,7 +69,7 @@ function Wide({ children }: { children: ReactNode }): ReactNode {
   )
 }
 
-/** A setting row around a switch that really switches. */
+/** A setting that is on or off, the whole row its label, with a switch that really switches. */
 function SwitchSetting({
   label,
   description,
@@ -81,17 +81,12 @@ function SwitchSetting({
 }): ReactNode {
   const [on, setOn] = useState(initial)
   return (
-    <SettingRow labels={labels} label={label} {...(description ? { description } : {})}>
-      {({ labelId, describedById }) => (
-        <Switch
-          label={label}
-          aria-labelledby={labelId}
-          aria-describedby={describedById}
-          checked={on}
-          onCheckedChange={setOn}
-        />
-      )}
-    </SettingRow>
+    <SettingSwitchRow
+      label={label}
+      {...(description ? { description } : {})}
+      checked={on}
+      onCheckedChange={setOn}
+    />
   )
 }
 
@@ -464,7 +459,7 @@ const PAY_NOW = 'Nu betalen met iDEAL'
  * The failed direct debit first, as on Gebruik, with the one step that settles it; then the plan
  * the workspace is on beside the one above it, and how it is paid: two plans rather than a table of
  * every plan, so the choice stays small, and the whole of the usage on its own page. The plans lie
- * on the tint of the settings groups under them, so the column speaks one region language.
+ * on the quiet tint of `surface`: each stands as an object of its own above the outlined groups.
  */
 function Subscription(): ReactNode {
   return (

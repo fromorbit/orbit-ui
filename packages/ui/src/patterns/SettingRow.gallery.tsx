@@ -7,8 +7,8 @@ import { nl } from '../testing/labels'
 import { SettingRow, type SettingRowProps } from './SettingRow'
 
 /**
- * The card a row stands in on the screen, at the width of the settings column: the plane of a
- * `SettingsGroup`, a white card with a hairline in light.
+ * The card a row stands in on the screen, at the width of the settings column: the outlined
+ * region of a `SettingsGroup`, a hairline without a fill.
  */
 function Card({
   width = 'w-full max-w-[560px]',
@@ -19,7 +19,7 @@ function Card({
 }) {
   return (
     <TooltipProvider>
-      <div className={`${width} rounded-lg bg-plane shadow-plane`}>{children}</div>
+      <div className={`${width} rounded-lg border border-border`}>{children}</div>
     </TooltipProvider>
   )
 }

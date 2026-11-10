@@ -2,19 +2,7 @@ import { type ReactNode, useId, useRef } from 'react'
 import { Tooltip } from '../overlays/Tooltip'
 import { Icon } from '../primitives/Icon'
 import { IconButton } from '../primitives/IconButton'
-
-/** Blank text is no text: a value the caller does not have yet never becomes an empty line. */
-function present(text: string | undefined): string | undefined {
-  return text === undefined || text.trim() === '' ? undefined : text
-}
-
-/**
- * The line of explanation without a full stop at its end: one form for every row, whatever its
- * catalogue spelt, and room for "· Na herstart" behind it. An ellipsis stays.
- */
-function withoutFullStop(text: string | undefined): string | undefined {
-  return text?.trim().replace(/(?<!\.)\.$/, '')
-}
+import { present, withoutFullStop } from './setting-text'
 
 /**
  * The classes of what a row shows only under the pointer or with the focus in it — the way back

@@ -273,7 +273,7 @@ function LongName() {
   )
 }
 
-/** Plans among settings: on the plane of a `SettingsGroup`, the current one lifted, without a button. */
+/** Plans among settings: on the quiet tint of `surface`, the current one lifted, without a button. */
 function OnSurface() {
   return (
     <div className="w-full max-w-2xl">

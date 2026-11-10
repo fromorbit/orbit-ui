@@ -34,8 +34,8 @@ export interface PlanFeature {
 
 /**
  * The plane a plan lies on: `overlay`, the plane of a card on the canvas (the default), or
- * `surface`, the tint of a `SettingsGroup`, for plans among settings, so one column speaks one
- * region language.
+ * `surface`, the quiet tint of a region, for plans among settings, which sit beside the outlined
+ * groups of that column.
  */
 export type PlanCardPlane = 'overlay' | 'surface'
 
@@ -187,7 +187,7 @@ function describedAction(action: ReactNode, nameId: string): ReactNode {
  * one action at the foot; the plan the workspace is on is marked.
  *
  * An `<article>` named by the plan, on the plane of a card (`bg-overlay`, 12px, no frame) or, among
- * settings, on the tint of a `SettingsGroup` (`plane="surface"`), so plans read as regions by their
+ * settings, on the quiet tint of `surface` (`plane="surface"`), so plans read as regions by their
  * tint and a screen reader can jump from plan to plan. Three rows 24px apart — the name, the price
  * and who it is for; the features with what the caller adds; the foot — with the lines of a row
  * 8px apart (Proximity). The name is the 15px/600 of a card, the price the 20px of a figure with

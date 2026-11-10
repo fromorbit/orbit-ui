@@ -62,27 +62,73 @@ test('aria-describedby lands on the switch', () => {
   expect(screen.getByRole('switch')).toHaveAccessibleDescription('Uitleg over deze schakelaar.')
 })
 
-// The thumb was `bg-white` in both states; on the checked (cyan) track that gives a contrast of
-// only 2.05. It now takes its colour from tokens, with an explicit colour for the checked state.
-test('the thumb is one white knob with a hairline in both states, from tokens', () => {
-  // Off used to be a dark knob on an all but invisible track, which in light read as on.
+/** The track and the thumb of a rendered switch. */
+function parts(checked: boolean): { track: string; thumb: string } {
   const { container } = render(
-    <Switch label="Netwerktoegang" checked={false} onCheckedChange={vi.fn()} />,
+    <Switch label="Netwerktoegang" checked={checked} onCheckedChange={vi.fn()} />,
   )
-  const thumb = container.querySelector('button > span')
-  expect(thumb?.className).toContain('bg-accent-fg')
-  expect(thumb?.className).toContain('ring-border-strong')
-  expect(thumb?.className).not.toContain('bg-white')
-  expect(thumb?.className).not.toContain('bg-fg')
+  return {
+    track: container.querySelector('button')?.className ?? '',
+    thumb: container.querySelector('button > span')?.className ?? '',
+  }
+}
+
+// These replace "one white knob with a hairline in both states" and "the off track is the neutral
+// of 3:1": the family draws off as an outline. The edge of an empty box (`control-border`) holds
+// 3:1 on every plane and the muted thumb does too (`tokens.test.ts`), so the off state keeps the
+// requirement of WCAG 1.4.11 that the filled `border-focus` track met.
+test('off is an outlined track with a muted thumb, the edge of an empty box', () => {
+  const { track, thumb } = parts(false)
+  expect(track.split(' ')).toEqual(
+    expect.arrayContaining(['border-[1.5px]', 'border-control-border', 'bg-transparent']),
+  )
+  expect(track).not.toContain('bg-border-focus')
+  expect(thumb.split(' ')).toEqual(expect.arrayContaining(['size-[11px]', 'bg-muted']))
+  expect(thumb).not.toContain('ring-')
 })
 
-test('the off track is the neutral of 3:1, the on track the accent', () => {
-  const { container } = render(
-    <Switch label="Netwerktoegang" checked={false} onCheckedChange={vi.fn()} />,
+test('on is the accent fill with a thumb in the colour of its words', () => {
+  const { track, thumb } = parts(true)
+  expect(track.split(' ')).toEqual(
+    expect.arrayContaining([
+      'data-[state=checked]:bg-accent',
+      'data-[state=checked]:border-accent',
+    ]),
+  )
+  expect(thumb.split(' ')).toEqual(
+    expect.arrayContaining([
+      'data-[state=checked]:bg-accent-fg',
+      'data-[state=checked]:translate-x-4',
+    ]),
+  )
+})
+
+test('carries its state on the track and the thumb, and dims at 40% when disabled', () => {
+  // The `data-[state=checked]:` classes only take hold if Radix puts the state on both parts.
+  const { container, rerender } = render(
+    <Switch label="Netwerktoegang" checked onCheckedChange={vi.fn()} />,
   )
   const track = container.querySelector('button')
-  expect(track?.className).toContain('bg-border-focus')
-  expect(track?.className).toContain('data-[state=checked]:bg-accent')
+  const thumb = container.querySelector('button > span')
+  expect(track).toHaveAttribute('data-state', 'checked')
+  expect(thumb).toHaveAttribute('data-state', 'checked')
+  rerender(<Switch label="Netwerktoegang" checked={false} disabled onCheckedChange={vi.fn()} />)
+  expect(track).toHaveAttribute('data-state', 'unchecked')
+  expect(thumb).toHaveAttribute('data-state', 'unchecked')
+  expect(track?.className.split(' ')).toContain('disabled:opacity-40')
+})
+
+test('never takes the violet of a link or the satellite of a product', () => {
+  const { track, thumb } = parts(true)
+  // Every colour class of the track and the thumb; the focus ring (`outline-focus`) is the one
+  // violet every control shares, and is not the switch's own colour.
+  const colours = `${track} ${thumb}`
+    .split(' ')
+    .filter((name) => /(^|:)(bg|border|ring|fill|text)-/.test(name))
+  expect(colours.length).toBeGreaterThan(0)
+  for (const name of colours) {
+    expect(name).not.toMatch(/accent-text|accent-subtle|satellite|violet|brand|focus|kind-/)
+  }
 })
 
 test('the thumb slides, and stands still when motion is reduced', () => {
