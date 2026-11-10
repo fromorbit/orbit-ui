@@ -15,7 +15,10 @@ test('a group is named by its title', () => {
   expect(screen.getByRole('heading', { name: 'Nieuwe chats' })).toBeInTheDocument()
 })
 
-test('the rows stand in one card, with a line between them', () => {
+// Replaces "the rows stand in one card": the family draws a group of rows as an outlined region
+// in both themes, no longer as a tinted or white plane with a shadow (0.4.0). The line between the
+// rows is held as strictly as before.
+test('the rows stand in an outlined region without a fill, with a line between them', () => {
   const { container } = render(
     <SettingsGroup title="Nieuwe chats">
       <p>een</p>
@@ -24,11 +27,15 @@ test('the rows stand in one card, with a line between them', () => {
   )
   const card = container.querySelector('[data-nt-settings-card]')
   expect(card?.children).toHaveLength(2)
+  const classes = card?.className.split(' ') ?? []
+  expect(classes).toEqual(expect.arrayContaining(['rounded-lg', 'border', 'border-border']))
+  // No plane of its own: no fill, no shadow, no tint.
+  expect(classes.filter((name) => /^(bg|shadow)-/.test(name))).toEqual([])
   // The line goes between two rows that draw something, so a row that draws nothing (a `custom`
   // control with nothing to show) leaves no stray line behind.
-  expect(card?.className).toContain('[&>:not(:empty)~:not(:empty)]:border-t')
+  expect(classes).toContain('[&>:not(:empty)~:not(:empty)]:border-t')
+  expect(classes).toContain('[&>:not(:empty)~:not(:empty)]:border-border')
   expect(card?.className).not.toContain('divide-y')
-  expect(card?.className).toContain('rounded-lg')
 })
 
 test('a card whose rows all draw nothing is not drawn, nor is its heading', () => {

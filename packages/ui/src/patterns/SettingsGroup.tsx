@@ -16,10 +16,13 @@ export interface SettingsGroupProps {
  * card with a line between each.
  *
  * The heading is `SectionHeading` at level 2 — the heading of every group of rows in the app, not
- * a copy of its classes — and carries no sentence under it. The card is the frame the screen already had — `rounded-lg`,
- * a border, `surface`. A group without rows draws no empty card, so "no extensions yet" is just
- * the heading with its action. The space between groups belongs to the screen
- * that stacks them.
+ * a copy of its classes — and carries no sentence under it. The card is an outlined region, in
+ * both themes: a hairline in `border` round the rows and between them, `rounded-lg`, and no fill or
+ * shadow. It used to be a plane (a tint in dark, white with a shadow in light), which made every
+ * group a box on the page; the line alone groups the rows, and a card that stands as an object of
+ * its own (`PlanCard`, `StatTile`) keeps its plane. A group without rows draws no empty card, so
+ * "no extensions yet" is just the heading with its action. The space between groups (24px,
+ * `gap-6`) belongs to the screen that stacks them.
  *
  * A row may also draw nothing once it renders — a `custom` control with nothing to show, such as
  * Backend where there is no WSL — which React cannot tell before. CSS can: a card whose children are
@@ -32,7 +35,7 @@ export function SettingsGroup({ title, action, children }: SettingsGroupProps) {
   const card = hasRows ? (
     <div
       data-nt-settings-card
-      className="rounded-lg bg-plane shadow-plane [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
+      className="rounded-lg border border-border [&:not(:has(>:not(:empty)))]:hidden [&>:not(:empty)~:not(:empty)]:border-t [&>:not(:empty)~:not(:empty)]:border-border"
     >
       {children}
     </div>
