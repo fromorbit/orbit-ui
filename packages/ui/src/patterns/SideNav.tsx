@@ -28,7 +28,7 @@ export function SideNav({ label, head, children }: SideNavProps) {
       className="flex min-h-0 flex-col gap-2 px-2 pt-2.5 pb-4"
     >
       {head === undefined ? null : (
-        <div className="flex h-(--nt-control-md) shrink-0 items-center px-2.5 text-fg">{head}</div>
+        <div className="flex h-(--nt-control-md) shrink-0 items-center px-2 text-fg">{head}</div>
       )}
       <div data-nt-side-nav-groups className="flex flex-col gap-(--nt-space-group)">
         {children}
@@ -82,12 +82,16 @@ export interface SideNavLinkProps {
   mono?: boolean
   /** Takes a plain click instead of the browser, so the host routes without a reload. */
   onNavigate?: (href: string) => void
+  /** Called on hover and on focus with the `href`, so the host can prefetch what it leads to. */
+  onIntent?: (href: string) => void
 }
 
 /**
  * One place in a `SideNav`: a row of 32px (`--nt-control-md`), 13px, radius 8px. At rest in
- * `secondary`, under the pointer on `row-hover`; open on `row-active` in `fg` at 500. The meta of
- * the open row steps up to secondary through `theme.css`, as on every lit row.
+ * `secondary`, under the pointer on `surface-hover` (the hover of `AppRail` too, one role for the
+ * whole shell); open on `row-active` in `fg` at 500. The meta of
+ * the open row steps up to secondary through `theme.css`, as on every lit row. Its words stand
+ * 8px in (`px-2`), on the line of the group heading, as in every list of the kit.
  */
 export function SideNavLink({
   label,
@@ -96,17 +100,21 @@ export function SideNavLink({
   meta,
   mono = false,
   onNavigate,
+  onIntent,
 }: SideNavLinkProps) {
+  const intent = onIntent === undefined ? undefined : () => onIntent(href)
   const tone = current
     ? 'bg-row-active font-medium text-fg'
-    : 'text-secondary hover:bg-row-hover hover:text-fg'
+    : 'text-secondary hover:bg-surface-hover hover:text-fg'
   return (
     <li>
       <a
         href={href}
         aria-current={current ? 'page' : undefined}
         onClick={navClick(href, onNavigate)}
-        className={`no-drag flex h-(--nt-control-md) min-w-0 items-center gap-2 rounded-md px-2.5 text-[13px] no-underline outline-focus transition-colors duration-(--nt-duration-fast) ease-(--nt-ease) focus-visible:outline-2 focus-visible:-outline-offset-2 ${tone}`}
+        onMouseEnter={intent}
+        onFocus={intent}
+        className={`no-drag flex h-(--nt-control-md) min-w-0 items-center gap-2 rounded-md px-2 text-[13px] no-underline outline-focus transition-colors duration-(--nt-duration-fast) ease-(--nt-ease) focus-visible:outline-2 focus-visible:-outline-offset-2 ${tone}`}
       >
         <span className={mono ? 'min-w-0 truncate font-mono' : 'min-w-0 truncate'}>{label}</span>
         {meta === undefined ? null : (

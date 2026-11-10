@@ -1,4 +1,5 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, test, vi } from 'vitest'
 import { SideNav, SideNavGroup, SideNavLink } from './SideNav'
 
@@ -45,6 +46,8 @@ describe('SideNav', () => {
     expect(rest).not.toHaveAttribute('aria-current')
     expect(rest.className).toContain('text-secondary')
     expect(rest.className).not.toMatch(/(^|\s)bg-row-active\b/)
+    // One hover role for the rail and the side panel: `surface-hover`.
+    expect(rest.className).toContain('hover:bg-surface-hover')
     // A row of 32px, 13px, the radius of a row.
     for (const row of [open, rest]) {
       expect(row.className).toContain('h-(--nt-control-md)')
@@ -102,5 +105,33 @@ describe('SideNav', () => {
     row.dispatchEvent(newTab)
     expect(onNavigate).not.toHaveBeenCalled()
     expect(newTab.defaultPrevented).toBe(false)
+  })
+
+  test('sets the words of a row on the line of its group heading and of the head', () => {
+    renderPanel()
+    const heading = screen.getByText('Repositories van Zilverberg').closest('p')
+    const row = screen.getByRole('link', { name: 'kassa-api' })
+    const head = screen.getByText('Lens').parentElement
+    // The inset of `SectionHeading`, as in every list of the kit.
+    expect(heading?.className).toMatch(/(^|\s)px-2(\s|$)/)
+    expect(row.className).toMatch(/(^|\s)px-2(\s|$)/)
+    expect(head?.className).toMatch(/(^|\s)px-2(\s|$)/)
+  })
+
+  test('announces the intent to open on hover and focus, so the host can prefetch', async () => {
+    const onIntent = vi.fn()
+    render(
+      <SideNav label="Lens">
+        <SideNavGroup>
+          <SideNavLink label="Padregels" href="#/padregels" onIntent={onIntent} />
+        </SideNavGroup>
+      </SideNav>,
+    )
+    const row = screen.getByRole('link', { name: 'Padregels' })
+    await userEvent.hover(row)
+    expect(onIntent).toHaveBeenLastCalledWith('#/padregels')
+    onIntent.mockClear()
+    act(() => row.focus())
+    expect(onIntent).toHaveBeenCalledWith('#/padregels')
   })
 })

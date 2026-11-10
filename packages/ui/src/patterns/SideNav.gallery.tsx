@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { Story } from '../gallery/story'
 import { SideNav, SideNavGroup, SideNavLink } from './SideNav'
 
@@ -14,6 +14,30 @@ function Head({ name, product }: { name: string; product: string }) {
       {name}
       <span aria-hidden="true" className="size-1.5 rounded-full bg-satellite" />
     </span>
+  )
+}
+
+/** A host that prefetches the place the pointer or the focus rests on, and says which. */
+function Prefetching() {
+  const [intent, setIntent] = useState('')
+  return (
+    <div className="flex flex-col gap-2">
+      <Panel>
+        <SideNav label="Team">
+          <SideNavGroup>
+            <SideNavLink label="Leden" href="#leden" meta="6" current onIntent={setIntent} />
+            <SideNavLink
+              label="Uitnodigingen"
+              href="#uitnodigingen"
+              meta="2"
+              onIntent={setIntent}
+            />
+            <SideNavLink label="Rechten" href="#rechten" onIntent={setIntent} />
+          </SideNavGroup>
+        </SideNav>
+      </Panel>
+      <p className="m-0 text-[12px] text-muted">Vooruit geladen: {intent || 'nog niets'}</p>
+    </div>
   )
 }
 
@@ -41,6 +65,7 @@ export default {
         </SideNav>
       </Panel>
     ),
+    'Vooruit laden bij hover en focus': Prefetching,
     Instellingen: () => (
       <Panel>
         <SideNav

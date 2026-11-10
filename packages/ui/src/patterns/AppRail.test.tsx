@@ -1,4 +1,5 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, test, vi } from 'vitest'
 import { Icon } from '../primitives/Icon'
 import { AppRail, AppRailItem } from './AppRail'
@@ -54,6 +55,8 @@ describe('AppRail', () => {
     expect(start).not.toHaveAttribute('aria-current')
     expect(start.className).toContain('text-muted')
     expect(start.className).not.toMatch(/(^|\s)bg-row-active\b/)
+    // One hover role for the rail and the side panel: `surface-hover`.
+    expect(start.className).toContain('hover:bg-surface-hover')
   })
 
   test('keeps the satellite out of the accessible name', () => {
@@ -86,6 +89,8 @@ describe('AppRail', () => {
     expect(nav.className).toContain('flex-col')
     expect(nav.className).toContain('h-full')
     expect(lists[1]?.className).toContain('mt-auto')
+    // In a short window the rail scrolls, so the foot stays within reach.
+    expect(nav.className).toContain('overflow-y-auto')
     expect(within(lists[1] as HTMLElement).getByRole('link')).toHaveAccessibleName('Instellingen')
   })
 
@@ -121,5 +126,73 @@ describe('AppRail', () => {
       expect(word.className, name).toContain('sr-only')
       expect(link.contains(word), name).toBe(true)
     }
+  })
+
+  test('makes an item as wide as the rail less 12px, and never cuts its label off', () => {
+    /** The width a `w-*` or `size-*` class names, in px: a step of 4px or a value in brackets. */
+    const width = (className: string): number => {
+      const match = className.match(/(?:^|\s)(?:w|size)-(?:\[(\d+)px\]|(\d+))(?:\s|$)/)
+      expect(match, className).not.toBeNull()
+      return match?.[1] !== undefined ? Number(match[1]) : Number(match?.[2]) * 4
+    }
+    for (const narrow of [false, true]) {
+      const { unmount } = renderRail({ narrow })
+      const nav = screen.getByRole('navigation', { name: 'Apps' })
+      const item = screen.getByRole('link', { name: 'Instellingen' })
+      expect(width(nav.className) - width(item.className), `narrow: ${narrow}`).toBe(12)
+      const word = within(item).getByText('Instellingen')
+      expect(word.className).not.toContain('truncate')
+      expect(item.className).not.toContain('truncate')
+      unmount()
+    }
+    renderRail()
+    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain('w-18')
+    expect(screen.getByRole('link', { name: 'Lens' }).className).toContain('w-15')
+  })
+
+  test('opens a dialog as a button of the same shape when it has no href', async () => {
+    const onSelect = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={onSelect}
+          aria-haspopup="dialog"
+        />
+        <AppRailItem label="Lens" icon={<Icon name="scan-search" />} href="#/lens" />
+      </AppRail>,
+    )
+    const help = screen.getByRole('button', { name: 'Hulp' })
+    expect(help).toHaveAttribute('type', 'button')
+    expect(help).toHaveAttribute('aria-haspopup', 'dialog')
+    expect(help.className).toBe(screen.getByRole('link', { name: 'Lens' }).className)
+    await userEvent.click(help)
+    expect(onSelect).toHaveBeenCalledTimes(1)
+  })
+
+  test('announces the intent to open on hover and focus, so the host can prefetch', async () => {
+    const onIntent = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem label="Halo" icon={<Icon name="layers" />} href="#/halo" onIntent={onIntent} />
+      </AppRail>,
+    )
+    const halo = screen.getByRole('link', { name: 'Halo' })
+    await userEvent.hover(halo)
+    expect(onIntent).toHaveBeenLastCalledWith('#/halo')
+    onIntent.mockClear()
+    act(() => halo.focus())
+    expect(onIntent).toHaveBeenCalledWith('#/halo')
+  })
+
+  test('shows the label in a tooltip on a narrow rail', async () => {
+    renderRail({ narrow: true })
+    const halo = screen.getByRole('link', { name: 'Halo' })
+    await userEvent.tab()
+    await userEvent.tab()
+    await userEvent.tab()
+    expect(halo).toHaveFocus()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Halo')
   })
 })
