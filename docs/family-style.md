@@ -9,31 +9,49 @@ Photographs before and after, light and dark, are in [`screenshots/2026-10-28-fa
 | Part | Dark (`:root`) | Light (`[data-theme="light"]`) |
 |---|---|---|
 | Canvas | Midnight `#111936` | Paper `#F5F4F0` |
-| Frame (sidebar, window) | a step deeper, `#0C1229` | a step darker, `#EFEEE9` |
-| Card, menu, composer | a step lighter, `#19223F` | white |
+| Frame (window, app rail, top bar) | a step deeper, `#0C1229` | a step deeper than Paper, `#E9E8E2` |
+| Side panel (the navigation of one app) | between frame and canvas, `#0F1630` | between frame and canvas, `#EFEEE9` |
+| Card, menu, composer, plane | a step lighter, `#19223F` | white |
 | Planes and lines | Mist at low strength | Midnight at low strength |
 | Text / muted | Paper 15.7:1 / Slate 5.6:1 | Midnight 15.7:1 / deep Slate `#5A6185` 5.5:1 |
 | Main button (`accent`) | Paper with Midnight words | Midnight with Paper words |
 | Links, selected word (`accent-text`), focus ring | violet lifted to `#A3AAF5` (7.9:1) | violet `#5140F2` (5.7:1) |
 | Status | the site's: green `#4CB782`, ochre `#E5A445`, red `#FF7B7B` | green `#1F7A4A`, ochre `#965A00`, red `#BF3030` |
-| Sidebar | `--nt-sidebar-gradient`: a whisper of the Midnight gradient | flat |
+| Sidebar of a host that keeps one | `--nt-sidebar-gradient`: a whisper of the Midnight gradient (not in the shell) | flat |
 
 Type: Outfit (variable) for the interface, titles at 600 (`--nt-font-weight-heading`, Tailwind `font-heading`: `PageHeader`, `Dialog`, `ConfirmDialog`, `EmptyState`); DM Mono (400, 500) for code, paths and keys, never with a synthetic bold. Both ship with the package as `@fromorbit/ui/fonts.css`, which imports `@fontsource-variable/outfit` and `@fontsource/dm-mono` (OFL, regular dependencies of the package), so the font files travel in the host's bundle and nothing is fetched from another origin.
 
-The fixed colours of the family are tokens of their own, the same in both themes: `--nt-brand-midnight`, `-midnight-top`, `-midnight-bottom`, `--nt-brand-gradient`, `-paper`, `-mist`, `-slate`, `-slate-deep`, `-violet`, and per product `--nt-brand-orbit` (orange), `--nt-brand-halo` (mint), `--nt-brand-fold` (lavender).
+The fixed colours of the family are tokens of their own, the same in both themes: `--nt-brand-midnight`, `-midnight-top`, `-midnight-bottom`, `--nt-brand-gradient`, `-paper`, `-mist`, `-slate`, `-slate-deep`, `-violet`, and per product `--nt-brand-orbit` (orange), `--nt-brand-halo` (mint), `--nt-brand-fold` (lavender), `--nt-brand-lens` (gold `#FFB224`), `--nt-brand-trail` (the red of a recording, `#FF4D6D`) and `--nt-brand-comet` (sky blue, `#4DA3FF`).
 
-`tokens.test.ts` computes every contrast requirement from the file, in both themes: text, muted and the status colours at least 4.5:1 on the canvas, the frame and a card; secondary at least 7:1; the focus ring and a status glyph at least 3:1; `faint` stays for icons only (`tests/faint-text.test.ts`). The reduced-motion block of `theme.css` is unchanged and still covers every animation.
+`tokens.test.ts` computes every contrast requirement from the file, in both themes: text and muted at least 4.5:1 on the canvas, the frame, the side panel and a card, the status colours as words on the canvas and a card; secondary at least 7:1; the focus ring and a status glyph at least 3:1; `faint` stays for icons only (`tests/faint-text.test.ts`). The reduced-motion block of `theme.css` is unchanged and still covers every animation.
 
 ## The product's accent: the satellite
 
 A product's own colour is never a role of the interface (never a word, a line, a plane or a button). It is the satellite: the dot in its symbol and wordmark, and at most a small dot that says "where you are now", always beside another sign (mint on Paper is 1.7:1).
 
 - `--nt-satellite` holds it; Tailwind names it `satellite` (`bg-satellite`, `fill-satellite`).
-- Without anything it is Orbit orange. `data-product="halo"` on an element (as a rule `<html>`) makes it mint for everything inside, `data-product="fold"` lavender, `data-product="orbit"` orange again.
+- Without anything it is Orbit orange. `data-product="halo"` on an element (as a rule `<html>`) makes it mint for everything inside, `data-product="fold"` lavender, `"lens"` gold, `"trail"` red, `"comet"` sky blue, `data-product="orbit"` orange again. A satellite is never a role, a word or a plane: gold, red and blue are as much a dot as mint is.
 - The product rules stand after the light block and the light block never repeats the satellite, so a `data-theme` further in cannot take it back.
 - A host can also set `--nt-satellite` itself.
 
 The gallery has a switch for it (Orbit, Halo, Fold): the dot beside "UI" in its head is the satellite.
+
+## The shell: three layers
+
+The window of an app of the family has three layers, deepest first, the same order in both themes (`tokens.test.ts`):
+
+1. **The frame** (`--nt-frame`, `bg-frame`): the window itself, the app rail (`AppRail`) on the left and the top bar of 48px above. No line runs between the rail and the top bar; they are one surface.
+2. **The side panel** (`--nt-side-panel`, `bg-side-panel`): the navigation of the open app (`SideNav`).
+3. **The canvas** (`--nt-canvas`, `bg-canvas`): the content.
+
+The side panel and the content float together as one plane on the frame: a 12px corner at the top start, a hairline in `border-strong` along the top and the start edge, and a hairline in `border` between the side panel and the content. Each step between three layers is half as large as the one step between two (1.03:1 to 1.06:1), too small to be an edge on its own; that is why the floating plane has lines where two planes side by side have none.
+
+- **`AppRail`**: 68px wide; each item a link of 56px wide and at least 52px high, radius 8px, an icon of 20px over its label in 11px/500. At rest muted, under the pointer `surface-hover`, open on `row-active` in `fg` with `aria-current="page"`. Beside the open item stands its satellite, a dot of 4px (`data-product` on the item), never the plane or the words. The narrow rail of 56px keeps only the icons, each still named by its label. Every icon and word is a prop: the kit draws no symbol of an app.
+- **`SideNav`**: a head on a row of 32px, groups 24px apart (`--nt-space-group`) under the `SectionHeading` of every list (12px/500 muted), rows of 32px (`--nt-control-md`) and 13px, radius 8px, 1px apart. At rest `secondary`, open on `row-active` in `fg` at 500, no check beside it. A count or short value at the end in 11px DM Mono, muted, secondary on the open row.
+
+**A status on the frame is a glyph, never a word.** The status colours as words are tested on the canvas and a card; on the light frame the green of a word reaches only 4.3:1. On the rail or the top bar a state is a `StatusMark` or a dot beside a word in `fg`, `secondary` or `muted`.
+
+The canvas keeps everything that floats on it white in light: a card, a menu, the composer, a plane of its own (`--nt-plane`). The frame of 0.4.0 was white too; from the shell it is a step below Paper again, so the three layers do not turn round. A host that kept its own white column on the frame (a sidebar of its own), or that relied on the hairline beside it (`shadow-frame-edge`, still the edge in light), checks it against the deeper frame.
 
 ## Status marks (the minor after 0.2.0)
 
@@ -47,7 +65,7 @@ What runs on its own (a service, an app, a space) shows its state with `StatusMa
 | Stopped (`--nt-status-stop`) | muted (Slate) | deep Slate |
 | Glow (`--nt-status-glow`) | 1 | 0.22 |
 
-The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners whose ink is as high as the circle's, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
+The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners whose ink is as high as the circle's, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame, the side panel and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
 
 ## Rhythm (the minor after the status marks)
 
@@ -56,10 +74,10 @@ The same handful of distances, sizes and emphases in every component, so a scree
 | Rule | In the kit | Law |
 |---|---|---|
 | **Spacing: one 4px scale, three distances that mean something.** Items of a group 8px apart (`--nt-space-item`), groups 24px (`--nt-space-group`), sections 40px (`--nt-space-section`). The space between groups is at least three times the space inside one. | `List` groups `mt-6`, `SearchList` groups `mt-3`, `PropertyList` groups `pt-4` | Proximity, Chunking |
-| **Separate by space and tint in dark; by white cards in light.** A group of rows is one plane (`bg-plane shadow-plane`, `rounded-lg`); never a box inside a box. In light every list and region sits on a white card: a white surface with a hairline edge (`shadow-plane`) and 12px corners on the off-white page, rows parted by hairlines, never a grey tinted panel. A divider only runs between rows of one plane that the eye follows across (settings rows, table rows). In dark the plane is a tint and no line runs between the frame and the canvas: their brightness is the edge. In light the regions are white (the sidebar, a card, a group, a code block, a dialog) on a page of Paper, a touch off-white, and the small difference, a hairline (`shadow-frame-edge` beside a sidebar) or the soft shadow of `shadow-plane` parts them; never a grey-filled panel. | `SettingsGroup`, `SummaryBar`, `Banner`, `Tag`, code blocks, the foot of `Dialog` | Common Region, Uniform Connectedness, Prägnanz |
+| **Separate by space and tint in dark; by white cards in light.** A group of rows is one plane (`bg-plane shadow-plane`, `rounded-lg`); never a box inside a box. In light every list and region sits on a white card: a white surface with a hairline edge (`shadow-plane`) and 12px corners on the off-white page, rows parted by hairlines, never a grey tinted panel. A divider only runs between rows of one plane that the eye follows across (settings rows, table rows). In dark the plane is a tint. No line runs between two planes that lie side by side (a frame and a canvas next to each other): their brightness is the edge. The floating plane of the shell is the exception, because each of its steps is half as large: a hairline in `border-strong` above it and at its start, one in `border` between the side panel and the content, none between the rail and the top bar (see "The shell"). In light the regions on the canvas are white (a card, a group, a code block, a dialog) on a page of Paper, a touch off-white, and the small difference, a hairline or the soft shadow of `shadow-plane`, parts them; never a grey-filled panel. | `SettingsGroup`, `SummaryBar`, `Banner`, `Tag`, code blocks, the foot of `Dialog` | Common Region, Uniform Connectedness, Prägnanz |
 | **Type: five sizes, three weights.** 11px (meta, a timestamp, a count), 12px (secondary text, labels of groups, descriptions), 13px (the body of the interface: rows, menus, fields), 15px (the title of a dialog, a card or an empty state), 20px (the title of a page). 400 for text, 500 for a label or a chosen row, 600 (`font-heading`) for titles. Group labels are sentence case, never spaced capitals. The initials of a mark (`Avatar`, `ProjectMark`) are a glyph, not a step of the scale. **One allowed exception:** the figure of a dashboard tile (`StatTile`) is 26px (600, tabular, a 32px line), so the number a tile exists for is the first thing read, above the page title; no other text takes 26px. | `SectionHeading`, `Dialog`, `EmptyState`, `PageHeader` | Similarity, Aesthetic–Usability |
 | **Radius: one family, nested.** 4px (`sm`: a tag, a key, a mark), 8px (`md`: a control, a row), 12px (`lg`: a card, a menu, a dialog). Inner radius = outer radius − the inset between them: a 12px menu with a 4px inset holds 8px rows. `rounded-full` only for what is round by meaning. | `--nt-radius-*`, every component | Prägnanz |
-| **Density: controls on four heights.** 24px (`xs`, a quiet footer button), 28px (`sm`, a dense toolbar), 32px (`md`, the default control and the row of a menu or picker), 40px (`lg`, a prominent action, a banner, the title bar). A row of a navigation list is 36px. A pointer target is at least 28px, 32px by default. Padding grows with the height (10/12/16px). | `--nt-control-*`, `Button`, `List`, `SearchList`, `DropdownMenu` | Fitts |
+| **Density: controls on four heights.** 24px (`xs`, a quiet footer button), 28px (`sm`, a dense toolbar), 32px (`md`, the default control and the row of a menu or picker), 40px (`lg`, a prominent action, a banner, the title bar). A row of a navigation list is 36px; a row of the side panel of the shell (`SideNav`) is 32px, the default control. A pointer target is at least 28px, 32px by default. Padding grows with the height (10/12/16px). | `--nt-control-*`, `Button`, `List`, `SearchList`, `DropdownMenu` | Fitts |
 | **Every action is a framed button.** An action in a row, a card's head or a banner is a real button with a visible frame (`secondary`, 28 or 32px high), its edge on the content column; or the whole row is the link. No text-only or ghost action that floats; `ghost` stays for icon buttons and toggles in a toolbar. | `Button` `secondary`, `SummaryBar`, `Panel` actions in the demos | Jakob, Signifiers (Affordance) |
 | **Emphasis: one per view.** One filled main button per view; the place you are is shown once (the row's fill and full-strength text, no check beside it); a count, a time or a path is muted; the accent violet is for links and focus only. Status speaks through its shape and colour, not through a frame. | `SearchList` (`checkSlot={false}` in navigation), `Tag`, `Banner` | Von Restorff, Serial Position |
 | **Fewer choices in sight.** Actions of a row appear on hover or focus; long groups fold; settings come in named groups of a handful of rows. | `List` groups, `RoomyListRow`, `SettingRow`, `SettingsGroup` | Hick, Miller, Tesler |
