@@ -18,6 +18,7 @@ const INTERNAL: Record<string, string> = {
   'patterns/file-icons': 'the icon table of PierreTree and PierreFileIcon',
   'patterns/ignore-whitespace': 'the whitespace switch of PierreDiff',
   'patterns/markdown-cache': 'the parse cache of Prose',
+  'patterns/nav-click': 'how AppRail and SideNav hand a plain click to the host',
   'patterns/patch-headers': 'how PierreDiff completes a patch',
   'patterns/scroll-to-line': 'how PierreFile scrolls to a line',
   'patterns/shiki-bundle': 'the Shiki alias of the build, never imported by name',
