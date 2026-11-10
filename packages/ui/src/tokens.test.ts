@@ -274,9 +274,15 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     },
   )
 
-  test('--nt-text-secondary, the meta of a lit row, reaches AA on it, on the canvas and on a card', () => {
-    // Muted stays 3:1 under the caret row's words, so a lit row lifts its meta to secondary.
-    for (const ground of ['--nt-canvas', '--nt-overlay-background']) {
+  test('--nt-text-secondary, the meta of a lit row, reaches AA on it, on the canvas, the side panel, the frame and a card', () => {
+    // Muted stays 3:1 under the caret row's words, so a lit row lifts its meta to secondary; the
+    // open row of `SideNav` lies on the side panel, the open item of `AppRail` on the frame.
+    for (const ground of [
+      '--nt-canvas',
+      '--nt-side-panel',
+      '--nt-frame',
+      '--nt-overlay-background',
+    ]) {
       const row = composite(palette.get('--nt-row-active') ?? '', hexIn(palette, ground))
       expect(
         contrastRatio(hexIn(palette, '--nt-text-secondary'), row),
@@ -303,10 +309,12 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
+  // The side panel is a ground for a status word (green 4.6:1 in light); the frame is not, a
+  // status there is a glyph (`docs/family-style.md`, "The shell").
   test.each(['--nt-danger', '--nt-success', '--nt-attention'])(
-    '%s as words on the canvas and on a menu reaches AA (≥ 4.5)',
+    '%s as words on the canvas, the side panel and a menu reaches AA (≥ 4.5)',
     (tone) => {
-      for (const surface of ['--nt-canvas', '--nt-overlay-background']) {
+      for (const surface of ['--nt-canvas', '--nt-side-panel', '--nt-overlay-background']) {
         expect(
           contrastRatio(hexIn(palette, tone), hexIn(palette, surface)),
           surface,
@@ -376,14 +384,14 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
   )
 
   test.each(['--nt-kind-spec', '--nt-kind-plan', '--nt-kind-decision', '--nt-kind-audit'])(
-    '%s stands out as a glyph on the canvas and the frame (≥ 3)',
+    '%s stands out as a glyph on the canvas, the side panel and the frame (≥ 3)',
     (kind) => {
-      expect(
-        contrastRatio(hexIn(palette, kind), hexIn(palette, '--nt-canvas')),
-      ).toBeGreaterThanOrEqual(3)
-      expect(
-        contrastRatio(hexIn(palette, kind), hexIn(palette, '--nt-frame')),
-      ).toBeGreaterThanOrEqual(3)
+      for (const surface of ['--nt-canvas', '--nt-side-panel', '--nt-frame']) {
+        expect(
+          contrastRatio(hexIn(palette, kind), hexIn(palette, surface)),
+          surface,
+        ).toBeGreaterThanOrEqual(3)
+      }
     },
   )
 
