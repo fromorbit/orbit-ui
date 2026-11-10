@@ -288,6 +288,19 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     }
   })
 
+  test('the thumb of an off switch stands out on the canvas, the frame, the side panel and a card (≥ 3)', () => {
+    // An off switch is an outline with a muted thumb: the thumb is its one filled mark, so it holds
+    // the 3:1 of a control's part (WCAG 1.4.11) on every plane a row stands on. The side panel
+    // (`--nt-side-panel`) comes with the shell; it is measured as soon as the palette has it.
+    const grounds = ['--nt-canvas', '--nt-frame', '--nt-side-panel', '--nt-overlay-background']
+    for (const ground of grounds.filter((name) => palette.has(name))) {
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text-muted'), hexIn(palette, ground)),
+        ground,
+      ).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   test('--nt-text on a success tag reaches AA (≥ 4.5)', () => {
     const plane = composite(palette.get('--nt-success-subtle') ?? '', hexIn(palette, '--nt-canvas'))
     expect(contrastRatio(hexIn(palette, '--nt-text'), plane)).toBeGreaterThanOrEqual(4.5)
