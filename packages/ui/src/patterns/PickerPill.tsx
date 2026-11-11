@@ -475,7 +475,7 @@ export function PickerPill({
       <span
         data-nt-pill
         {...(note ? { title: note } : {})}
-        className={`${controlSize.sm} inline-flex ${give} items-center gap-1.5 whitespace-nowrap rounded-md px-2 font-medium text-muted`}
+        className={`${controlSize.sm} inline-flex ${give} items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 font-medium text-muted`}
       >
         {/* Out of the flow (`sr-only` is absolutely positioned), so it costs no pixel and adds no
             gap, and it stands before the value so the line reads "Project: webshop". */}
