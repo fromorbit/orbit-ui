@@ -24,6 +24,7 @@ const INTERNAL: Record<string, string> = {
   'patterns/setting-text': 'the text rules SettingRow and SettingSwitchRow share',
   'patterns/shiki-bundle': 'the Shiki alias of the build, never imported by name',
   'primitives/hand-back': 'how the overlays hand focus back',
+  'primitives/initial': 'the first letter ProjectMark and TeamMark share',
 }
 
 /** The folders that are exports of their own (`./gallery`, `./testing`) rather than part of `.`. */

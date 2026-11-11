@@ -115,6 +115,7 @@ import stepChipsStory from '../primitives/StepChips.gallery'
 import switchStory from '../primitives/Switch.gallery'
 import tabsStory from '../primitives/Tabs.gallery'
 import tagStory from '../primitives/Tag.gallery'
+import teamMarkStory from '../primitives/TeamMark.gallery'
 import textareaStory from '../primitives/Textarea.gallery'
 import thumbnailStory from '../primitives/Thumbnail.gallery'
 import timelineStory from '../primitives/Timeline.gallery'
@@ -240,6 +241,7 @@ export const stories: Story[] = collectStories([
   switchStory,
   tabsStory,
   tagStory,
+  teamMarkStory,
   textareaStory,
   thumbnailStory,
   toggleStory,
