@@ -466,11 +466,10 @@ export function PickerPill({
   if (readOnly) {
     return (
       // Every measurement of the ghost `Button` at size `sm` it has to match: `controlSize.sm` for
-      // the height token and the text size and `controlPadX.sm` for the padding (read from the
-      // same maps the button reads, so the two cannot drift), the gap and weight beside them, and
-      // the same giving-way rule as the
-      // trigger — after the first message a whole toolbar of these stands there, and it has to fit
-      // the same window. Its own `title` rather than a wrapper's: this is text, it keeps its
+      // the height and the text size, `controlPadX.sm` for the padding (the maps the button reads
+      // itself, so the two cannot drift), the gap and weight beside them, and the same giving-way
+      // rule as the trigger — after the first message a whole toolbar of these stands there, and
+      // it has to fit the same window. Its own `title` rather than a wrapper's: this is text, it keeps its
       // pointer events, and a span around a span would be furniture for nothing. What it does not
       // get is the chevron: nothing opens here.
       <span
