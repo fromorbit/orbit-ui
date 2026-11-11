@@ -124,3 +124,21 @@ test('one row stands as high as an md Input in every density: its padding reads 
   expect(box?.className).toContain('py-[calc((var(--nt-control-md)_-_22px)/2)]')
   expect(box?.className).not.toContain('py-[5px]')
 })
+
+test('grow sizes the field to its content, wrapped lines included, between minRows and maxRows', () => {
+  render(<Textarea label="Message" grow minRows={2} maxRows={6} />)
+  const field = screen.getByRole('textbox', { name: 'Message' })
+  expect(field.className.split(' ')).toEqual(
+    expect.arrayContaining(['[field-sizing:content]', 'leading-5']),
+  )
+  // Rows times the 20px line of `leading-5`.
+  expect(field.style.minHeight).toBe('40px')
+  expect(field.style.maxHeight).toBe('120px')
+})
+
+test('without grow the field sizes by its rows alone', () => {
+  render(<Textarea label="Message" />)
+  const field = screen.getByRole('textbox', { name: 'Message' })
+  expect(field.className).not.toContain('field-sizing')
+  expect(field).not.toHaveAttribute('style')
+})

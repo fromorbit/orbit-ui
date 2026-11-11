@@ -38,5 +38,17 @@ export default {
         <Textarea label="Bericht" placeholder="Eén regel" />
       </div>
     ),
+    // Last, so the states above keep their reference images. A wrapped line grows the field too,
+    // not only a line break.
+    'Groeit mee met afgebroken regels': () => (
+      <div className="w-full max-w-64">
+        <Textarea
+          label="Bericht"
+          grow
+          maxRows={4}
+          defaultValue="Een lange zin in een smalle kolom breekt af en het veld groeit mee, tot vier regels."
+        />
+      </div>
+    ),
   },
 } satisfies Story

@@ -22,6 +22,12 @@ export interface TextareaProps
    * attribute stays what assistive technology and tests read.
    */
   placeholderHidden?: boolean
+  /**
+   * Grows with lines that wrap as well as with line breaks, up to `maxRows`: for a composer, where
+   * a long sentence in a narrow column must stay readable while it is typed. Off by default, where
+   * only a line break adds a row.
+   */
+  grow?: boolean
 }
 
 /**
@@ -46,6 +52,12 @@ function chromeFor(
   return disabled ? `${box} opacity-40` : box
 }
 
+/**
+ * The height of one line, as `leading-5` draws it. The package has no line-height token; this
+ * follows the class on the field below, and the padding in `chromeFor` counts on the same 20px.
+ */
+const LINE = 20
+
 /** Number of rows a block of text needs, bounded to `[minRows, maxRows]`. */
 function rowsFor(text: string, minRows: number, maxRows: number): number {
   return Math.min(maxRows, Math.max(minRows, text.split('\n').length))
@@ -67,6 +79,7 @@ export function Textarea({
   maxRows = 8,
   variant = 'field',
   placeholderHidden = false,
+  grow = false,
   disabled,
   value,
   defaultValue,
@@ -107,7 +120,12 @@ export function Textarea({
         value={value}
         defaultValue={isControlled ? undefined : defaultValue}
         onChange={handleChange}
-        className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] text-inherit leading-5 outline-none disabled:cursor-not-allowed ${placeholderHidden ? 'placeholder:text-transparent' : 'placeholder:text-muted'}`}
+        // With `grow`, `field-sizing` sizes the box to its content, wrapped lines included, between
+        // the bounds of `minRows` and `maxRows`; `rows` stays the floor for an engine without it.
+        {...(grow
+          ? { style: { minHeight: `${minRows * LINE}px`, maxHeight: `${maxRows * LINE}px` } }
+          : {})}
+        className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] text-inherit leading-5 outline-none disabled:cursor-not-allowed ${grow ? '[field-sizing:content]' : ''} ${placeholderHidden ? 'placeholder:text-transparent' : 'placeholder:text-muted'}`}
         {...rest}
       />
     </div>
