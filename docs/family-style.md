@@ -163,7 +163,7 @@ The app (`fromorbit/Orbit`, `apps/desktop`) has its own copy of what became this
 
 - The end-to-end tests that compare colours or take screenshots change all at once; take new references in the same PR and check them in both themes.
 - Code of the app that assumed white on the accent (a `text-white` on `bg-accent`, an icon in `#fff`) now stands on Paper; search for it before the switch.
-- The translucent window: the tint is now the Midnight or Paper frame at 60% and 70%; check it over the macOS material and on Windows.
+- The translucent window: the window takes the Midnight or Paper frame at 60%; the sidebar and the panel keep a floor of opacity (dark 90% and 93%, light 96% and 92%) so their words hold 4.5:1 over any material. Check it over the macOS material and on Windows.
 - What the app paints outside the tokens (the terminal reads the ANSI tokens, Mermaid and Shiki read the page's tokens) follows; anything with a colour of its own (an icon, a canvas) does not.
 - Orbit's site copies the app's `tokens.css` (`nt:sync`) for its workspace pages; once the app takes this package, the workspace of the site turns to the brand too, and the site's brand layer becomes largely redundant. The site decides that in a decision of its own.
 - Step 2 can drift: the app's copies of the components have moved on since the package was cut. Compare each module before replacing it.
