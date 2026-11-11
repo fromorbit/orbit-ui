@@ -32,8 +32,6 @@ const ALLOWED: Record<string, string[]> = {
   'patterns/Prose.tsx': ['h-8'],
   // The thumb of the scrubber (a handle 16px wide) and the lines of its legend (text).
   'patterns/Scrubber.tsx': ['h-6', 'min-h-6'],
-  // The heading of a group of mentions: a line of 11px type.
-  'patterns/MentionList.tsx': ['h-6'],
   // The symbol of a row (a glyph), and the strip of a row's actions level with its first line of
   // text (24px, the line height of the label, not a control).
   'patterns/List.tsx': ['size-6', 'h-6'],
