@@ -58,10 +58,13 @@ export function Checkbox({
       checked={checked}
       disabled={disabled}
       onCheckedChange={(next) => onCheckedChange(next === true)}
+      // The `before` widens the hit area to 24 by 24 (WCAG 2.5.8) without growing what is drawn:
+      // an absolute child measures from the padding box, 14px inside the 1px edge, so 5px out on
+      // every side. The box is 16px in either density, so the area is too.
       className={
         ariaInvalid
-          ? 'no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-danger bg-surface text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:bg-accent data-[state=indeterminate]:bg-accent'
-          : 'no-drag flex size-4 shrink-0 items-center justify-center rounded-sm border border-control-border bg-surface text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent'
+          ? "no-drag relative flex size-4 shrink-0 items-center justify-center rounded-sm border border-danger bg-surface before:absolute before:-inset-[5px] before:content-[''] text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:bg-accent data-[state=indeterminate]:bg-accent"
+          : "no-drag relative flex size-4 shrink-0 items-center justify-center rounded-sm border border-control-border bg-surface before:absolute before:-inset-[5px] before:content-[''] text-accent-fg outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent"
       }
     >
       <RadixCheckbox.Indicator>
