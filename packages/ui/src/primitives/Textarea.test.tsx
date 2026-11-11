@@ -131,14 +131,15 @@ test('grow sizes the field to its content, wrapped lines included, between minRo
   expect(field.className.split(' ')).toEqual(
     expect.arrayContaining(['[field-sizing:content]', 'leading-5']),
   )
-  // Rows times the 20px line of `leading-5`.
-  expect(field.style.minHeight).toBe('40px')
-  expect(field.style.maxHeight).toBe('120px')
+  // Rows times the 1.25rem (20px) line of `leading-5`.
+  expect(field.style.minHeight).toBe('2.5rem')
+  expect(field.style.maxHeight).toBe('7.5rem')
 })
 
 test('without grow the field sizes by its rows alone', () => {
   render(<Textarea label="Message" />)
   const field = screen.getByRole('textbox', { name: 'Message' })
   expect(field.className).not.toContain('field-sizing')
+  expect(field.className).not.toContain('  ')
   expect(field).not.toHaveAttribute('style')
 })

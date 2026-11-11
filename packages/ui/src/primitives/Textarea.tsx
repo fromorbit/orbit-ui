@@ -26,6 +26,10 @@ export interface TextareaProps
    * Grows with lines that wrap as well as with line breaks, up to `maxRows`: for a composer, where
    * a long sentence in a narrow column must stay readable while it is typed. Off by default, where
    * only a line break adds a row.
+   *
+   * It rests on CSS `field-sizing: content`. A browser without it keeps the field between the
+   * `minRows` and `maxRows` heights and counts rows by line breaks only, as without `grow`; a
+   * wrapped line then scrolls inside the field instead of growing it.
    */
   grow?: boolean
 }
@@ -53,10 +57,10 @@ function chromeFor(
 }
 
 /**
- * The height of one line, as `leading-5` draws it. The package has no line-height token; this
- * follows the class on the field below, and the padding in `chromeFor` counts on the same 20px.
+ * The height of one line in rem, as `leading-5` draws it (20px at the default root size). In rem
+ * rather than px, so the bounds of `grow` follow a root font size the way the line itself does.
  */
-const LINE = 20
+const LINE_REM = 1.25
 
 /** Number of rows a block of text needs, bounded to `[minRows, maxRows]`. */
 function rowsFor(text: string, minRows: number, maxRows: number): number {
@@ -123,9 +127,14 @@ export function Textarea({
         // With `grow`, `field-sizing` sizes the box to its content, wrapped lines included, between
         // the bounds of `minRows` and `maxRows`; `rows` stays the floor for an engine without it.
         {...(grow
-          ? { style: { minHeight: `${minRows * LINE}px`, maxHeight: `${maxRows * LINE}px` } }
+          ? {
+              style: {
+                minHeight: `${minRows * LINE_REM}rem`,
+                maxHeight: `${maxRows * LINE_REM}rem`,
+              },
+            }
           : {})}
-        className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] text-inherit leading-5 outline-none disabled:cursor-not-allowed ${grow ? '[field-sizing:content]' : ''} ${placeholderHidden ? 'placeholder:text-transparent' : 'placeholder:text-muted'}`}
+        className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] text-inherit leading-5 outline-none disabled:cursor-not-allowed${grow ? ' [field-sizing:content]' : ''} ${placeholderHidden ? 'placeholder:text-transparent' : 'placeholder:text-muted'}`}
         {...rest}
       />
     </div>
