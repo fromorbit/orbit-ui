@@ -116,8 +116,9 @@ function composite(rgba: string, ground: string): string {
 
 /** Whether a value names a colour, directly or through another token, or a shadow made of one. */
 function isColour(value: string): boolean {
-  // A `calc()` over another token is a length (`--nt-toast-width`), never a colour.
-  if (/^calc\(/i.test(value.trim())) return false
+  // A `calc()`, `max()`, `min()` or `clamp()` over another token is a length
+  // (`--nt-toast-width`, `--nt-top-bar-inset-end`), never a colour.
+  if (/^(calc|max|min|clamp)\(/i.test(value.trim())) return false
   return /#[0-9a-f]{3,8}\b|rgb\(|var\(--nt-/i.test(value)
 }
 
@@ -622,6 +623,21 @@ describe('the measures of the shell', () => {
   test('the top bar is 48px, in every density', () => {
     expect(tokens.get('--nt-top-bar-height')).toBe('48px')
     expect(tokensCss).not.toMatch(/\[data-density="[a-z]+"\]\s*\{[^}]*--nt-top-bar-height/)
+  })
+
+  test('the top bar starts after the traffic lights on macOS and 16px in elsewhere', () => {
+    const darwin = parseDeclarations(
+      tokensCss.match(/\n:root\[data-platform="darwin"\]\s*\{([^}]*)\}/)?.[1] ?? '',
+    )
+    expect(tokens.get('--nt-top-bar-inset-start')).toBe('16px')
+    expect(darwin.get('--nt-top-bar-inset-start')).toBe('82px')
+    // Its own token, not the strip of the sidebar's: the bar holds the lights in every state of
+    // the sidebar, so the two may part later.
+    expect(darwin.get('--nt-sidebar-strip-inset-start')).toBe('82px')
+  })
+
+  test('the top bar ends at least 12px in, and clear of the window controls of Windows', () => {
+    expect(tokens.get('--nt-top-bar-inset-end')).toBe('max(12px, var(--nt-window-controls-width))')
   })
 
   test('the floating plane starts after the rail, 1px of frame and its hairline', () => {

@@ -261,6 +261,11 @@
   --nt-rail-width: 72px;
   --nt-rail-width-narrow: 56px;
   --nt-top-bar-height: 48px;
+  /* Where the content of the top bar starts and ends: 16px in, and on macOS after the traffic
+     lights (the `darwin` rule); at least 12px from the end, and on Windows clear of its window
+     controls. Resolved on the root, where `data-platform` stands. */
+  --nt-top-bar-inset-start: 16px;
+  --nt-top-bar-inset-end: max(12px, var(--nt-window-controls-width));
   /* Where the floating plane of the side panel and the content starts, for what a host lays over
      it (a toast, a layer of the side panel): after the rail, 1px of frame and the hairline of the
      plane's start edge; under the top bar and the hairline along its top. It follows the rail of
@@ -617,7 +622,10 @@
 
 /* The strip above the open sidebar holds the traffic lights at its left end, so what it carries
    there (the head with the brand) starts where the folded title bar starts its own
-   content: the same 82px. Elsewhere the strip starts at 16px, in line with the text of the rows. */
+   content: the same 82px. Elsewhere the strip starts at 16px, in line with the text of the rows.
+   The top bar of the shell runs across the whole window, so it holds the lights in every state of
+   the sidebar: its content starts at the same 82px. */
 :root[data-platform="darwin"] {
   --nt-sidebar-strip-inset-start: 82px;
+  --nt-top-bar-inset-start: 82px;
 }
