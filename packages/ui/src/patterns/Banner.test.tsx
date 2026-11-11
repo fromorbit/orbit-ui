@@ -141,10 +141,11 @@ test.each(['attention', 'danger'] as const)(
   },
 )
 
-test('prose lands one line on 40px and keeps a small button level with the first line', () => {
+test('prose lands one line on 40px and lifts a small button level with the first line', () => {
   // happy-dom draws nothing, so the arithmetic is in the classes: the padding is what
   // `--nt-control-lg` leaves after the 20px line and the two 1px edges, and the action's margin
-  // pulls a `Button` `sm` back to the height of that line, in either density.
+  // lifts a `Button` `sm` to the height of that line, in either density; only at the top, so an
+  // action that wraps under the sentence keeps the full padding below it.
   render(
     <Banner tone="danger" prose action={<Button size="sm">Opnieuw</Button>}>
       Mislukt
@@ -159,7 +160,9 @@ test('prose lands one line on 40px and keeps a small button level with the first
     ]),
   )
   const action = screen.getByRole('button', { name: 'Opnieuw' }).parentElement
-  expect(action?.className.split(' ')).toContain('my-[calc((20px_-_var(--nt-control-sm))/2)]')
+  const actionClasses = action?.className.split(' ') ?? []
+  expect(actionClasses).toContain('mt-[calc((20px_-_var(--nt-control-sm))/2)]')
+  expect(actionClasses.some((name) => name.startsWith('my-') || name.startsWith('mb-'))).toBe(false)
 })
 
 test('without prose the bar keeps the tinted plane, the tone in its words and no edge', () => {

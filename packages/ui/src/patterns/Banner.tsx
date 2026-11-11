@@ -14,6 +14,8 @@ const banner = cva(
   'flex min-h-(--nt-control-lg) w-full flex-wrap gap-x-2 gap-y-1.5 rounded-md px-3',
   {
     variants: {
+      // Empty on purpose: the colours of a tone depend on the shape, so they live in
+      // `compoundVariants`, and cva only accepts a key there that is declared here.
       tone: {
         attention: '',
         danger: '',
@@ -120,13 +122,15 @@ export function Banner({
           least 12rem, so in a narrow bar the action moves under the sentence, at the end, rather
           than squeezing it to a word a line. */}
       <p className="m-0 min-w-0 flex-1 basis-48">{children}</p>
-      {/* In prose the action's margin pulls a `Button` `sm` back to the height of the first line, in
-          either density, so it neither pushes the bar taller nor drops below the icon. */}
+      {/* In prose a negative top margin lifts a `Button` `sm` to the height of the first line, in
+          either density. Only the top: when a narrow bar puts the action under the sentence, its
+          bottom keeps the full padding, as the first line keeps it at the top. The price is a bar
+          of one line with the action beside it, which stands 4px taller (2px compact). */}
       {action ? (
         <div
           className={
             prose
-              ? 'my-[calc((20px_-_var(--nt-control-sm))/2)] ml-auto shrink-0'
+              ? 'mt-[calc((20px_-_var(--nt-control-sm))/2)] ml-auto shrink-0'
               : 'ml-auto shrink-0'
           }
         >
