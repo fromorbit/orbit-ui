@@ -9,11 +9,11 @@ import { read, SRC, sources, stripComments, underSrc } from './guards/source'
  */
 
 /**
- * Tailwind steps and pixel values that equal a control height of 0.5.0 (24, 28, 32, 40px), as a
- * height, a minimum height or a square size.
+ * Tailwind steps and pixel values that equal a control height of 0.5.0 (24, 28, 32, 40px) or the
+ * height of a row (36px, `--nt-row`), as a height, a minimum height or a square size.
  */
 const LITERAL_CONTROL_HEIGHT =
-  /(?<![\w-])(?:min-h|h|size)-(?:6|7|8|10|\[(?:24|28|32|40)px\])(?![\w.-])/g
+  /(?<![\w-])(?:min-h|h|size)-(?:6|7|8|9|10|\[(?:24|28|32|36|40)px\])(?![\w.-])/g
 
 /**
  * Sizes that equal a control height by chance and are no control: a glyph, an image or a mark

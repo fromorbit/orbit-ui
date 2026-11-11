@@ -114,7 +114,7 @@ const item = cva(
       density: {
         // 44px under a coarse pointer, a target a finger finds (Fitts).
         default: 'h-(--nt-control-md) pointer-coarse:h-11',
-        comfortable: 'h-9 pointer-coarse:h-11',
+        comfortable: 'h-(--nt-row) pointer-coarse:h-11',
       },
     },
     defaultVariants: { tone: 'default', density: 'default' },

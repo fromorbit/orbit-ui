@@ -315,7 +315,7 @@ export function ListRow({
         // pointer through.
         <span
           data-nt-list-fold
-          className="no-drag pointer-events-none absolute top-0 -left-3 flex h-9 w-6 items-center justify-center"
+          className="no-drag pointer-events-none absolute top-0 -left-3 flex h-(--nt-row) w-6 items-center justify-center"
         >
           <button
             type="button"
@@ -346,7 +346,7 @@ export function ListRow({
           subline
             ? `${surface} flex h-12 flex-col justify-center py-1.5 ${restingTone[emphasis]}`
             : `${surface} flex ${
-                compact ? controlHeight.sm : dense ? controlHeight.md : 'h-9'
+                compact ? controlHeight.sm : dense ? controlHeight.md : 'h-(--nt-row)'
               } items-center gap-2 ${restingTone[emphasis]}`
         }
         {...rest}

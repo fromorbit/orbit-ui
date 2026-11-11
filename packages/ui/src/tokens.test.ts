@@ -732,14 +732,24 @@ describe('the density of a host', () => {
         '--nt-control-sm',
         '--nt-control-md',
         '--nt-control-lg',
+        '--nt-row',
       ])
     }
+  })
+
+  test('a row of a list stands a step above the default control: 36px, 32px when compact', () => {
+    expect(tokens.get('--nt-row')).toBe('36px')
+    expect(new Map([...tokens, ...density('compact')]).get('--nt-row')).toBe('32px')
+    expect(new Map([...tokens, ...density('compact'), ...density('regular')]).get('--nt-row')).toBe(
+      '36px',
+    )
   })
 
   test('survives a data-theme further in: the light block repeats no height', () => {
     for (const size of ['xs', 'sm', 'md', 'lg']) {
       expect(lightOnly.has(`--nt-control-${size}`), size).toBe(false)
     }
+    expect(lightOnly.has('--nt-row')).toBe(false)
     expect(tokensCss.indexOf('[data-density="compact"]')).toBeGreaterThan(
       tokensCss.indexOf('\n[data-theme="light"]'),
     )
