@@ -255,6 +255,18 @@
      the rows. See the `darwin` rule. */
   --nt-sidebar-strip-inset-start: 16px;
   --nt-sidebar-width: 264px;
+  /* The shell (`docs/family-style.md`, "The shell"): the app rail on the frame, 72px with a label
+     under each icon (`AppRail`), 56px with the icons alone; the top bar above it, 48px in every
+     density, like the title bar. */
+  --nt-rail-width: 72px;
+  --nt-rail-width-narrow: 56px;
+  --nt-top-bar-height: 48px;
+  /* Where the floating plane of the side panel and the content starts, for what a host lays over
+     it (a toast, a layer of the side panel): after the rail, 1px of frame and the hairline of the
+     plane's start edge; under the top bar and the hairline along its top. It follows the rail of
+     72px; beside the narrow rail the plane starts 16px sooner. */
+  --nt-shell-plane-inset-start: calc(var(--nt-rail-width) + 2px);
+  --nt-shell-plane-inset-top: calc(var(--nt-top-bar-height) + 1px);
   /* The foot of the sidebar: the account, the archive and the gear, one row of 44px. */
   --nt-sidebar-foot-height: 44px;
   /* A toast fits under the sidebar, less 8px on either side: 248px. */

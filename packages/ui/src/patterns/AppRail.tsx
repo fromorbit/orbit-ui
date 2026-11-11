@@ -24,7 +24,7 @@ export interface AppRailProps {
   /** What stands at the foot of the rail, as `AppRailItem`s: help, settings. */
   foot?: ReactNode
   /**
-   * The narrow rail of 56px: only the icons, each item still named by its label and showing it
+   * The narrow rail of 56px (`--nt-rail-width-narrow`): only the icons, each item still named by its label and showing it
    * in a tooltip. For a host whose window is short of room; the host switches it itself. The
    * default is the rail of 72px with a label under each icon.
    */
@@ -36,7 +36,8 @@ export interface AppRailProps {
  * (`docs/family-style.md`, "The shell").
  *
  * A `nav` landmark with two lists, the apps from the top and the foot (help, settings) pushed to
- * the bottom. 72px wide, each item 60px (6px of inset on either side) with an icon of 20px over
+ * the bottom. 72px wide (`--nt-rail-width`, which a host reads for what it lays beside the rail),
+ * each item 60px (6px of inset on either side) with an icon of 20px over
  * its label in 11px, never cut off; the narrow rail of 56px keeps only the icons. The rail
  * scrolls in a short window, so the foot stays within reach. The open app is shown once: a neutral plane (`row-active`), its words
  * at full strength, `aria-current="page"`, and the satellite of that app as a 4px dot beside the
@@ -51,8 +52,8 @@ export function AppRail({ label, children, foot, narrow = false }: AppRailProps)
         data-nt-app-rail
         className={
           narrow
-            ? 'flex h-full w-14 shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
-            : 'flex h-full w-18 shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
+            ? 'flex h-full w-(--nt-rail-width-narrow) shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
+            : 'flex h-full w-(--nt-rail-width) shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
         }
       >
         <ul className="m-0 flex list-none flex-col items-center gap-1 p-0">{children}</ul>

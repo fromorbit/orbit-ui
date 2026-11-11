@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef } from 'react'
@@ -6,6 +8,9 @@ import { DropdownMenu } from '../overlays/DropdownMenu'
 import { Icon } from '../primitives/Icon'
 import { uiWrapper } from '../testing/ui-wrapper'
 import { AppRail, AppRailItem } from './AppRail'
+
+/** The tokens, for the widths the rail reads from them. */
+const tokensCss = readFileSync(join(import.meta.dirname, '..', 'tokens.css'), 'utf8')
 
 /** A rail of three apps and a foot, with Lens open. */
 function renderRail(props: { narrow?: boolean; onNavigate?: (href: string) => void } = {}) {
@@ -122,7 +127,7 @@ describe('AppRail', () => {
   test('keeps only the icons and names each item by its label on a narrow rail', () => {
     renderRail({ narrow: true })
     const nav = screen.getByRole('navigation', { name: 'Apps' })
-    expect(nav.className).toContain('w-14')
+    expect(nav.className).toContain('w-(--nt-rail-width-narrow)')
     for (const name of ['Start', 'Lens', 'Halo', 'Instellingen']) {
       const link = screen.getByRole('link', { name })
       const word = screen.getByText(name)
@@ -132,11 +137,21 @@ describe('AppRail', () => {
   })
 
   test('makes an item as wide as the rail less 12px, and never cuts its label off', () => {
-    /** The width a `w-*` or `size-*` class names, in px: a step of 4px or a value in brackets. */
+    /** The declared value of a token of `tokens.css`, in px. */
+    const token = (name: string): number => {
+      const match = tokensCss.match(new RegExp(`${name}:\\s*(\\d+)px;`))
+      expect(match, name).not.toBeNull()
+      return Number(match?.[1])
+    }
+    /** The width a `w-*` or `size-*` class names, in px: a step of 4px, brackets or a token. */
     const width = (className: string): number => {
-      const match = className.match(/(?:^|\s)(?:w|size)-(?:\[(\d+)px\]|(\d+))(?:\s|$)/)
+      const match = className.match(
+        /(?:^|\s)(?:w|size)-(?:\[(\d+)px\]|\((--nt-[a-z-]+)\)|(\d+))(?:\s|$)/,
+      )
       expect(match, className).not.toBeNull()
-      return match?.[1] !== undefined ? Number(match[1]) : Number(match?.[2]) * 4
+      if (match?.[1] !== undefined) return Number(match[1])
+      if (match?.[2] !== undefined) return token(match[2])
+      return Number(match?.[3]) * 4
     }
     for (const narrow of [false, true]) {
       const { unmount } = renderRail({ narrow })
@@ -149,8 +164,17 @@ describe('AppRail', () => {
       unmount()
     }
     renderRail()
-    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain('w-18')
+    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain(
+      'w-(--nt-rail-width)',
+    )
     expect(screen.getByRole('link', { name: 'Lens' }).className).toContain('w-15')
+  })
+
+  test('takes its width from the tokens, so the host reads the same number', () => {
+    renderRail({ narrow: true })
+    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain(
+      'w-(--nt-rail-width-narrow)',
+    )
   })
 
   test('opens a dialog as a button of the same shape when it has no href', async () => {

@@ -613,6 +613,23 @@ describe('scrollbars', () => {
   })
 })
 
+describe('the measures of the shell', () => {
+  test('the rail is 72px wide, the narrow one 56px', () => {
+    expect(tokens.get('--nt-rail-width')).toBe('72px')
+    expect(tokens.get('--nt-rail-width-narrow')).toBe('56px')
+  })
+
+  test('the top bar is 48px, in every density', () => {
+    expect(tokens.get('--nt-top-bar-height')).toBe('48px')
+    expect(tokensCss).not.toMatch(/\[data-density="[a-z]+"\]\s*\{[^}]*--nt-top-bar-height/)
+  })
+
+  test('the floating plane starts after the rail, 1px of frame and its hairline', () => {
+    expect(tokens.get('--nt-shell-plane-inset-start')).toBe('calc(var(--nt-rail-width) + 2px)')
+    expect(tokens.get('--nt-shell-plane-inset-top')).toBe('calc(var(--nt-top-bar-height) + 1px)')
+  })
+})
+
 describe('the tint of a translucent window', () => {
   /** The declarations of the one rule with exactly this selector. */
   function rule(selector: string): Map<string, string> {
