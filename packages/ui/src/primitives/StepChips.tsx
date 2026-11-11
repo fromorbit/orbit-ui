@@ -48,7 +48,7 @@ export function StepChips({ label, steps, selected, onSelect, controls }: StepCh
             tabIndex={active ? 0 : -1}
             onClick={() => onSelect(step.id)}
             className={[
-              'no-drag inline-flex h-6 items-center gap-1 rounded-md border px-2 text-[12px] outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+              'no-drag inline-flex h-(--nt-control-xs) items-center gap-1 rounded-md border px-2 text-[12px] outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
               active
                 ? 'border-border bg-surface-active text-fg'
                 : 'border-transparent text-muted hover:bg-surface-hover',

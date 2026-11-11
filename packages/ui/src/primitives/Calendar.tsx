@@ -193,7 +193,7 @@ export function Calendar({
                 key={day}
                 scope="col"
                 abbr={weekdayLong.format(toDate(day))}
-                className="size-8 p-0 font-normal text-[11px] text-muted"
+                className="size-(--nt-control-md) p-0 font-normal text-[11px] text-muted"
               >
                 {weekday.format(toDate(day)).slice(0, 2)}
               </th>
@@ -230,7 +230,7 @@ export function Calendar({
                         setFocused(day)
                         if (!off) onValueChange(day)
                       }}
-                      className={`no-drag flex size-8 items-center justify-center rounded-md text-[13px] tabular-nums outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-1 aria-disabled:cursor-default aria-disabled:opacity-30 aria-disabled:hover:bg-transparent ${cell}`}
+                      className={`no-drag flex size-(--nt-control-md) items-center justify-center rounded-md text-[13px] tabular-nums outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-1 aria-disabled:cursor-default aria-disabled:opacity-30 aria-disabled:hover:bg-transparent ${cell}`}
                     >
                       {Number(day.slice(8))}
                     </button>

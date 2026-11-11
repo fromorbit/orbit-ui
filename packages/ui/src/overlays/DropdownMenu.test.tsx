@@ -855,7 +855,7 @@ test('comfortable rows are 36px with their icon in muted, quiet rows dimmed', as
   )
   await userEvent.click(screen.getByRole('button', { name: 'Account' }))
   const row = await screen.findByRole('menuitem', { name: 'Profiel' })
-  expect(row.className).toContain('h-9')
+  expect(row.className).toContain('h-(--nt-row)')
   expect(row.querySelector('[data-nt-menu-icon]')?.className).toContain('text-muted')
   const quiet = screen.getByRole('menuitem', { name: 'Afmelden' })
   expect(quiet.className).toContain('text-secondary')

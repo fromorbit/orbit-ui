@@ -532,7 +532,7 @@ export function Tabs({
                       `no-drag peer flex h-(--nt-control-md) items-center gap-1.5 rounded-md ${closable ? 'pr-6 pl-2.5' : 'px-2.5'} text-[13px] text-muted outline-focus hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=active]:bg-surface-hover data-[state=active]:text-fg${titlebar ? ' min-w-18 max-w-36' : ''}${foldWidth ? ` ${foldWidth}` : ''}${closable && foldPad ? ` ${foldPad}` : ''}`
                     : horizontal
                       ? `no-drag flex${horizontalWrap ? ' shrink-0' : ''} h-(--nt-control-md) items-center border-b-2 border-transparent px-3 text-[13px] text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=active]:border-accent data-[state=active]:text-fg`
-                      : `no-drag flex ${arranged ? 'h-9 gap-2 [&>svg]:shrink-0' : 'h-(--nt-control-md)'} items-center rounded-md px-2 text-left text-[13px] text-muted outline-focus hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[state=active]:bg-surface-hover data-[state=active]:text-fg`
+                      : `no-drag flex ${arranged ? 'h-(--nt-row) gap-2 [&>svg]:shrink-0' : 'h-(--nt-control-md)'} items-center rounded-md px-2 text-left text-[13px] text-muted outline-focus hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[state=active]:bg-surface-hover data-[state=active]:text-fg`
                 }
               >
                 {/* Stays put whether the pill can close or not: the cross has its own

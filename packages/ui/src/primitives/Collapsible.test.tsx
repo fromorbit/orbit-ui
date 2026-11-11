@@ -120,7 +120,7 @@ test('the content appears with a fade, never by growing in height', () => {
 test('the row is 24px high, carries no-drag and the focus ring of every control', () => {
   render(<Example />)
   const className = screen.getByRole('button', { name: '6 stappen' }).className
-  expect(className).toContain('h-6')
+  expect(className).toContain('h-(--nt-control-xs)')
   expect(className).toContain('w-full')
   expect(className).toContain('no-drag')
   expect(className).toContain('outline-focus')

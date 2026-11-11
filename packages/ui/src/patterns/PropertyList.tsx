@@ -39,7 +39,10 @@ export function PropertyList({ label, groups }: PropertyListProps) {
           className="m-0 pt-4 first:pt-0"
         >
           {group.map((property) => (
-            <div key={property.label} className="flex min-h-8 min-w-0 items-start gap-3 py-1.5">
+            <div
+              key={property.label}
+              className="flex min-h-(--nt-control-md) min-w-0 items-start gap-3 py-1.5"
+            >
               <dt className="w-24 shrink-0 truncate text-[13px] leading-5 text-muted">
                 {property.label}
               </dt>

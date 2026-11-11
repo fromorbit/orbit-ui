@@ -76,7 +76,7 @@ export function ShelfGroup({
           opened.current = !open
           onOpenChange(!open)
         }}
-        className={`no-drag flex h-10 w-full min-w-0 items-center gap-2 ${rule ? 'border-t border-border ' : ''}px-5 text-left text-[12px] text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2`}
+        className={`no-drag flex h-(--nt-control-lg) w-full min-w-0 items-center gap-2 ${rule ? 'border-t border-border ' : ''}px-5 text-left text-[12px] text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2`}
       >
         <span className="min-w-0 flex-1 truncate">{text(title, count)}</span>
         <span

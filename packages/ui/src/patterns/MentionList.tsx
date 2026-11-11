@@ -247,7 +247,7 @@ export function MentionList({
             <div key={group.name} role="group" aria-labelledby={headingId}>
               <p
                 id={headingId}
-                className="m-0 flex h-6 items-center px-2 text-[11px] font-medium text-muted"
+                className="m-0 flex h-(--nt-control-xs) items-center px-2 text-[11px] font-medium text-muted"
               >
                 {group.name}
               </p>

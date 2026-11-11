@@ -42,5 +42,7 @@ test('an arranged list has the 36px rows of a column, as a List', () => {
       )}
     />,
   )
-  expect(screen.getByRole('tab', { name: 'Uiterlijk' }).className.split(' ')).toContain('h-9')
+  expect(screen.getByRole('tab', { name: 'Uiterlijk' }).className.split(' ')).toContain(
+    'h-(--nt-row)',
+  )
 })

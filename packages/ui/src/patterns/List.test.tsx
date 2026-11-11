@@ -174,7 +174,7 @@ test('a row is 36px high, a step above the 32px of a control', () => {
       <ListRow title="Eerste chat" />
     </List>,
   )
-  expect(screen.getByRole('button', { name: 'Eerste chat' }).className).toContain('h-9')
+  expect(screen.getByRole('button', { name: 'Eerste chat' }).className).toContain('h-(--nt-row)')
 })
 
 test('a long title is truncated instead of widening the row', () => {
@@ -411,7 +411,7 @@ test('a row without a second line keeps its single 36px line', () => {
   )
   const row = screen.getByRole('button', { name: /Eerste chat/ })
   expect(row.querySelector('[data-nt-list-subline]')).toBeNull()
-  expect(row.className).toContain('h-9')
+  expect(row.className).toContain('h-(--nt-row)')
 })
 
 test('a strong row draws its title in the foreground colour, a default one muted', () => {

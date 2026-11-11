@@ -17,7 +17,7 @@ test('draws the title at 20px in the heading weight in a strip of 40px', () => {
   const heading = screen.getByRole('heading', { level: 1 })
   expect(heading.className).toContain('text-[20px]')
   expect(heading.className).toContain('font-heading')
-  expect(heading.parentElement?.className).toContain('h-10')
+  expect(heading.parentElement?.className).toContain('h-(--nt-control-lg)')
 })
 
 test('leaves the meta line out when there is none', () => {

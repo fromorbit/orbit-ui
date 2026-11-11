@@ -695,3 +695,63 @@ describe('the satellite of a product', () => {
     )
   })
 })
+
+describe('the density of a host', () => {
+  /** The declarations of the rule for one `data-density`, an empty map when it is missing. */
+  function density(name: string): Map<string, string> {
+    const block = tokensCss.match(new RegExp(`\\n\\[data-density="${name}"\\]\\s*\\{([^}]*)\\}`))
+    return parseDeclarations(block?.[1] ?? '')
+  }
+
+  const controlHeights = (palette: Map<string, string>) =>
+    ['xs', 'sm', 'md', 'lg'].map((size) => palette.get(`--nt-control-${size}`))
+
+  test('keeps the heights of 0.5.0 without a data-density', () => {
+    expect(controlHeights(tokens)).toEqual(['24px', '28px', '32px', '40px'])
+  })
+
+  test('data-density="compact" lowers every control a step: 20, 24, 28 and 32px', () => {
+    expect(controlHeights(new Map([...tokens, ...density('compact')]))).toEqual([
+      '20px',
+      '24px',
+      '28px',
+      '32px',
+    ])
+  })
+
+  test('data-density="regular" brings the heights of 0.5.0 back inside a compact host', () => {
+    const inside = new Map([...tokens, ...density('compact'), ...density('regular')])
+    expect(controlHeights(inside)).toEqual(controlHeights(tokens))
+  })
+
+  test('a density sets heights only, never a colour', () => {
+    for (const name of ['compact', 'regular']) {
+      const rule = density(name)
+      expect([...rule.keys()], name).toEqual([
+        '--nt-control-xs',
+        '--nt-control-sm',
+        '--nt-control-md',
+        '--nt-control-lg',
+        '--nt-row',
+      ])
+    }
+  })
+
+  test('a row of a list stands a step above the default control: 36px, 32px when compact', () => {
+    expect(tokens.get('--nt-row')).toBe('36px')
+    expect(new Map([...tokens, ...density('compact')]).get('--nt-row')).toBe('32px')
+    expect(new Map([...tokens, ...density('compact'), ...density('regular')]).get('--nt-row')).toBe(
+      '36px',
+    )
+  })
+
+  test('survives a data-theme further in: the light block repeats no height', () => {
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      expect(lightOnly.has(`--nt-control-${size}`), size).toBe(false)
+    }
+    expect(lightOnly.has('--nt-row')).toBe(false)
+    expect(tokensCss.indexOf('[data-density="compact"]')).toBeGreaterThan(
+      tokensCss.indexOf('\n[data-theme="light"]'),
+    )
+  })
+})
