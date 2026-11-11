@@ -557,18 +557,24 @@
   --nt-row: 36px;
 }
 
-/* The window material shimmers through the tint of a translucent window. The sidebar shows the material
-   through the frame's tint, the main panel covers it further with the canvas for legibility. */
+/* The window material shimmers through the tint of a translucent window. The window itself takes
+   the frame's tint at 60%; the sidebar and the main panel, which carry the words, keep a floor of
+   opacity so their text stays legible over any material (WCAG 1.4.3, 4.5:1). The floor is the lowest
+   opacity at which `text`, `secondary` and `muted` hold 4.5:1 with each layer counted alone over the
+   worst material: white behind the dark tint, black behind the light one (`tokens.test.ts`). The
+   sidebar on the frame 90%, the panel on the canvas 93%. */
 :root[data-translucent="true"] {
   --nt-app-background: rgb(12 18 41 / 0.6);
-  --nt-sidebar-background: transparent;
-  --nt-panel-background: rgb(17 25 54 / 0.7);
+  --nt-sidebar-background: rgb(12 18 41 / 0.9);
+  --nt-panel-background: rgb(17 25 54 / 0.93);
 }
 
-/* The same strengths over the light material: the frame and the canvas of the light block. */
+/* The same floor over the light material, with the frame and the canvas of the light block. Muted
+   stands at 4.9:1 on the opaque frame, so the light sidebar needs 96% and the panel 92%. */
 :root[data-translucent="true"][data-theme="light"] {
   --nt-app-background: rgb(233 232 226 / 0.6);
-  --nt-panel-background: rgb(245 244 240 / 0.7);
+  --nt-sidebar-background: rgb(233 232 226 / 0.96);
+  --nt-panel-background: rgb(245 244 240 / 0.92);
 }
 
 /* Room for the window controls overlay of Windows (`titleBarOverlay` in `main/window/chrome.ts`):

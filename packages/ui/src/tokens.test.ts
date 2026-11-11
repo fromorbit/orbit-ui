@@ -636,10 +636,42 @@ describe('the tint of a translucent window', () => {
     expect(light.get('--nt-app-background')).toBe(
       `rgb(${channels(hexIn(lightTokens, '--nt-frame'))} / 0.6)`,
     )
-    expect(light.get('--nt-panel-background')).toBe(
-      `rgb(${channels(hexIn(lightTokens, '--nt-canvas'))} / 0.7)`,
-    )
   })
+
+  /** The alpha of a tint, `rgb(r g b / a)`, and whether its colour is the given hex. */
+  function tint(value: string | undefined, hex: string): number {
+    const match = value?.match(/^rgb\((\d+ \d+ \d+) \/ ([\d.]+)\)$/)
+    expect(match?.[1], `${value} is a tint of ${hex}`).toBe(channels(hex))
+    return Number(match?.[2])
+  }
+
+  // WCAG 1.4.3: the words of the sidebar and the panel stay at 4.5:1 whatever the material behind
+  // the window shows. The worst material is the opposite of the theme (white behind dark, black
+  // behind light), and each layer is counted alone over it, as if nothing else lay beneath.
+  const worstMaterial = [
+    ['dark', tokens, ':root[data-translucent="true"]', '#ffffff'],
+    ['light', lightTokens, ':root[data-translucent="true"][data-theme="light"]', '#000000'],
+  ] as const
+
+  describe.each(worstMaterial)(
+    'over the worst material in %s',
+    (_theme, palette, selector, material) => {
+      const translucent = new Map([...rule(':root[data-translucent="true"]'), ...rule(selector)])
+
+      test.each([
+        ['--nt-sidebar-background', '--nt-frame', 0.85],
+        ['--nt-panel-background', '--nt-canvas', 0.9],
+      ] as const)('%s keeps its words legible: a floor of opacity', (layer, ground, floor) => {
+        const value = translucent.get(layer)
+        const alpha = tint(value, hexIn(palette, ground))
+        expect(alpha).toBeGreaterThanOrEqual(floor)
+        const plane = composite(value ?? '', material)
+        for (const word of ['--nt-text', '--nt-text-secondary', '--nt-text-muted']) {
+          expect(contrastRatio(hexIn(palette, word), plane), word).toBeGreaterThanOrEqual(4.5)
+        }
+      })
+    },
+  )
 })
 
 describe('the satellite of a product', () => {
