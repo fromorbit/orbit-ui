@@ -100,6 +100,7 @@ import projectMarkStory from '../primitives/ProjectMark.gallery'
 import radioGroupStory from '../primitives/RadioGroup.gallery'
 import resizeHandleStory from '../primitives/ResizeHandle.gallery'
 import scrollAreaStory from '../primitives/ScrollArea.gallery'
+import searchFieldButtonStory from '../primitives/SearchFieldButton.gallery'
 import secretFieldStory from '../primitives/SecretField.gallery'
 import sectionHeadingStory from '../primitives/SectionHeading.gallery'
 import segmentedControlStory from '../primitives/SegmentedControl.gallery'
@@ -226,6 +227,7 @@ export const stories: Story[] = collectStories([
   radioGroupStory,
   resizeHandleStory,
   scrollAreaStory,
+  searchFieldButtonStory,
   secretFieldStory,
   sectionHeadingStory,
   segmentedControlStory,
