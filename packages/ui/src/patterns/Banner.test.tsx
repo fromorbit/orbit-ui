@@ -104,3 +104,75 @@ test('the text comes from the caller: the pattern translates nothing itself', ()
   render(<Banner tone="danger">Provider niet beschikbaar</Banner>)
   expect(screen.getByRole('alert')).toHaveTextContent('Provider niet beschikbaar')
 })
+
+test.each(['attention', 'danger'] as const)(
+  'prose sets the %s sentence in the text colour at 13px, and only the icon in the tone',
+  (tone) => {
+    const { container } = render(
+      <Banner tone={tone} prose>
+        Deze map is nog geen project
+      </Banner>,
+    )
+    const bar = container.firstElementChild as HTMLElement
+    const classes = bar.className.split(' ')
+    expect(classes).toContain('text-fg')
+    expect(classes).toContain('text-[13px]')
+    expect(classes).not.toContain(`text-${tone}`)
+    // The icon's own box is one line high, so it stands beside the first line, not the middle.
+    const icon = container.querySelector('svg')?.parentElement
+    expect(icon?.className.split(' ')).toEqual(expect.arrayContaining([`text-${tone}`, 'h-5']))
+  },
+)
+
+test.each(['attention', 'danger'] as const)(
+  'prose lies on the plane with the hairline of the %s tone, top-aligned',
+  (tone) => {
+    const { container } = render(
+      <Banner tone={tone} prose>
+        Deze map is nog geen project
+      </Banner>,
+    )
+    const classes = (container.firstElementChild as HTMLElement).className.split(' ')
+    expect(classes).toEqual(
+      expect.arrayContaining(['bg-plane', 'border', `border-${tone}-border`, 'items-start']),
+    )
+    expect(classes).not.toContain(`bg-${tone}-subtle`)
+    expect(classes).not.toContain('items-center')
+  },
+)
+
+test('prose lands one line on 40px and keeps a small button level with the first line', () => {
+  // happy-dom draws nothing, so the arithmetic is in the classes: the padding is what
+  // `--nt-control-lg` leaves after the 20px line and the two 1px edges, and the action's margin
+  // pulls a `Button` `sm` back to the height of that line, in either density.
+  render(
+    <Banner tone="danger" prose action={<Button size="sm">Opnieuw</Button>}>
+      Mislukt
+    </Banner>,
+  )
+  const bar = screen.getByRole('alert')
+  expect(bar.className.split(' ')).toEqual(
+    expect.arrayContaining([
+      'min-h-(--nt-control-lg)',
+      'py-[calc((var(--nt-control-lg)_-_22px)/2)]',
+      'leading-5',
+    ]),
+  )
+  const action = screen.getByRole('button', { name: 'Opnieuw' }).parentElement
+  expect(action?.className.split(' ')).toContain('my-[calc((20px_-_var(--nt-control-sm))/2)]')
+})
+
+test('without prose the bar keeps the tinted plane, the tone in its words and no edge', () => {
+  render(<Banner tone="attention">Core start opnieuw op</Banner>)
+  const classes = screen.getByRole('status').className.split(' ')
+  expect(classes).toEqual(
+    expect.arrayContaining([
+      'bg-attention-subtle',
+      'text-attention',
+      'items-center',
+      'text-[12px]',
+    ]),
+  )
+  expect(classes).not.toContain('border')
+  expect(classes).not.toContain('bg-plane')
+})
