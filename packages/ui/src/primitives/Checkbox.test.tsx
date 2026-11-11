@@ -64,6 +64,7 @@ test('a pseudo-element widens the hit area to 24px without growing the 16px box'
     expect.arrayContaining([
       'relative',
       'size-4',
+      'border',
       'before:absolute',
       'before:-inset-[5px]',
       "before:content-['']",
@@ -76,5 +77,5 @@ test('an invalid box keeps the same hit area', () => {
     <Checkbox label="Netwerktoegang" checked={false} aria-invalid onCheckedChange={() => {}} />,
   )
   const classes = screen.getByRole('checkbox', { name: 'Netwerktoegang' }).className.split(' ')
-  expect(classes).toEqual(expect.arrayContaining(['relative', 'before:-inset-[5px]']))
+  expect(classes).toEqual(expect.arrayContaining(['relative', 'border', 'before:-inset-[5px]']))
 })

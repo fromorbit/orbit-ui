@@ -35,6 +35,9 @@ export interface CheckboxProps {
  * `DataTable`): a press on it reports `true`, so the group turns all on, as every table does.
  * Radix's `CheckedState` would report `'indeterminate'` back as well; `onCheckedChange` narrows it
  * to a `boolean`, since no click ever puts a box into that state.
+ *
+ * Its 24px hit area (`::before`, 4px around the box) counts toward the overflow of a scrolling
+ * ancestor: keep 4px of room after a box at the end of an `overflow-auto` container.
  */
 export function Checkbox({
   label,

@@ -26,6 +26,9 @@ export interface SwitchProps {
  * still reads as a control and never as on. Never violet and never a product's satellite: the
  * switch is a control, not a link or a brand. Disabled keeps the colours of its state at the lower
  * opacity every control has, never a third grey.
+ *
+ * Its 24px hit area (`::before`, 3px above and below the track) counts toward the overflow of a
+ * scrolling ancestor: keep 4px of room after a switch at the end of an `overflow-auto` container.
  */
 export function Switch({
   label,

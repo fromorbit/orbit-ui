@@ -151,6 +151,7 @@ test('a pseudo-element makes the hit area 24px high without growing the 32x18 tr
       'relative',
       'h-[18px]',
       'w-8',
+      'border-[1.5px]',
       'before:absolute',
       'before:-inset-x-0.5',
       'before:-inset-y-[4.5px]',
