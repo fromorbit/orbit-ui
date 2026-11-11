@@ -28,7 +28,7 @@ export function PanelTabHeader({ title, actions }: PanelTabHeaderProps): ReactNo
   return (
     <div
       data-nt-panel-tab-header
-      className="box-border flex h-10 shrink-0 items-center gap-2 border-border border-b px-3 pt-px"
+      className="box-border flex h-(--nt-control-lg) shrink-0 items-center gap-2 border-border border-b px-3 pt-px"
     >
       <div
         data-nt-panel-tab-title

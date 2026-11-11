@@ -217,7 +217,7 @@ test('a dense row is 32px high, for a list such as the shortcuts', () => {
     </TooltipProvider>,
   )
   const row = container.querySelector('[data-nt-setting-row] > div')
-  expect(row?.className).toContain('min-h-8')
+  expect(row?.className).toContain('min-h-(--nt-control-md)')
   expect(row?.className).not.toContain('min-h-12')
 })
 

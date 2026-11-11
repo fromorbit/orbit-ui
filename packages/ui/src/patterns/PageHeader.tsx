@@ -94,7 +94,7 @@ export function PageHeader({ title, meta, actions, titleId }: PageHeaderProps): 
     // A `div`, not a `header`: outside a section a `header` is the `banner` landmark of the whole
     // window, and that is the title strip's, not a page's.
     <div data-nt-page-header className="flex shrink-0 flex-col">
-      <div className="flex h-10 min-w-0 items-center gap-3">
+      <div className="flex h-(--nt-control-lg) min-w-0 items-center gap-3">
         <h1
           {...(titleId === undefined ? {} : { id: titleId })}
           className="m-0 min-w-0 truncate text-[20px] leading-7 font-heading text-fg"

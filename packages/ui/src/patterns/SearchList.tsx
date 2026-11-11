@@ -765,7 +765,7 @@ export function SearchList({
               ) : (
                 <p
                   id={`${base}-g${group.index}`}
-                  className="m-0 flex h-8 items-center px-2 text-[12px] font-medium text-muted"
+                  className="m-0 flex h-(--nt-control-md) items-center px-2 text-[12px] font-medium text-muted"
                 >
                   {group.name}
                 </p>

@@ -67,7 +67,7 @@ export function SettingsGroup({ title, action, children }: SettingsGroupProps) {
     >
       {/* 8px in, on top of the heading's own 8px: its words start on the 16px edge of the row
           titles in the card, so a group has one left edge rather than two a step apart. */}
-      <div className="flex min-h-7 items-center justify-between gap-2 px-2">
+      <div className="flex min-h-(--nt-control-sm) items-center justify-between gap-2 px-2">
         <SectionHeading level={2} id={titleId}>
           {title}
         </SectionHeading>

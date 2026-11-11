@@ -150,7 +150,7 @@ export function Dialog({
               )}
             </div>
             {/* Room for the close button, which comes last in the focus order (below). */}
-            <span aria-hidden="true" className="size-7 shrink-0" />
+            <span aria-hidden="true" className="size-(--nt-control-sm) shrink-0" />
           </div>
           <div
             ref={body}

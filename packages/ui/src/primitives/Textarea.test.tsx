@@ -116,3 +116,11 @@ test('aria-invalid draws the danger border instead of the plain one', () => {
   expect(container.firstElementChild?.className).toContain('border-danger')
   expect(container.firstElementChild?.className).not.toContain('border-border')
 })
+
+test('one row stands as high as an md Input in every density: its padding reads --nt-control-md', () => {
+  render(<Textarea label="Message" />)
+  const box = screen.getByRole('textbox', { name: 'Message' }).parentElement
+  // A border of 1px twice and a line of 20px: the padding takes what is left of the control height.
+  expect(box?.className).toContain('py-[calc((var(--nt-control-md)_-_22px)/2)]')
+  expect(box?.className).not.toContain('py-[5px]')
+})

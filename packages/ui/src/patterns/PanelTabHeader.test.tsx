@@ -9,7 +9,7 @@ test('draws a 40px strip with its title and actions', () => {
   const header = container.querySelector('[data-nt-panel-tab-header]')
   expect(header).not.toBeNull()
   // 40px, a rule under it and the 12px inset of the panel's gutter.
-  expect(header?.className).toContain('h-10')
+  expect(header?.className).toContain('h-(--nt-control-lg)')
   expect(header?.className).toContain('border-b')
   expect(header?.className).toContain('px-3')
   // The rule inside the 40px, and the controls centred on a whole pixel above it.
@@ -22,7 +22,7 @@ test('draws a 40px strip with its title and actions', () => {
 test('keeps its height without a title or actions', () => {
   const { container } = render(<PanelTabHeader />)
   const header = container.querySelector('[data-nt-panel-tab-header]')
-  expect(header?.className).toContain('h-10')
+  expect(header?.className).toContain('h-(--nt-control-lg)')
   expect(header?.className).toContain('shrink-0')
   expect(header?.querySelector('[data-nt-panel-tab-actions]')).toBeNull()
 })

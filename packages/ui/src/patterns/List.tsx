@@ -455,7 +455,7 @@ export function ListGroup({
             aria-expanded={open}
             aria-label={label}
             onClick={() => onOpenChange(!open)}
-            className={`group/heading no-drag flex h-8 w-full items-center gap-1.5 rounded-md px-2 text-left text-[12px] ${
+            className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md px-2 text-left text-[12px] ${
               quiet ? 'font-normal' : 'font-medium'
             } text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
           >

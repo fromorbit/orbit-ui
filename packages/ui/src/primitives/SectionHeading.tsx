@@ -39,7 +39,7 @@ export function SectionHeading({
   return (
     <Tag
       id={id}
-      className="m-0 flex h-8 min-w-0 items-center gap-2 px-2 text-[12px] font-medium text-muted"
+      className="m-0 flex h-(--nt-control-md) min-w-0 items-center gap-2 px-2 text-[12px] font-medium text-muted"
     >
       <span className="min-w-0 truncate">{children}</span>
       {count === undefined ? null : (

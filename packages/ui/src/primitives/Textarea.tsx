@@ -41,8 +41,8 @@ function chromeFor(
   if (variant === 'bare') return 'no-drag block text-fg'
   // A field that failed its check (`aria-invalid`) keeps the danger border while it has the focus.
   const box = invalid
-    ? 'no-drag block rounded-md border border-danger bg-surface px-2 py-[5px] text-fg outline-focus focus-within:outline-2 focus-within:outline-offset-2'
-    : 'no-drag block rounded-md border border-border bg-surface px-2 py-[5px] text-fg outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2'
+    ? 'no-drag block rounded-md border border-danger bg-surface px-2 py-[calc((var(--nt-control-md)_-_22px)/2)] text-fg outline-focus focus-within:outline-2 focus-within:outline-offset-2'
+    : 'no-drag block rounded-md border border-border bg-surface px-2 py-[calc((var(--nt-control-md)_-_22px)/2)] text-fg outline-focus focus-within:border-accent-border focus-within:outline-2 focus-within:outline-offset-2'
   return disabled ? `${box} opacity-40` : box
 }
 
@@ -57,8 +57,9 @@ function rowsFor(text: string, minRows: number, maxRows: number): number {
  * The row count is derived from the text itself, the way `Composer` computed it inline before
  * this primitive existed, so a controlled caller sees the field react to a programmatic change of
  * `value` too, not only to typing. There is no `size` prop: unlike a single-line control this has
- * no fixed `h-(--nt-control-*)`, since its height must be free to grow; instead its border and
- * padding are sized so a single row lines up with a size `md` `Input` (32px) sitting next to it.
+ * no fixed `h-(--nt-control-*)`, since its height must be free to grow; instead its padding is
+ * what `--nt-control-md` leaves after the two borders and the 20px line, so a single row lines up
+ * with a size `md` `Input` sitting next to it in every density (32px, 28px when compact).
  */
 export function Textarea({
   label,

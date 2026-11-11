@@ -198,7 +198,7 @@ export function SettingRow({
   // with a description 61.5px high.
   const row = (
     <div
-      className={`flex items-center gap-x-6 gap-y-2 px-4 @max-[30rem]:flex-col @max-[30rem]:items-start ${dense ? 'min-h-8 py-1' : 'min-h-12 py-3'}`}
+      className={`flex items-center gap-x-6 gap-y-2 px-4 @max-[30rem]:flex-col @max-[30rem]:items-start ${dense ? 'min-h-(--nt-control-md) py-1' : 'min-h-12 py-3'}`}
     >
       {/* Stacked under 480px, the label column takes the row's width, so its line is cut at the
           edge of the card rather than running past it. */}

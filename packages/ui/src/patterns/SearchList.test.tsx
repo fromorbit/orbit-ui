@@ -1135,6 +1135,6 @@ test('sectionHeadings draws the group headings as the SectionHeading of every co
   const group = screen.getByRole('group', { name: 'Recent' })
   const heading = document.getElementById(group.getAttribute('aria-labelledby') ?? '')
   expect(heading?.className).toContain('min-w-0')
-  expect(heading?.className).toContain('h-8')
+  expect(heading?.className).toContain('h-(--nt-control-md)')
   expect(heading?.className).not.toContain('uppercase')
 })

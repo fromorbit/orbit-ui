@@ -6,7 +6,7 @@ test('is a quiet heading of 12px/500 in muted, in sentence case', () => {
   render(<SectionHeading>Wacht op jou</SectionHeading>)
   const heading = screen.getByRole('heading', { name: 'Wacht op jou', level: 3 })
   expect(heading.className.split(' ')).toEqual(
-    expect.arrayContaining(['text-[12px]', 'font-medium', 'text-muted', 'h-8']),
+    expect.arrayContaining(['text-[12px]', 'font-medium', 'text-muted', 'h-(--nt-control-md)']),
   )
   expect(heading.className).not.toContain('uppercase')
 })
