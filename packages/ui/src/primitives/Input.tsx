@@ -29,13 +29,16 @@ const wrapper = cva('no-drag inline-flex shrink-0 items-center gap-1.5 px-2 text
       invalid:
         'rounded-md border border-danger bg-surface outline-focus focus-within:outline-2 focus-within:outline-offset-2',
       bare: '',
+      // A plane without a frame, for a column of fields in a table: no edge between the rows, a
+      // lighter plane under the pointer, and the focus ring alone marks the field being typed in.
+      tint: 'rounded-md bg-surface outline-focus hover:bg-surface-hover focus-within:outline-2 focus-within:outline-offset-2',
     },
   },
   defaultVariants: { size: 'md', variant: 'default' },
 })
 
 /** Whether the field brings its own frame, or stands in one it is already inside. */
-export type InputVariant = 'default' | 'bare'
+export type InputVariant = 'default' | 'bare' | 'tint'
 
 /** The props of `Input`. */
 export interface InputProps
@@ -45,7 +48,11 @@ export interface InputProps
   size?: ControlSize
   /** Icon shown before the text. */
   icon?: IconName
-  /** `bare` for a field inside a panel: no border, no background, no ring. */
+  /**
+   * `bare` for a field inside a panel: no border, no background, no ring. `tint` for a field in a
+   * column of fields (a table of names): a plane without a frame, with the focus ring. A field that
+   * failed its check (`aria-invalid`) draws the danger border in every variant but `bare`.
+   */
   variant?: InputVariant
   /**
    * The accessible name of a cross at the end that empties the field ("Wissen"): the cross is
@@ -144,7 +151,13 @@ export function Input({
       .filter((id) => id !== undefined && id !== '')
       .join(' ') || undefined
   const frame =
-    variant === 'bare' ? 'bare' : isInvalid(rest['aria-invalid']) ? 'invalid' : 'default'
+    variant === 'bare'
+      ? 'bare'
+      : isInvalid(rest['aria-invalid'])
+        ? 'invalid'
+        : variant === 'tint'
+          ? 'tint'
+          : 'default'
   // Only read for an uncontrolled field: a controlled one says what it holds through `value`.
   const [typed, setTyped] = useState(() => hasText(rest.defaultValue))
   const filled = rest.value !== undefined ? hasText(rest.value) : typed
