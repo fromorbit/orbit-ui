@@ -1,7 +1,10 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createRef } from 'react'
 import { describe, expect, test, vi } from 'vitest'
+import { DropdownMenu } from '../overlays/DropdownMenu'
 import { Icon } from '../primitives/Icon'
+import { uiWrapper } from '../testing/ui-wrapper'
 import { AppRail, AppRailItem } from './AppRail'
 
 /** A rail of three apps and a foot, with Lens open. */
@@ -194,5 +197,144 @@ describe('AppRail', () => {
     await userEvent.tab()
     expect(halo).toHaveFocus()
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Halo')
+  })
+
+  test('hands its ref and its props to the control, so it can be the trigger of a menu', async () => {
+    const onShortcuts = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <DropdownMenu
+          label="Hulp"
+          side="top"
+          trigger={<AppRailItem label="Hulp" icon={<Icon name="circle-help" />} />}
+          items={[{ id: 'keys', label: 'Sneltoetsen', onSelect: onShortcuts }]}
+        />
+      </AppRail>,
+    )
+    const help = screen.getByRole('button', { name: 'Hulp' })
+    // Radix wires the trigger itself: what it opens and whether it is open.
+    expect(help).toHaveAttribute('aria-haspopup', 'menu')
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    // Still inside its list item, so the rail keeps one list of items.
+    expect(help.closest('li')?.parentElement?.tagName).toBe('UL')
+    await userEvent.click(help)
+    expect(help).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Sneltoetsen' }))
+    expect(onShortcuts).toHaveBeenCalledTimes(1)
+  })
+
+  test('takes a ref to its link or button', () => {
+    const link = createRef<HTMLAnchorElement>()
+    const button = createRef<HTMLButtonElement>()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem ref={link} label="Lens" icon={<Icon name="scan-search" />} href="#/lens" />
+        <AppRailItem
+          ref={button}
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => {}}
+        />
+      </AppRail>,
+    )
+    expect(link.current).toBe(screen.getByRole('link', { name: 'Lens' }))
+    expect(button.current).toBe(screen.getByRole('button', { name: 'Hulp' }))
+  })
+
+  test('says whether the menu it opens is open, as aria-expanded', () => {
+    const { rerender } = render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => {}}
+          aria-haspopup="menu"
+          aria-expanded={false}
+        />
+      </AppRail>,
+    )
+    expect(screen.getByRole('button', { name: 'Hulp' })).toHaveAttribute('aria-expanded', 'false')
+    rerender(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => {}}
+          aria-haspopup="menu"
+          aria-expanded
+        />
+      </AppRail>,
+    )
+    expect(screen.getByRole('button', { name: 'Hulp' })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  test('keeps its own click and the one handed to it', async () => {
+    const onSelect = vi.fn()
+    const onClick = vi.fn()
+    const onNavigate = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={onSelect}
+          onClick={onClick}
+        />
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          onNavigate={onNavigate}
+          onClick={onClick}
+        />
+      </AppRail>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Hulp' }))
+    expect(onClick).toHaveBeenCalledTimes(1)
+    expect(onSelect).toHaveBeenCalledTimes(1)
+    await userEvent.click(screen.getByRole('link', { name: 'Lens' }))
+    expect(onClick).toHaveBeenCalledTimes(2)
+    expect(onNavigate).toHaveBeenCalledWith('#/lens')
+  })
+
+  test('shows its name and its key in a tooltip, and announces the key', async () => {
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          shortcut="demo.open"
+        />
+      </AppRail>,
+      { wrapper: uiWrapper() },
+    )
+    const lens = screen.getByRole('link', { name: 'Lens' })
+    expect(lens).toHaveAttribute('aria-keyshortcuts', 'Meta+O')
+    act(() => lens.focus())
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent('Lens')
+    expect(tooltip.querySelector('[data-nt-kbd]')).not.toBeNull()
+    // The key is a description of the item, never part of its name.
+    expect(lens).toHaveAccessibleName('Lens')
+  })
+
+  test('draws no tooltip on the wide rail when the key is unknown', async () => {
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          shortcut="demo.open"
+        />
+      </AppRail>,
+    )
+    const lens = screen.getByRole('link', { name: 'Lens' })
+    act(() => lens.focus())
+    // Without a provider the key is unknown, and the label already stands under the icon.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(lens).not.toHaveAttribute('aria-describedby')
   })
 })
