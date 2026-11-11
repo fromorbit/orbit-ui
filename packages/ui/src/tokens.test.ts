@@ -671,6 +671,13 @@ describe('the tint of a translucent window', () => {
     )
   })
 
+  test('the side panel is opaque on an opaque window, in both themes', () => {
+    expect(tokens.get('--nt-side-panel-background')).toBe('var(--nt-side-panel)')
+    expect(lightTokens.get('--nt-side-panel-background')).toBe('var(--nt-side-panel)')
+    // `bg-side-panel` stays the opaque layer: the tint is a background of its own to opt into.
+    expect(themeCss).toContain('--color-side-panel: var(--nt-side-panel);')
+  })
+
   /** The alpha of a tint, `rgb(r g b / a)`, and whether its colour is the given hex. */
   function tint(value: string | undefined, hex: string): number {
     const match = value?.match(/^rgb\((\d+ \d+ \d+) \/ ([\d.]+)\)$/)
@@ -694,6 +701,7 @@ describe('the tint of a translucent window', () => {
       test.each([
         ['--nt-sidebar-background', '--nt-frame', 0.85],
         ['--nt-panel-background', '--nt-canvas', 0.9],
+        ['--nt-side-panel-background', '--nt-side-panel', 0.9],
       ] as const)('%s keeps its words legible: a floor of opacity', (layer, ground, floor) => {
         const value = translucent.get(layer)
         const alpha = tint(value, hexIn(palette, ground))
