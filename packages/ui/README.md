@@ -53,6 +53,8 @@ The `@source` path is relative to the consumer's CSS file. Whatever concerns onl
 
 **The product.** A product's own colour is only its satellite (`--nt-satellite`, Tailwind `satellite`): Orbit orange by default, Halo mint with `data-product="halo"` on `<html>`, Fold lavender with `data-product="fold"`. It is never a role: the main button is monochrome, links and the focus ring are violet, whatever the product.
 
+**The density.** `data-density="compact"` on `<html>` lowers every control a step (`--nt-control-*`: 20, 24, 28 and 32px instead of 24, 28, 32 and 40px) for a tool used all day, the desktop app; without it, as on the website, the heights stay regular. A host chooses a density, never its own `--nt-*`. See `docs/family-style.md`.
+
 **The app through `UiProvider`.** Shortcuts, platform, theme, the locale for numbers and the hosted layers come in through a single provider; without it everything works with a neutral default (no key caps, platform `mac`):
 
 ```tsx
