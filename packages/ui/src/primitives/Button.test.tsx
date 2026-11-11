@@ -4,6 +4,7 @@ import { createRef } from 'react'
 import { expect, test, vi } from 'vitest'
 import { uiWrapper } from '../testing/ui-wrapper'
 import { Button } from './Button'
+import { controlPadEnd, controlPadX } from './control-size'
 
 test('is a button by default that does not submit a form on its own', () => {
   render(<Button>Verstuur</Button>)
@@ -353,3 +354,26 @@ test('variant="idle" draws its key as on the accent, so the button keeps its wid
   expect(idle).toBeDefined()
   expect(idle?.className).toBe(primary?.className)
 })
+
+test.each(['xs', 'sm', 'md', 'lg'] as const)(
+  'a %s button pads its sides from controlPadX, the one source of that padding',
+  (size) => {
+    render(<Button size={size}>Opslaan</Button>)
+    expect(screen.getByRole('button', { name: 'Opslaan' }).className.split(' ')).toContain(
+      controlPadX[size],
+    )
+  },
+)
+
+test.each(['xs', 'sm', 'md', 'lg'] as const)(
+  'a %s button with rowInset keeps the end padding from controlPadEnd',
+  (size) => {
+    render(
+      <Button size={size} rowInset>
+        Opslaan
+      </Button>,
+    )
+    const classes = screen.getByRole('button', { name: 'Opslaan' }).className.split(' ')
+    expect(classes).toEqual(expect.arrayContaining(['ps-2', controlPadEnd[size]]))
+  },
+)
