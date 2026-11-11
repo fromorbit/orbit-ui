@@ -1,8 +1,8 @@
 import { cva } from 'class-variance-authority'
 import { Children, type ComponentPropsWithRef, type ReactNode } from 'react'
 import { useUi } from '../provider/UiProvider'
-import type { ControlSize } from './control-size'
-import { controlSize } from './control-size'
+import type { ControlPadSize } from './control-size'
+import { controlPadEnd, controlPadX, controlSize } from './control-size'
 import { Kbd } from './Kbd'
 import { Spinner } from './Spinner'
 import type { ShortcutLabel } from './shortcut'
@@ -24,7 +24,7 @@ export interface ButtonProps extends Omit<ComponentPropsWithRef<'button'>, 'clas
    * button in a diff's footer; it lights up on keyboard focus as it does on hover, since at that
    * size the focus ring alone is easy to miss. Not a `ControlSize`: nothing else is that small.
    */
-  size?: ControlSize | 'xs'
+  size?: ControlPadSize
   /** Full width with its content left-aligned, for a button that stands alone in a column. */
   block?: boolean
   /**
@@ -127,14 +127,14 @@ const button = cva(
       shrink: { true: 'min-w-0 shrink', false: 'shrink-0' },
     },
     compoundVariants: [
-      { size: 'xs', rowInset: false, class: 'px-1.5' },
-      { size: 'sm', rowInset: false, class: 'px-2.5' },
-      { size: 'md', rowInset: false, class: 'px-3' },
-      { size: 'lg', rowInset: false, class: 'px-4' },
-      { size: 'xs', rowInset: true, class: 'ps-2 pe-1.5' },
-      { size: 'sm', rowInset: true, class: 'ps-2 pe-2.5' },
-      { size: 'md', rowInset: true, class: 'ps-2 pe-3' },
-      { size: 'lg', rowInset: true, class: 'ps-2 pe-4' },
+      { size: 'xs', rowInset: false, class: controlPadX.xs },
+      { size: 'sm', rowInset: false, class: controlPadX.sm },
+      { size: 'md', rowInset: false, class: controlPadX.md },
+      { size: 'lg', rowInset: false, class: controlPadX.lg },
+      { size: 'xs', rowInset: true, class: `ps-2 ${controlPadEnd.xs}` },
+      { size: 'sm', rowInset: true, class: `ps-2 ${controlPadEnd.sm}` },
+      { size: 'md', rowInset: true, class: `ps-2 ${controlPadEnd.md}` },
+      { size: 'lg', rowInset: true, class: `ps-2 ${controlPadEnd.lg}` },
     ],
     defaultVariants: {
       variant: 'secondary',

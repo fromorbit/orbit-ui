@@ -44,6 +44,8 @@ const ALLOWED: Record<string, string[]> = {
   'patterns/FileDrop.tsx': ['size-8'],
   // The line of text under the composer's field: a line of 12px type, not a control.
   'patterns/Composer.tsx': ['min-h-6'],
+  // The mark of a hero empty state (40px) and its icon (24px): a glyph, not a target.
+  'patterns/EmptyState.tsx': ['size-10', 'size-6'],
 }
 
 test('a control, row or head takes its height from --nt-control-*', () => {

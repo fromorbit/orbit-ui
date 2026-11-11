@@ -27,5 +27,12 @@ export default {
       </div>
     ),
     Ongeldig: () => <Input label="E-mailadres" aria-invalid defaultValue="noor@" />,
+    // A column of fields in a table: a plane without a frame, the ring alone shows the focus.
+    Vlak: () => (
+      <div className="flex w-56 flex-col gap-1">
+        <Input label="Naam van de eerste status" variant="tint" defaultValue="Te doen" />
+        <Input label="Naam van de tweede status" variant="tint" defaultValue="Bezig" />
+      </div>
+    ),
   },
 } satisfies Story

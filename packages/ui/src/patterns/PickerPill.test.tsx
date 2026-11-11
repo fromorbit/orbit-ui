@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
+import { controlPadX } from '../primitives/control-size'
 import { nl } from '../testing/labels'
 import { PickerPill, type PickerPillProps } from './PickerPill'
 import type { SearchListItem } from './SearchList'
@@ -438,4 +439,12 @@ test('a read-only pill frame keeps the box of the pill, so it lines up with a qu
     expect.arrayContaining(['h-(--nt-control-md)', 'ps-2.5', 'pe-2']),
   )
   expect(text).toHaveTextContent('Project: webshop')
+})
+
+test('a read-only pill pads its text as a Button at size sm does, so the value does not shift', () => {
+  render(<Pill readOnly />)
+  const classes = document.querySelector('[data-nt-pill]')?.className.split(' ') ?? []
+  expect(classes).toContain(controlPadX.sm)
+  expect(classes).toContain('px-2.5')
+  expect(classes).not.toContain('px-2')
 })

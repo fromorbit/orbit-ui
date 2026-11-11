@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { controlHeight, controlSize, controlSquare } from './control-size'
+import {
+  controlHeight,
+  controlPadEnd,
+  controlPadX,
+  controlPadXPx,
+  controlSize,
+  controlSquare,
+} from './control-size'
 
 describe('controlHeight', () => {
   test.each([
@@ -33,5 +40,20 @@ describe('controlSquare', () => {
   ] as const)('%s has the same width as height, from the same token', (size, width, height) => {
     expect(controlSquare[size]).toContain(width)
     expect(controlSize[size]).toContain(height)
+  })
+})
+
+describe('controlPadX', () => {
+  // Literal pairs again: the class a consumer's Tailwind generates, and the pixels it stands for,
+  // so a caller that aligns text with a button's (`13 - controlPadXPx.sm`) moves with the family.
+  test.each([
+    ['xs', 'px-1.5', 'pe-1.5', 6],
+    ['sm', 'px-2.5', 'pe-2.5', 10],
+    ['md', 'px-3', 'pe-3', 12],
+    ['lg', 'px-4', 'pe-4', 16],
+  ] as const)('%s pads with %s, the %s end and %ipx', (size, both, end, px) => {
+    expect(controlPadX[size]).toBe(both)
+    expect(controlPadEnd[size]).toBe(end)
+    expect(controlPadXPx[size]).toBe(px)
   })
 })

@@ -71,5 +71,29 @@ export default {
         </Banner>
       </Panel>
     ),
+    // Last, so the states above keep their reference images. A sentence to read with a way out
+    // beside it: the words in the text colour, only the icon in the tone.
+    'Om te lezen, met een actie': () => (
+      <Panel>
+        <Banner
+          tone="attention"
+          prose
+          action={
+            <Button size="sm" variant="secondary">
+              Project maken
+            </Button>
+          }
+        >
+          Deze map is nog geen project. Maak er een project van om de chats en runs te bewaren.
+        </Banner>
+      </Panel>
+    ),
+    'Om te lezen, gevaar': () => (
+      <Panel>
+        <Banner tone="danger" prose>
+          De map kon niet worden geopend
+        </Banner>
+      </Panel>
+    ),
   },
 } satisfies Story

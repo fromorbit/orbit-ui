@@ -30,5 +30,15 @@ export default {
         description="Probeer een kortere zoekterm."
       />
     ),
+    // Last, so the states above keep their reference images. The first impression of a screen.
+    'Eerste start': () => (
+      <EmptyState
+        hero
+        icon="message-circle"
+        title="Waar wil je aan werken?"
+        titleAs="h1"
+        description="Stel een vraag of beschrijf een taak; de chat blijft bij dit project."
+      />
+    ),
   },
 } satisfies Story

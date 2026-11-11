@@ -26,6 +26,9 @@ export interface SwitchProps {
  * still reads as a control and never as on. Never violet and never a product's satellite: the
  * switch is a control, not a link or a brand. Disabled keeps the colours of its state at the lower
  * opacity every control has, never a third grey.
+ *
+ * Its 24px hit area (`::before`, 3px above and below the track) counts toward the overflow of a
+ * scrolling ancestor: keep 4px of room after a switch at the end of an `overflow-auto` container.
  */
 export function Switch({
   label,
@@ -43,7 +46,10 @@ export function Switch({
       checked={checked}
       disabled={disabled}
       onCheckedChange={onCheckedChange}
-      className="no-drag relative flex h-[18px] w-8 shrink-0 items-center rounded-full border-[1.5px] border-control-border bg-transparent outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+      // The `before` makes the hit area 24px high (WCAG 2.5.8) without growing what is drawn: an
+      // absolute child measures from the padding box, 29 by 15 inside the 1.5px edge, so 2px out on
+      // either side and 4.5px above and below give 33 by 24, in either density.
+      className="no-drag relative flex h-[18px] w-8 shrink-0 items-center before:absolute before:-inset-x-0.5 before:-inset-y-[4.5px] before:content-[''] rounded-full border-[1.5px] border-control-border bg-transparent outline-focus transition-colors duration-(--nt-duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
     >
       {/* The thumb is the one thing here that really travels, so reduced motion puts it in its
           other position without the slide — the same rule as the chevron of a Collapsible. */}

@@ -187,3 +187,28 @@ test('aria-invalid draws the danger border instead of the plain one', () => {
   expect(container.firstElementChild?.className).toContain('border-border')
   expect(container.firstElementChild?.className).not.toContain('border-danger')
 })
+
+test('tint is a plane without a frame that lights on hover and shows focus with the ring alone', () => {
+  render(<Input label="Naam" variant="tint" />)
+  const wrapper = screen.getByRole('textbox', { name: 'Naam' }).parentElement as HTMLElement
+  const classes = wrapper.className.split(' ')
+  expect(classes).toEqual(
+    expect.arrayContaining([
+      'rounded-md',
+      'bg-surface',
+      'hover:bg-surface-hover',
+      'outline-focus',
+      'focus-within:outline-2',
+      'focus-within:outline-offset-2',
+      'h-(--nt-control-md)',
+    ]),
+  )
+  expect(classes).not.toContain('border')
+  expect(classes).not.toContain('focus-within:border-accent-border')
+})
+
+test('a tint field that failed its check keeps the danger border', () => {
+  render(<Input label="Naam" variant="tint" aria-invalid />)
+  const wrapper = screen.getByRole('textbox', { name: 'Naam' }).parentElement as HTMLElement
+  expect(wrapper.className.split(' ')).toEqual(expect.arrayContaining(['border', 'border-danger']))
+})

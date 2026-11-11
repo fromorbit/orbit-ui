@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { Popover } from '../overlays/Popover'
 import { Button } from '../primitives/Button'
-import { controlSize } from '../primitives/control-size'
+import { controlPadX, controlSize } from '../primitives/control-size'
 import { Icon, type IconName } from '../primitives/Icon'
 import { COLLAPSE_BELOW, Pill, PillText } from '../primitives/Pill'
 import {
@@ -466,16 +466,16 @@ export function PickerPill({
   if (readOnly) {
     return (
       // Every measurement of the ghost `Button` at size `sm` it has to match: `controlSize.sm` for
-      // the height token and the text size (read from the same map the button reads, so the two
-      // cannot drift), the padding, gap and weight beside it, and the same giving-way rule as the
-      // trigger — after the first message a whole toolbar of these stands there, and it has to fit
-      // the same window. Its own `title` rather than a wrapper's: this is text, it keeps its
+      // the height and the text size, `controlPadX.sm` for the padding (the maps the button reads
+      // itself, so the two cannot drift), the gap and weight beside them, and the same giving-way
+      // rule as the trigger — after the first message a whole toolbar of these stands there, and
+      // it has to fit the same window. Its own `title` rather than a wrapper's: this is text, it keeps its
       // pointer events, and a span around a span would be furniture for nothing. What it does not
       // get is the chevron: nothing opens here.
       <span
         data-nt-pill
         {...(note ? { title: note } : {})}
-        className={`${controlSize.sm} inline-flex ${give} items-center gap-1.5 whitespace-nowrap rounded-md px-2 font-medium text-muted`}
+        className={`${controlSize.sm} inline-flex ${give} items-center gap-1.5 whitespace-nowrap rounded-md ${controlPadX.sm} font-medium text-muted`}
       >
         {/* Out of the flow (`sr-only` is absolutely positioned), so it costs no pixel and adds no
             gap, and it stands before the value so the line reads "Project: webshop". */}

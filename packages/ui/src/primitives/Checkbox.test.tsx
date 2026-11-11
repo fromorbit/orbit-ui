@@ -54,3 +54,28 @@ test('indeterminate reads as mixed, and a press turns it on', async () => {
   await userEvent.click(control)
   expect(onCheckedChange).toHaveBeenCalledWith(true)
 })
+
+test('a pseudo-element widens the hit area to 24px without growing the 16px box', () => {
+  // The box is 16px with a 1px edge, so its padding box, which an absolute child measures from,
+  // is 14px: 5px out on every side makes 24 by 24. Neither size depends on the density.
+  render(<Checkbox label="Netwerktoegang" checked={false} onCheckedChange={() => {}} />)
+  const classes = screen.getByRole('checkbox', { name: 'Netwerktoegang' }).className.split(' ')
+  expect(classes).toEqual(
+    expect.arrayContaining([
+      'relative',
+      'size-4',
+      'border',
+      'before:absolute',
+      'before:-inset-[5px]',
+      "before:content-['']",
+    ]),
+  )
+})
+
+test('an invalid box keeps the same hit area', () => {
+  render(
+    <Checkbox label="Netwerktoegang" checked={false} aria-invalid onCheckedChange={() => {}} />,
+  )
+  const classes = screen.getByRole('checkbox', { name: 'Netwerktoegang' }).className.split(' ')
+  expect(classes).toEqual(expect.arrayContaining(['relative', 'border', 'before:-inset-[5px]']))
+})

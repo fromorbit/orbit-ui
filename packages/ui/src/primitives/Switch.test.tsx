@@ -140,3 +140,22 @@ test('the thumb slides, and stands still when motion is reduced', () => {
   expect(thumb?.className).toContain('duration-(--nt-duration-fast)')
   expect(thumb?.className).toContain('motion-reduce:transition-none')
 })
+
+test('a pseudo-element makes the hit area 24px high without growing the 32x18 track', () => {
+  // The track has a 1.5px edge, so its padding box is 29 by 15: 2px out on either side and 4.5px
+  // above and below make 33 by 24. Neither size depends on the density.
+  render(<Switch label="Netwerktoegang" checked={false} onCheckedChange={() => {}} />)
+  const classes = screen.getByRole('switch', { name: 'Netwerktoegang' }).className.split(' ')
+  expect(classes).toEqual(
+    expect.arrayContaining([
+      'relative',
+      'h-[18px]',
+      'w-8',
+      'border-[1.5px]',
+      'before:absolute',
+      'before:-inset-x-0.5',
+      'before:-inset-y-[4.5px]',
+      "before:content-['']",
+    ]),
+  )
+})
