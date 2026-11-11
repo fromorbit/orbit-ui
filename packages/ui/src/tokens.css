@@ -531,6 +531,27 @@
   --nt-satellite: var(--nt-brand-comet);
 }
 
+/* The density of a host. Without it a control stands on the heights above (the website, a page
+   read at a distance). `data-density="compact"` on an element (as a rule `<html>`) lowers every
+   control a step for everything inside, for a tool used all day at close range (the desktop app,
+   in the manner of Linear or Codex): 20, 24, 28 and 32px. Every row, head, foot and toolbar of
+   the kit reads these tokens (`tests/control-heights.test.ts`), so they follow. `regular` brings
+   the heights above back inside a compact host. A host never sets an `--nt-*` itself; it picks a
+   density. After the light block, which repeats no height, so a `data-theme` further in cannot
+   take it back. */
+[data-density="compact"] {
+  --nt-control-xs: 20px;
+  --nt-control-sm: 24px;
+  --nt-control-md: 28px;
+  --nt-control-lg: 32px;
+}
+[data-density="regular"] {
+  --nt-control-xs: 24px;
+  --nt-control-sm: 28px;
+  --nt-control-md: 32px;
+  --nt-control-lg: 40px;
+}
+
 /* The window material shimmers through the tint of a translucent window. The sidebar shows the material
    through the frame's tint, the main panel covers it further with the canvas for legibility. */
 :root[data-translucent="true"] {
