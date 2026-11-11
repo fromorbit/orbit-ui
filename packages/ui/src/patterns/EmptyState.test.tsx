@@ -60,3 +60,42 @@ test('without an action there is no button', () => {
   render(<EmptyState icon="message-circle" title="Nog geen chats" />)
   expect(screen.queryByRole('button')).toBeNull()
 })
+
+test('hero draws a 40px mark with a 24px icon, a 20px title and the parts 24px apart', () => {
+  const { container } = render(
+    <EmptyState
+      hero
+      icon="message-circle"
+      title="Waar wil je aan werken?"
+      titleAs="h1"
+      description="Stel een vraag over dit project."
+    />,
+  )
+  const root = container.firstElementChild as HTMLElement
+  expect(root.className.split(' ')).toEqual(expect.arrayContaining(['gap-6', 'py-10']))
+  const mark = container.querySelector('svg')?.parentElement
+  expect(mark?.className.split(' ')).toEqual(
+    expect.arrayContaining([
+      'size-10',
+      'rounded-lg',
+      'bg-mark',
+      'text-secondary',
+      '[&_svg]:size-6',
+    ]),
+  )
+  const title = screen.getByRole('heading', { level: 1, name: 'Waar wil je aan werken?' })
+  expect(title.className.split(' ')).toEqual(
+    expect.arrayContaining(['text-[20px]', 'font-heading', 'text-fg']),
+  )
+  expect(screen.getByText('Stel een vraag over dit project.').className.split(' ')).toEqual(
+    expect.arrayContaining(['text-[13px]', 'max-w-80', 'text-muted']),
+  )
+})
+
+test('without hero the empty state keeps its quiet form', () => {
+  render(
+    <EmptyState icon="message-circle" title="Nog geen chats" description="Begin een gesprek." />,
+  )
+  expect(screen.getByText('Nog geen chats').className).toBe('m-0 text-[15px] font-heading text-fg')
+  expect(screen.getByText('Begin een gesprek.').className.split(' ')).toContain('text-[12px]')
+})
