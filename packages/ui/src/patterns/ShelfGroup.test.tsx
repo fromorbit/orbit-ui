@@ -69,7 +69,13 @@ test('a 40px row of 12px muted words with a hairline above and the chevron on th
   render(<Shelf />)
   const toggle = screen.getByRole('button', { name: 'Afgerond 143' })
   expect(toggle.className.split(' ')).toEqual(
-    expect.arrayContaining(['h-(--nt-control-lg)', 'border-t', 'border-border', 'text-[12px]', 'text-muted']),
+    expect.arrayContaining([
+      'h-(--nt-control-lg)',
+      'border-t',
+      'border-border',
+      'text-[12px]',
+      'text-muted',
+    ]),
   )
   const glyphs = toggle.querySelectorAll('svg')
   expect(glyphs).toHaveLength(1)

@@ -67,7 +67,9 @@ test('the list of exceptions names only classes that are still there', () => {
   const stale = Object.entries(ALLOWED).flatMap(([path, names]) => {
     const text = stripComments(read(`${SRC}/${path}`))
     return names
-      .filter((name) => !new RegExp(`(?<![\\w-])${name.replace(/[[\]]/g, '\\$&')}(?![\\w-])`).test(text))
+      .filter(
+        (name) => !new RegExp(`(?<![\\w-])${name.replace(/[[\]]/g, '\\$&')}(?![\\w.-])`).test(text),
+      )
       .map((name) => `${path}: ${name}`)
   })
   expect(stale).toEqual([])
