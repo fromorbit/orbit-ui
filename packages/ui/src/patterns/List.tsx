@@ -730,16 +730,19 @@ export interface ListGroupProps {
    * the word, the chevron behind it and only in sight under the pointer, with the focus or folded.
    * `disclosure`: the chevron before the word and always in sight (turned to the word while
    * folded), the count at the end of the heading in DM Mono 11px, a figure or the caller's words
-   * ("1 bezig, 1 vraagt iets"), and a faint fill under the pointer — the groups of a side panel's
+   * ("1 bezig, 1 vraagt iets"), and the hover of the shell (`surface-hover`) — the groups of a side panel's
    * column in the design. One form for every group that folds in such a column, the shelf at its
    * foot (Afgerond) too, so one column has one kind of heading; opened by the reader, it brings its
-   * first row into view, as `ShelfGroup` does.
+   * first row into view, as `ShelfGroup` does. An open by the owner alone, or a press the owner
+   * turned down, scrolls nothing.
    */
   variant?: 'label' | 'disclosure'
   /**
-   * The heading starts 12px in instead of 8px: in a column that keeps an 8px gutter (a side
-   * panel), its first glyph stands 20px from the edge, on the line of a `SectionHeading` set 4px
-   * in and of the words of the rows around it, rather than 4px left of them.
+   * The heading starts 12px in instead of 8px. In a column that keeps an 8px gutter (a side
+   * panel) its first glyph stands 20px from the edge: with `variant="disclosure"` that is the
+   * chevron, on the line of a `SectionHeading` set 4px in and of the chats, and the word follows at
+   * 38px. The rows of `ListRow` do not stand on that line yet: 16px for a regular row, 18px for a
+   * `comfortable` one. The design puts headings and rows alike at 18px; that is a next step.
    */
   inset?: boolean
   /**
@@ -813,14 +816,16 @@ export function ListGroup({
   const disclosure = variant === 'disclosure'
   const Heading = level === 3 ? 'h3' : 'h2'
   const rows = useRef<HTMLUListElement>(null)
-  // Set by a press that opens the group, so a group that starts open scrolls nothing.
+  // Set by a press that opens the group, so a group that starts open, or that its owner opens
+  // later of its own accord, scrolls nothing.
   const opened = useRef(false)
   // A disclosure group may stand at the foot of its column (Afgerond): opened there, its rows
   // appear below the fold and nothing seems to happen. Its first row is brought into view instead.
+  // Every change of `open` clears the flag, whichever way it went.
   useEffect(() => {
-    if (!open || !opened.current) return
+    const asked = opened.current
     opened.current = false
-    rows.current?.firstElementChild?.scrollIntoView({ block: 'nearest' })
+    if (open && asked) rows.current?.firstElementChild?.scrollIntoView({ block: 'nearest' })
   }, [open])
   const chevron = (
     <span
@@ -850,13 +855,20 @@ export function ListGroup({
             onClick={() => {
               opened.current = disclosure && !open
               onOpenChange(!open)
+              // An owner that turns the press down changes nothing, so no effect clears the flag;
+              // it goes after this turn, when the owner's answer has been drawn.
+              if (opened.current) {
+                setTimeout(() => {
+                  opened.current = false
+                }, 0)
+              }
             }}
             className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md ${
               inset ? 'ps-3 pe-2' : 'px-2'
             } text-left text-[12px] ${
               quiet ? 'font-normal' : 'font-medium'
             } text-muted outline-focus ${
-              disclosure ? 'hover:bg-surface ' : ''
+              disclosure ? 'hover:bg-surface-hover ' : ''
             }hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
           >
             {disclosure ? chevron : null}

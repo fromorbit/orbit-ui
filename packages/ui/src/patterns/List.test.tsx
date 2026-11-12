@@ -1563,6 +1563,34 @@ test('a group without a variant scrolls nothing when it opens', async () => {
   spy.mockRestore()
 })
 
+test('a press its owner turned down leaves nothing behind: a later open scrolls nothing', async () => {
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+  function Owner({ open }: { open: boolean }) {
+    return (
+      <List label="Zijpaneel">
+        <ListGroup
+          variant="disclosure"
+          heading="Afgerond"
+          label="Afgerond"
+          open={open}
+          onOpenChange={() => {}}
+        >
+          <ListRow title="Oude chat" />
+        </ListGroup>
+      </List>
+    )
+  }
+  const { rerender } = render(<Owner open={false} />)
+  // The reader asks; the owner keeps it folded.
+  await userEvent.click(screen.getByRole('button', { name: 'Afgerond' }))
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  // Later the owner opens it of its own accord.
+  rerender(<Owner open />)
+  expect(screen.getByRole('button', { name: 'Oude chat' })).toBeInTheDocument()
+  expect(spy).not.toHaveBeenCalled()
+  spy.mockRestore()
+})
+
 /** A roving column with one folding heading row whose state the test can read. */
 function TogglingColumn() {
   const [open, setOpen] = useState(true)
@@ -1609,4 +1637,10 @@ test('the context-menu key on a heading row does nothing', async () => {
   expect(runs).toHaveFocus()
   expect(runs).toHaveAttribute('aria-expanded', 'true')
   expect(screen.queryByRole('menu')).toBeNull()
+})
+
+test('a disclosure heading takes the hover of the shell', () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  expect(button.className).toContain('hover:bg-surface-hover')
 })
