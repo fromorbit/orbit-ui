@@ -72,4 +72,12 @@ describe('theme.css', () => {
     expect(themeCss).not.toContain('::-webkit-scrollbar')
     expect(themeCss).not.toMatch(/\.(titlebar|sidebar|panel|drag-strip)\s*\{/)
   })
+
+  test('lifts the meta of a pressed row of a list as it does on a current one', () => {
+    // A pressed row (`aria-pressed`, a choice) takes the fill of a current one, so its muted meta
+    // needs the same step up to secondary to keep AA on that plane.
+    expect(themeCss).toMatch(
+      /\[data-nt-list-row\]\[aria-pressed="true"\] \.text-muted[^{]*\{\s*color: var\(--nt-text-secondary\);/,
+    )
+  })
 })
