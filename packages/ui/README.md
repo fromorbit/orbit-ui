@@ -55,12 +55,18 @@ The `@source` path is relative to the consumer's CSS file. Whatever concerns onl
 
 **The density.** `data-density="compact"` on `<html>` lowers every control a step (`--nt-control-*`: 20, 24, 28 and 32px instead of 24, 28, 32 and 40px) for a tool used all day, the desktop app; without it, as on the website, the heights stay regular. A host chooses a density, never its own `--nt-*`. See `docs/family-style.md`.
 
-**The app through `UiProvider`.** Shortcuts, platform, theme, the locale for numbers and the hosted layers come in through a single provider; without it everything works with a neutral default (no key caps, platform `mac`):
+**The app through `UiProvider`.** Shortcuts, platform, theme, the locale for numbers, the hosted layers and the words a host would otherwise pass on every call (`labels`: the name of the toast region, the words of `SettingRow`) come in through a single provider; without it everything works with a neutral default (no key caps, platform `mac`). A component's own prop always wins over the provider's words:
 
 ```tsx
 import { UiProvider } from '@nt/ui'
 
-<UiProvider shortcuts={shortcutPort} platform="windows" locale="nl-NL" host={{ surfaces }}>
+<UiProvider
+  shortcuts={shortcutPort}
+  platform="windows"
+  locale="nl-NL"
+  host={{ surfaces }}
+  labels={{ toastRegion: t('toast.region'), settingRow: settingRowLabels }}
+>
   <App />
 </UiProvider>
 ```
