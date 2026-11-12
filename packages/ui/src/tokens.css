@@ -255,6 +255,24 @@
      the rows. See the `darwin` rule. */
   --nt-sidebar-strip-inset-start: 16px;
   --nt-sidebar-width: 264px;
+  /* The shell (`docs/family-style.md`, "The shell"): the app rail on the frame, 72px with a label
+     under each icon (`AppRail`), 56px with the icons alone; the top bar above it, 48px in every
+     density, like the title bar. */
+  --nt-rail-width: 72px;
+  --nt-rail-width-narrow: 56px;
+  --nt-top-bar-height: 48px;
+  /* Where the content of the top bar starts and ends: 16px in, and on macOS after the traffic
+     lights (the `darwin` rule); at least 12px from the end, and on Windows clear of its window
+     controls. Resolved on the root, where `data-platform` stands. */
+  --nt-top-bar-inset-start: 16px;
+  --nt-top-bar-inset-end: max(12px, var(--nt-window-controls-width));
+  /* Where the floating plane of the side panel and the content starts, for what a host lays over
+     it (a toast, a layer of the side panel): after the rail, 1px of frame and the hairline of the
+     plane's start edge; under the top bar and the hairline along its top. `-narrow` beside the
+     narrow rail of 56px. */
+  --nt-shell-plane-inset-start: calc(var(--nt-rail-width) + 2px);
+  --nt-shell-plane-inset-start-narrow: calc(var(--nt-rail-width-narrow) + 2px);
+  --nt-shell-plane-inset-top: calc(var(--nt-top-bar-height) + 1px);
   /* The foot of the sidebar: the account, the archive and the gear, one row of 44px. */
   --nt-sidebar-foot-height: 44px;
   /* A toast fits under the sidebar, less 8px on either side: 248px. */
@@ -327,6 +345,9 @@
   --nt-app-background: var(--nt-frame);
   --nt-sidebar-background: var(--nt-frame);
   --nt-panel-background: var(--nt-canvas);
+  /* The side panel of the shell as a background, beside the main panel: opaque here, tinted on a
+     translucent window like the panel beside it. `bg-side-panel` stays the opaque layer. */
+  --nt-side-panel-background: var(--nt-side-panel);
   /* The sidebar may carry a whisper of the Midnight gradient over its frame, from a step above the
      frame to the frame (`background: var(--nt-sidebar-gradient), var(--nt-sidebar-background)`);
      flat in light. An image, not a colour: never as a `background-color`. */
@@ -509,6 +530,7 @@
   --nt-app-background: var(--nt-frame);
   --nt-sidebar-background: var(--nt-frame);
   --nt-panel-background: var(--nt-canvas);
+  --nt-side-panel-background: var(--nt-side-panel);
   --nt-sidebar-gradient: none;
 }
 
@@ -562,19 +584,24 @@
    opacity so their text stays legible over any material (WCAG 1.4.3, 4.5:1). The floor is the lowest
    opacity at which `text`, `secondary` and `muted` hold 4.5:1 with each layer counted alone over the
    worst material: white behind the dark tint, black behind the light one (`tokens.test.ts`). The
-   sidebar on the frame 90%, the panel on the canvas 93%. */
+   sidebar on the frame 90%, the panel on the canvas 93%, the side panel of the shell between them
+   92% (muted 4.6:1; at 91% it is 4.49:1). */
 :root[data-translucent="true"] {
   --nt-app-background: rgb(12 18 41 / 0.6);
   --nt-sidebar-background: rgb(12 18 41 / 0.9);
   --nt-panel-background: rgb(17 25 54 / 0.93);
+  --nt-side-panel-background: rgb(15 22 48 / 0.92);
 }
 
 /* The same floor over the light material, with the frame and the canvas of the light block. Muted
-   stands at 4.9:1 on the opaque frame, so the light sidebar needs 96% and the panel 92%. */
+   stands at 4.9:1 on the opaque frame, so the light sidebar needs 96% and the panel 92%; the side
+   panel 94% (muted 4.56:1; at 93% it is 4.44:1). A status word on the tinted side panel holds AA
+   only over a material lighter than black: at 94% over black green reaches 4.0:1. */
 :root[data-translucent="true"][data-theme="light"] {
   --nt-app-background: rgb(233 232 226 / 0.6);
   --nt-sidebar-background: rgb(233 232 226 / 0.96);
   --nt-panel-background: rgb(245 244 240 / 0.92);
+  --nt-side-panel-background: rgb(239 238 233 / 0.94);
 }
 
 /* Room for the window controls overlay of Windows (`titleBarOverlay` in `main/window/chrome.ts`):
@@ -605,7 +632,10 @@
 
 /* The strip above the open sidebar holds the traffic lights at its left end, so what it carries
    there (the head with the brand) starts where the folded title bar starts its own
-   content: the same 82px. Elsewhere the strip starts at 16px, in line with the text of the rows. */
+   content: the same 82px. Elsewhere the strip starts at 16px, in line with the text of the rows.
+   The top bar of the shell runs across the whole window, so it holds the lights in every state of
+   the sidebar: its content starts at the same 82px. */
 :root[data-platform="darwin"] {
   --nt-sidebar-strip-inset-start: 82px;
+  --nt-top-bar-inset-start: 82px;
 }

@@ -116,8 +116,9 @@ function composite(rgba: string, ground: string): string {
 
 /** Whether a value names a colour, directly or through another token, or a shadow made of one. */
 function isColour(value: string): boolean {
-  // A `calc()` over another token is a length (`--nt-toast-width`), never a colour.
-  if (/^calc\(/i.test(value.trim())) return false
+  // A `calc()`, `max()`, `min()` or `clamp()` over another token is a length
+  // (`--nt-toast-width`, `--nt-top-bar-inset-end`), never a colour.
+  if (/^(calc|max|min|clamp)\(/i.test(value.trim())) return false
   return /#[0-9a-f]{3,8}\b|rgb\(|var\(--nt-/i.test(value)
 }
 
@@ -365,8 +366,9 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  // The side panel is a ground for a status word (green 4.6:1 in light); the frame is not, a
-  // status there is a glyph (`docs/family-style.md`, "The shell").
+  // The opaque side panel, on an opaque window, is a ground for a status word (green 4.6:1 in
+  // light); the frame is not, a status there is a glyph (`docs/family-style.md`, "The shell"). The
+  // tinted side panel of a translucent window is not tested for status words.
   test.each(['--nt-danger', '--nt-success', '--nt-attention'])(
     '%s as words on the canvas, the side panel and a menu reaches AA (≥ 4.5)',
     (tone) => {
@@ -613,6 +615,41 @@ describe('scrollbars', () => {
   })
 })
 
+describe('the measures of the shell', () => {
+  test('the rail is 72px wide, the narrow one 56px', () => {
+    expect(tokens.get('--nt-rail-width')).toBe('72px')
+    expect(tokens.get('--nt-rail-width-narrow')).toBe('56px')
+  })
+
+  test('the top bar is 48px, in every density', () => {
+    expect(tokens.get('--nt-top-bar-height')).toBe('48px')
+    expect(tokensCss).not.toMatch(/\[data-density="[a-z]+"\]\s*\{[^}]*--nt-top-bar-height/)
+  })
+
+  test('the top bar starts after the traffic lights on macOS and 16px in elsewhere', () => {
+    const darwin = parseDeclarations(
+      tokensCss.match(/\n:root\[data-platform="darwin"\]\s*\{([^}]*)\}/)?.[1] ?? '',
+    )
+    expect(tokens.get('--nt-top-bar-inset-start')).toBe('16px')
+    expect(darwin.get('--nt-top-bar-inset-start')).toBe('82px')
+    // Its own token, not the strip of the sidebar's: the bar holds the lights in every state of
+    // the sidebar, so the two may part later.
+    expect(darwin.get('--nt-sidebar-strip-inset-start')).toBe('82px')
+  })
+
+  test('the top bar ends at least 12px in, and clear of the window controls of Windows', () => {
+    expect(tokens.get('--nt-top-bar-inset-end')).toBe('max(12px, var(--nt-window-controls-width))')
+  })
+
+  test('the floating plane starts after the rail, 1px of frame and its hairline', () => {
+    expect(tokens.get('--nt-shell-plane-inset-start')).toBe('calc(var(--nt-rail-width) + 2px)')
+    expect(tokens.get('--nt-shell-plane-inset-start-narrow')).toBe(
+      'calc(var(--nt-rail-width-narrow) + 2px)',
+    )
+    expect(tokens.get('--nt-shell-plane-inset-top')).toBe('calc(var(--nt-top-bar-height) + 1px)')
+  })
+})
+
 describe('the tint of a translucent window', () => {
   /** The declarations of the one rule with exactly this selector. */
   function rule(selector: string): Map<string, string> {
@@ -638,6 +675,13 @@ describe('the tint of a translucent window', () => {
     )
   })
 
+  test('the side panel is opaque on an opaque window, in both themes', () => {
+    expect(tokens.get('--nt-side-panel-background')).toBe('var(--nt-side-panel)')
+    expect(lightTokens.get('--nt-side-panel-background')).toBe('var(--nt-side-panel)')
+    // `bg-side-panel` stays the opaque layer: the tint is a background of its own to opt into.
+    expect(themeCss).toContain('--color-side-panel: var(--nt-side-panel);')
+  })
+
   /** The alpha of a tint, `rgb(r g b / a)`, and whether its colour is the given hex. */
   function tint(value: string | undefined, hex: string): number {
     const match = value?.match(/^rgb\((\d+ \d+ \d+) \/ ([\d.]+)\)$/)
@@ -661,6 +705,7 @@ describe('the tint of a translucent window', () => {
       test.each([
         ['--nt-sidebar-background', '--nt-frame', 0.85],
         ['--nt-panel-background', '--nt-canvas', 0.9],
+        ['--nt-side-panel-background', '--nt-side-panel', 0.9],
       ] as const)('%s keeps its words legible: a floor of opacity', (layer, ground, floor) => {
         const value = translucent.get(layer)
         const alpha = tint(value, hexIn(palette, ground))

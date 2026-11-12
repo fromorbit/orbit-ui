@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { Story } from '../gallery/story'
 import { Dialog } from '../overlays/Dialog'
+import { DropdownMenu } from '../overlays/DropdownMenu'
 import { Icon, type IconName } from '../primitives/Icon'
+import { literalShortcuts, UiProvider } from '../provider/UiProvider'
 import { AppRail, AppRailItem, type FamilyProduct } from './AppRail'
 
 /** An app or place on the rail of the story: its words, glyph and product. */
@@ -68,9 +70,70 @@ function Shell({ open, narrow = false }: { open: string; narrow?: boolean }) {
   )
 }
 
+/** The keys of the apps in the story, written out: a host names commands of its own catalogue. */
+const KEYS: Record<string, string> = {
+  start: '⌘1',
+  lens: '⌘2',
+  halo: '⌘3',
+  trail: '⌘4',
+  comet: '⌘5',
+}
+
+/**
+ * The rail as the desktop app lays it: Hulp at the foot is the trigger of a menu (the item hands
+ * its ref and props to Radix), and every app names its key in a tooltip beside it.
+ */
+function MenuShell({ open }: { open: string }) {
+  const [current, setCurrent] = useState(open)
+  return (
+    <UiProvider shortcuts={literalShortcuts}>
+      <div className="flex h-[440px] w-fit rounded-lg bg-frame pt-2 text-fg">
+        <AppRail
+          label="Apps"
+          foot={
+            <>
+              <DropdownMenu
+                label="Hulp"
+                side="top"
+                trigger={<AppRailItem label="Hulp" icon={<Icon name="circle-help" />} />}
+                items={[
+                  { id: 'keys', label: 'Sneltoetsen', icon: 'keyboard', onSelect: () => {} },
+                  { id: 'docs', label: 'Documentatie', icon: 'book-open', onSelect: () => {} },
+                ]}
+              />
+              <AppRailItem
+                label="Instellingen"
+                icon={<Icon name="settings" />}
+                href="#instellingen"
+                shortcut="⌘,"
+                current={current === 'instellingen'}
+                onNavigate={() => setCurrent('instellingen')}
+              />
+            </>
+          }
+        >
+          {APPS.map((app) => (
+            <AppRailItem
+              key={app.id}
+              label={app.label}
+              icon={<Icon name={app.icon} />}
+              href={`#${app.id}`}
+              current={app.id === current}
+              {...(app.product === undefined ? {} : { product: app.product })}
+              {...(KEYS[app.id] === undefined ? {} : { shortcut: KEYS[app.id] })}
+              onNavigate={() => setCurrent(app.id)}
+            />
+          ))}
+        </AppRail>
+      </div>
+    </UiProvider>
+  )
+}
+
 /**
  * The rail of the apps on the frame: an app open with its satellite beside it, a place of the
- * foot open, and the narrow rail of icons only, each with its label in a tooltip.
+ * foot open, the narrow rail of icons only, each with its label in a tooltip, and the rail of the
+ * desktop app with Hulp as a menu and a key beside every app, in either theme.
  */
 export default {
   group: 'patterns',
@@ -79,5 +142,11 @@ export default {
     'Lens open': () => <Shell open="lens" />,
     'Instellingen open': () => <Shell open="instellingen" />,
     Smal: () => <Shell open="halo" narrow />,
+    'Hulp als menu, sneltoetsen in de tooltip': () => <MenuShell open="lens" />,
+    'Op Papier': () => (
+      <div data-theme="light" className="w-fit rounded-lg bg-canvas p-4 text-fg shadow-plane">
+        <MenuShell open="halo" />
+      </div>
+    ),
   },
 } satisfies Story

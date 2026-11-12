@@ -1,8 +1,16 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createRef } from 'react'
 import { describe, expect, test, vi } from 'vitest'
+import { DropdownMenu } from '../overlays/DropdownMenu'
 import { Icon } from '../primitives/Icon'
+import { uiWrapper } from '../testing/ui-wrapper'
 import { AppRail, AppRailItem } from './AppRail'
+
+/** The tokens, for the widths the rail reads from them. */
+const tokensCss = readFileSync(join(import.meta.dirname, '..', 'tokens.css'), 'utf8')
 
 /** A rail of three apps and a foot, with Lens open. */
 function renderRail(props: { narrow?: boolean; onNavigate?: (href: string) => void } = {}) {
@@ -118,8 +126,6 @@ describe('AppRail', () => {
 
   test('keeps only the icons and names each item by its label on a narrow rail', () => {
     renderRail({ narrow: true })
-    const nav = screen.getByRole('navigation', { name: 'Apps' })
-    expect(nav.className).toContain('w-14')
     for (const name of ['Start', 'Lens', 'Halo', 'Instellingen']) {
       const link = screen.getByRole('link', { name })
       const word = screen.getByText(name)
@@ -129,15 +135,34 @@ describe('AppRail', () => {
   })
 
   test('makes an item as wide as the rail less 12px, and never cuts its label off', () => {
-    /** The width a `w-*` or `size-*` class names, in px: a step of 4px or a value in brackets. */
-    const width = (className: string): number => {
-      const match = className.match(/(?:^|\s)(?:w|size)-(?:\[(\d+)px\]|(\d+))(?:\s|$)/)
-      expect(match, className).not.toBeNull()
-      return match?.[1] !== undefined ? Number(match[1]) : Number(match?.[2]) * 4
+    /** The declared value of a token of `tokens.css`, in px. */
+    const token = (name: string): number => {
+      const match = tokensCss.match(new RegExp(`${name}:\\s*(\\d+)px;`))
+      expect(match, name).not.toBeNull()
+      return Number(match?.[1])
     }
-    for (const narrow of [false, true]) {
+    /**
+     * The width a `w-*` or `size-*` class names, in px: a step of 4px, or a token with its fallback,
+     * which must be the token's own value so a host on an older `tokens.css` keeps the same rail.
+     */
+    const width = (className: string): number => {
+      const match = className.match(
+        /(?:^|\s)(?:w|size)-(?:\[var\((--nt-[a-z-]+),(\d+)px\)\]|(\d+))(?:\s|$)/,
+      )
+      expect(match, className).not.toBeNull()
+      if (match?.[1] !== undefined) {
+        expect(Number(match[2]), `the fallback of ${match[1]}`).toBe(token(match[1]))
+        return token(match[1])
+      }
+      return Number(match?.[3]) * 4
+    }
+    for (const [narrow, rail] of [
+      [false, 'w-[var(--nt-rail-width,72px)]'],
+      [true, 'w-[var(--nt-rail-width-narrow,56px)]'],
+    ] as const) {
       const { unmount } = renderRail({ narrow })
       const nav = screen.getByRole('navigation', { name: 'Apps' })
+      expect(nav.className).toContain(rail)
       const item = screen.getByRole('link', { name: 'Instellingen' })
       expect(width(nav.className) - width(item.className), `narrow: ${narrow}`).toBe(12)
       const word = within(item).getByText('Instellingen')
@@ -146,7 +171,6 @@ describe('AppRail', () => {
       unmount()
     }
     renderRail()
-    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain('w-18')
     expect(screen.getByRole('link', { name: 'Lens' }).className).toContain('w-15')
   })
 
@@ -194,5 +218,219 @@ describe('AppRail', () => {
     await userEvent.tab()
     expect(halo).toHaveFocus()
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Halo')
+  })
+
+  test('hands its ref and its props to the control, so it can be the trigger of a menu', async () => {
+    const onShortcuts = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <DropdownMenu
+          label="Hulp"
+          side="top"
+          trigger={<AppRailItem label="Hulp" icon={<Icon name="circle-help" />} />}
+          items={[{ id: 'keys', label: 'Sneltoetsen', onSelect: onShortcuts }]}
+        />
+      </AppRail>,
+    )
+    const help = screen.getByRole('button', { name: 'Hulp' })
+    // Radix wires the trigger itself: what it opens and whether it is open.
+    expect(help).toHaveAttribute('aria-haspopup', 'menu')
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    // Still inside its list item, so the rail keeps one list of items.
+    expect(help.closest('li')?.parentElement?.tagName).toBe('UL')
+    await userEvent.click(help)
+    expect(help).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Sneltoetsen' }))
+    expect(onShortcuts).toHaveBeenCalledTimes(1)
+  })
+
+  test('takes a ref to its link or button', () => {
+    const link = createRef<HTMLAnchorElement>()
+    const button = createRef<HTMLButtonElement>()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem ref={link} label="Lens" icon={<Icon name="scan-search" />} href="#/lens" />
+        <AppRailItem
+          ref={button}
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => {}}
+        />
+      </AppRail>,
+    )
+    expect(link.current).toBe(screen.getByRole('link', { name: 'Lens' }))
+    expect(button.current).toBe(screen.getByRole('button', { name: 'Hulp' }))
+  })
+
+  test('says whether the menu it opens is open, as aria-expanded', () => {
+    const { rerender } = render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => {}}
+          aria-haspopup="menu"
+          aria-expanded={false}
+        />
+      </AppRail>,
+    )
+    expect(screen.getByRole('button', { name: 'Hulp' })).toHaveAttribute('aria-expanded', 'false')
+    rerender(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => {}}
+          aria-haspopup="menu"
+          aria-expanded
+        />
+      </AppRail>,
+    )
+    expect(screen.getByRole('button', { name: 'Hulp' })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  test('runs the click handed to it before its own select or navigation', async () => {
+    const order: string[] = []
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => order.push('select')}
+          onClick={() => order.push('click')}
+        />
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          onNavigate={() => order.push('navigate')}
+          onClick={() => order.push('click')}
+        />
+      </AppRail>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Hulp' }))
+    expect(order).toEqual(['click', 'select'])
+    await userEvent.click(screen.getByRole('link', { name: 'Lens' }))
+    expect(order).toEqual(['click', 'select', 'click', 'navigate'])
+  })
+
+  test('skips its own select or navigation when the click handed to it prevents it', async () => {
+    const onSelect = vi.fn()
+    const onNavigate = vi.fn()
+    const onClick = vi.fn((event: { preventDefault(): void }) => event.preventDefault())
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={onSelect}
+          onClick={onClick}
+        />
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          onNavigate={onNavigate}
+          onClick={onClick}
+        />
+      </AppRail>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Hulp' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Lens' }))
+    expect(onClick).toHaveBeenCalledTimes(2)
+    expect(onSelect).not.toHaveBeenCalled()
+    expect(onNavigate).not.toHaveBeenCalled()
+  })
+
+  test('keeps the hover and focus handed to it beside its own intent', async () => {
+    const onMouseEnter = vi.fn()
+    const onFocus = vi.fn()
+    const onIntent = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          onIntent={onIntent}
+          onMouseEnter={onMouseEnter}
+          onFocus={onFocus}
+        />
+      </AppRail>,
+    )
+    const lens = screen.getByRole('link', { name: 'Lens' })
+    await userEvent.hover(lens)
+    act(() => lens.focus())
+    expect(onMouseEnter).toHaveBeenCalledTimes(1)
+    expect(onFocus).toHaveBeenCalledTimes(1)
+    expect(onIntent).toHaveBeenCalledTimes(2)
+  })
+
+  test.each([false, true])(
+    'hands the focus back to the trigger after Escape, closed and without a tooltip (narrow: %s)',
+    async (narrow) => {
+      render(
+        <AppRail label="Apps" narrow={narrow}>
+          <DropdownMenu
+            label="Hulp"
+            side="top"
+            trigger={<AppRailItem label="Hulp" icon={<Icon name="circle-help" />} />}
+            items={[{ id: 'keys', label: 'Sneltoetsen', onSelect: () => {} }]}
+          />
+        </AppRail>,
+      )
+      const help = screen.getByRole('button', { name: 'Hulp' })
+      act(() => help.focus())
+      await userEvent.keyboard('{Enter}')
+      expect(await screen.findByRole('menu')).toBeInTheDocument()
+      expect(help).toHaveAttribute('aria-expanded', 'true')
+      await userEvent.keyboard('{Escape}')
+      await waitFor(() => expect(help).toHaveFocus())
+      expect(help).toHaveAttribute('aria-expanded', 'false')
+      // The focus that comes back from the menu does not open the tooltip over where it was.
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(screen.queryByRole('tooltip')).toBeNull()
+    },
+  )
+
+  test('shows its name and its key in a tooltip, and announces the key', async () => {
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          shortcut="demo.open"
+        />
+      </AppRail>,
+      { wrapper: uiWrapper() },
+    )
+    const lens = screen.getByRole('link', { name: 'Lens' })
+    expect(lens).toHaveAttribute('aria-keyshortcuts', 'Meta+O')
+    act(() => lens.focus())
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent('Lens')
+    expect(tooltip.querySelector('[data-nt-kbd]')).not.toBeNull()
+    // The key is a description of the item, never part of its name.
+    expect(lens).toHaveAccessibleName('Lens')
+  })
+
+  test('draws no tooltip on the wide rail when the key is unknown', async () => {
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          shortcut="demo.open"
+        />
+      </AppRail>,
+    )
+    const lens = screen.getByRole('link', { name: 'Lens' })
+    act(() => lens.focus())
+    // Without a provider the key is unknown, and the label already stands under the icon.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(lens).not.toHaveAttribute('aria-describedby')
   })
 })

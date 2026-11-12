@@ -100,6 +100,7 @@ import projectMarkStory from '../primitives/ProjectMark.gallery'
 import radioGroupStory from '../primitives/RadioGroup.gallery'
 import resizeHandleStory from '../primitives/ResizeHandle.gallery'
 import scrollAreaStory from '../primitives/ScrollArea.gallery'
+import searchFieldButtonStory from '../primitives/SearchFieldButton.gallery'
 import secretFieldStory from '../primitives/SecretField.gallery'
 import sectionHeadingStory from '../primitives/SectionHeading.gallery'
 import segmentedControlStory from '../primitives/SegmentedControl.gallery'
@@ -114,6 +115,7 @@ import stepChipsStory from '../primitives/StepChips.gallery'
 import switchStory from '../primitives/Switch.gallery'
 import tabsStory from '../primitives/Tabs.gallery'
 import tagStory from '../primitives/Tag.gallery'
+import teamMarkStory from '../primitives/TeamMark.gallery'
 import textareaStory from '../primitives/Textarea.gallery'
 import thumbnailStory from '../primitives/Thumbnail.gallery'
 import timelineStory from '../primitives/Timeline.gallery'
@@ -226,6 +228,7 @@ export const stories: Story[] = collectStories([
   radioGroupStory,
   resizeHandleStory,
   scrollAreaStory,
+  searchFieldButtonStory,
   secretFieldStory,
   sectionHeadingStory,
   segmentedControlStory,
@@ -238,6 +241,7 @@ export const stories: Story[] = collectStories([
   switchStory,
   tabsStory,
   tagStory,
+  teamMarkStory,
   textareaStory,
   thumbnailStory,
   toggleStory,
