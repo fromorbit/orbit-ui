@@ -888,7 +888,7 @@ export function ListGroup({
         {open ? (
           <ul
             ref={rows}
-            className={`m-0 flex list-none flex-col p-0 ${spacing === 'column' ? 'gap-px' : 'gap-1'}`}
+            className={`m-0 flex list-none flex-col ${spacing === 'column' ? 'gap-px' : 'gap-1'} p-0`}
           >
             {children}
           </ul>

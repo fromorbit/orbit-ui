@@ -2,7 +2,7 @@
 "@fromorbit/ui": patch
 ---
 
-What the Orbit desktop app needs for the groups of its side panel (Runs, Integraties and Afgerond under the chats), so it overrides nothing of `ListGroup` itself. Additive only: new props on `ListGroup`, each opt-in, and two new data attributes; no prop, export, token or subpath is removed or renamed, and a group without the new props draws what it drew.
+What the Orbit desktop app needs for the groups of its side panel (Runs, Integraties and Afgerond under the chats), so it overrides nothing of `ListGroup` itself. Additive only: new props on `ListGroup`, each opt-in, and one new data attribute (`data-nt-list-group-chevron`), while the heading of a group with `rowMark` also carries the existing `data-nt-list-row`; no prop, export, token or subpath is removed or renamed, and a group without the new props draws what it drew.
 
 What a host checks:
 
