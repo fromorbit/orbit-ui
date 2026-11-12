@@ -43,21 +43,13 @@ describe('AppRail', () => {
     expect(within(nav).getAllByRole('link')).toHaveLength(4)
   })
 
-  test('marks the open app with aria-current and its satellite beside the neutral plane', () => {
-    const { container } = renderRail()
+  test('marks the open app with aria-current on the neutral plane, its words at full strength', () => {
+    renderRail()
     const lens = screen.getByRole('link', { name: 'Lens' })
     expect(lens).toHaveAttribute('aria-current', 'page')
     expect(lens.className).toContain('bg-row-active')
     expect(lens.className).toContain('text-fg')
     expect(lens.className).not.toMatch(/\bbg-(accent|satellite)\b/)
-    // The satellite is the product's own: the item carries `data-product`, the dot reads it.
-    const item = lens.closest('li')
-    expect(item).toHaveAttribute('data-product', 'lens')
-    const dots = container.querySelectorAll('[data-nt-app-rail-satellite]')
-    expect(dots).toHaveLength(1)
-    expect(item?.contains(dots[0] ?? null)).toBe(true)
-    expect(lens.contains(dots[0] ?? null)).toBe(false)
-    expect(dots[0]?.className).toContain('bg-satellite')
     // The others rest in muted, with no plane and no mark.
     const start = screen.getByRole('link', { name: 'Start' })
     expect(start).not.toHaveAttribute('aria-current')
@@ -67,14 +59,24 @@ describe('AppRail', () => {
     expect(start.className).toContain('hover:bg-surface-hover')
   })
 
-  test('keeps the satellite out of the accessible name', () => {
-    const { container } = renderRail()
-    expect(container.querySelector('[data-nt-app-rail-satellite]')).toHaveAttribute(
-      'aria-hidden',
-      'true',
-    )
-    expect(screen.getByRole('link', { name: 'Lens' })).toHaveAccessibleName('Lens')
-  })
+  test.each([false, true])(
+    'the open item has no dot, only its plane and aria-current (narrow: %s)',
+    (narrow) => {
+      const { container } = renderRail({ narrow })
+      const lens = screen.getByRole('link', { name: 'Lens' })
+      expect(lens).toHaveAttribute('aria-current', 'page')
+      expect(lens.className).toContain('bg-row-active')
+      // Nothing on the rail draws a product's colour: no satellite beside or inside an item.
+      expect(container.querySelector('[data-nt-app-rail-satellite]')).toBeNull()
+      expect(container.innerHTML).not.toMatch(/\b(bg|fill|text)-satellite\b/)
+      // The deprecated `product` no longer reaches the DOM.
+      expect(container.querySelector('[data-product]')).toBeNull()
+      // The item holds only its control: no mark beside it.
+      const item = lens.closest('li')
+      expect([...(item?.children ?? [])]).toEqual([lens])
+      expect(lens).toHaveAccessibleName('Lens')
+    },
+  )
 
   test('sets each label at 11px under a 20px icon', () => {
     renderRail()

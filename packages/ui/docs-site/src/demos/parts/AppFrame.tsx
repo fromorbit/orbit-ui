@@ -5,7 +5,6 @@ import {
   Avatar,
   Button,
   DropdownMenu,
-  type FamilyProduct,
   Icon,
   IconButton,
   type IconName,
@@ -116,16 +115,15 @@ interface App {
   id: string
   label: string
   icon: IconName
-  product: FamilyProduct
   demo: string
 }
 
 /** The apps on the rail of every demo; Lens and Trail open the demo of their own screen. */
 const APPS: readonly App[] = [
-  { id: 'orbit', label: 'Orbit', icon: 'messages-square', product: 'orbit', demo: 'chat' },
-  { id: 'halo', label: 'Halo', icon: 'layers', product: 'halo', demo: 'dashboard' },
-  { id: 'lens', label: 'Lens', icon: 'scan-search', product: 'lens', demo: 'review' },
-  { id: 'trail', label: 'Trail', icon: 'camera', product: 'trail', demo: 'trail' },
+  { id: 'orbit', label: 'Orbit', icon: 'messages-square', demo: 'chat' },
+  { id: 'halo', label: 'Halo', icon: 'layers', demo: 'dashboard' },
+  { id: 'lens', label: 'Lens', icon: 'scan-search', demo: 'review' },
+  { id: 'trail', label: 'Trail', icon: 'camera', demo: 'trail' },
 ]
 
 /**
@@ -220,7 +218,6 @@ export function AppFrame({
                 icon={<Icon name="settings" />}
                 href="#/demo/instellingen"
                 current={onRail === 'instellingen'}
-                product="orbit"
               />
             }
           >
@@ -231,7 +228,6 @@ export function AppFrame({
                 icon={<Icon name={entry.icon} />}
                 href={`#/demo/${entry.demo}`}
                 current={entry.id === onRail}
-                product={entry.product}
               />
             ))}
           </AppRail>
