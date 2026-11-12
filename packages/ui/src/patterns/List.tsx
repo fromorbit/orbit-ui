@@ -783,11 +783,12 @@ export interface ListGroupProps {
  * screen reader. The group is named by its heading alone; the button inside that heading carries
  * the count as well and `aria-expanded`.
  *
- * The heading is a small label in capitals — 11px, `text-muted`, a little letter-spacing — the one
- * place where capitals are a style: a section of a column has to read as a section and not as one
- * more row, and size and colour alone left a project looking like a chat without a status.
- * The chevron is an affordance, so it is `xs` and shows only under the
- * pointer, with the keyboard, or once folded.
+ * The heading is a quiet label in sentence case, 12px and `text-muted`, as `SectionHeading`. By
+ * default the chevron is an affordance, so it is `xs` and shows only under the pointer, with the
+ * keyboard, or once folded. The groups of a side panel's column take the `disclosure` variant
+ * (chevron before the word, always in sight, the count at the end in DM Mono) with `inset`,
+ * `spacing="column"`, `rowMark` and `level={3}`: one form for every group that folds in that
+ * column, Runs and Integraties as well as Afgerond at its foot.
  *
  * Controlled, like `Collapsible`: whether a group is folded belongs to whoever lists the groups.
  * Folded, the rows are not rendered at all rather than hidden: the arrows of `List` walk every row

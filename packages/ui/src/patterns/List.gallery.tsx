@@ -192,15 +192,22 @@ function SidePanelChats() {
  * open, Afgerond folded at the foot, each a heading with its chevron before the word and its count
  * at the end. The names are made up.
  */
-function ColumnGroups() {
+function ColumnGroups({ column = false }: { column?: boolean }) {
   const [open, setOpen] = useState({ runs: true, integrations: true, settled: false })
   const toggle = (key: keyof typeof open) => (next: boolean) =>
     setOpen((value) => ({ ...value, [key]: next }))
+  // The column of the design: the words 20px from the edge of a column with an 8px gutter, 14px
+  // between the groups and 1px between the rows, every heading a row of one roving list and a 3
+  // beside the `SectionHeading`s above it.
+  const form = column
+    ? ({ inset: true, spacing: 'column', rowMark: true, level: 3 } as const)
+    : ({} as const)
   return (
-    <div className="w-62">
-      <List label="Zijpaneel">
+    <div className={column ? 'w-62 px-2' : 'w-62'}>
+      <List label="Zijpaneel" roving={column}>
         <ListGroup
           variant="disclosure"
+          {...form}
           heading="Runs"
           count="1 bezig"
           label="Runs, 1 bezig"
@@ -230,6 +237,7 @@ function ColumnGroups() {
         </ListGroup>
         <ListGroup
           variant="disclosure"
+          {...form}
           heading="Integraties"
           count="1 vraagt iets"
           label="Integraties, 1 vraagt iets"
@@ -246,6 +254,7 @@ function ColumnGroups() {
         </ListGroup>
         <ListGroup
           variant="disclosure"
+          {...form}
           heading="Afgerond"
           count={143}
           label="Afgerond, 143 gesprekken"
@@ -619,6 +628,11 @@ export default {
     // Runs, Integraties and Afgerond.
     'Groepen van een kolom: chevron voor het woord (donker en licht)': () => (
       <BothThemes>{() => <ColumnGroups />}</BothThemes>
+    ),
+    // Last, so they move no reference image above them. The same groups in the column of the
+    // design: inset to the line of the rows, 14px and 1px apart, the headings rows of the list.
+    'Groepen van een kolom: ingesprongen, 14px en 1px (donker en licht)': () => (
+      <BothThemes>{() => <ColumnGroups column />}</BothThemes>
     ),
   },
 } satisfies Story
