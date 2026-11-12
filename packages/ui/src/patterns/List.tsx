@@ -727,6 +727,25 @@ export interface ListGroupProps {
    * first row into view, as `ShelfGroup` does.
    */
   variant?: 'label' | 'disclosure'
+  /**
+   * The heading starts 12px in instead of 8px: in a column that keeps an 8px gutter (a side
+   * panel), its first glyph stands 20px from the edge, on the line of a `SectionHeading` set 4px
+   * in and of the words of the rows around it, rather than 4px left of them.
+   */
+  inset?: boolean
+  /**
+   * The steps between and inside the groups. `regular` (the default): 24px above every group but
+   * the first and 4px between the rows. `column`: 14px and 1px, the steps of a side panel's column
+   * in the design, where a group is one of several stacked headings over rows that read as one
+   * column.
+   */
+  spacing?: 'regular' | 'column'
+  /**
+   * The level of the heading in the outline of the page: 2 by default, 3 where the groups stand
+   * beside a `SectionHeading` (a 3 by default) in one column, so the headings of that column are
+   * one level rather than two.
+   */
+  level?: 2 | 3
   /** A 12px glyph before the heading, for a group that is not one more of its kind (the archive). */
   icon?: IconName | undefined
   /**
@@ -763,6 +782,9 @@ export function ListGroup({
   count,
   quiet = false,
   variant = 'label',
+  inset = false,
+  spacing = 'regular',
+  level = 2,
   icon,
   label,
   open,
@@ -771,6 +793,7 @@ export function ListGroup({
 }: ListGroupProps) {
   const nameId = useId()
   const disclosure = variant === 'disclosure'
+  const Heading = level === 3 ? 'h3' : 'h2'
   const rows = useRef<HTMLUListElement>(null)
   // Set by a press that opens the group, so a group that starts open scrolls nothing.
   const opened = useRef(false)
@@ -796,10 +819,10 @@ export function ListGroup({
     </span>
   )
   return (
-    <li className="mt-6 first:mt-0">
+    <li className={spacing === 'column' ? 'mt-3.5 first:mt-0' : 'mt-6 first:mt-0'}>
       {/* biome-ignore lint/a11y/useSemanticElements: a fieldset is for forms; this is a named group in a list, and a named section would be a landmark. */}
       <section role="group" aria-labelledby={nameId}>
-        <h2 className="m-0">
+        <Heading className="m-0">
           <button
             type="button"
             data-nt-list-group-heading
@@ -809,7 +832,9 @@ export function ListGroup({
               opened.current = disclosure && !open
               onOpenChange(!open)
             }}
-            className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md px-2 text-left text-[12px] ${
+            className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md ${
+              inset ? 'ps-3 pe-2' : 'px-2'
+            } text-left text-[12px] ${
               quiet ? 'font-normal' : 'font-medium'
             } text-muted outline-focus ${
               disclosure ? 'hover:bg-surface ' : ''
@@ -840,9 +865,12 @@ export function ListGroup({
             )}
             {disclosure ? null : chevron}
           </button>
-        </h2>
+        </Heading>
         {open ? (
-          <ul ref={rows} className="m-0 flex list-none flex-col gap-1 p-0">
+          <ul
+            ref={rows}
+            className={`m-0 flex list-none flex-col p-0 ${spacing === 'column' ? 'gap-px' : 'gap-1'}`}
+          >
             {children}
           </ul>
         ) : null}

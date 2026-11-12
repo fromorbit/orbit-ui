@@ -1367,3 +1367,65 @@ test('a disclosure group that starts open scrolls nothing', () => {
   expect(spy).not.toHaveBeenCalled()
   spy.mockRestore()
 })
+
+test('an inset heading starts 12px in, on the line of the rows in a column with a gutter', () => {
+  render(
+    <List label="Zijpaneel">
+      <ListGroup heading="Runs" label="Runs" inset open onOpenChange={() => {}}>
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+      <ListGroup heading="Integraties" label="Integraties" open onOpenChange={() => {}}>
+        <ListRow title="studio-noord" />
+      </ListGroup>
+    </List>,
+  )
+  const inset = screen.getByRole('button', { name: 'Runs' })
+  expect(inset.className).toContain('ps-3')
+  expect(inset.className).toContain('pe-2')
+  expect(inset.className).not.toMatch(/(^|\s)px-2(\s|$)/)
+  // Without it the heading keeps its 8px.
+  const plain = screen.getByRole('button', { name: 'Integraties' })
+  expect(plain.className).toMatch(/(^|\s)px-2(\s|$)/)
+  expect(plain.className).not.toContain('ps-3')
+})
+
+test('the steps of a column: 14px between groups and 1px between rows', () => {
+  render(
+    <List label="Zijpaneel">
+      <ListGroup heading="Runs" label="Runs" spacing="column" open onOpenChange={() => {}}>
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+    </List>,
+  )
+  const group = screen.getByRole('group', { name: 'Runs' })
+  const item = group.closest('li')
+  expect(item?.className).toContain('mt-3.5')
+  expect(item?.className).toContain('first:mt-0')
+  expect(item?.className).not.toContain('mt-6')
+  const rows = group.querySelector('ul')
+  expect(rows?.className).toContain('gap-px')
+  expect(rows?.className).not.toContain('gap-1')
+})
+
+test('a group without spacing keeps 24px above it and 4px between its rows', () => {
+  render(<FoldableGroup />)
+  const group = screen.getByRole('group', { name: 'webshop' })
+  expect(group.closest('li')?.className).toContain('mt-6')
+  expect(group.querySelector('ul')?.className).toContain('gap-1')
+})
+
+test('a group takes the heading level of the column it stands in', () => {
+  render(
+    <List label="Zijpaneel">
+      <ListGroup heading="Runs" label="Runs" level={3} open onOpenChange={() => {}}>
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+      <ListGroup heading="Integraties" label="Integraties" open onOpenChange={() => {}}>
+        <ListRow title="studio-noord" />
+      </ListGroup>
+    </List>,
+  )
+  expect(screen.getByRole('heading', { level: 3, name: 'Runs' })).toBeInTheDocument()
+  // Without a level a group is a 2, as before.
+  expect(screen.getByRole('heading', { level: 2, name: 'Integraties' })).toBeInTheDocument()
+})
