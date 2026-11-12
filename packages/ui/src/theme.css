@@ -308,11 +308,13 @@
   }
 }
 
-/* Meta on a lit row (`bg-row-active`, or the current row of a list or a table). Muted Slate
+/* Meta on a lit row (`bg-row-active`, the current row of a list or a table, or a pressed row of
+   a list, which takes the current fill). Muted Slate
    falls to 4.1:1 on that plane in dark, and cannot rise without losing its 3:1 step under the
    caret row's words; so the meta of a lit row steps up to secondary and stays at AA. */
 .bg-row-active .text-muted,
 [aria-current="page"] .text-muted,
-[aria-current="true"] .text-muted {
+[aria-current="true"] .text-muted,
+[data-nt-list-row][aria-pressed="true"] .text-muted {
   color: var(--nt-text-secondary);
 }

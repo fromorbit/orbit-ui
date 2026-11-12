@@ -123,6 +123,14 @@ Contrast stays as before: every pair in `tokens.test.ts` still reaches AA, and t
 
 The gallery speaks Dutch throughout: the captions of the states, the sample data, and the groups (Bouwstenen, Lagen, Patronen). One word per thing across stories and demos: *gesprek* (not chat), *samenvoegen* (not overnemen), the roles Eigenaar, Beheerder, Lid and Gast, and one relative time ("5 min", "2 u", "3 d", "4 wk").
 
+## Rows of a list
+
+`ListRow` is the row of every list read all day: 36px (`--nt-row`, 32px compact) with a 13px title, or 48px with a second line (`subline`), the title then a step down to 12px and the line 11px muted in the sans. Every form below is opt-in; a row without its prop draws what it drew.
+
+- **The chat row of a side panel.** `size="comfortable"` keeps the title at 13px over the second line and gives the row 10px at its sides. `markerSide="end"` sets the status shape at the end of the first line, in a 16px slot 10px from the edge, with 34px kept free; the second line then starts under the title. The title weighs 600 (`titleWeight="semibold"`) while the chat has news for the reader; brightness (`emphasis`) still says seen or not. The second line may stand in DM Mono (`subline.mono`): the project and the time, with a status word that matters in the sans. `shape.label` shows the status word as the shape's tooltip; the row's name says the status in its own place.
+- **Actions of a row** show on hover and on keyboard focus, never on the focus a click leaves, so a chosen row keeps its shape or its time. At the end they take the place of the shape, and the row keeps room for at most two controls while they show, so they never lie over the title. Their box carries `data-nt-list-actions`: a `roving` `List` is one tab stop, walks into them with → and back with ←, and opens a row's menu with the context-menu key (or ⇧F10).
+- **The project row of a start screen.** The name in DM Mono (`monoTitle`) at 13px and 500, a `ProjectMark` as its `marker`, and a second line that starts under the name whatever the width of the mark. A list of a few things to choose from lies in a card (`List card`): an outlined region with a line between the rows, as every group of rows in the family. The chosen one is pressed (`aria-pressed`), a choice rather than the page on screen, and takes the fill of a current row.
+
 ## Breaking changes of 0.2.0
 
 - **Every colour value changed**, in both themes. The names (`--nt-*` and the Tailwind names of `theme.css`) are the same; pixel references of a host (screenshots, end-to-end colour checks) change.

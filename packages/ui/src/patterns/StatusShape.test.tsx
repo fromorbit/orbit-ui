@@ -201,3 +201,16 @@ test('without a label the shape stays decorative, for a row that says its status
   expect(shapeOf(container)).toHaveAttribute('aria-hidden', 'true')
   expect(screen.queryByRole('img')).toBeNull()
 })
+
+test('a tooltip alone shows the word under the pointer and leaves the shape decorative', async () => {
+  render(
+    <TooltipProvider delayDuration={0}>
+      <StatusShape kind="attention" tooltip="Wacht op jou" />
+    </TooltipProvider>,
+  )
+  expect(screen.queryByRole('img')).toBeNull()
+  const shape = document.querySelector('[data-nt-status-shape]') as HTMLElement
+  expect(shape).toHaveAttribute('aria-hidden', 'true')
+  fireEvent.pointerMove(shape, { pointerType: 'mouse' })
+  expect(await screen.findByRole('tooltip')).toHaveTextContent('Wacht op jou')
+})

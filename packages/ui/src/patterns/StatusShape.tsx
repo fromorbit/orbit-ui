@@ -105,6 +105,12 @@ export interface StatusShapeProps {
    * shape stays decorative, because the row around it already says its status in words.
    */
   label?: string
+  /**
+   * The status word as a tooltip only: the shape stays decorative (`aria-hidden`) and shows the
+   * word under the pointer. For a shape inside a row that already says its status in words, so the
+   * ear hears it once and the eye can still ask. `label` wins when both are given.
+   */
+  tooltip?: string
 }
 
 /**
@@ -129,6 +135,7 @@ export function StatusShape({
   closedAs,
   muted = false,
   label,
+  tooltip,
 }: StatusShapeProps): ReactNode {
   const drawing =
     kind === 'closed' && closedAs ? closedDrawings[closedAs] : kind ? drawings[kind] : null
@@ -180,7 +187,8 @@ export function StatusShape({
       ) : null}
     </svg>
   )
-  return label ? <Tooltip label={label}>{shape}</Tooltip> : shape
+  const tip = label ?? tooltip
+  return tip ? <Tooltip label={tip}>{shape}</Tooltip> : shape
 }
 
 /** The one element that draws a shape, with the paint of its state. */

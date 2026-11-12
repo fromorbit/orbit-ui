@@ -198,3 +198,26 @@ test('actions stand beside the button, where the time stands, and trade places w
   // The arrows of the list pass it by: it is no row of its own.
   expect(more).not.toHaveAttribute('data-nt-list-row')
 })
+
+test('in a roving list → reaches the actions of a stacked row and ← comes back', async () => {
+  render(
+    <List label="Chats" roving>
+      {row({
+        actions: (
+          <button type="button" aria-label="Meer">
+            …
+          </button>
+        ),
+      })}
+    </List>,
+  )
+  const button = screen.getByRole('button', { name: /^Zoekfilter herbouwen/ })
+  const more = screen.getByRole('button', { name: 'Meer' })
+  // The box carries the mark of the list as well as its own, so one list walks both kinds of row.
+  expect(more.closest('[data-nt-list-actions]')).not.toBeNull()
+  button.focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(more).toHaveFocus()
+  await userEvent.keyboard('{ArrowLeft}')
+  expect(button).toHaveFocus()
+})
