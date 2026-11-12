@@ -228,3 +228,44 @@ test('the default panel stays 32rem wide', () => {
   render(<Example />)
   expect(screen.getByRole('dialog').className).toContain('w-[32rem]')
 })
+
+/**
+ * Opens the example from its opener, with the opener's focus ring shown or not as the browser
+ * would after a key or a click (happy-dom matches `:focus-visible` on every focus), and hands back
+ * the options the first control of the dialog was focused with.
+ */
+async function openFrom(visible: boolean): Promise<FocusOptions | undefined> {
+  render(<Example startOpen={false} />)
+  const opener = screen.getByRole('button', { name: 'Openen' })
+  opener.focus()
+  const matches = opener.matches.bind(opener)
+  vi.spyOn(opener, 'matches').mockImplementation((selector) =>
+    selector === ':focus-visible' ? visible : matches(selector),
+  )
+  const focus = vi.spyOn(HTMLElement.prototype, 'focus')
+  try {
+    fireEvent.click(opener)
+    const first = await screen.findByRole('button', { name: 'Binnen' })
+    await waitFor(() => expect(first).toHaveFocus())
+    const call = focus.mock.contexts.indexOf(first)
+    return focus.mock.calls[call]?.[0]
+  } finally {
+    focus.mockRestore()
+  }
+}
+
+test('opened with the pointer, the first control takes the focus without its ring', async () => {
+  // A ring on the first button the moment a click opens the dialog is a second emphasis.
+  expect(await openFrom(false)).toEqual({ focusVisible: false })
+})
+
+test('opened with the keyboard, the first control shows where the focus went', async () => {
+  expect(await openFrom(true)).toEqual({ focusVisible: true })
+})
+
+test('the footer is a container that wraps its buttons in a narrow window', () => {
+  render(<Example />)
+  const footer = screen.getByRole('button', { name: 'Eerste' }).parentElement
+  expect(footer?.className).toContain('@container')
+  expect(footer?.className).toContain('flex-wrap')
+})
