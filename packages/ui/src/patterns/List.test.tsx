@@ -1429,3 +1429,127 @@ test('a group takes the heading level of the column it stands in', () => {
   // Without a level a group is a 2, as before.
   expect(screen.getByRole('heading', { level: 2, name: 'Integraties' })).toBeInTheDocument()
 })
+
+/** A roving column whose group headings are rows: one open with a row, one folded, then a chat. */
+function RovingColumn({ rowMark = true }: { rowMark?: boolean }) {
+  return (
+    <List label="Zijpaneel" roving>
+      <ListGroup
+        heading="Runs"
+        label="Runs"
+        variant="disclosure"
+        rowMark={rowMark}
+        open
+        onOpenChange={() => {}}
+      >
+        <ListRow title="Checkout suite" actions={<button type="button">Meer</button>} />
+      </ListGroup>
+      <ListGroup
+        heading="Integraties"
+        label="Integraties"
+        variant="disclosure"
+        rowMark={rowMark}
+        open={false}
+        onOpenChange={() => {}}
+      >
+        <ListRow title="studio-noord" />
+      </ListGroup>
+      <ListRow title="Laatste chat" />
+    </List>
+  )
+}
+
+test('a heading with the row mark is a row of the list', () => {
+  render(<RovingColumn />)
+  expect(screen.getByRole('button', { name: 'Runs' })).toHaveAttribute('data-nt-list-row')
+})
+
+test('a heading without the row mark is no row, and keeps its own tab stop', () => {
+  render(<RovingColumn rowMark={false} />)
+  const heading = screen.getByRole('button', { name: 'Runs' })
+  expect(heading).not.toHaveAttribute('data-nt-list-row')
+  expect(heading.tabIndex).toBe(0)
+})
+
+test('in a roving list a heading row is no tab stop of its own', async () => {
+  render(
+    <>
+      <button type="button">Voor</button>
+      <RovingColumn />
+      <button type="button">Na</button>
+    </>,
+  )
+  // The first row of the list is the stop: here the heading of Runs.
+  screen.getByRole('button', { name: 'Voor' }).focus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Runs' })).toHaveFocus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Na' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Integraties' }).tabIndex).toBe(-1)
+  expect(screen.getByRole('button', { name: 'Checkout suite' }).tabIndex).toBe(-1)
+})
+
+test('↑ and ↓ walk along and from a heading, a folded group without rows included', async () => {
+  render(<RovingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  const row = screen.getByRole('button', { name: 'Checkout suite' })
+  const folded = screen.getByRole('button', { name: 'Integraties' })
+  const last = screen.getByRole('button', { name: 'Laatste chat' })
+  runs.focus()
+  await userEvent.keyboard('{ArrowDown}')
+  expect(row).toHaveFocus()
+  await userEvent.keyboard('{ArrowDown}')
+  expect(folded).toHaveFocus()
+  // The folded group holds no rows: the next step is the chat after it.
+  await userEvent.keyboard('{ArrowDown}')
+  expect(last).toHaveFocus()
+  await userEvent.keyboard('{ArrowUp}')
+  expect(folded).toHaveFocus()
+  await userEvent.keyboard('{ArrowUp}')
+  expect(row).toHaveFocus()
+  await userEvent.keyboard('{ArrowUp}')
+  expect(runs).toHaveFocus()
+  // At the top ↑ stays put: the focus does not wrap.
+  await userEvent.keyboard('{ArrowUp}')
+  expect(runs).toHaveFocus()
+})
+
+test('Home and End reach a heading and leave from one', async () => {
+  render(<RovingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  const last = screen.getByRole('button', { name: 'Laatste chat' })
+  screen.getByRole('button', { name: 'Integraties' }).focus()
+  await userEvent.keyboard('{End}')
+  expect(last).toHaveFocus()
+  await userEvent.keyboard('{Home}')
+  expect(runs).toHaveFocus()
+  await userEvent.keyboard('{End}')
+  expect(last).toHaveFocus()
+})
+
+test('a folded heading that last had the focus is where Tab comes back to', async () => {
+  render(
+    <>
+      <RovingColumn />
+      <button type="button">Na</button>
+    </>,
+  )
+  const folded = screen.getByRole('button', { name: 'Integraties' })
+  folded.focus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Na' })).toHaveFocus()
+  await userEvent.tab({ shift: true })
+  expect(folded).toHaveFocus()
+})
+
+test('→ on a heading row does not walk into the controls of the rows under it', async () => {
+  render(<RovingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  runs.focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(runs).toHaveFocus()
+  // The row itself still walks into its own.
+  screen.getByRole('button', { name: 'Checkout suite' }).focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
+})

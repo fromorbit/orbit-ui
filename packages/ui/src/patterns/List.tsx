@@ -52,9 +52,18 @@ function moveFocus(event: KeyboardEvent<HTMLElement>): void {
  */
 const ACTIONS = '[data-nt-list-actions]'
 
-/** The focusable controls inside a row's box of actions. */
+/**
+ * The focusable controls inside a row's box of actions.
+ *
+ * Only a box beside the row, a child of the row's own `<li>`: a row that heads a group
+ * (`ListGroup rowMark`, `ShelfGroup`) shares its `<li>` with the rows under it, and their boxes
+ * are theirs, not its.
+ */
 function actionsOf(row: HTMLElement): HTMLElement[] {
-  const box = row.closest('li')?.querySelector<HTMLElement>(ACTIONS)
+  const item = row.closest('li')
+  const box = item
+    ? [...item.children].find((child): child is HTMLElement => child.matches(ACTIONS))
+    : undefined
   return box ? controlsIn(box) : []
 }
 
@@ -741,6 +750,13 @@ export interface ListGroupProps {
    */
   spacing?: 'regular' | 'column'
   /**
+   * The heading's button is a row of the `List` around it (`data-nt-list-row`, as `ShelfGroup`):
+   * ↑ ↓ Home and End walk onto it and on from it, and in a `roving` list it is no tab stop of its
+   * own but one of the rows the single stop moves through. A folded group thus stays one step in
+   * the column. Left out, the arrows pass the heading by and it is a tab stop of its own, as before.
+   */
+  rowMark?: boolean
+  /**
    * The level of the heading in the outline of the page: 2 by default, 3 where the groups stand
    * beside a `SectionHeading` (a 3 by default) in one column, so the headings of that column are
    * one level rather than two.
@@ -785,6 +801,7 @@ export function ListGroup({
   inset = false,
   spacing = 'regular',
   level = 2,
+  rowMark = false,
   icon,
   label,
   open,
@@ -826,6 +843,7 @@ export function ListGroup({
           <button
             type="button"
             data-nt-list-group-heading
+            data-nt-list-row={rowMark ? '' : undefined}
             aria-expanded={open}
             aria-label={label}
             onClick={() => {
