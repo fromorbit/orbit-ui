@@ -6,6 +6,8 @@ import {
   type ReactElement,
   type ReactNode,
   useContext,
+  useEffect,
+  useRef,
 } from 'react'
 import { Tooltip } from '../overlays/Tooltip'
 import type { ShortcutLabel } from '../primitives/shortcut'
@@ -36,7 +38,8 @@ export interface AppRailProps {
  * (`docs/family-style.md`, "The shell").
  *
  * A `nav` landmark with two lists, the apps from the top and the foot (help, settings) pushed to
- * the bottom. 72px wide (`--nt-rail-width`, which a host reads for what it lays beside the rail),
+ * the bottom. 72px wide (`--nt-rail-width`, which a host reads for what it lays beside the rail;
+ * with the value as fallback, so a host on an older `tokens.css` keeps the same rail),
  * each item 60px (6px of inset on either side) with an icon of 20px over
  * its label in 11px, never cut off; the narrow rail of 56px keeps only the icons. The rail
  * scrolls in a short window, so the foot stays within reach. The open app is shown once: a neutral plane (`row-active`), its words
@@ -52,8 +55,8 @@ export function AppRail({ label, children, foot, narrow = false }: AppRailProps)
         data-nt-app-rail
         className={
           narrow
-            ? 'flex h-full w-(--nt-rail-width-narrow) shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
-            : 'flex h-full w-(--nt-rail-width) shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
+            ? 'flex h-full w-[var(--nt-rail-width-narrow,56px)] shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
+            : 'flex h-full w-[var(--nt-rail-width,72px)] shrink-0 flex-col items-center overflow-y-auto pt-1.5 pb-3'
         }
       >
         <ul className="m-0 flex list-none flex-col items-center gap-1 p-0">{children}</ul>
@@ -121,7 +124,10 @@ interface AppRailButton
   href?: never
   onNavigate?: never
   onIntent?: never
-  /** What the button does; left out only on the trigger of a menu, which opens it itself. */
+  /**
+   * What the button does; left out only on the trigger of a menu, which opens it itself. An item
+   * without `href`, `onSelect` or `onClick` that is no trigger does nothing.
+   */
   onSelect?: () => void
   /** What it opens, as `aria-haspopup` on the button (`dialog`, `menu`). */
   'aria-haspopup'?: AriaAttributes['aria-haspopup']
@@ -141,7 +147,12 @@ export type AppRailItemProps = AppRailLink | AppRailButton
  *
  * Its `ref` and every other prop reach the link or the button, never the list item around it, so
  * it can stand as the `asChild` trigger of a menu. The host's `onClick` runs first; the item's own
- * `onSelect` or `onNavigate` only when that click was not prevented.
+ * `onSelect` or `onNavigate` only when that click was not prevented. Without `href`, `onSelect` or
+ * `onClick`, and outside a menu, it is a button that does nothing.
+ *
+ * As the trigger of a menu, the focus the menu hands back on closing does not open the item's own
+ * tooltip, which would otherwise stand over the place the menu just left. Give the menu no
+ * `tooltip` of its own as well: the item names itself, and two tooltips would share one trigger.
  */
 export function AppRailItem(props: AppRailItemProps) {
   const { label, icon, current = false, product, shortcut } = props
@@ -153,6 +164,15 @@ export function AppRailItem(props: AppRailItemProps) {
   const tone = current ? 'bg-row-active text-fg' : 'text-muted hover:bg-surface-hover hover:text-fg'
   const key = shortcut === undefined || shortcut === '' ? undefined : shortcut
   const knownKey = key !== undefined && shortcuts.label(key) !== undefined
+  // When the menu this item triggers has just closed: the focus it hands back opens no tooltip.
+  const expanded = props.href === undefined ? props['aria-expanded'] : undefined
+  const wasOpen = useRef(false)
+  const closedAt = useRef(Number.NEGATIVE_INFINITY)
+  useEffect(() => {
+    const open = expanded === true || expanded === 'true'
+    if (wasOpen.current && !open) closedAt.current = performance.now()
+    wasOpen.current = open
+  }, [expanded])
   const keyshortcuts = key === undefined ? undefined : shortcuts.aria(key)
   const body = (
     <>
@@ -175,6 +195,7 @@ export function AppRailItem(props: AppRailItemProps) {
       onIntent: _onIntent,
       onSelect,
       onClick,
+      onFocus,
       ...rest
     } = props
     const {
@@ -191,6 +212,11 @@ export function AppRailItem(props: AppRailItemProps) {
         aria-keyshortcuts={keyshortcuts}
         {...attributes}
         aria-current={current ? 'page' : undefined}
+        onFocus={(event) => {
+          onFocus?.(event)
+          // A prevented focus is what keeps Radix's tooltip trigger, which runs after this, shut.
+          if (performance.now() - closedAt.current < 1000) event.preventDefault()
+        }}
         onClick={(event: MouseEvent<HTMLButtonElement>) => {
           onClick?.(event)
           if (!event.defaultPrevented) onSelect?.()

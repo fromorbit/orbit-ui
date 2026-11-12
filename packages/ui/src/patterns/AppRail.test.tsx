@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef } from 'react'
 import { describe, expect, test, vi } from 'vitest'
@@ -126,8 +126,6 @@ describe('AppRail', () => {
 
   test('keeps only the icons and names each item by its label on a narrow rail', () => {
     renderRail({ narrow: true })
-    const nav = screen.getByRole('navigation', { name: 'Apps' })
-    expect(nav.className).toContain('w-(--nt-rail-width-narrow)')
     for (const name of ['Start', 'Lens', 'Halo', 'Instellingen']) {
       const link = screen.getByRole('link', { name })
       const word = screen.getByText(name)
@@ -143,19 +141,28 @@ describe('AppRail', () => {
       expect(match, name).not.toBeNull()
       return Number(match?.[1])
     }
-    /** The width a `w-*` or `size-*` class names, in px: a step of 4px, brackets or a token. */
+    /**
+     * The width a `w-*` or `size-*` class names, in px: a step of 4px, or a token with its fallback,
+     * which must be the token's own value so a host on an older `tokens.css` keeps the same rail.
+     */
     const width = (className: string): number => {
       const match = className.match(
-        /(?:^|\s)(?:w|size)-(?:\[(\d+)px\]|\((--nt-[a-z-]+)\)|(\d+))(?:\s|$)/,
+        /(?:^|\s)(?:w|size)-(?:\[var\((--nt-[a-z-]+),(\d+)px\)\]|(\d+))(?:\s|$)/,
       )
       expect(match, className).not.toBeNull()
-      if (match?.[1] !== undefined) return Number(match[1])
-      if (match?.[2] !== undefined) return token(match[2])
+      if (match?.[1] !== undefined) {
+        expect(Number(match[2]), `the fallback of ${match[1]}`).toBe(token(match[1]))
+        return token(match[1])
+      }
       return Number(match?.[3]) * 4
     }
-    for (const narrow of [false, true]) {
+    for (const [narrow, rail] of [
+      [false, 'w-[var(--nt-rail-width,72px)]'],
+      [true, 'w-[var(--nt-rail-width-narrow,56px)]'],
+    ] as const) {
       const { unmount } = renderRail({ narrow })
       const nav = screen.getByRole('navigation', { name: 'Apps' })
+      expect(nav.className).toContain(rail)
       const item = screen.getByRole('link', { name: 'Instellingen' })
       expect(width(nav.className) - width(item.className), `narrow: ${narrow}`).toBe(12)
       const word = within(item).getByText('Instellingen')
@@ -164,17 +171,7 @@ describe('AppRail', () => {
       unmount()
     }
     renderRail()
-    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain(
-      'w-(--nt-rail-width)',
-    )
     expect(screen.getByRole('link', { name: 'Lens' }).className).toContain('w-15')
-  })
-
-  test('takes its width from the tokens, so the host reads the same number', () => {
-    renderRail({ narrow: true })
-    expect(screen.getByRole('navigation', { name: 'Apps' }).className).toContain(
-      'w-(--nt-rail-width-narrow)',
-    )
   })
 
   test('opens a dialog as a button of the same shape when it has no href', async () => {
@@ -292,10 +289,35 @@ describe('AppRail', () => {
     expect(screen.getByRole('button', { name: 'Hulp' })).toHaveAttribute('aria-expanded', 'true')
   })
 
-  test('keeps its own click and the one handed to it', async () => {
+  test('runs the click handed to it before its own select or navigation', async () => {
+    const order: string[] = []
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Hulp"
+          icon={<Icon name="circle-help" />}
+          onSelect={() => order.push('select')}
+          onClick={() => order.push('click')}
+        />
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          onNavigate={() => order.push('navigate')}
+          onClick={() => order.push('click')}
+        />
+      </AppRail>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Hulp' }))
+    expect(order).toEqual(['click', 'select'])
+    await userEvent.click(screen.getByRole('link', { name: 'Lens' }))
+    expect(order).toEqual(['click', 'select', 'click', 'navigate'])
+  })
+
+  test('skips its own select or navigation when the click handed to it prevents it', async () => {
     const onSelect = vi.fn()
-    const onClick = vi.fn()
     const onNavigate = vi.fn()
+    const onClick = vi.fn((event: { preventDefault(): void }) => event.preventDefault())
     render(
       <AppRail label="Apps">
         <AppRailItem
@@ -314,12 +336,62 @@ describe('AppRail', () => {
       </AppRail>,
     )
     await userEvent.click(screen.getByRole('button', { name: 'Hulp' }))
-    expect(onClick).toHaveBeenCalledTimes(1)
-    expect(onSelect).toHaveBeenCalledTimes(1)
     await userEvent.click(screen.getByRole('link', { name: 'Lens' }))
     expect(onClick).toHaveBeenCalledTimes(2)
-    expect(onNavigate).toHaveBeenCalledWith('#/lens')
+    expect(onSelect).not.toHaveBeenCalled()
+    expect(onNavigate).not.toHaveBeenCalled()
   })
+
+  test('keeps the hover and focus handed to it beside its own intent', async () => {
+    const onMouseEnter = vi.fn()
+    const onFocus = vi.fn()
+    const onIntent = vi.fn()
+    render(
+      <AppRail label="Apps">
+        <AppRailItem
+          label="Lens"
+          icon={<Icon name="scan-search" />}
+          href="#/lens"
+          onIntent={onIntent}
+          onMouseEnter={onMouseEnter}
+          onFocus={onFocus}
+        />
+      </AppRail>,
+    )
+    const lens = screen.getByRole('link', { name: 'Lens' })
+    await userEvent.hover(lens)
+    act(() => lens.focus())
+    expect(onMouseEnter).toHaveBeenCalledTimes(1)
+    expect(onFocus).toHaveBeenCalledTimes(1)
+    expect(onIntent).toHaveBeenCalledTimes(2)
+  })
+
+  test.each([false, true])(
+    'hands the focus back to the trigger after Escape, closed and without a tooltip (narrow: %s)',
+    async (narrow) => {
+      render(
+        <AppRail label="Apps" narrow={narrow}>
+          <DropdownMenu
+            label="Hulp"
+            side="top"
+            trigger={<AppRailItem label="Hulp" icon={<Icon name="circle-help" />} />}
+            items={[{ id: 'keys', label: 'Sneltoetsen', onSelect: () => {} }]}
+          />
+        </AppRail>,
+      )
+      const help = screen.getByRole('button', { name: 'Hulp' })
+      act(() => help.focus())
+      await userEvent.keyboard('{Enter}')
+      expect(await screen.findByRole('menu')).toBeInTheDocument()
+      expect(help).toHaveAttribute('aria-expanded', 'true')
+      await userEvent.keyboard('{Escape}')
+      await waitFor(() => expect(help).toHaveFocus())
+      expect(help).toHaveAttribute('aria-expanded', 'false')
+      // The focus that comes back from the menu does not open the tooltip over where it was.
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(screen.queryByRole('tooltip')).toBeNull()
+    },
+  )
 
   test('shows its name and its key in a tooltip, and announces the key', async () => {
     render(
