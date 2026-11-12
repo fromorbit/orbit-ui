@@ -1276,3 +1276,94 @@ test('in a roving list → passes a disabled control by', async () => {
   await userEvent.keyboard('{ArrowRight}')
   expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
 })
+
+// ---------------------------------------------------------------------------------------------
+// The groups of a side panel's column (0.6.5): every form below is opt-in.
+// ---------------------------------------------------------------------------------------------
+
+/** One group of the column in the disclosure form, folded or open. */
+function DisclosureGroup({
+  initiallyOpen = true,
+  count = '1 bezig, 1 vraagt iets',
+}: {
+  initiallyOpen?: boolean
+  count?: string
+}) {
+  const [open, setOpen] = useState(initiallyOpen)
+  return (
+    <List label="Zijpaneel">
+      <ListGroup
+        variant="disclosure"
+        heading="Runs"
+        count={count}
+        label={`Runs, ${count}`}
+        open={open}
+        onOpenChange={setOpen}
+      >
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+    </List>
+  )
+}
+
+test('a disclosure heading sets its chevron before the word, always in sight', () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  const chevron = button.querySelector('[data-nt-list-group-chevron]')
+  expect(chevron).not.toBeNull()
+  // First in the button, before the word.
+  expect(button.firstElementChild).toBe(chevron)
+  expect(chevron?.className).not.toContain('opacity-0')
+  expect(chevron?.className).not.toContain('-rotate-90')
+})
+
+test('a folded disclosure heading turns its chevron to point at the word', async () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  await userEvent.click(button)
+  const chevron = button.querySelector('[data-nt-list-group-chevron]')
+  expect(chevron?.className).toContain('-rotate-90')
+  expect(chevron?.className).not.toContain('opacity-0')
+})
+
+test('a disclosure heading sets its count at the end in DM Mono 11px, a word as well', () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  const count = button.querySelector('[data-nt-list-group-count]')
+  expect(count).toHaveTextContent('1 bezig, 1 vraagt iets')
+  expect(count?.className).toContain('ms-auto')
+  expect(count?.className).toContain('font-mono')
+  expect(count?.className).toContain('text-[11px]')
+  // Last in the button: nothing after the count.
+  expect(button.lastElementChild).toBe(count)
+})
+
+test('a group without a variant keeps its count after the word and its chevron last', () => {
+  render(<FoldableGroup />)
+  const button = screen.getByRole('button', { name: 'webshop, 2 chats' })
+  expect(button.querySelector('[data-nt-list-group-chevron]')).toBeNull()
+  const count = button.querySelector('[data-nt-list-group-count]')
+  expect(count?.className).not.toContain('ms-auto')
+  expect(count?.className).not.toContain('font-mono')
+})
+
+test('a disclosure group at the foot of a column, Afgerond, brings its first row into view', async () => {
+  const seen: Element[] = []
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(function (
+    this: Element,
+  ) {
+    seen.push(this)
+  })
+  render(<DisclosureGroup initiallyOpen={false} count="143" />)
+  expect(spy).not.toHaveBeenCalled()
+  await userEvent.click(screen.getByRole('button', { name: 'Runs, 143' }))
+  expect(seen[0]).toBe(screen.getByRole('button', { name: 'Checkout suite' }).closest('li'))
+  spy.mockRestore()
+})
+
+test('a disclosure group that starts open scrolls nothing', () => {
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+  render(<DisclosureGroup />)
+  expect(spy).not.toHaveBeenCalled()
+  spy.mockRestore()
+})

@@ -6,6 +6,7 @@ import {
   type ReactNode,
   type RefObject,
   useContext,
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -715,6 +716,17 @@ export interface ListGroupProps {
    * beside every heading was noise. The count stays in `label`.
    */
   quiet?: boolean
+  /**
+   * How the heading draws its chevron and its count. `label` (the default): the count right after
+   * the word, the chevron behind it and only in sight under the pointer, with the focus or folded.
+   * `disclosure`: the chevron before the word and always in sight (turned to the word while
+   * folded), the count at the end of the heading in DM Mono 11px, a figure or the caller's words
+   * ("1 bezig, 1 vraagt iets"), and a faint fill under the pointer — the groups of a side panel's
+   * column in the design. One form for every group that folds in such a column, the shelf at its
+   * foot (Afgerond) too, so one column has one kind of heading; opened by the reader, it brings its
+   * first row into view, as `ShelfGroup` does.
+   */
+  variant?: 'label' | 'disclosure'
   /** A 12px glyph before the heading, for a group that is not one more of its kind (the archive). */
   icon?: IconName | undefined
   /**
@@ -750,6 +762,7 @@ export function ListGroup({
   heading,
   count,
   quiet = false,
+  variant = 'label',
   icon,
   label,
   open,
@@ -757,6 +770,31 @@ export function ListGroup({
   children,
 }: ListGroupProps) {
   const nameId = useId()
+  const disclosure = variant === 'disclosure'
+  const rows = useRef<HTMLUListElement>(null)
+  // Set by a press that opens the group, so a group that starts open scrolls nothing.
+  const opened = useRef(false)
+  // A disclosure group may stand at the foot of its column (Afgerond): opened there, its rows
+  // appear below the fold and nothing seems to happen. Its first row is brought into view instead.
+  useEffect(() => {
+    if (!open || !opened.current) return
+    opened.current = false
+    rows.current?.firstElementChild?.scrollIntoView({ block: 'nearest' })
+  }, [open])
+  const chevron = (
+    <span
+      data-nt-list-group-chevron={disclosure ? '' : undefined}
+      className={`flex shrink-0 transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
+        open
+          ? disclosure
+            ? ''
+            : 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
+          : '-rotate-90'
+      }`}
+    >
+      <Icon name="chevron-down" size="xs" />
+    </span>
+  )
   return (
     <li className="mt-6 first:mt-0">
       {/* biome-ignore lint/a11y/useSemanticElements: a fieldset is for forms; this is a named group in a list, and a named section would be a landmark. */}
@@ -767,11 +805,17 @@ export function ListGroup({
             data-nt-list-group-heading
             aria-expanded={open}
             aria-label={label}
-            onClick={() => onOpenChange(!open)}
+            onClick={() => {
+              opened.current = disclosure && !open
+              onOpenChange(!open)
+            }}
             className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md px-2 text-left text-[12px] ${
               quiet ? 'font-normal' : 'font-medium'
-            } text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
+            } text-muted outline-focus ${
+              disclosure ? 'hover:bg-surface ' : ''
+            }hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
           >
+            {disclosure ? chevron : null}
             {icon ? (
               <span data-nt-list-group-icon className="flex shrink-0">
                 <Icon name={icon} size="xs" />
@@ -783,27 +827,25 @@ export function ListGroup({
             {count === undefined ? null : (
               <span
                 data-nt-list-group-count
-                className={`shrink-0 font-normal tabular-nums ${
+                className={`shrink-0 font-normal tabular-nums${
+                  disclosure ? ' ms-auto font-mono text-[11px]' : ''
+                }${
                   quiet && open
-                    ? 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
+                    ? ' opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
                     : ''
                 }`}
               >
                 {count}
               </span>
             )}
-            <span
-              className={`flex shrink-0 transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
-                open
-                  ? 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
-                  : '-rotate-90'
-              }`}
-            >
-              <Icon name="chevron-down" size="xs" />
-            </span>
+            {disclosure ? null : chevron}
           </button>
         </h2>
-        {open ? <ul className="m-0 flex list-none flex-col gap-1 p-0">{children}</ul> : null}
+        {open ? (
+          <ul ref={rows} className="m-0 flex list-none flex-col gap-1 p-0">
+            {children}
+          </ul>
+        ) : null}
       </section>
     </li>
   )
