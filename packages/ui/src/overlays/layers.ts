@@ -1,10 +1,16 @@
 import type { SurfaceRect } from '../provider/host'
 
+/**
+ * The register of layers: which open layers of the portal container cover what, for a host that
+ * freezes a native view under them. `HostedSurface` uses it; a host with a hosted surface of its
+ * own (a view the library does not draw) reads the same register rather than a copy of its rules.
+ */
+
 /** Reads the box of an element in CSS pixels of the viewport; a test hands in its own layout. */
-export type Measure = (element: Element) => SurfaceRect
+export type LayerMeasure = (element: Element) => SurfaceRect
 
 /** The browser's own layout: the element's border box, relative to the viewport. */
-const layoutOf: Measure = (element) => {
+const layoutOf: LayerMeasure = (element) => {
   const { x, y, width, height } = element.getBoundingClientRect()
   return { x, y, width, height }
 }
@@ -30,7 +36,7 @@ function hasArea(rect: SurfaceRect): boolean {
  * The boxes a layer covers: its own, or — for a wrapper without a box of its own, such as the
  * portal root around the fixed toast viewport — those of what it holds.
  */
-function boxesOf(element: Element, measure: Measure): SurfaceRect[] {
+function boxesOf(element: Element, measure: LayerMeasure): SurfaceRect[] {
   const rect = measure(element)
   if (hasArea(rect)) return [rect]
   return [...element.children].flatMap((child) => boxesOf(child, measure))
@@ -47,7 +53,7 @@ function boxesOf(element: Element, measure: Measure): SurfaceRect[] {
 export function collectOccluders(
   root: HTMLElement | null,
   viewport: { width: number; height: number },
-  measure: Measure = layoutOf,
+  measure: LayerMeasure = layoutOf,
 ): SurfaceRect[] {
   if (!root) return []
   const occluders: SurfaceRect[] = []
