@@ -42,10 +42,10 @@ export interface AppRailProps {
  * with the value as fallback, so a host on an older `tokens.css` keeps the same rail),
  * each item 60px (6px of inset on either side) with an icon of 20px over
  * its label in 11px, never cut off; the narrow rail of 56px keeps only the icons. The rail
- * scrolls in a short window, so the foot stays within reach. The open app is shown once: a neutral plane (`row-active`), its words
- * at full strength, `aria-current="page"`, and the satellite of that app as a 4px dot beside the
- * plane. The satellite is never the plane or the words (it is a mark, not a role). Every word
- * and every icon comes in as a prop: the kit draws no symbol of an app.
+ * scrolls in a short window, so the foot stays within reach. The open app is shown once: a neutral
+ * plane (`row-active`), its words at full strength and `aria-current="page"`, with no dot beside it
+ * (owner's decision of 12 November: the satellite beside the item is gone). Every word and every
+ * icon comes in as a prop: the kit draws no symbol of an app.
  */
 export function AppRail({ label, children, foot, narrow = false }: AppRailProps) {
   return (
@@ -85,11 +85,13 @@ interface AppRailItemBase {
   label: string
   /** The app's symbol or a glyph from `Icon`, drawn at 20px; decorative, the label names it. */
   icon: ReactNode
-  /** The app that is open: the neutral plane, `aria-current="page"` and the satellite beside it. */
+  /** The app that is open: the neutral plane, its words at full strength and `aria-current="page"`. */
   current?: boolean
   /**
-   * The product of this app, set as `data-product` on the item, so the dot beside the open item
-   * is that app's satellite. Without it the dot takes the satellite of the page.
+   * The product of this app. It no longer does anything: it chose the satellite of the dot beside
+   * the open item, and the rail has no dot any more. Kept so a host that still passes it compiles.
+   *
+   * @deprecated The rail draws no satellite; leave it out. It will go in a major release.
    */
   product?: FamilyProduct
   /**
@@ -155,7 +157,7 @@ export type AppRailItemProps = AppRailLink | AppRailButton
  * `tooltip` of its own as well: the item names itself, and two tooltips would share one trigger.
  */
 export function AppRailItem(props: AppRailItemProps) {
-  const { label, icon, current = false, product, shortcut } = props
+  const { label, icon, current = false, shortcut } = props
   const narrow = useContext(NarrowContext)
   const { shortcuts } = useUi()
   const shape = narrow
@@ -276,14 +278,7 @@ export function AppRailItem(props: AppRailItemProps) {
     )
   }
   return (
-    <li className="relative" {...(product === undefined ? {} : { 'data-product': product })}>
-      {current ? (
-        <span
-          aria-hidden="true"
-          data-nt-app-rail-satellite
-          className="absolute top-1/2 -start-[5px] size-1 -translate-y-1/2 rounded-full bg-satellite"
-        />
-      ) : null}
+    <li>
       {narrow || knownKey ? (
         <Tooltip label={label} side="right" {...(knownKey ? { shortcut: key } : {})}>
           {control as ReactElement}

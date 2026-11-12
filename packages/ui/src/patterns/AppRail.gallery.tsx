@@ -4,23 +4,22 @@ import { Dialog } from '../overlays/Dialog'
 import { DropdownMenu } from '../overlays/DropdownMenu'
 import { Icon, type IconName } from '../primitives/Icon'
 import { literalShortcuts, UiProvider } from '../provider/UiProvider'
-import { AppRail, AppRailItem, type FamilyProduct } from './AppRail'
+import { AppRail, AppRailItem } from './AppRail'
 
-/** An app or place on the rail of the story: its words, glyph and product. */
+/** An app or place on the rail of the story: its words and glyph. */
 interface App {
   id: string
   label: string
   icon: IconName
-  product?: FamilyProduct
 }
 
 /** The apps of the family, from the top. A host gives its own symbols; the story takes glyphs. */
 const APPS: readonly App[] = [
   { id: 'start', label: 'Start', icon: 'house' },
-  { id: 'lens', label: 'Lens', icon: 'scan-search', product: 'lens' },
-  { id: 'halo', label: 'Halo', icon: 'layers', product: 'halo' },
-  { id: 'trail', label: 'Trail', icon: 'camera', product: 'trail' },
-  { id: 'comet', label: 'Comet', icon: 'sparkles', product: 'comet' },
+  { id: 'lens', label: 'Lens', icon: 'scan-search' },
+  { id: 'halo', label: 'Halo', icon: 'layers' },
+  { id: 'trail', label: 'Trail', icon: 'camera' },
+  { id: 'comet', label: 'Comet', icon: 'sparkles' },
 ]
 
 /**
@@ -38,7 +37,6 @@ function Shell({ open, narrow = false }: { open: string; narrow?: boolean }) {
       icon={<Icon name={app.icon} />}
       href={`#${app.id}`}
       current={app.id === current}
-      {...(app.product === undefined ? {} : { product: app.product })}
       onNavigate={() => setCurrent(app.id)}
     />
   )
@@ -119,7 +117,6 @@ function MenuShell({ open }: { open: string }) {
               icon={<Icon name={app.icon} />}
               href={`#${app.id}`}
               current={app.id === current}
-              {...(app.product === undefined ? {} : { product: app.product })}
               {...(KEYS[app.id] === undefined ? {} : { shortcut: KEYS[app.id] })}
               onNavigate={() => setCurrent(app.id)}
             />
@@ -131,7 +128,7 @@ function MenuShell({ open }: { open: string }) {
 }
 
 /**
- * The rail of the apps on the frame: an app open with its satellite beside it, a place of the
+ * The rail of the apps on the frame: an app open on its neutral plane, without a dot, a place of the
  * foot open, the narrow rail of icons only, each with its label in a tooltip, and the rail of the
  * desktop app with Hulp as a menu and a key beside every app, in either theme.
  */
