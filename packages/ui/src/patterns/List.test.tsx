@@ -1553,3 +1553,60 @@ test('→ on a heading row does not walk into the controls of the rows under it'
   await userEvent.keyboard('{ArrowRight}')
   expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
 })
+
+test('a group without a variant scrolls nothing when it opens', async () => {
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+  render(<FoldableGroup initiallyOpen={false} />)
+  await userEvent.click(screen.getByRole('button', { name: 'webshop, 2 chats' }))
+  expect(screen.getByRole('button', { name: /Eerste chat/ })).toBeInTheDocument()
+  expect(spy).not.toHaveBeenCalled()
+  spy.mockRestore()
+})
+
+/** A roving column with one folding heading row whose state the test can read. */
+function TogglingColumn() {
+  const [open, setOpen] = useState(true)
+  return (
+    <List label="Zijpaneel" roving>
+      <ListGroup
+        variant="disclosure"
+        rowMark
+        heading="Runs"
+        label="Runs"
+        open={open}
+        onOpenChange={setOpen}
+      >
+        <ListRow title="Checkout suite" actions={<button type="button">Meer</button>} />
+      </ListGroup>
+      <ListRow title="Laatste chat" />
+    </List>
+  )
+}
+
+test('Enter and Space on a heading row fold and unfold it, and the focus and the stop stay on it', async () => {
+  render(<TogglingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  runs.focus()
+  await userEvent.keyboard('{Enter}')
+  expect(runs).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('button', { name: 'Checkout suite' })).toBeNull()
+  expect(runs).toHaveFocus()
+  expect(runs.tabIndex).toBe(0)
+  await userEvent.keyboard(' ')
+  expect(runs).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('button', { name: 'Checkout suite' })).toBeInTheDocument()
+  expect(runs).toHaveFocus()
+  await waitFor(() => expect(runs.tabIndex).toBe(0))
+  expect(screen.getByRole('button', { name: 'Checkout suite' }).tabIndex).toBe(-1)
+})
+
+test('the context-menu key on a heading row does nothing', async () => {
+  render(<TogglingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  runs.focus()
+  await userEvent.keyboard('{ContextMenu}')
+  await userEvent.keyboard('{Shift>}{F10}{/Shift}')
+  expect(runs).toHaveFocus()
+  expect(runs).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.queryByRole('menu')).toBeNull()
+})

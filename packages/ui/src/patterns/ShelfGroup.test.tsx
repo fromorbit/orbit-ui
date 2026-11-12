@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { expect, test, vi } from 'vitest'
 import { nl } from '../testing/labels'
-import { List } from './List'
+import { List, ListRow } from './List'
 import { ShelfGroup } from './ShelfGroup'
 
 /** A controlled shelf with two rows in it, as the foot of the chat list holds one. */
@@ -145,4 +145,18 @@ test('draws a rule above the shelf unless told not to', () => {
   unmount()
   render(<Shelf rule={false} />)
   expect(screen.getByRole('button', { name: 'Afgerond 143' }).className).not.toMatch(/\bborder-t\b/)
+})
+
+test('in a roving list → on the shelf does not walk into the controls of its first row', async () => {
+  render(
+    <List label="Chats" roving>
+      <ShelfGroup text={nl.shelf} title="Afgerond" count={1} open onOpenChange={() => {}}>
+        <ListRow title="Een" actions={<button type="button">Meer</button>} />
+      </ShelfGroup>
+    </List>,
+  )
+  const shelf = screen.getByRole('button', { name: 'Afgerond 1' })
+  shelf.focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(shelf).toHaveFocus()
 })
