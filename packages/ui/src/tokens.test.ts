@@ -366,8 +366,9 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  // The side panel is a ground for a status word (green 4.6:1 in light); the frame is not, a
-  // status there is a glyph (`docs/family-style.md`, "The shell").
+  // The opaque side panel, on an opaque window, is a ground for a status word (green 4.6:1 in
+  // light); the frame is not, a status there is a glyph (`docs/family-style.md`, "The shell"). The
+  // tinted side panel of a translucent window is not tested for status words.
   test.each(['--nt-danger', '--nt-success', '--nt-attention'])(
     '%s as words on the canvas, the side panel and a menu reaches AA (≥ 4.5)',
     (tone) => {
@@ -642,6 +643,9 @@ describe('the measures of the shell', () => {
 
   test('the floating plane starts after the rail, 1px of frame and its hairline', () => {
     expect(tokens.get('--nt-shell-plane-inset-start')).toBe('calc(var(--nt-rail-width) + 2px)')
+    expect(tokens.get('--nt-shell-plane-inset-start-narrow')).toBe(
+      'calc(var(--nt-rail-width-narrow) + 2px)',
+    )
     expect(tokens.get('--nt-shell-plane-inset-top')).toBe('calc(var(--nt-top-bar-height) + 1px)')
   })
 })

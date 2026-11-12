@@ -268,9 +268,10 @@
   --nt-top-bar-inset-end: max(12px, var(--nt-window-controls-width));
   /* Where the floating plane of the side panel and the content starts, for what a host lays over
      it (a toast, a layer of the side panel): after the rail, 1px of frame and the hairline of the
-     plane's start edge; under the top bar and the hairline along its top. It follows the rail of
-     72px; beside the narrow rail the plane starts 16px sooner. */
+     plane's start edge; under the top bar and the hairline along its top. `-narrow` beside the
+     narrow rail of 56px. */
   --nt-shell-plane-inset-start: calc(var(--nt-rail-width) + 2px);
+  --nt-shell-plane-inset-start-narrow: calc(var(--nt-rail-width-narrow) + 2px);
   --nt-shell-plane-inset-top: calc(var(--nt-top-bar-height) + 1px);
   /* The foot of the sidebar: the account, the archive and the gear, one row of 44px. */
   --nt-sidebar-foot-height: 44px;
