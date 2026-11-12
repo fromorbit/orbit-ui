@@ -664,14 +664,14 @@ describe('the tint of a translucent window', () => {
     return [0, 2, 4].map((offset) => Number.parseInt(clean.slice(offset, offset + 2), 16)).join(' ')
   }
 
-  test('each theme lays its own frame and canvas over the material, at the same strengths', () => {
+  test('the frame of a translucent window keeps 85% of its tint, in both themes', () => {
     const dark = rule(':root[data-translucent="true"]')
     const light = rule(':root[data-translucent="true"][data-theme="light"]')
     expect(dark.get('--nt-app-background')).toBe(
-      `rgb(${channels(hexIn(tokens, '--nt-frame'))} / 0.6)`,
+      `rgb(${channels(hexIn(tokens, '--nt-frame'))} / 0.85)`,
     )
     expect(light.get('--nt-app-background')).toBe(
-      `rgb(${channels(hexIn(lightTokens, '--nt-frame'))} / 0.6)`,
+      `rgb(${channels(hexIn(lightTokens, '--nt-frame'))} / 0.85)`,
     )
   })
 
