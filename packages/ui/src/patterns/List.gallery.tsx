@@ -1,5 +1,8 @@
 import { type ReactNode, useId, useState } from 'react'
 import type { Story } from '../gallery/story'
+import { DropdownMenu } from '../overlays/DropdownMenu'
+import { IconButton } from '../primitives/IconButton'
+import { ProjectMark } from '../primitives/ProjectMark'
 import { nl } from '../testing/labels'
 import { List, ListGroup, ListRow } from './List'
 import { RelativeTime } from './RelativeTime'
@@ -37,6 +40,215 @@ function Group({ heading, children }: { heading: string; children: ReactNode }) 
         <ul className="m-0 list-none p-0">{children}</ul>
       </section>
     </li>
+  )
+}
+
+/**
+ * The same rows twice, side by side: in the theme of the gallery (Midnight) and on Paper, each on the plane it lies on in a
+ * host (the side panel for the chats, the canvas for the projects).
+ */
+function BothThemes({
+  plane = 'side-panel',
+  children,
+}: {
+  plane?: 'side-panel' | 'canvas'
+  children: () => ReactNode
+}) {
+  const ground = plane === 'canvas' ? 'bg-canvas' : 'bg-side-panel'
+  return (
+    <div className="flex flex-wrap gap-4">
+      <div className={`rounded-lg p-2 text-fg ${ground}`}>{children()}</div>
+      <div data-theme="light" className={`rounded-lg p-2 text-fg ${ground}`}>
+        {children()}
+      </div>
+    </div>
+  )
+}
+
+/** The controls of a chat row: one move, and the menu. Named by the row's title. */
+function ChatActions({ titleId }: { titleId: string }) {
+  return (
+    <>
+      <IconButton
+        icon="check-check"
+        size="sm"
+        tone="faint"
+        label="Afronden"
+        aria-describedby={titleId}
+      />
+      <DropdownMenu
+        label="Meer"
+        trigger={
+          <IconButton
+            icon="more-horizontal"
+            size="sm"
+            tone="faint"
+            label="Meer"
+            aria-describedby={titleId}
+          />
+        }
+        items={[{ id: 'archive', label: 'Archiveren', onSelect() {} }]}
+      />
+    </>
+  )
+}
+
+/** One chat of the side panel: the title in 13px, under it the project and the time in DM Mono. */
+function ChatRow({
+  title,
+  kind,
+  status,
+  word,
+  project,
+  at,
+  unread = false,
+  current = false,
+}: {
+  title: string
+  kind: 'running' | 'attention' | 'failed' | 'done' | 'queued'
+  status: string
+  word?: string
+  project: string
+  at: number
+  unread?: boolean
+  current?: boolean
+}) {
+  const titleId = useId()
+  return (
+    <ListRow
+      title={title}
+      titleId={titleId}
+      kind={kind}
+      status={status}
+      shape={{ label: status }}
+      markerSide="end"
+      size="comfortable"
+      emphasis="strong"
+      meta={false}
+      current={current}
+      {...(unread ? { titleWeight: 'semibold' as const } : {})}
+      subline={{
+        mono: true,
+        label: [word, project].filter(Boolean).join(', '),
+        content: (
+          <span className="flex min-w-0 items-center gap-1">
+            {word ? <span className="shrink-0 font-sans">{word} ·</span> : null}
+            <span className="min-w-0 truncate">{project}</span>
+            <span className="shrink-0">·</span>
+            <RelativeTime labels={nl.time} at={at} now={now} />
+          </span>
+        ),
+      }}
+      actions={<ChatActions titleId={titleId} />}
+    />
+  )
+}
+
+/** The chats of the side panel, as the design draws them, one tab stop for the whole list. */
+function SidePanelChats() {
+  return (
+    <div className="w-62">
+      <List label="Gesprekken" roving>
+        <ChatRow
+          title="Verzendadres-test repareren"
+          kind="attention"
+          status="Wacht op jou"
+          word="Wacht op jou"
+          project="webwinkel"
+          at={now - 2 * minute}
+        />
+        <ChatRow
+          title="Pogingen met kortingscodes beperken"
+          kind="done"
+          status="Klaar"
+          project="webwinkel"
+          at={now - 30_000}
+          current
+        />
+        <ChatRow
+          title="Testrun 1284 mislukt op pr-482"
+          kind="failed"
+          status="Mislukt"
+          project="webwinkel"
+          at={now - 12 * minute}
+          unread
+        />
+        <ChatRow
+          title="Het kortingsveld proberen met een spatie"
+          kind="running"
+          status="Loopt"
+          project="kassa-api"
+          at={now - 40 * minute}
+        />
+      </List>
+    </div>
+  )
+}
+
+/** The projects of a start screen: a mark, the name in DM Mono, and where it stands in git. */
+function StartProjects() {
+  const [chosen, setChosen] = useState('webwinkel')
+  const projects = [
+    {
+      name: 'webwinkel',
+      remote: 'studio-noord/webwinkel',
+      branch: 'main',
+      note: '2 wijzigingen niet gecommit',
+      chats: '4 gesprekken',
+    },
+    {
+      name: 'kassa-api',
+      remote: 'studio-noord/kassa-api',
+      branch: 'release',
+      note: 'alles gecommit',
+      chats: '1 gesprek',
+    },
+    {
+      name: 'huisstijl',
+      remote: null,
+      branch: 'main',
+      note: 'alles gecommit',
+      chats: 'geen gesprekken',
+    },
+  ]
+  return (
+    <div className="w-120">
+      <List label="Projecten" card>
+        {projects.map((project) => {
+          const where = project.remote ? `${project.remote} op ${project.branch}` : project.branch
+          return (
+            <ListRow
+              key={project.name}
+              title={project.name}
+              monoTitle
+              size="comfortable"
+              titleWeight="medium"
+              emphasis="strong"
+              status=""
+              marker={<ProjectMark name={project.name} />}
+              meta={project.chats}
+              aria-pressed={chosen === project.name}
+              onClick={() => setChosen(project.name)}
+              subline={{
+                label: `${where}, ${project.note}`,
+                content: (
+                  <span className="min-w-0 truncate">
+                    <span className="font-mono">{project.remote ?? project.branch}</span>
+                    {project.remote ? (
+                      <>
+                        {' op '}
+                        <span className="font-mono">{project.branch}</span>
+                      </>
+                    ) : null}
+                    {`, ${project.note}`}
+                  </span>
+                ),
+              }}
+            />
+          )
+        })}
+      </List>
+    </div>
   )
 }
 
@@ -316,6 +528,17 @@ export default {
           <ListRow title="Voorraad per winkel" status="Spec, concept" hoverMeta="SPEC-4" />
         </List>
       </Column>
+    ),
+    // Last, so they move no reference image above them. The chat row of a side panel: the shape at
+    // the end, the title at 13px (600 while unread), the project and the time in DM Mono, and the
+    // controls in the place of the shape on hover and keyboard focus.
+    'Chatrij: vorm rechts, twee regels (donker en licht)': () => (
+      <BothThemes>{() => <SidePanelChats />}</BothThemes>
+    ),
+    // The projects of a start screen: in a card with a line between the rows, the name in DM Mono,
+    // the second line under the name beside a 16px mark, and the chosen one pressed.
+    'Projectrij in een kaart (donker en licht)': () => (
+      <BothThemes plane="canvas">{() => <StartProjects />}</BothThemes>
     ),
   },
 } satisfies Story
