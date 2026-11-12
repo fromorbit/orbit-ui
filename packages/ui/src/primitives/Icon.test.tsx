@@ -132,6 +132,7 @@ test.each([
   'loader-circle',
   'house',
   'circle-help',
+  'list-filter',
 ])('the name %s that the design asks for is in the registry', (name) => {
   // Written out rather than read from `iconNames`, so a name the design
   // needs cannot drop out of the registry unnoticed.

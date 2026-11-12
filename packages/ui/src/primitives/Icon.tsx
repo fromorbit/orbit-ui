@@ -59,6 +59,7 @@ import {
   Layers,
   Lightbulb,
   ListChecks,
+  ListFilter,
   LoaderCircle,
   Lock,
   LockOpen,
@@ -221,6 +222,9 @@ const registry = {
   // Flow, the view of objectives and their steps: a list being ticked off, never the branch of a
   // worktree it used to borrow.
   'list-checks': ListChecks,
+  // The filter of a list in a side panel (which chats it shows): lines that narrow, not a funnel,
+  // which reads as a form of its own.
+  'list-filter': ListFilter,
   // A subagent — an agent another agent started — wherever one shows: the pill and the card of
   // its tab, the row of the `+`-menu and its line in the conversation. Its own glyph, not the
   // branch above, which is a worktree's.
