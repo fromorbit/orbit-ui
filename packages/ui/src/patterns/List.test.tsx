@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef, useState } from 'react'
 import { expect, test, vi } from 'vitest'
@@ -883,26 +883,32 @@ test('the title carries the id a caller gives it, so a control beside it can nam
   expect(screen.getByRole('button', { name: 'Meer' })).toHaveAccessibleDescription('Eerste chat')
 })
 
-test('the shape takes its name and tooltip from shape.label', async () => {
+test('shape.label is the tooltip of the shape alone; the name keeps the status in its place', async () => {
   render(
     <List label="Chats">
       <ListRow
         title="Eerste chat"
-        aria-label="Eerste chat, wacht op jou"
         kind="attention"
         status="Wacht op jou"
         markerSide="end"
+        meta="2 min"
         shape={{ label: 'Wacht op jou' }}
+        subline={{ content: 'webwinkel · 2 min', label: 'webwinkel, 2 min' }}
       />
     </List>,
   )
-  const shape = screen.getByRole('img', { name: 'Wacht op jou' })
-  expect(shape).toHaveAttribute('data-nt-status-shape')
+  const row = screen.getByRole('button', { name: /Eerste chat/ })
+  // Title, status between commas, meta, then the second line: once each, nothing after it.
+  expect(row).toHaveAccessibleName(/^Eerste chat ?, Wacht op jou, ?2 min ?, webwinkel, 2 min$/)
+  // The shape names nothing itself; it only shows the word under the pointer.
+  expect(screen.queryByRole('img')).toBeNull()
+  const shape = row.querySelector('[data-nt-status-shape]') as HTMLElement
+  expect(shape).toHaveAttribute('aria-hidden', 'true')
   await userEvent.hover(shape)
   expect(await screen.findByRole('tooltip')).toHaveTextContent('Wacht op jou')
 })
 
-test('a named shape says the status itself, so the row does not say it twice', () => {
+test('with the shape at the end beside actions, shape.label shows no tooltip: the actions lie there', () => {
   render(
     <List label="Chats">
       <ListRow
@@ -912,12 +918,41 @@ test('a named shape says the status itself, so the row does not say it twice', (
         markerSide="end"
         meta={false}
         shape={{ label: 'Wacht op jou' }}
+        actions={<button type="button">Meer</button>}
       />
     </List>,
   )
-  expect(screen.getByRole('button', { name: /Eerste chat/ })).toHaveAccessibleName(
-    /^Eerste chat ?Wacht op jou$/,
+  const row = screen.getByRole('button', { name: /Eerste chat/ })
+  const shape = row.querySelector('[data-nt-status-shape]') as HTMLElement
+  expect(shape).not.toHaveAttribute('data-state')
+  expect(shape).not.toHaveAttribute('aria-describedby')
+  expect(row).toHaveAccessibleName(/^Eerste chat ?, Wacht op jou,$/)
+})
+
+test('an expanded control outside the actions does not bring the actions in', () => {
+  render(
+    <div className="px-2">
+      <List label="Chats">
+        <ListRow
+          title="Eerste chat"
+          kind="done"
+          status="Klaar"
+          markerSide="end"
+          fold={{ open: true, label: 'Subagents', onToggle() {} }}
+          actions={<button type="button">Meer</button>}
+        />
+      </List>
+    </div>,
   )
+  const row = screen.getByRole('button', { name: /Eerste chat/ })
+  const li = row.closest('li') as HTMLElement
+  // Only an open menu inside the box of actions keeps them in sight; an open fold is not one.
+  const scoped = 'group-has-[[data-nt-list-actions]_[aria-expanded=true]]/row'
+  expect(row.className).toContain(`${scoped}:pe-[calc(var(--nt-control-sm)*2+14px)]`)
+  expect(row.querySelector('[data-nt-list-marker-end]')?.className).toContain(`${scoped}:opacity-0`)
+  for (const element of [li, ...li.querySelectorAll('*')]) {
+    expect(element.getAttribute('class') ?? '').not.toContain('group-has-[[aria-expanded=true]]')
+  }
 })
 
 test('a row can carry a weight of its own: unread at 600', () => {
@@ -1152,5 +1187,92 @@ test('a list without roving leaves → alone and keeps every control a tab stop'
   await userEvent.keyboard('{ArrowRight}')
   expect(row).toHaveFocus()
   await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
+})
+
+test('a roving list reaches actions that appear after the row', async () => {
+  function Late() {
+    const [shown, setShown] = useState(false)
+    return (
+      <>
+        <button type="button" onClick={() => setShown(true)}>
+          Toon
+        </button>
+        <List label="Chats" roving>
+          <ListRow
+            title="Eerste"
+            actions={shown ? <button type="button">Meer</button> : undefined}
+          />
+        </List>
+      </>
+    )
+  }
+  render(<Late />)
+  await userEvent.click(screen.getByRole('button', { name: 'Toon' }))
+  const more = screen.getByRole('button', { name: 'Meer' })
+  // Taken out of the Tab order like the rest, and still reached with →.
+  expect(more.tabIndex).toBe(-1)
+  screen.getByRole('button', { name: 'Eerste' }).focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(more).toHaveFocus()
+})
+
+test('in a roving list a newly current row takes the tab stop over', () => {
+  function Switching({ current }: { current: string }) {
+    return (
+      <List label="Chats" roving>
+        {['Eerste', 'Tweede'].map((title) => (
+          <ListRow key={title} title={title} current={current === title} />
+        ))}
+      </List>
+    )
+  }
+  const { rerender } = render(<Switching current="Eerste" />)
+  const first = screen.getByRole('button', { name: 'Eerste' })
+  const second = screen.getByRole('button', { name: 'Tweede' })
+  expect(first.tabIndex).toBe(0)
+  expect(second.tabIndex).toBe(-1)
+  rerender(<Switching current="Tweede" />)
+  return waitFor(() => {
+    expect(second.tabIndex).toBe(0)
+    expect(first.tabIndex).toBe(-1)
+  })
+})
+
+test('a list that stops roving gives every row its tab stop back', () => {
+  function Toggle({ roving }: { roving: boolean }) {
+    return (
+      <List label="Chats" roving={roving}>
+        <ListRow title="Eerste" actions={<button type="button">Meer</button>} />
+        <ListRow title="Tweede" />
+      </List>
+    )
+  }
+  const { rerender } = render(<Toggle roving />)
+  expect(screen.getByRole('button', { name: 'Tweede' }).tabIndex).toBe(-1)
+  rerender(<Toggle roving={false} />)
+  expect(screen.getByRole('button', { name: 'Eerste' }).tabIndex).toBe(0)
+  expect(screen.getByRole('button', { name: 'Tweede' }).tabIndex).toBe(0)
+  expect(screen.getByRole('button', { name: 'Meer' }).tabIndex).toBe(0)
+})
+
+test('in a roving list → passes a disabled control by', async () => {
+  render(
+    <List label="Chats" roving>
+      <ListRow
+        title="Eerste"
+        actions={
+          <>
+            <button type="button" disabled>
+              Afronden
+            </button>
+            <button type="button">Meer</button>
+          </>
+        }
+      />
+    </List>,
+  )
+  screen.getByRole('button', { name: 'Eerste' }).focus()
+  await userEvent.keyboard('{ArrowRight}')
   expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
 })

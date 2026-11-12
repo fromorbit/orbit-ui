@@ -54,7 +54,14 @@ const ACTIONS = '[data-nt-list-actions]'
 /** The focusable controls inside a row's box of actions. */
 function actionsOf(row: HTMLElement): HTMLElement[] {
   const box = row.closest('li')?.querySelector<HTMLElement>(ACTIONS)
-  return box ? [...box.querySelectorAll<HTMLElement>('button, [tabindex]')] : []
+  return box ? controlsIn(box) : []
+}
+
+/** The controls of a box of actions that can take the focus: a disabled one is passed by. */
+function controlsIn(box: HTMLElement): HTMLElement[] {
+  return [...box.querySelectorAll<HTMLElement>('button, [tabindex]')].filter(
+    (control) => !control.matches(':disabled'),
+  )
 }
 
 /**
@@ -98,7 +105,7 @@ function moveAside(event: KeyboardEvent<HTMLElement>): boolean {
   }
   const box = target.closest<HTMLElement>(ACTIONS)
   if (!box) return false
-  const controls = [...box.querySelectorAll<HTMLElement>('button, [tabindex]')]
+  const controls = controlsIn(box)
   const at = controls.indexOf(target)
   if (at === -1) return false
   if (event.key === 'ArrowRight') {
@@ -127,6 +134,8 @@ function useRoving(list: RefObject<HTMLUListElement | null>, on: boolean): void 
   useLayoutEffect(() => {
     const root = list.current
     if (!on || !root) return
+    // What roving changed, so turning it off gives every row and control its tab stop back.
+    const touched = new Set<HTMLElement>()
     const apply = () => {
       const rows = [...root.querySelectorAll<HTMLElement>(ROW)]
       const stop =
@@ -135,11 +144,13 @@ function useRoving(list: RefObject<HTMLUListElement | null>, on: boolean): void 
         rows[0]
       for (const row of rows) {
         const index = row === stop ? 0 : -1
+        touched.add(row)
         if (row.tabIndex !== index) row.tabIndex = index
       }
       for (const control of root.querySelectorAll<HTMLElement>(
         `${ACTIONS} button, ${ACTIONS} [tabindex]`,
       )) {
+        touched.add(control)
         if (control.tabIndex !== -1) control.tabIndex = -1
       }
     }
@@ -167,6 +178,7 @@ function useRoving(list: RefObject<HTMLUListElement | null>, on: boolean): void 
     return () => {
       observer.disconnect()
       root.removeEventListener('focusin', onFocus)
+      for (const element of touched) element.removeAttribute('tabindex')
     }
   }, [list, on])
 }
@@ -210,8 +222,9 @@ export type ListProps = ListName & {
   roving?: boolean
   /**
    * The rows lie in an outlined region, a hairline between them, as a group of rows in the family
-   * does (`docs/family-style.md`, Rhythm): 12px corners, no fill, the rows square to its edge and
-   * 12px in. For a short list of things to choose from, such as the projects of a start screen.
+   * does (`docs/family-style.md`, Rhythm): 12px corners, no fill, the rows square to its edge.
+   * The inset of the words is the row's own: 10px for a `comfortable` row, 8px for a regular
+   * one. For a short list of things to choose from, such as the projects of a start screen.
    * Not for rows with a `fold` chevron, which needs the gutter outside the row.
    */
   card?: boolean
@@ -222,9 +235,10 @@ export type ListProps = ListName & {
  *
  * One keyboard owner for the whole list, rather than one per group: the user reads a sidebar as a
  * single column, so ArrowDown at the bottom of a project continues in the next one. Home and End
- * jump to the ends of the whole list. Every row stays an ordinary tab stop, so Tab walks through
- * them as it does through any row of buttons: a roving tabindex would change how the sidebar
- * already behaves, and the migration onto this pattern must not change behaviour.
+ * jump to the ends of the whole list. By default every row and every control beside it stays an
+ * ordinary tab stop, so Tab walks through them as it does through any row of buttons. `roving`
+ * is the opt-in for a long column: one tab stop for the whole list, with → and ← into the
+ * controls of a row and back.
  */
 export function List({ label, labelledBy, children, roving = false, card = false }: ListProps) {
   const ref = useRef<HTMLUListElement>(null)
@@ -357,8 +371,8 @@ export type ListRowProps = Omit<
    *
    * With `markerSide="end"` the controls take the place of the shape instead, and show on hover
    * and on keyboard focus (`:focus-visible`) only: the focus a click leaves behind brings nothing
-   * in, so a chosen row keeps its shape. While they show, the row keeps room for two controls of
-   * `--nt-control-sm` at its end, so they never lie over the title.
+   * in, so a chosen row keeps its shape. While they show, the row keeps room for at most two
+   * controls of `--nt-control-sm` at its end, so they never lie over the title; a third would.
    */
   actions?: ReactNode
   /**
@@ -388,9 +402,10 @@ export type ListRowProps = Omit<
   /**
    * For the status shape: a message stands ready in this chat, so its shape is drawn dotted, and
    * for a closed one how it last ended. Both only for the eye; the words are the caller's.
-   * `label` names the shape and shows it as its tooltip (`StatusShape`'s `label`); the shape then
-   * says the status itself, and the row leaves the status out of its own words so it is not heard
-   * twice.
+   * `label` shows the status word as the tooltip of the shape under the pointer (`StatusShape`'s
+   * `tooltip`); the shape stays decorative, and the row's name keeps the status in its own place
+   * (title, status, meta). With `markerSide="end"` and `actions` there is no tooltip: the actions
+   * take the shape's place on hover, so the pointer never reaches it.
    */
   shape?: { pending?: boolean; closedAs?: ClosedAs | null; muted?: boolean; label?: string }
   /**
@@ -428,7 +443,7 @@ const weightClass = { medium: 'font-medium', semibold: 'font-semibold' } as cons
  */
 const END_ROOM = 'pe-[34px]'
 const END_ROOM_ACTIONS =
-  'pe-[34px] group-hover/row:pe-[calc(var(--nt-control-sm)*2+14px)] group-has-[:focus-visible]/row:pe-[calc(var(--nt-control-sm)*2+14px)] group-has-[[aria-expanded=true]]/row:pe-[calc(var(--nt-control-sm)*2+14px)]'
+  'pe-[34px] group-hover/row:pe-[calc(var(--nt-control-sm)*2+14px)] group-has-[:focus-visible]/row:pe-[calc(var(--nt-control-sm)*2+14px)] group-has-[[data-nt-list-actions]_[aria-expanded=true]]/row:pe-[calc(var(--nt-control-sm)*2+14px)]'
 
 /**
  * One row of a `List`: a status icon, a title, and a detail on the right.
@@ -474,8 +489,9 @@ export function ListRow({
   const end = markerSide === 'end'
   const comfortable = size === 'comfortable'
   const ownMarker = typeof marker === 'object'
-  // A shape that names itself says the status; the row then leaves it out of its own words.
-  const namedShape = !ownMarker && Boolean(kind) && Boolean(shape?.label)
+  // The status word as the shape's tooltip, never as its name: the row says the status in words
+  // already, in its fixed place. Not beside actions at the end, which lie over the shape on hover.
+  const tooltip = shape?.label && !(end && actions) ? shape.label : undefined
   const detail = meta ?? (status ? <span aria-hidden="true">{status}</span> : null)
   const mark = ownMarker ? (
     marker
@@ -485,7 +501,7 @@ export function ListRow({
       pending={shape?.pending ?? false}
       closedAs={shape?.closedAs ?? null}
       muted={shape?.muted ?? false}
-      {...(shape?.label ? { label: shape.label } : {})}
+      {...(tooltip ? { tooltip } : {})}
     />
   )
   // Beside a mark of the caller's own the lines stand in a column of their own, so the second one
@@ -506,7 +522,7 @@ export function ListRow({
       </span>
       {/* Status never as colour alone: the word is part of the accessible name, set apart by
           commas so it does not run into the title or the detail beside it. */}
-      {status && !namedShape ? <span className="sr-only">, {status},</span> : null}
+      {status ? <span className="sr-only">, {status},</span> : null}
       {detail && !hoverMeta ? (
         <span
           className={`shrink-0 text-[11px] text-muted ${
@@ -650,7 +666,7 @@ export function ListRow({
               subline ? 'top-1.5 h-5' : 'inset-y-0'
             }${
               actions
-                ? ' group-hover/row:opacity-0 group-has-[:focus-visible]/row:opacity-0 group-has-[[aria-expanded=true]]/row:opacity-0'
+                ? ' group-hover/row:opacity-0 group-has-[:focus-visible]/row:opacity-0 group-has-[[data-nt-list-actions]_[aria-expanded=true]]/row:opacity-0'
                 : ''
             }`}
           >

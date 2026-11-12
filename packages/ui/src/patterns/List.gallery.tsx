@@ -5,7 +5,7 @@ import { IconButton } from '../primitives/IconButton'
 import { ProjectMark } from '../primitives/ProjectMark'
 import { nl } from '../testing/labels'
 import { List, ListGroup, ListRow } from './List'
-import { RelativeTime } from './RelativeTime'
+import { formatRelativeTime, RelativeTime } from './RelativeTime'
 
 /** A fixed moment, not the clock: a screenshot reference must read the same tomorrow. */
 const now = Date.UTC(2026, 8, 19, 12, 0, 0)
@@ -114,6 +114,8 @@ function ChatRow({
   current?: boolean
 }) {
   const titleId = useId()
+  // The status is in the row's name already; the line adds where and when, never the word again.
+  const heard = formatRelativeTime(at, now, nl.time)
   return (
     <ListRow
       title={title}
@@ -129,7 +131,7 @@ function ChatRow({
       {...(unread ? { titleWeight: 'semibold' as const } : {})}
       subline={{
         mono: true,
-        label: [word, project].filter(Boolean).join(', '),
+        label: `${project}, ${heard}`,
         content: (
           <span className="flex min-w-0 items-center gap-1">
             {word ? <span className="shrink-0 font-sans">{word} ·</span> : null}
