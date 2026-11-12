@@ -86,5 +86,17 @@ export default {
         </ToastProvider>
       </Stage>
     ),
+    'Naast de smalle rail': () => (
+      // Beside the narrow rail of the shell (56px): 8px into the plane, not over the rail.
+      <Stage>
+        <ToastProvider label="Meldingen naast de rail" besideRail="narrow">
+          <Toast
+            title="Gesprek gearchiveerd"
+            duration={Number.POSITIVE_INFINITY}
+            onOpenChange={() => {}}
+          />
+        </ToastProvider>
+      </Stage>
+    ),
   },
 } satisfies Story

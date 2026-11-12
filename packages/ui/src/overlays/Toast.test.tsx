@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { expect, test, vi } from 'vitest'
+import { UiProvider } from '../provider/UiProvider'
 import { PortalContainerProvider } from './portal'
 import { TOAST_DURATION_MS, TOAST_LONG_DURATION_MS, Toast, ToastProvider } from './Toast'
 
@@ -152,4 +153,53 @@ test('the stand of toasts marks a window without the foot of the sidebar', () =>
     </ToastProvider>,
   )
   expect(document.querySelector('ol')?.hasAttribute('data-nt-toast-without-foot')).toBe(true)
+})
+
+test('the stand of toasts starts at the inset token, 16px from the window edge by default', () => {
+  render(
+    <ToastProvider>
+      <Toast title="Gearchiveerd" duration={Number.POSITIVE_INFINITY} onOpenChange={vi.fn()} />
+    </ToastProvider>,
+  )
+  const viewport = document.querySelector('ol')
+  expect(viewport?.className).toContain('left-(--nt-toast-inset-start)')
+  expect(viewport?.className).not.toContain('left-4')
+  expect(viewport?.hasAttribute('data-nt-toast-beside-rail')).toBe(false)
+})
+
+test('beside a rail of the shell, wide or narrow, the stand of toasts says so', () => {
+  // `tokens.css` turns the mark into `--nt-toast-inset-start`: 8px into the plane beside the rail.
+  const { unmount } = render(
+    <ToastProvider besideRail="wide">
+      <Toast title="Gearchiveerd" duration={Number.POSITIVE_INFINITY} onOpenChange={vi.fn()} />
+    </ToastProvider>,
+  )
+  expect(document.querySelector('ol')).toHaveAttribute('data-nt-toast-beside-rail', 'wide')
+  unmount()
+  render(
+    <ToastProvider besideRail="narrow">
+      <Toast title="Gearchiveerd" duration={Number.POSITIVE_INFINITY} onOpenChange={vi.fn()} />
+    </ToastProvider>,
+  )
+  expect(document.querySelector('ol')).toHaveAttribute('data-nt-toast-beside-rail', 'narrow')
+})
+
+test('the region of the toasts takes its name from the host, and its own label wins', () => {
+  const { unmount } = render(
+    <UiProvider labels={{ toastRegion: 'Meldingen' }}>
+      <ToastProvider>
+        <Toast title="Gearchiveerd" duration={Number.POSITIVE_INFINITY} onOpenChange={vi.fn()} />
+      </ToastProvider>
+    </UiProvider>,
+  )
+  expect(screen.getByRole('region', { name: 'Meldingen' })).toBeInTheDocument()
+  unmount()
+  render(
+    <UiProvider labels={{ toastRegion: 'Meldingen' }}>
+      <ToastProvider label="Meldingen van chat A">
+        <Toast title="Chat A wacht" duration={Number.POSITIVE_INFINITY} onOpenChange={vi.fn()} />
+      </ToastProvider>
+    </UiProvider>,
+  )
+  expect(screen.getByRole('region', { name: 'Meldingen van chat A' })).toBeInTheDocument()
 })

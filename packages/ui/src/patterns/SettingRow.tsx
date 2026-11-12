@@ -2,6 +2,7 @@ import { type ReactNode, useId, useRef } from 'react'
 import { Tooltip } from '../overlays/Tooltip'
 import { Icon } from '../primitives/Icon'
 import { IconButton } from '../primitives/IconButton'
+import { useUi } from '../provider/UiProvider'
 import { present, withoutFullStop } from './setting-text'
 
 /**
@@ -70,9 +71,10 @@ export interface SettingRowProps {
   label: string
   /**
    * The words every row shares, in the host's language: the restart tail, the reset buttons and
-   * the signs of the other layers. Required, since the library holds no text of its own.
+   * the signs of the other layers. Left out, those of the `UiProvider` (`labels.settingRow`), so a
+   * host wires them in once; a row with neither throws, since the library holds no text of its own.
    */
-  labels: SettingRowLabels
+  labels?: SettingRowLabels
   /**
    * Drawn in place of `label`, holding the same text: the label with the letters a search hit in
    * `<mark>` (a settings search). The accessible name is still `label`.
@@ -147,7 +149,7 @@ export interface SettingRowProps {
  */
 export function SettingRow({
   label,
-  labels,
+  labels: ownLabels,
   labelContent,
   description,
   hint,
@@ -163,6 +165,13 @@ export function SettingRow({
   dense = false,
   children,
 }: SettingRowProps) {
+  const fromHost = useUi().labels.settingRow
+  const labels = ownLabels ?? fromHost
+  if (labels === undefined) {
+    throw new Error(
+      'SettingRow needs its words: pass `labels`, or `labels.settingRow` to UiProvider',
+    )
+  }
   const labelId = useId()
   const lineId = useId()
   const reasonId = useId()

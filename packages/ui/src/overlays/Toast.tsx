@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useUi } from '../provider/UiProvider'
 import { usePortalContainer } from './portal'
 
 /**
@@ -45,6 +46,17 @@ interface ToastStackContextValue {
 
 const ToastStackContext = createContext<ToastStackContextValue | null>(null)
 
+/** The props of `ToastProvider`. */
+export interface ToastProviderProps {
+  children: ReactNode
+  /** The name of the region; left out, the host's (`labels.toastRegion` of the `UiProvider`). */
+  label?: string
+  /** False when the window shows no foot of the chat sidebar for the toasts to clear. */
+  aboveFoot?: boolean
+  /** The rail of the shell on the window's start edge, wide or narrow; left out, none. */
+  besideRail?: 'wide' | 'narrow'
+}
+
 /**
  * Hosts every `Toast` mounted below it: Radix' `Provider` plus its `Viewport`, portalled into the
  * container of the surrounding screen (`usePortalContainer`, `./portal`) rather than
@@ -56,9 +68,15 @@ const ToastStackContext = createContext<ToastStackContextValue | null>(null)
  * screen. The Toast package itself has no such limit.
  *
  * `label` names the region the toasts live in. A screen inside the app has exactly one stand of
- * this layer and leaves it at the name Radix gives it; two stands on one page — the gallery shows
- * four of them side by side — need their own names, or they are landmarks a reader cannot tell
- * apart (axe `landmark-unique`).
+ * this layer and leaves it at the host's name for it (`labels.toastRegion` of the `UiProvider`), or
+ * without one at the name Radix gives it; two stands on one page — the gallery shows four of them
+ * side by side — need their own names, or they are landmarks a reader cannot tell apart (axe
+ * `landmark-unique`).
+ *
+ * `besideRail` says the shell draws its rail on the window's start edge, wide (72px) or narrow
+ * (56px): the toasts then start 8px into the plane beside it rather than over the rail
+ * (`data-nt-toast-beside-rail`, which `tokens.css` turns into `--nt-toast-inset-start`). Left
+ * out, they start 16px from the window's edge; a host with a start of its own sets that token.
  *
  * `aboveFoot` says whether the foot of the chat sidebar stands in the corner the toasts share with
  * it. It does by default; with the sidebar folded, yielded or replaced by the settings there is no
@@ -69,13 +87,11 @@ export function ToastProvider({
   children,
   label,
   aboveFoot = true,
-}: {
-  children: ReactNode
-  label?: string
-  /** False when the window shows no foot of the chat sidebar for the toasts to clear. */
-  aboveFoot?: boolean
-}) {
+  besideRail,
+}: ToastProviderProps) {
   const container = usePortalContainer()
+  const { labels } = useUi()
+  const regionName = label ?? labels.toastRegion
   // A ref, not state: registering during another toast's mount effect must see every earlier
   // registration immediately, and never re-renders the provider on its own.
   const stackRef = useRef<ToastStackEntry[]>([])
@@ -99,13 +115,15 @@ export function ToastProvider({
         <RadixPortal.Root container={container}>
           <RadixToast.Viewport
             // Left out rather than passed as undefined: Radix' own default carries the hotkey.
-            {...(label === undefined ? {} : { label })}
+            {...(regionName === undefined ? {} : { label: regionName })}
             // As wide as the sidebar less its gutters (`--nt-toast-width`): a toast that reached
             // into the conversation covered what was said there. And above the foot
             // of the sidebar (`--nt-toast-bottom`), which it hid while it stood; without
             // that foot the attribute below brings the token back to 16px.
             {...(aboveFoot ? {} : { 'data-nt-toast-without-foot': '' })}
-            className="no-drag fixed bottom-(--nt-toast-bottom) left-4 z-(--nt-z-toast) flex w-(--nt-toast-width) flex-col gap-2 outline-none"
+            // Where the stand starts (`--nt-toast-inset-start`): 16px in, or beside the rail.
+            {...(besideRail === undefined ? {} : { 'data-nt-toast-beside-rail': besideRail })}
+            className="no-drag fixed bottom-(--nt-toast-bottom) left-(--nt-toast-inset-start) z-(--nt-z-toast) flex w-(--nt-toast-width) flex-col gap-2 outline-none"
           />
         </RadixPortal.Root>
       </RadixToast.Provider>
