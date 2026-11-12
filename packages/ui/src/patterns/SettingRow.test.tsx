@@ -5,6 +5,7 @@ import { expect, test, vi } from 'vitest'
 import { TooltipProvider } from '../overlays/Tooltip'
 import { Switch } from '../primitives/Switch'
 import { Textarea } from '../primitives/Textarea'
+import { UiProvider } from '../provider/UiProvider'
 import { nl } from '../testing/labels'
 import { SettingRow, type SettingRowProps } from './SettingRow'
 
@@ -260,4 +261,55 @@ test('children may be plain nodes that ignore the ids', () => {
     </TooltipProvider>,
   )
   expect(screen.getByText('vrij')).toBeInTheDocument()
+})
+
+/** A bare row with a reset, wired by hand, so the words can come from either place. */
+function ResetRow({ labels }: Pick<SettingRowProps, 'labels'>) {
+  return (
+    <TooltipProvider>
+      <SettingRow
+        {...(labels === undefined ? {} : { labels })}
+        label="Netwerktoegang"
+        restart
+        modified
+        onReset={() => undefined}
+      >
+        {({ labelId }) => (
+          <Switch
+            label="Netwerktoegang"
+            aria-labelledby={labelId}
+            checked
+            onCheckedChange={() => undefined}
+          />
+        )}
+      </SettingRow>
+    </TooltipProvider>
+  )
+}
+
+test('takes its words from the UiProvider when the caller passes none', () => {
+  render(
+    <UiProvider labels={{ settingRow: nl.settingRow }}>
+      <ResetRow />
+    </UiProvider>,
+  )
+  expect(screen.getByRole('button', { name: nl.settingRow.reset })).toBeInTheDocument()
+  expect(screen.getByText(nl.settingRow.restart)).toBeInTheDocument()
+})
+
+test('words passed to the row win from those of the UiProvider', () => {
+  render(
+    <UiProvider labels={{ settingRow: { ...nl.settingRow, reset: 'Van de provider' } }}>
+      <ResetRow labels={{ ...nl.settingRow, reset: 'Van de rij' }} />
+    </UiProvider>,
+  )
+  expect(screen.getByRole('button', { name: 'Van de rij' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Van de provider' })).toBeNull()
+})
+
+test('a row with no words at all says where they go', () => {
+  // The library holds no text of its own, so a row without any is a mistake of its host.
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  expect(() => render(<ResetRow />)).toThrow(/labels\.settingRow/)
+  vi.mocked(console.error).mockRestore()
 })

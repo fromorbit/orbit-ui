@@ -184,7 +184,7 @@ test('the panel is capped in width, so a long label is cut off instead of leavin
   render(<FileRow />)
   fireEvent.contextMenu(screen.getByTestId('row'))
   const menu = await screen.findByRole('menu')
-  expect(menu.className).toContain('max-w-[min(20rem,calc(100vw-16px))]')
+  expect(menu.className).toContain('max-w-[min(var(--nt-menu-max-width),calc(100vw-16px))]')
   const label = within(menu).getByText('Hernoemen')
   expect(label.className).toContain('min-w-0')
   expect(label.className).toContain('truncate')

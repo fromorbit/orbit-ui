@@ -2,6 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, test } from 'vitest'
 import { Button } from '../primitives/Button'
+import { nl } from '../testing/labels'
 import { literalShortcuts, type ShortcutPort, UiProvider, useUi, useUiTheme } from './UiProvider'
 
 /** A host's catalogue of one command, as a port. */
@@ -58,6 +59,18 @@ describe('UiProvider', () => {
     expect(result.current.ui.platform).toBe('mac')
     expect(result.current.ui.shortcuts).toBe(catalogue)
     expect(result.current.theme).toBe('light')
+  })
+
+  test('hands down no words without a provider, and merges the words of nested ones per field', () => {
+    expect(renderHook(() => useUi()).result.current.labels).toEqual({})
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <UiProvider labels={{ toastRegion: 'Meldingen', settingRow: nl.settingRow }}>
+        <UiProvider labels={{ toastRegion: 'Meldingen van het voorbeeld' }}>{children}</UiProvider>
+      </UiProvider>
+    )
+    const { result } = renderHook(() => useUi(), { wrapper })
+    expect(result.current.labels.toastRegion).toBe('Meldingen van het voorbeeld')
+    expect(result.current.labels.settingRow).toBe(nl.settingRow)
   })
 
   test('literalShortcuts draws a written-out key as itself and announces nothing', () => {

@@ -12,7 +12,6 @@ const UI = import.meta.dirname
  * out of this list and into `index.ts`, since a host imports only from the package.
  */
 const INTERNAL: Record<string, string> = {
-  'overlays/layers': 'how HostedSurface measures the layers above it',
   'overlays/menu-rows': 'the rows DropdownMenu and ContextMenu share',
   'patterns/chart-fixtures': 'the Dutch examples the ChartFigure story and tests share',
   'patterns/file-icons': 'the icon table of PierreTree and PierreFileIcon',
@@ -65,6 +64,11 @@ describe('the index of the library', () => {
       Object.keys(INTERNAL).filter((file) => !known.has(file)),
       'a stale INTERNAL entry',
     ).toEqual([])
+  })
+
+  test('reaches the register of layers, for a host with a hosted surface of its own', () => {
+    expect(library.collectOccluders).toBeTypeOf('function')
+    expect(library.observeLayers).toBeTypeOf('function')
   })
 
   test('reaches a component, the provider and its ports', () => {

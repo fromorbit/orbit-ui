@@ -22,7 +22,11 @@ export interface DialogProps {
   closeLabel: string
   /** What scrolls between the header and the footer. */
   children: ReactNode
-  /** The buttons at the bottom, right-aligned; they stay in view while the body scrolls. */
+  /**
+   * The buttons at the bottom, right-aligned; they stay in view while the body scrolls. In a
+   * narrow window they wrap onto a second line; the footer is a size container, so a caller may
+   * stack them instead (`@max-xs:w-full` on each).
+   */
   footer?: ReactNode
   /**
    * What gets the focus when the dialog opens: a control, or `'panel'` for the panel itself.
@@ -48,6 +52,19 @@ const FOCUSABLE =
 function firstControl(root: HTMLElement | null): HTMLElement | null {
   const found = root?.querySelector(FOCUSABLE)
   return found instanceof HTMLElement ? found : null
+}
+
+/**
+ * Whether the focus came from a control that showed its ring (`:focus-visible`), as after a key;
+ * false after a click, or where the browser does not know the selector.
+ */
+function cameWithKeyboard(active: Element | null): boolean {
+  if (!(active instanceof HTMLElement)) return false
+  try {
+    return active.matches(':focus-visible')
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -117,7 +134,10 @@ export function Dialog({
                 : (initialFocus?.current ??
                   firstControl(body.current) ??
                   firstControl(footerRef.current))
-            target?.focus()
+            // The ring only for whoever came with the keyboard: a dialog opened with the pointer
+            // put a ring on its first button at once, a second emphasis beside the main button.
+            // Whoever came from a control with a visible focus keeps seeing where it went.
+            target?.focus({ focusVisible: cameWithKeyboard(active) } as FocusOptions)
           }}
           onCloseAutoFocus={(event) => {
             const back = cameFrom.current
@@ -161,7 +181,9 @@ export function Dialog({
           {footer === undefined ? null : (
             <div
               ref={footerRef}
-              className="flex shrink-0 items-center justify-end gap-2 px-5 pt-2 pb-5"
+              // A container, so a footer can stack its buttons in a narrow window (an `@`-variant
+              // on them); left alone they wrap rather than run past the panel's edge.
+              className="@container flex shrink-0 flex-wrap items-center justify-end gap-2 px-5 pt-2 pb-5"
             >
               {footer}
             </div>

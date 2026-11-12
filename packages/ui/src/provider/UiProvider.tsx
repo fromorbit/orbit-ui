@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext, useMemo } from 'react'
+import type { SettingRowLabels } from '../patterns/SettingRow'
 import type { KeyName } from '../primitives/shortcut'
 import type { HostPort } from './host'
 import { type Theme, useDocumentTheme } from './theme'
@@ -44,6 +45,23 @@ export interface ShortcutPort {
   keyName?(key: KeyName): string
 }
 
+/**
+ * The words of the library's own parts, in the host's language, for a component that would
+ * otherwise need them as a prop on every call: a host wires its catalogue in once, at its root.
+ * A component's own prop (`label`, `labels`) always wins. Left out, a component falls back to
+ * what it does without words (see each field); the library holds no text of its own.
+ */
+export interface UiLabels {
+  /**
+   * The name of the region the toasts live in (`ToastProvider`), e.g. "Meldingen ({hotkey})":
+   * Radix puts the key that reaches the region in place of `{hotkey}`. Left out, Radix' own
+   * English name.
+   */
+  toastRegion?: string
+  /** The words every `SettingRow` shares. A row without them, here or as its prop, throws. */
+  settingRow?: SettingRowLabels
+}
+
 /** Everything a `UiProvider` hands down, each with its neutral default filled in. */
 export interface UiPorts {
   shortcuts: ShortcutPort
@@ -56,6 +74,8 @@ export interface UiPorts {
    * (the thousands of `NumberField`); `undefined` for the runtime's own.
    */
   locale: string | undefined
+  /** The words of the library's own parts; see {@link UiLabels}. */
+  labels: UiLabels
 }
 
 /** No catalogue: no key is drawn and none is announced. */
@@ -85,6 +105,7 @@ const NEUTRAL: UiPorts = {
   theme: undefined,
   host: {},
   locale: undefined,
+  labels: {},
 }
 
 const UiContext = createContext<UiPorts>(NEUTRAL)
@@ -97,12 +118,17 @@ export interface UiProviderProps {
   host?: HostPort
   /** See {@link UiPorts.locale}. */
   locale?: string
+  /**
+   * See {@link UiLabels}. Merged per field over those of a provider around it, so a part of the
+   * page can name one thing differently and keep the rest.
+   */
+  labels?: UiLabels
   children: ReactNode
 }
 
 /**
- * Hands the library what only the host knows: its shortcuts, its platform, its theme and its
- * window. One provider with ports rather than a prop per component, so a component stays usable
+ * Hands the library what only the host knows: its shortcuts, its platform, its theme, its
+ * window and its words. One provider with ports rather than a prop per component, so a component stays usable
  * without one (the neutral default) and a host wires itself in once, at its root.
  *
  * A provider inside another one changes only what it names, so a part of the page can draw the
@@ -114,6 +140,7 @@ export function UiProvider({
   theme,
   host,
   locale,
+  labels,
   children,
 }: UiProviderProps) {
   const outer = useContext(UiContext)
@@ -124,8 +151,9 @@ export function UiProvider({
       theme: theme ?? outer.theme,
       host: host ?? outer.host,
       locale: locale ?? outer.locale,
+      labels: labels === undefined ? outer.labels : { ...outer.labels, ...labels },
     }),
-    [outer, shortcuts, platform, theme, host, locale],
+    [outer, shortcuts, platform, theme, host, locale, labels],
   )
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>
 }
