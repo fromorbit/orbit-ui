@@ -75,7 +75,8 @@ export type StackedRowProps = Omit<
    * A control beside the row, such as its menu (`⋯`): rendered next to the button, never inside
    * it, at the end of line 1 where the time stands. Always in the DOM, so the keyboard reaches it;
    * shown on hover and on keyboard focus within the item, while the time steps aside for it, so the two
-   * share one spot rather than each owning its own (as `ListRow` does).
+   * share one spot rather than each owning its own (as `ListRow` does). Its box carries
+   * `data-nt-list-actions` as well, so a `roving` `List` walks into it with → and ←.
    */
   actions?: ReactNode
 }
@@ -179,6 +180,7 @@ export function StackedRow({
         // on the focus a click leaves behind: the chosen row keeps its time or its "#1" (A28).
         <span
           data-nt-stacked-actions
+          data-nt-list-actions
           className="no-drag absolute top-1.5 right-2 flex items-center opacity-0 group-hover/stacked:opacity-100 group-has-[:focus-visible]/stacked:opacity-100"
         >
           {actions}
