@@ -306,3 +306,10 @@ test('words passed to the row win from those of the UiProvider', () => {
   expect(screen.getByRole('button', { name: 'Van de rij' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Van de provider' })).toBeNull()
 })
+
+test('a row with no words at all says where they go', () => {
+  // The library holds no text of its own, so a row without any is a mistake of its host.
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  expect(() => render(<ResetRow />)).toThrow(/labels\.settingRow/)
+  vi.mocked(console.error).mockRestore()
+})
