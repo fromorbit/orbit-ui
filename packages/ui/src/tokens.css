@@ -97,6 +97,14 @@
   --nt-pill-hover: rgb(231 233 242 / 0.09);
   /* The plane of your own message in the conversation, the bubble on the right. */
   --nt-bubble: rgb(231 233 242 / 0.06);
+  /* Orb, the companion in the Chats of the app: its mark is a flat sphere in `orb` with a deeper
+     shade at the lower right in `orb-deep`, never a gradient. A glyph, so 3:1 on the canvas, the
+     side panel and a card (`tokens.test.ts`); never a word, a line or a plane of the interface. */
+  --nt-orb: #a3aaf5;
+  --nt-orb-deep: #6e78d8;
+  /* The count of unread messages (`UnreadBadge`): the orb's colour in dark, its deeper shade in
+     light, so the digits in `accent-fg` keep AA on it in both themes. */
+  --nt-unread: var(--nt-orb);
   /* The plane of a small mark: the letter block of a project, the track of a progress meter. */
   --nt-mark: rgb(231 233 242 / 0.09);
   /* The marks of a chart (`Chart`, `Sparkline`): Mist at 52%, quieter than the accent and than
@@ -206,6 +214,10 @@
   --nt-radius-md: 8px;
   /* Cards, dialogs and menus: a step rounder than a control. */
   --nt-radius-lg: 12px;
+  /* A speech bubble of a conversation in bubbles (`ChatMessage` `shape="bubble"`): rounder than a
+     card, because a bubble is round by meaning; its corner towards the speaker takes `sm`. The one
+     radius outside the family of three, used for nothing else. */
+  --nt-radius-bubble: 16px;
 
   /* Four control heights on the 4px grid (Fitts: the default control is 32px, a hit area a
      pointer reaches without aiming). xs: the quiet button in a footer bar (the diff's moment
@@ -427,6 +439,11 @@
   --nt-pill-hover: rgb(17 25 54 / 0.06);
   /* Your own message is white on Paper, with the edge of a plane (`shadow-plane`). */
   --nt-bubble: #ffffff;
+  /* The sphere a step deeper on Paper, so it keeps the 3:1 of a glyph on white. */
+  --nt-orb: #6e78d8;
+  --nt-orb-deep: #4a52b8;
+  /* Paper on the lighter orb is 3.6:1; on the deeper one it is 6.0:1. */
+  --nt-unread: var(--nt-orb-deep);
   --nt-mark: rgb(17 25 54 / 0.07);
   /* Midnight at 56% on white: 4.0:1, the same quiet step below the accent as in dark. */
   --nt-chart-mark: rgb(17 25 54 / 0.56);

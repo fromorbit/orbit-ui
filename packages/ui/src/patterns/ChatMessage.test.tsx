@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { IconButton } from '../primitives/IconButton'
-import { ChatLog, ChatMessage } from './ChatMessage'
+import { ChatLog, ChatMessage, TypingDots } from './ChatMessage'
 
 test('a message is an article named by who speaks', () => {
   render(
@@ -133,4 +133,55 @@ test('inside a log the error is no alert of its own: the polite log says it, onc
   )
   expect(screen.queryByRole('alert')).toBeNull()
   expect(screen.getByRole('article')).toHaveAccessibleDescription(/De verbinding viel weg\./)
+})
+
+test('a bubble from you sits on the right and one from Orb on the left with its mark', () => {
+  render(
+    <ChatLog label="Gesprek met Orb">
+      <ChatMessage shape="bubble" from="user" label="Jij">
+        Hoe staat de checkout-suite ervoor?
+      </ChatMessage>
+      <ChatMessage
+        shape="bubble"
+        from="assistant"
+        label="Orb"
+        mark={<span data-testid="mark" aria-hidden="true" />}
+        source="Uit zichzelf, na run 1291 van Trail · 08:12"
+        actions={<button type="button">Open run 1284</button>}
+      >
+        Drie van de vier flows slagen.
+      </ChatMessage>
+    </ChatLog>,
+  )
+  const mine = screen.getByRole('article', { name: 'Jij' })
+  expect(mine).toHaveAttribute('data-nt-chat-side', 'end')
+  expect(mine.querySelector('[data-nt-chat-bubble]')?.className).toContain('rounded-br-sm')
+
+  const theirs = screen.getByRole('article', { name: 'Orb' })
+  expect(theirs).toHaveAttribute('data-nt-chat-side', 'start')
+  const bubble = theirs.querySelector('[data-nt-chat-bubble]')
+  expect(bubble?.className).toContain('rounded-bl-sm')
+  expect(bubble?.className).toContain('border-border')
+  // The mark stands before the bubble, the source line above it, the chips under it.
+  const mark = within(theirs).getByTestId('mark')
+  expect(
+    mark.compareDocumentPosition(bubble as Node) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
+  expect(theirs.textContent).toMatch(
+    /^Uit zichzelf, na run 1291 van Trail · 08:12.*Drie van de vier flows slagen\..*Open run 1284$/,
+  )
+  expect(within(theirs).getByRole('button', { name: 'Open run 1284' })).toBeVisible()
+})
+
+test('while Orb types, its bubble is busy and shows three dots with a name', () => {
+  render(
+    <ChatMessage shape="bubble" from="assistant" label="Orb" streaming>
+      <TypingDots label="Orb typt" />
+    </ChatMessage>,
+  )
+  const message = screen.getByRole('article', { name: 'Orb' })
+  expect(message).toHaveAttribute('aria-busy', 'true')
+  const dots = within(message).getByRole('img', { name: 'Orb typt' })
+  expect(dots.className).toContain('nt-typing')
+  expect(dots.children).toHaveLength(3)
 })

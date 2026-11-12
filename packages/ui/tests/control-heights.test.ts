@@ -22,6 +22,8 @@ const LITERAL_CONTROL_HEIGHT =
 const ALLOWED: Record<string, string[]> = {
   // The avatar of a person: a picture, not a target.
   'primitives/Avatar.tsx': ['size-10'],
+  // Orb's mark at its largest: a glyph like an avatar, the same in every density.
+  'primitives/OrbMark.tsx': ['size-10'],
   // The thumbnail of a file: its height is the picture's.
   'primitives/Thumbnail.tsx': ['h-8'],
   // The marks of a timeline and the line of text beside them.

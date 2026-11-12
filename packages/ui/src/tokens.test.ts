@@ -366,6 +366,45 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
+  /** A plane as the eye sees it on the canvas: opaque as it is, or a tint laid over the canvas. */
+  function onCanvas(name: string): string {
+    const value = resolveVar(palette.get(name) ?? '', palette)
+    return value.startsWith('rgb(')
+      ? composite(value, hexIn(palette, '--nt-canvas'))
+      : hexIn(palette, name)
+  }
+
+  // A conversation in bubbles (`ChatMessage` `shape="bubble"`): your bubble a tint on the canvas,
+  // the other's the plane of a card; the words in both, and the muted source line and the dots of
+  // `TypingDots`, read at AA.
+  test.each(['--nt-surface-hover', '--nt-plane'])(
+    'the words in a bubble on %s reach AA',
+    (plane) => {
+      const ground = onCanvas(plane)
+      expect(contrastRatio(hexIn(palette, '--nt-text'), ground)).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(hexIn(palette, '--nt-text-muted'), ground)).toBeGreaterThanOrEqual(4.5)
+    },
+  )
+
+  test.each(['--nt-canvas', '--nt-side-panel', '--nt-overlay-background', '--nt-plane'])(
+    "Orb's mark keeps the 3:1 of a glyph on %s",
+    (ground) => {
+      expect(contrastRatio(hexIn(palette, '--nt-orb'), onCanvas(ground))).toBeGreaterThanOrEqual(3)
+    },
+  )
+
+  test("the shade of Orb's mark is deeper than its sphere", () => {
+    expect(relativeLuminance(hexIn(palette, '--nt-orb-deep'))).toBeLessThan(
+      relativeLuminance(hexIn(palette, '--nt-orb')),
+    )
+  })
+
+  test('the digits of an unread badge reach AA on its fill', () => {
+    expect(
+      contrastRatio(hexIn(palette, '--nt-accent-fg'), hexIn(palette, '--nt-unread')),
+    ).toBeGreaterThanOrEqual(4.5)
+  })
+
   // The opaque side panel, on an opaque window, is a ground for a status word (green 4.6:1 in
   // light); the frame is not, a status there is a glyph (`docs/family-style.md`, "The shell"). The
   // tinted side panel of a translucent window is not tested for status words.

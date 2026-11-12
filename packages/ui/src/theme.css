@@ -32,6 +32,10 @@
   --color-pill: var(--nt-pill);
   --color-pill-hover: var(--nt-pill-hover);
   --color-bubble: var(--nt-bubble);
+  /* Orb's mark (`OrbMark`) and the count of unread messages (`UnreadBadge`). */
+  --color-orb: var(--nt-orb);
+  --color-orb-deep: var(--nt-orb-deep);
+  --color-unread: var(--nt-unread);
   --color-mark: var(--nt-mark);
   --color-composer: var(--nt-composer);
   --color-surface: var(--nt-surface);
@@ -86,6 +90,7 @@
   --radius-sm: var(--nt-radius-sm);
   --radius-md: var(--nt-radius-md);
   --radius-lg: var(--nt-radius-lg);
+  --radius-bubble: var(--nt-radius-bubble);
 }
 
 /* A control inside a drag region stays clickable (Electron's `-webkit-app-region`; a browser
@@ -279,6 +284,28 @@
   }
 }
 
+/* The three dots of a reply that is being written (`TypingDots`): each fades in turn, a calm
+   wave from left to right. */
+@keyframes nt-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+.nt-typing > span {
+  animation: nt-typing 1.2s ease-in-out infinite;
+}
+.nt-typing > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.nt-typing > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Every transition reads the motion tokens, so collapsing them stills hover and press too. */
   :root {
@@ -298,6 +325,10 @@
   }
   /* Unfolded content is simply there: no fade to sit through either. */
   .nt-fade-in {
+    animation: none;
+  }
+  /* The dots stand still at full strength: three dots in a bubble still say "writing". */
+  .nt-typing > span {
     animation: none;
   }
   /* The band itself disappears rather than freezing mid-sweep: a still copy in full colour on
