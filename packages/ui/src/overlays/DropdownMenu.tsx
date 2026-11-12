@@ -174,6 +174,14 @@ export interface DropdownMenuProps {
    * menu is for on hover and on focus. Usually the trigger's own name.
    */
   tooltip?: string
+  /**
+   * How wide the panel may grow before a label is cut: `default` caps it at 320px
+   * (`--nt-menu-max-width`), `wide` at 360px (`--nt-menu-max-width-wide`), for a menu whose rows
+   * are names of the user's own (the project picker), so a long one is cut later and the check and
+   * the key at the row's end still show. Both stop 8px inside the window. Another cap is the
+   * host's to set as `--nt-menu-max-width` on its portal container.
+   */
+  width?: 'default' | 'wide'
 }
 
 /**
@@ -215,6 +223,7 @@ export function DropdownMenu({
   height = 'default',
   header,
   density = 'default',
+  width = 'default',
 }: DropdownMenuProps) {
   const container = usePortalContainer()
   const frame = height === 'available' ? DROPDOWN_PARTS.tallPanel : PANEL
@@ -249,6 +258,8 @@ export function DropdownMenu({
           sideOffset={4}
           collisionPadding={8}
           className={`${header === undefined ? frame : frame.replace('min-w-40', 'min-w-58')} ${MENU_WIDTH}`}
+          // The wide cap is a token of its own; `tokens.css` points `--nt-menu-max-width` at it.
+          {...(width === 'wide' ? { 'data-nt-menu-width': 'wide' } : {})}
           // Radix hands the focus back to the trigger one task after the menu is gone
           // (`FocusScope` defers it with a `setTimeout`), and by then the focus may be somewhere
           // on purpose: in the address of the tab the panel's `+` → Browser just opened, or — with

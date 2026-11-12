@@ -280,6 +280,14 @@
   /* And stands 8px above its foot: over it, it hid the archive and the gear for as long as it
      stood. */
   --nt-toast-bottom: calc(var(--nt-sidebar-foot-height) + 8px);
+  /* Where the toasts start: 16px from the window's edge, or 8px into the plane beside a rail
+     (`ToastProvider`, `besideRail`; the rules under this block). A host with a start of its own
+     sets this variable. */
+  --nt-toast-inset-start: 16px;
+  /* How wide a menu may grow before a label is cut: 320px, and 360px for a menu of names of the
+     user's own, such as a project picker (`DropdownMenu`, `width="wide"`). */
+  --nt-menu-max-width: 320px;
+  --nt-menu-max-width-wide: 360px;
   /* The inner edge per container: a panel 12px, a card 16px. */
   --nt-inset-panel: 12px;
   --nt-inset-card: 16px;
@@ -358,6 +366,21 @@
    again (`ToastProvider`, `aboveFoot`). */
 [data-nt-toast-without-foot] {
   --nt-toast-bottom: 16px;
+}
+
+/* Beside the rail of the shell, wide or narrow, the toasts start 8px into the plane rather than
+   over the rail (`ToastProvider`, `besideRail`). */
+[data-nt-toast-beside-rail="wide"] {
+  --nt-toast-inset-start: calc(var(--nt-shell-plane-inset-start) + 8px);
+}
+
+[data-nt-toast-beside-rail="narrow"] {
+  --nt-toast-inset-start: calc(var(--nt-shell-plane-inset-start-narrow) + 8px);
+}
+
+/* The wide form of a menu (`DropdownMenu`, `width="wide"`). */
+[data-nt-menu-width="wide"] {
+  --nt-menu-max-width: var(--nt-menu-max-width-wide);
 }
 
 /* The light palette: the same roles as the dark one above, for a page that sets

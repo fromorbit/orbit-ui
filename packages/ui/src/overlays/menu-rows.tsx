@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 import { DropdownMenu as RadixDropdownMenu } from 'radix-ui'
-import { createContext, type ReactNode, useContext, useId } from 'react'
+import { createContext, type ReactNode, useContext, useId, useRef, useState } from 'react'
 import { Icon } from '../primitives/Icon'
 import { Kbd } from '../primitives/Kbd'
 import { useUi } from '../provider/UiProvider'
@@ -84,11 +84,13 @@ const Lead = createContext(false)
 const WideLead = createContext(false)
 
 /**
- * The cap on a menu's width: 320px, or the window less the 8px of collision room on either side.
+ * The cap on a menu's width: `--nt-menu-max-width` (320px, or 360px on a panel marked
+ * `data-nt-menu-width="wide"`), or the window less the 8px of collision room on either side.
  * Without it a long label stretched the panel past the window's edge, and the `truncate` of every
- * label never had a width to cut at.
+ * label never had a width to cut at. A token rather than a number here, so a host that needs
+ * another cap sets the variable on its portal container instead of a width of its own.
  */
-export const MENU_WIDTH = 'max-w-[min(20rem,calc(100vw-16px))]'
+export const MENU_WIDTH = 'max-w-[min(var(--nt-menu-max-width),calc(100vw-16px))]'
 
 const item = cva(
   // `cursor-default` and `select-none` per Radix's own `MenuItem` (a row is chosen, not read), and
@@ -399,11 +401,17 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
   const density = useContext(Density)
   const lead = useContext(Lead)
   const { Sub, SubTrigger, SubContent, Portal, tallPanel, subWidth } = useContext(Parts)
+  // Held here so Escape closes this panel alone: Radix closes the whole menu on an Escape in a
+  // submenu, where the menu pattern of the WAI-ARIA APG closes one level, as ArrowLeft does, and
+  // puts the focus back on the row that opened it. An Escape on the menu itself still closes it.
+  const [open, setOpen] = useState(false)
+  const opener = useRef<HTMLDivElement>(null)
   return (
     <>
       {row.separated ? <Separator /> : null}
-      <Sub>
+      <Sub open={open} onOpenChange={setOpen}>
         <SubTrigger
+          ref={opener}
           {...(row.disabled ? { disabled: true } : {})}
           {...(row.value === undefined ? {} : { 'aria-label': nameOf(row), textValue: row.label })}
           className={`${item({ tone: 'default', density })} data-[state=open]:bg-surface-hover`}
@@ -451,6 +459,11 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
             sideOffset={4}
             collisionPadding={8}
             className={`${tallPanel} ${subWidth}`}
+            onEscapeKeyDown={(event) => {
+              event.preventDefault()
+              setOpen(false)
+              opener.current?.focus()
+            }}
           >
             <Rows items={row.items ?? []} checks={checks} />
           </SubContent>

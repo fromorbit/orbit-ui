@@ -258,6 +258,49 @@ function WithAHead() {
   )
 }
 
+/** Projects with long names of their own, more than the 320px of a menu of acts holds. */
+const PROJECTS: DropdownMenuItem[] = [
+  {
+    id: 'shop',
+    label: 'webwinkel-studio-noord-voorjaarscollectie',
+    kind: 'radio',
+    group: 'project',
+    checked: true,
+    onSelect: () => {},
+  },
+  {
+    id: 'books',
+    label: 'boekhouding-kwartaalrapportage-en-btw-aangifte',
+    kind: 'radio',
+    group: 'project',
+    checked: false,
+    onSelect: () => {},
+  },
+  {
+    id: 'site',
+    label: 'site',
+    kind: 'radio',
+    group: 'project',
+    checked: false,
+    onSelect: () => {},
+  },
+]
+
+/**
+ * The wide form, for a menu of names of the user's own (a project picker): up to 360px rather
+ * than 320px before a name is cut, and never past the window less 8px.
+ */
+function Wide() {
+  return (
+    <DropdownMenu
+      trigger={<Button>Project</Button>}
+      label="Project"
+      width="wide"
+      items={PROJECTS}
+    />
+  )
+}
+
 export default {
   group: 'overlays',
   title: 'DropdownMenu',
@@ -270,5 +313,6 @@ export default {
     'Met keuzes': WithChoices,
     'Met schakelaars': WithSwitches,
     'Met een kop': WithAHead,
+    'Breed, voor namen': Wide,
   },
 } satisfies Story

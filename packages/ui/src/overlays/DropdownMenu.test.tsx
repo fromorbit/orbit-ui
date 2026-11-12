@@ -894,3 +894,62 @@ test('a menu of rows without icons keeps no empty slot', async () => {
   const archive = screen.getByRole('menuitem', { name: 'Archiveren' })
   expect(archive.querySelector('[data-nt-menu-lead]')).toBeNull()
 })
+
+test('Escape in a submenu closes that submenu alone and hands the focus back to its row', async () => {
+  // The menu pattern of the APG: Escape closes one level, as ArrowLeft does; a second Escape
+  // closes the menu and hands the focus back to its trigger.
+  const onOpenChange = vi.fn()
+  function Driven() {
+    const [open, setOpen] = useState(false)
+    return (
+      <NestedMenu
+        onSelect={() => {}}
+        open={open}
+        onOpenChange={(next) => {
+          onOpenChange(next)
+          setOpen(next)
+        }}
+      />
+    )
+  }
+  render(<Driven />)
+  const trigger = screen.getByRole('button', { name: 'Model' })
+  await userEvent.click(trigger)
+  const more = await screen.findByRole('menuitem', { name: 'Meer modellen' })
+  more.focus()
+  await userEvent.keyboard('{ArrowRight}')
+  await screen.findByRole('menu', { name: 'Meer modellen' })
+  await userEvent.keyboard('{Escape}')
+  await waitFor(() => expect(screen.queryByRole('menu', { name: 'Meer modellen' })).toBeNull())
+  expect(screen.getByRole('menu', { name: 'Model' })).toBeInTheDocument()
+  expect(onOpenChange).not.toHaveBeenCalledWith(false)
+  await waitFor(() => expect(document.activeElement).toBe(more))
+  await userEvent.keyboard('{Escape}')
+  await waitFor(() => expect(screen.queryByRole('menu', { name: 'Model' })).toBeNull())
+  expect(onOpenChange).toHaveBeenCalledWith(false)
+  await waitFor(() => expect(document.activeElement).toBe(trigger))
+})
+
+test('the panel is capped by the width token of a menu, 320px unless a caller widens it', async () => {
+  render(<DropdownMenu trigger={<Button>Meer</Button>} label="Rijacties" items={items(() => {})} />)
+  await userEvent.click(screen.getByRole('button', { name: 'Meer' }))
+  const panel = await screen.findByRole('menu', { name: 'Rijacties' })
+  expect(panel.className).toContain('max-w-[min(var(--nt-menu-max-width),calc(100vw-16px))]')
+  expect(panel.hasAttribute('data-nt-menu-width')).toBe(false)
+})
+
+test('a menu of names can take the wide form, up to 360px', async () => {
+  // The project picker: names of the user's own, cut at 360px rather than at 320px.
+  render(
+    <DropdownMenu
+      trigger={<Button>Project</Button>}
+      label="Projecten"
+      width="wide"
+      items={items(() => {})}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Project' }))
+  const panel = await screen.findByRole('menu', { name: 'Projecten' })
+  expect(panel).toHaveAttribute('data-nt-menu-width', 'wide')
+  expect(panel.className).toContain('max-w-[min(var(--nt-menu-max-width),calc(100vw-16px))]')
+})
