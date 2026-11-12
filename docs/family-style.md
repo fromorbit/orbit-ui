@@ -98,6 +98,17 @@ What runs on its own (a service, an app, a space) shows its state with `StatusMa
 
 The glow is `0 0 6px 1px` of the colour at 55% (times the strength); the triangle, a softer one with rounded corners whose ink is as high as the circle's, takes it as a `drop-shadow` of 4px at 60% on the outer element, because its `clip-path` cuts a `box-shadow` off. The names are the ones Halo gives its own marks (V-691 in `halo-v2`), with the kit's `nt-` before them. A host may set the glow on an element to calm the marks inside it. Every colour reaches 3:1 on the canvas, the frame, the side panel and a card, as a status glyph must (`tokens.test.ts`). The marks stand still under the pointer.
 
+## Orb (the minor after 0.6.8)
+
+Orb, the companion in the Chats of the app, has a mark and a conversation of its own.
+
+- **`OrbMark`**: a sphere in one flat fill, `--nt-orb`, with a deeper shade at the lower right, `--nt-orb-deep`, drawn as an inset shadow and never as a gradient. Three sizes: 16px (`sm`, beside a word), 22px (`md`, before a bubble and in the row of the side panel) and 40px (`lg`, the head of an empty conversation). It never moves. In dark the sphere is `#A3AAF5`, in light a step deeper (`#6E78D8`), so it keeps the 3:1 of a glyph on the canvas, the side panel and a card. Like the satellite it is a mark, never a word, a line or a plane.
+- **Bubbles**: `ChatMessage` with `shape="bubble"`. Your bubble on the right on a tint (`surface-hover`), the other's on the left on the plane of a card with a hairline in `border`, the mark before it. A bubble has corners of 16px (`--nt-radius-bubble`, `rounded-bubble`), with the corner towards the speaker at 4px: the one radius outside the family of three, because a speech bubble is round by meaning, and used for nothing else. Text at 13px; the source line above a bubble at 11px muted; `TypingDots` for a reply being written, still under `prefers-reduced-motion`.
+- **Chips under a bubble**: `QuickActions` with `QuickAction`, framed pills on the small control height with 12px words in `secondary`.
+- **`UnreadBadge`**: the count of unread messages, 18px, the digits in DM Mono on `--nt-unread` (the sphere in dark, its deeper shade in light, so `accent-fg` keeps AA on it).
+
+`tokens.test.ts` holds the contrast of the words in both bubbles, the mark as a glyph and the digits of the badge, in both themes.
+
 ## Rhythm (the minor after the status marks)
 
 The same handful of distances, sizes and emphases in every component, so a screen built from them reads as one thing. Each rule comes from one of the [Laws of UX](https://lawsofux.com); the tokens hold the numbers (`tokens.css`, tested in `tokens.test.ts`). A new component takes these tokens and classes rather than numbers of its own.

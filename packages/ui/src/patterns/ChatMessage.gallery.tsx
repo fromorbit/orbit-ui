@@ -4,10 +4,12 @@ import { Tooltip } from '../overlays/Tooltip'
 import { Button } from '../primitives/Button'
 import { Icon } from '../primitives/Icon'
 import { IconButton } from '../primitives/IconButton'
+import { OrbMark } from '../primitives/OrbMark'
 import { nl } from '../testing/labels'
-import { ChatLog, ChatMessage } from './ChatMessage'
+import { ChatLog, ChatMessage, TypingDots } from './ChatMessage'
 import { CopyButton } from './CopyButton'
 import { Prose } from './Prose'
+import { QuickAction, QuickActions } from './QuickActions'
 import { Shimmer } from './Shimmer'
 
 /**
@@ -19,6 +21,49 @@ function Column({ children }: { children: ReactNode }) {
     <div className="w-full max-w-[720px]">
       <ChatLog label="Gesprek">{children}</ChatLog>
     </div>
+  )
+}
+
+/** A conversation with Orb in bubbles: 440px, the turns 8px apart, as the Chats lay them out. */
+function Bubbles({ children }: { children: ReactNode }) {
+  return (
+    <div className="w-full max-w-[440px] [&>[role=log]]:gap-2">
+      <ChatLog label="Gesprek met Orb">{children}</ChatLog>
+    </div>
+  )
+}
+
+/** A short exchange with Orb: a question, an answer with chips, and a message of its own. */
+function OrbExchange() {
+  return (
+    <Bubbles>
+      <ChatMessage shape="bubble" from="user" label="Jij, 08:10">
+        Hoe staat de checkout-suite ervoor?
+      </ChatMessage>
+      <ChatMessage
+        shape="bubble"
+        from="assistant"
+        label="Orb, 08:10"
+        mark={<OrbMark />}
+        actions={
+          <QuickActions label="Voorstellen van Orb">
+            <QuickAction>Open run 1284</QuickAction>
+            <QuickAction>Start een chat</QuickAction>
+          </QuickActions>
+        }
+      >
+        Drie van de vier flows slagen. "Kortingscode toepassen" faalt sinds pr-482.
+      </ChatMessage>
+      <ChatMessage
+        shape="bubble"
+        from="assistant"
+        label="Orb, 08:12"
+        mark={<OrbMark />}
+        source="Uit zichzelf, na run 1291 van Trail · 08:12"
+      >
+        De checkout-suite slaagt weer.
+      </ChatMessage>
+    </Bubbles>
   )
 }
 
@@ -56,6 +101,22 @@ export default {
   group: 'patterns',
   title: 'ChatMessage',
   states: {
+    'Bubbels met Orb': () => <OrbExchange />,
+    'Bubbels met Orb in licht': () => (
+      <div data-theme="light" className="w-fit rounded-lg bg-canvas p-4 text-fg shadow-plane">
+        <OrbExchange />
+      </div>
+    ),
+    'Orb typt': () => (
+      <Bubbles>
+        <ChatMessage shape="bubble" from="user" label="Jij">
+          Wat faalde er vannacht?
+        </ChatMessage>
+        <ChatMessage shape="bubble" from="assistant" label="Orb" mark={<OrbMark />} streaming>
+          <TypingDots label="Orb typt" />
+        </ChatMessage>
+      </Bubbles>
+    ),
     'Een vraag en het antwoord': () => (
       <Column>
         <ChatMessage

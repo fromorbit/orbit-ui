@@ -52,6 +52,27 @@ export interface ChatMessageProps {
    * wraps under the sentence, its frame on the text's left edge, never under the warning sign.
    */
   errorAction?: ReactNode
+  /**
+   * `turn` (default) is the conversation of a code chat: your bubble on the right, the answer as
+   * the text of the column. `bubble` is a conversation as in a messaging app, short replies of one
+   * to three sentences (Orb): your bubble on the right with its corner towards you squared
+   * (16/16/4/16), the other's on the left as a card with a hairline and its `mark` before it
+   * (16/16/16/4), both at most 300px wide. Under the other's bubble `actions` are its chips
+   * (`QuickActions`), always in sight.
+   */
+  shape?: 'turn' | 'bubble'
+  /**
+   * Only with `shape="bubble"` and `from="assistant"`: who speaks, before the bubble and level with
+   * its last line, as a rule a decorative `OrbMark` (`md`). The article is already named by
+   * `label`, so the mark needs no name of its own.
+   */
+  mark?: ReactNode
+  /**
+   * Only with `shape="bubble"`: a quiet line above the bubble that says where the message comes
+   * from, already translated ("Uit zichzelf, na run 1291 van Trail · 08:12"). 11px, muted, on the
+   * bubble's own edge; a glyph before it is the caller's.
+   */
+  source?: ReactNode
 }
 
 /**
@@ -60,6 +81,33 @@ export interface ChatMessageProps {
  */
 const CARET =
   "[&>div>p:last-child]:after:ml-0.5 [&>div>p:last-child]:after:inline-block [&>div>p:last-child]:after:h-[1em] [&>div>p:last-child]:after:w-0.5 [&>div>p:last-child]:after:translate-y-0.5 [&>div>p:last-child]:after:animate-pulse [&>div>p:last-child]:after:bg-muted [&>div>p:last-child]:after:content-[''] motion-reduce:[&>div>p:last-child]:after:animate-none"
+
+/**
+ * The words of a reply that is being written: three 6px dots in muted that fade in turn, standing
+ * still for whoever asked for less motion (`theme.css`). An `img` named by `label` ("Orb typt"),
+ * so the wait is heard and not only seen. Put it in a `streaming` bubble.
+ */
+export function TypingDots({ label }: { label: string }) {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      data-nt-typing
+      className="nt-typing inline-flex h-5 items-center gap-1 align-top"
+    >
+      <span className="size-1.5 rounded-full bg-muted" />
+      <span className="size-1.5 rounded-full bg-muted" />
+      <span className="size-1.5 rounded-full bg-muted" />
+    </span>
+  )
+}
+
+/**
+ * The text of a bubble: 13px on a 20px line, 8px by 12px inside, an inline path breaking where it
+ * must. The corners are the bubble's radius, the one towards the speaker `sm`.
+ */
+const BUBBLE_TEXT =
+  'min-w-0 whitespace-pre-wrap px-3 py-2 text-[13px] text-fg leading-5 [overflow-wrap:anywhere]'
 
 /** Whether a message stands in a `ChatLog`, whose polite announcement already carries an error. */
 const InLog = createContext(false)
@@ -107,6 +155,9 @@ export function ChatMessage({
   streaming = false,
   error,
   errorAction,
+  shape = 'turn',
+  mark,
+  source,
 }: ChatMessageProps) {
   const errorId = useId()
   // An alert inside the log's live region is heard twice on some screen readers: in a log, the
@@ -150,6 +201,71 @@ export function ChatMessage({
       </div>
     ) : null
   const described = error !== undefined ? { 'aria-describedby': errorId } : {}
+  const sourceLine =
+    source !== undefined ? (
+      <p className="m-0 flex items-center gap-1.5 text-[11px] text-muted">{source}</p>
+    ) : null
+
+  if (shape === 'bubble' && from === 'user') {
+    // Your own bubble: a tint on the canvas, no edge, so it reads apart from the other's card in
+    // both themes. Its actions stay beside it, as on a turn.
+    return (
+      <article
+        aria-label={label}
+        {...described}
+        data-nt-chat-side="end"
+        className="group flex flex-col items-end gap-1"
+      >
+        {sourceLine}
+        <div className="flex w-full flex-row-reverse items-end justify-start gap-2">
+          <div
+            data-nt-chat-bubble
+            className={`${BUBBLE_TEXT} max-w-[min(300px,85%)] rounded-bubble rounded-br-sm bg-surface-hover`}
+          >
+            {children}
+          </div>
+          {footer}
+        </div>
+        {failure}
+      </article>
+    )
+  }
+  if (shape === 'bubble') {
+    // Two columns: the mark, level with the bubble's last line, and the column of the message
+    // (source, bubble, chips), so the source and the chips stand on the bubble's edge.
+    return (
+      <article
+        aria-label={label}
+        aria-busy={streaming || undefined}
+        {...described}
+        data-nt-chat-side="start"
+        className="grid max-w-[380px] grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-1"
+      >
+        {sourceLine !== null ? <div className="col-start-2">{sourceLine}</div> : null}
+        <div className="col-start-1 flex items-end">{mark}</div>
+        <div className="col-start-2 flex min-w-0">
+          <div
+            data-nt-chat-bubble
+            className={`${BUBBLE_TEXT} rounded-bubble rounded-bl-sm border border-border bg-plane shadow-plane`}
+          >
+            {children}
+          </div>
+        </div>
+        {failure !== null ? <div className="col-start-2">{failure}</div> : null}
+        {!streaming && (actions !== undefined || meta !== undefined) ? (
+          <div
+            data-nt-chat-message-actions
+            className="col-start-2 mt-1 flex flex-wrap items-center gap-1.5"
+          >
+            {actions}
+            {meta !== undefined ? (
+              <span className="text-[11px] text-muted tabular-nums">{meta}</span>
+            ) : null}
+          </div>
+        ) : null}
+      </article>
+    )
+  }
 
   if (from === 'user') {
     // The actions stand beside the bubble, on its last line, rather than under it: they show only
@@ -157,7 +273,12 @@ export function ChatMessage({
     // bubble comes first in the document and the row is reversed, so a screen reader hears the
     // question before its buttons while the eye still finds them to its left.
     return (
-      <article aria-label={label} {...described} className="group flex flex-col items-end gap-1">
+      <article
+        aria-label={label}
+        {...described}
+        data-nt-chat-side="end"
+        className="group flex flex-col items-end gap-1"
+      >
         <div className="flex w-full flex-row-reverse items-end justify-start gap-2">
           <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-br-sm bg-bubble px-3 shadow-plane py-2 text-[13px] text-fg leading-5 [overflow-wrap:anywhere]">
             {children}
@@ -173,6 +294,7 @@ export function ChatMessage({
       aria-label={label}
       aria-busy={streaming || undefined}
       {...described}
+      data-nt-chat-side="start"
       className="flex min-w-0 flex-col gap-2"
     >
       <div className={`min-w-0 text-[13px] text-fg leading-5 ${streaming ? CARET : ''}`}>

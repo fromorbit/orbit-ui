@@ -47,6 +47,7 @@ import pierreTreeStory from '../patterns/PierreTree.gallery'
 import planCardStory from '../patterns/PlanCard.gallery'
 import propertyListStory from '../patterns/PropertyList.gallery'
 import proseStory from '../patterns/Prose.gallery'
+import quickActionsStory from '../patterns/QuickActions.gallery'
 import railStory from '../patterns/Rail.gallery'
 import relativeTimeStory from '../patterns/RelativeTime.gallery'
 import roomyListRowStory from '../patterns/RoomyListRow.gallery'
@@ -92,6 +93,7 @@ import levelBarsStory from '../primitives/LevelBars.gallery'
 import numberFieldStory from '../primitives/NumberField.gallery'
 import orbitSymbolStory from '../primitives/OrbitSymbol.gallery'
 import orbitWordmarkStory from '../primitives/OrbitWordmark.gallery'
+import orbMarkStory from '../primitives/OrbMark.gallery'
 import otpInputStory from '../primitives/OtpInput.gallery'
 import pillStory from '../primitives/Pill.gallery'
 import progressBarStory from '../primitives/ProgressBar.gallery'
@@ -121,6 +123,7 @@ import thumbnailStory from '../primitives/Thumbnail.gallery'
 import timelineStory from '../primitives/Timeline.gallery'
 import toggleStory from '../primitives/Toggle.gallery'
 import trendBadgeStory from '../primitives/TrendBadge.gallery'
+import unreadBadgeStory from '../primitives/UnreadBadge.gallery'
 import { collectStories, type Story } from './story'
 
 /**
@@ -185,6 +188,7 @@ export const stories: Story[] = collectStories([
   planCardStory,
   propertyListStory,
   proseStory,
+  quickActionsStory,
   railStory,
   relativeTimeStory,
   roomyListRowStory,
@@ -261,6 +265,8 @@ export const stories: Story[] = collectStories([
   paginationStory,
   avatarGroupStory,
   trendBadgeStory,
+  unreadBadgeStory,
+  orbMarkStory,
   statTileStory,
   sheetStory,
   accordionStory,
