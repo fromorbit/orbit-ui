@@ -14,11 +14,12 @@ What a host checks:
 What is new:
 
 - `ListRow` `size="comfortable"`: the title at 13px even with a `subline`, 10px of padding at the sides.
-- `ListRow` `markerSide="end"`: the shape (or the caller's `marker`) at the end of the first line, in a 16px slot 10px from the edge, with 34px kept free; the second line starts under the title. With `actions`, the controls take the place of the shape on hover, on keyboard focus (`:focus-visible`) and while a menu of theirs is open, never on the focus a click leaves (A28), and the row keeps room for two controls of `--nt-control-sm` while they show, so they never lie over the title.
+- `ListRow` `markerSide="end"`: the shape (or the caller's `marker`) at the end of the first line, in a 16px slot 10px from the edge, with 34px kept free; the second line starts under the title. With `actions`, the controls take the place of the shape on hover, on keyboard focus (`:focus-visible`) and while a menu of theirs is open, never on the focus a click leaves (A28), and the row keeps room for at most two controls of `--nt-control-sm` while they show, so they never lie over the title; a third would.
 - `ListRow` `titleId`: the id on the title, for `aria-describedby` on a control beside the row.
 - `ListRow` `titleWeight` (`medium` or `semibold`) and `monoTitle` (the title in DM Mono).
 - `ListRow` `subline.mono`: the second line in DM Mono; a part in the sans is a `font-sans` span inside `content`.
-- `ListRow` `shape.label`: passed to `StatusShape`, which then has a name and a tooltip; the row leaves the status out of its own words so it is not heard twice.
-- `List` `roving`: one tab stop for the whole list (the row that last had the focus, else the current one, else the first); → into the controls beside a row, ← back, and the context-menu key or ⇧F10 opens a row's last control, its menu. A row that answers → itself (`preventDefault`) keeps it.
-- `List` `card`: the rows in an outlined region (hairline, 12px corners, no fill), a line between them, the rows square to its edge with their focus ring inside.
+- `ListRow` `shape.label`: the status word as the tooltip of the shape under the pointer. The shape stays decorative and the row's name keeps the status in its own place (title, status, meta, second line). With `markerSide="end"` and `actions` there is no tooltip, since the actions take the shape's place on hover.
+- `StatusShape` `tooltip`: the word under the pointer while the shape stays decorative (`label` still names it and wins when both are given).
+- `List` `roving`: one tab stop for the whole list (the row that last had the focus, else the current one, else the first; a newly current row takes it over); → into the controls beside a row, passing a disabled one, ← back, and the context-menu key or ⇧F10 opens a row's last control, its menu. A row that answers → itself (`preventDefault`) keeps it. Turned off again, every row and control gets its tab stop back.
+- `List` `card`: the rows in an outlined region (hairline, 12px corners, no fill), a line between them, the rows square to its edge with their focus ring inside; the inset of the words is the row's own (10px `comfortable`, 8px regular). A pressed row (`aria-pressed`) marks the choice; a radio group may fit a single choice better later.
 - The icon `list-filter`.
