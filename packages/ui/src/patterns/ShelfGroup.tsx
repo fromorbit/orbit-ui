@@ -33,8 +33,10 @@ export interface ShelfGroupProps {
  *
  * A row of 40px with a hairline above it that runs to the edge of its column, the words in 12px
  * `muted` and `chevron-down` on the right, turned over once open. Not a `ListGroup`: that is a
- * heading over rows in the middle of a list, in capitals; this is one more row at the end of it,
- * and it says with its count what lies behind it.
+ * heading over rows in the middle of a list; this is one more row at the end of it, and it says
+ * with its count what lies behind it. A column whose other groups are `ListGroup variant=
+ * "disclosure"` (the side panel of the design) folds Afgerond with that one instead, so the column
+ * has one kind of heading.
  *
  * It spans its column edge to edge, so the hairline reaches the rim; its words start 20px in, on
  * the line of the words of the rows above (8px of gutter and 12px of row padding), and the rows it

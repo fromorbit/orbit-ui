@@ -187,6 +187,87 @@ function SidePanelChats() {
   )
 }
 
+/**
+ * The groups under the chats of a side panel, as the design draws them: Runs open, Integraties
+ * open, Afgerond folded at the foot, each a heading with its chevron before the word and its count
+ * at the end. The names are made up.
+ */
+function ColumnGroups({ column = false }: { column?: boolean }) {
+  const [open, setOpen] = useState({ runs: true, integrations: true, settled: false })
+  const toggle = (key: keyof typeof open) => (next: boolean) =>
+    setOpen((value) => ({ ...value, [key]: next }))
+  // The column of the design: the words 20px from the edge of a column with an 8px gutter, 14px
+  // between the groups and 1px between the rows, every heading a row of one roving list and a 3
+  // beside the `SectionHeading`s above it.
+  const form = column
+    ? ({ inset: true, spacing: 'column', rowMark: true, level: 3 } as const)
+    : ({} as const)
+  return (
+    <div className={column ? 'w-62 px-2' : 'w-62'}>
+      <List label="Zijpaneel" roving={column}>
+        <ListGroup
+          variant="disclosure"
+          {...form}
+          heading="Runs"
+          count="1 bezig"
+          label="Runs, 1 bezig"
+          open={open.runs}
+          onOpenChange={toggle('runs')}
+        >
+          <ListRow
+            title="Checkout suite · run 1284"
+            kind="failed"
+            status="Mislukt"
+            meta={false}
+            size="comfortable"
+            markerSide="end"
+            emphasis="secondary"
+            subline={{ content: 'pr-482 · mislukt · 18 min', label: 'pr-482, 18 min', mono: true }}
+          />
+          <ListRow
+            title="Space pr-203"
+            kind="running"
+            status="Bouwen"
+            meta={false}
+            size="comfortable"
+            markerSide="end"
+            emphasis="secondary"
+            subline={{ content: 'kassa-api · bouwen', label: 'kassa-api', mono: true }}
+          />
+        </ListGroup>
+        <ListGroup
+          variant="disclosure"
+          {...form}
+          heading="Integraties"
+          count="1 vraagt iets"
+          label="Integraties, 1 vraagt iets"
+          open={open.integrations}
+          onOpenChange={toggle('integrations')}
+        >
+          <ListRow title="studio-noord" monoTitle status="3 repositories" emphasis="secondary" />
+          <ListRow
+            title="Mistral Vibe"
+            status="Aanmelden nodig"
+            emphasis="secondary"
+            meta={<span className="text-attention">Aanmelden nodig</span>}
+          />
+        </ListGroup>
+        <ListGroup
+          variant="disclosure"
+          {...form}
+          heading="Afgerond"
+          count={143}
+          label="Afgerond, 143 gesprekken"
+          open={open.settled}
+          onOpenChange={toggle('settled')}
+        >
+          <ListRow title="Kortingscodes valideren" status="Klaar" kind="done" />
+        </ListGroup>
+      </List>
+    </div>
+  )
+}
+
 /** The projects of a start screen: a mark, the name in DM Mono, and where it stands in git. */
 function StartProjects() {
   const [chosen, setChosen] = useState('webwinkel')
@@ -541,6 +622,17 @@ export default {
     // the second line under the name beside a 16px mark, and the chosen one pressed.
     'Projectrij in een kaart (donker en licht)': () => (
       <BothThemes plane="canvas">{() => <StartProjects />}</BothThemes>
+    ),
+    // Last, so they move no reference image above them. The groups of a side panel's column: the
+    // chevron before the word and always in sight, the count at the end in DM Mono, one form for
+    // Runs, Integraties and Afgerond.
+    'Groepen van een kolom: chevron voor het woord (donker en licht)': () => (
+      <BothThemes>{() => <ColumnGroups />}</BothThemes>
+    ),
+    // Last, so they move no reference image above them. The same groups in the column of the
+    // design: inset to the line of the rows, 14px and 1px apart, the headings rows of the list.
+    'Groepen van een kolom: ingesprongen, 14px en 1px (donker en licht)': () => (
+      <BothThemes>{() => <ColumnGroups column />}</BothThemes>
     ),
   },
 } satisfies Story

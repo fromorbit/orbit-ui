@@ -1276,3 +1276,371 @@ test('in a roving list → passes a disabled control by', async () => {
   await userEvent.keyboard('{ArrowRight}')
   expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
 })
+
+// ---------------------------------------------------------------------------------------------
+// The groups of a side panel's column (0.6.5): every form below is opt-in.
+// ---------------------------------------------------------------------------------------------
+
+/** One group of the column in the disclosure form, folded or open. */
+function DisclosureGroup({
+  initiallyOpen = true,
+  count = '1 bezig, 1 vraagt iets',
+}: {
+  initiallyOpen?: boolean
+  count?: string
+}) {
+  const [open, setOpen] = useState(initiallyOpen)
+  return (
+    <List label="Zijpaneel">
+      <ListGroup
+        variant="disclosure"
+        heading="Runs"
+        count={count}
+        label={`Runs, ${count}`}
+        open={open}
+        onOpenChange={setOpen}
+      >
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+    </List>
+  )
+}
+
+test('a disclosure heading sets its chevron before the word, always in sight', () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  const chevron = button.querySelector('[data-nt-list-group-chevron]')
+  expect(chevron).not.toBeNull()
+  // First in the button, before the word.
+  expect(button.firstElementChild).toBe(chevron)
+  expect(chevron?.className).not.toContain('opacity-0')
+  expect(chevron?.className).not.toContain('-rotate-90')
+})
+
+test('a folded disclosure heading turns its chevron to point at the word', async () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  await userEvent.click(button)
+  const chevron = button.querySelector('[data-nt-list-group-chevron]')
+  expect(chevron?.className).toContain('-rotate-90')
+  expect(chevron?.className).not.toContain('opacity-0')
+})
+
+test('a disclosure heading sets its count at the end in DM Mono 11px, a word as well', () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  const count = button.querySelector('[data-nt-list-group-count]')
+  expect(count).toHaveTextContent('1 bezig, 1 vraagt iets')
+  expect(count?.className).toContain('ms-auto')
+  expect(count?.className).toContain('font-mono')
+  expect(count?.className).toContain('text-[11px]')
+  // Last in the button: nothing after the count.
+  expect(button.lastElementChild).toBe(count)
+})
+
+test('a group without a variant keeps its count after the word and its chevron last', () => {
+  render(<FoldableGroup />)
+  const button = screen.getByRole('button', { name: 'webshop, 2 chats' })
+  expect(button.querySelector('[data-nt-list-group-chevron]')).toBeNull()
+  const count = button.querySelector('[data-nt-list-group-count]')
+  expect(count?.className).not.toContain('ms-auto')
+  expect(count?.className).not.toContain('font-mono')
+})
+
+test('a disclosure group at the foot of a column, Afgerond, brings its first row into view', async () => {
+  const seen: Element[] = []
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(function (
+    this: Element,
+  ) {
+    seen.push(this)
+  })
+  render(<DisclosureGroup initiallyOpen={false} count="143" />)
+  expect(spy).not.toHaveBeenCalled()
+  await userEvent.click(screen.getByRole('button', { name: 'Runs, 143' }))
+  expect(seen[0]).toBe(screen.getByRole('button', { name: 'Checkout suite' }).closest('li'))
+  spy.mockRestore()
+})
+
+test('a disclosure group that starts open scrolls nothing', () => {
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+  render(<DisclosureGroup />)
+  expect(spy).not.toHaveBeenCalled()
+  spy.mockRestore()
+})
+
+test('an inset heading starts 12px in, on the line of the rows in a column with a gutter', () => {
+  render(
+    <List label="Zijpaneel">
+      <ListGroup heading="Runs" label="Runs" inset open onOpenChange={() => {}}>
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+      <ListGroup heading="Integraties" label="Integraties" open onOpenChange={() => {}}>
+        <ListRow title="studio-noord" />
+      </ListGroup>
+    </List>,
+  )
+  const inset = screen.getByRole('button', { name: 'Runs' })
+  expect(inset.className).toContain('ps-3')
+  expect(inset.className).toContain('pe-2')
+  expect(inset.className).not.toMatch(/(^|\s)px-2(\s|$)/)
+  // Without it the heading keeps its 8px.
+  const plain = screen.getByRole('button', { name: 'Integraties' })
+  expect(plain.className).toMatch(/(^|\s)px-2(\s|$)/)
+  expect(plain.className).not.toContain('ps-3')
+})
+
+test('the steps of a column: 14px between groups and 1px between rows', () => {
+  render(
+    <List label="Zijpaneel">
+      <ListGroup heading="Runs" label="Runs" spacing="column" open onOpenChange={() => {}}>
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+    </List>,
+  )
+  const group = screen.getByRole('group', { name: 'Runs' })
+  const item = group.closest('li')
+  expect(item?.className).toContain('mt-3.5')
+  expect(item?.className).toContain('first:mt-0')
+  expect(item?.className).not.toContain('mt-6')
+  const rows = group.querySelector('ul')
+  expect(rows?.className).toContain('gap-px')
+  expect(rows?.className).not.toContain('gap-1')
+})
+
+test('a group without spacing keeps 24px above it and 4px between its rows', () => {
+  render(<FoldableGroup />)
+  const group = screen.getByRole('group', { name: 'webshop' })
+  expect(group.closest('li')?.className).toContain('mt-6')
+  expect(group.querySelector('ul')?.className).toContain('gap-1')
+})
+
+test('a group takes the heading level of the column it stands in', () => {
+  render(
+    <List label="Zijpaneel">
+      <ListGroup heading="Runs" label="Runs" level={3} open onOpenChange={() => {}}>
+        <ListRow title="Checkout suite" />
+      </ListGroup>
+      <ListGroup heading="Integraties" label="Integraties" open onOpenChange={() => {}}>
+        <ListRow title="studio-noord" />
+      </ListGroup>
+    </List>,
+  )
+  expect(screen.getByRole('heading', { level: 3, name: 'Runs' })).toBeInTheDocument()
+  // Without a level a group is a 2, as before.
+  expect(screen.getByRole('heading', { level: 2, name: 'Integraties' })).toBeInTheDocument()
+})
+
+/** A roving column whose group headings are rows: one open with a row, one folded, then a chat. */
+function RovingColumn({ rowMark = true }: { rowMark?: boolean }) {
+  return (
+    <List label="Zijpaneel" roving>
+      <ListGroup
+        heading="Runs"
+        label="Runs"
+        variant="disclosure"
+        rowMark={rowMark}
+        open
+        onOpenChange={() => {}}
+      >
+        <ListRow title="Checkout suite" actions={<button type="button">Meer</button>} />
+      </ListGroup>
+      <ListGroup
+        heading="Integraties"
+        label="Integraties"
+        variant="disclosure"
+        rowMark={rowMark}
+        open={false}
+        onOpenChange={() => {}}
+      >
+        <ListRow title="studio-noord" />
+      </ListGroup>
+      <ListRow title="Laatste chat" />
+    </List>
+  )
+}
+
+test('a heading with the row mark is a row of the list', () => {
+  render(<RovingColumn />)
+  expect(screen.getByRole('button', { name: 'Runs' })).toHaveAttribute('data-nt-list-row')
+})
+
+test('a heading without the row mark is no row, and keeps its own tab stop', () => {
+  render(<RovingColumn rowMark={false} />)
+  const heading = screen.getByRole('button', { name: 'Runs' })
+  expect(heading).not.toHaveAttribute('data-nt-list-row')
+  expect(heading.tabIndex).toBe(0)
+})
+
+test('in a roving list a heading row is no tab stop of its own', async () => {
+  render(
+    <>
+      <button type="button">Voor</button>
+      <RovingColumn />
+      <button type="button">Na</button>
+    </>,
+  )
+  // The first row of the list is the stop: here the heading of Runs.
+  screen.getByRole('button', { name: 'Voor' }).focus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Runs' })).toHaveFocus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Na' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Integraties' }).tabIndex).toBe(-1)
+  expect(screen.getByRole('button', { name: 'Checkout suite' }).tabIndex).toBe(-1)
+})
+
+test('↑ and ↓ walk along and from a heading, a folded group without rows included', async () => {
+  render(<RovingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  const row = screen.getByRole('button', { name: 'Checkout suite' })
+  const folded = screen.getByRole('button', { name: 'Integraties' })
+  const last = screen.getByRole('button', { name: 'Laatste chat' })
+  runs.focus()
+  await userEvent.keyboard('{ArrowDown}')
+  expect(row).toHaveFocus()
+  await userEvent.keyboard('{ArrowDown}')
+  expect(folded).toHaveFocus()
+  // The folded group holds no rows: the next step is the chat after it.
+  await userEvent.keyboard('{ArrowDown}')
+  expect(last).toHaveFocus()
+  await userEvent.keyboard('{ArrowUp}')
+  expect(folded).toHaveFocus()
+  await userEvent.keyboard('{ArrowUp}')
+  expect(row).toHaveFocus()
+  await userEvent.keyboard('{ArrowUp}')
+  expect(runs).toHaveFocus()
+  // At the top ↑ stays put: the focus does not wrap.
+  await userEvent.keyboard('{ArrowUp}')
+  expect(runs).toHaveFocus()
+})
+
+test('Home and End reach a heading and leave from one', async () => {
+  render(<RovingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  const last = screen.getByRole('button', { name: 'Laatste chat' })
+  screen.getByRole('button', { name: 'Integraties' }).focus()
+  await userEvent.keyboard('{End}')
+  expect(last).toHaveFocus()
+  await userEvent.keyboard('{Home}')
+  expect(runs).toHaveFocus()
+  await userEvent.keyboard('{End}')
+  expect(last).toHaveFocus()
+})
+
+test('a folded heading that last had the focus is where Tab comes back to', async () => {
+  render(
+    <>
+      <RovingColumn />
+      <button type="button">Na</button>
+    </>,
+  )
+  const folded = screen.getByRole('button', { name: 'Integraties' })
+  folded.focus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'Na' })).toHaveFocus()
+  await userEvent.tab({ shift: true })
+  expect(folded).toHaveFocus()
+})
+
+test('→ on a heading row does not walk into the controls of the rows under it', async () => {
+  render(<RovingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  runs.focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(runs).toHaveFocus()
+  // The row itself still walks into its own.
+  screen.getByRole('button', { name: 'Checkout suite' }).focus()
+  await userEvent.keyboard('{ArrowRight}')
+  expect(screen.getByRole('button', { name: 'Meer' })).toHaveFocus()
+})
+
+test('a group without a variant scrolls nothing when it opens', async () => {
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+  render(<FoldableGroup initiallyOpen={false} />)
+  await userEvent.click(screen.getByRole('button', { name: 'webshop, 2 chats' }))
+  expect(screen.getByRole('button', { name: /Eerste chat/ })).toBeInTheDocument()
+  expect(spy).not.toHaveBeenCalled()
+  spy.mockRestore()
+})
+
+test('a press its owner turned down leaves nothing behind: a later open scrolls nothing', async () => {
+  const spy = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+  function Owner({ open }: { open: boolean }) {
+    return (
+      <List label="Zijpaneel">
+        <ListGroup
+          variant="disclosure"
+          heading="Afgerond"
+          label="Afgerond"
+          open={open}
+          onOpenChange={() => {}}
+        >
+          <ListRow title="Oude chat" />
+        </ListGroup>
+      </List>
+    )
+  }
+  const { rerender } = render(<Owner open={false} />)
+  // The reader asks; the owner keeps it folded.
+  await userEvent.click(screen.getByRole('button', { name: 'Afgerond' }))
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  // Later the owner opens it of its own accord.
+  rerender(<Owner open />)
+  expect(screen.getByRole('button', { name: 'Oude chat' })).toBeInTheDocument()
+  expect(spy).not.toHaveBeenCalled()
+  spy.mockRestore()
+})
+
+/** A roving column with one folding heading row whose state the test can read. */
+function TogglingColumn() {
+  const [open, setOpen] = useState(true)
+  return (
+    <List label="Zijpaneel" roving>
+      <ListGroup
+        variant="disclosure"
+        rowMark
+        heading="Runs"
+        label="Runs"
+        open={open}
+        onOpenChange={setOpen}
+      >
+        <ListRow title="Checkout suite" actions={<button type="button">Meer</button>} />
+      </ListGroup>
+      <ListRow title="Laatste chat" />
+    </List>
+  )
+}
+
+test('Enter and Space on a heading row fold and unfold it, and the focus and the stop stay on it', async () => {
+  render(<TogglingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  runs.focus()
+  await userEvent.keyboard('{Enter}')
+  expect(runs).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('button', { name: 'Checkout suite' })).toBeNull()
+  expect(runs).toHaveFocus()
+  expect(runs.tabIndex).toBe(0)
+  await userEvent.keyboard(' ')
+  expect(runs).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('button', { name: 'Checkout suite' })).toBeInTheDocument()
+  expect(runs).toHaveFocus()
+  await waitFor(() => expect(runs.tabIndex).toBe(0))
+  expect(screen.getByRole('button', { name: 'Checkout suite' }).tabIndex).toBe(-1)
+})
+
+test('the context-menu key on a heading row does nothing', async () => {
+  render(<TogglingColumn />)
+  const runs = screen.getByRole('button', { name: 'Runs' })
+  runs.focus()
+  await userEvent.keyboard('{ContextMenu}')
+  await userEvent.keyboard('{Shift>}{F10}{/Shift}')
+  expect(runs).toHaveFocus()
+  expect(runs).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.queryByRole('menu')).toBeNull()
+})
+
+test('a disclosure heading takes the hover of the shell', () => {
+  render(<DisclosureGroup />)
+  const button = screen.getByRole('button', { name: 'Runs, 1 bezig, 1 vraagt iets' })
+  expect(button.className).toContain('hover:bg-surface-hover')
+})

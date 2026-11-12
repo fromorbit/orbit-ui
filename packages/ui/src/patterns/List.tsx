@@ -6,6 +6,7 @@ import {
   type ReactNode,
   type RefObject,
   useContext,
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -51,9 +52,18 @@ function moveFocus(event: KeyboardEvent<HTMLElement>): void {
  */
 const ACTIONS = '[data-nt-list-actions]'
 
-/** The focusable controls inside a row's box of actions. */
+/**
+ * The focusable controls inside a row's box of actions.
+ *
+ * Only a box beside the row, a child of the row's own `<li>`: a row that heads a group
+ * (`ListGroup rowMark`, `ShelfGroup`) shares its `<li>` with the rows under it, and their boxes
+ * are theirs, not its.
+ */
 function actionsOf(row: HTMLElement): HTMLElement[] {
-  const box = row.closest('li')?.querySelector<HTMLElement>(ACTIONS)
+  const item = row.closest('li')
+  const box = item
+    ? [...item.children].find((child): child is HTMLElement => child.matches(ACTIONS))
+    : undefined
   return box ? controlsIn(box) : []
 }
 
@@ -715,6 +725,46 @@ export interface ListGroupProps {
    * beside every heading was noise. The count stays in `label`.
    */
   quiet?: boolean
+  /**
+   * How the heading draws its chevron and its count. `label` (the default): the count right after
+   * the word, the chevron behind it and only in sight under the pointer, with the focus or folded.
+   * `disclosure`: the chevron before the word and always in sight (turned to the word while
+   * folded), the count at the end of the heading in DM Mono 11px, a figure or the caller's words
+   * ("1 bezig, 1 vraagt iets"), and the hover of the shell (`surface-hover`) — the groups of a side panel's
+   * column in the design. One form for every group that folds in such a column, the shelf at its
+   * foot (Afgerond) too, so one column has one kind of heading; opened by the reader, it brings its
+   * first row into view, as `ShelfGroup` does. An open by the owner alone, or a press the owner
+   * turned down, scrolls nothing.
+   */
+  variant?: 'label' | 'disclosure'
+  /**
+   * The heading starts 12px in instead of 8px. In a column that keeps an 8px gutter (a side
+   * panel) its first glyph stands 20px from the edge: with `variant="disclosure"` that is the
+   * chevron, on the line of a `SectionHeading` set 4px in and of the chats, and the word follows at
+   * 38px. The rows of `ListRow` do not stand on that line yet: 16px for a regular row, 18px for a
+   * `comfortable` one. The design puts headings and rows alike at 18px; that is a next step.
+   */
+  inset?: boolean
+  /**
+   * The steps between and inside the groups. `regular` (the default): 24px above every group but
+   * the first and 4px between the rows. `column`: 14px and 1px, the steps of a side panel's column
+   * in the design, where a group is one of several stacked headings over rows that read as one
+   * column.
+   */
+  spacing?: 'regular' | 'column'
+  /**
+   * The heading's button is a row of the `List` around it (`data-nt-list-row`, as `ShelfGroup`):
+   * ↑ ↓ Home and End walk onto it and on from it, and in a `roving` list it is no tab stop of its
+   * own but one of the rows the single stop moves through. A folded group thus stays one step in
+   * the column. Left out, the arrows pass the heading by and it is a tab stop of its own, as before.
+   */
+  rowMark?: boolean
+  /**
+   * The level of the heading in the outline of the page: 2 by default, 3 where the groups stand
+   * beside a `SectionHeading` (a 3 by default) in one column, so the headings of that column are
+   * one level rather than two.
+   */
+  level?: 2 | 3
   /** A 12px glyph before the heading, for a group that is not one more of its kind (the archive). */
   icon?: IconName | undefined
   /**
@@ -736,11 +786,12 @@ export interface ListGroupProps {
  * screen reader. The group is named by its heading alone; the button inside that heading carries
  * the count as well and `aria-expanded`.
  *
- * The heading is a small label in capitals — 11px, `text-muted`, a little letter-spacing — the one
- * place where capitals are a style: a section of a column has to read as a section and not as one
- * more row, and size and colour alone left a project looking like a chat without a status.
- * The chevron is an affordance, so it is `xs` and shows only under the
- * pointer, with the keyboard, or once folded.
+ * The heading is a quiet label in sentence case, 12px and `text-muted`, as `SectionHeading`. By
+ * default the chevron is an affordance, so it is `xs` and shows only under the pointer, with the
+ * keyboard, or once folded. The groups of a side panel's column take the `disclosure` variant
+ * (chevron before the word, always in sight, the count at the end in DM Mono) with `inset`,
+ * `spacing="column"`, `rowMark` and `level={3}`: one form for every group that folds in that
+ * column, Runs and Integraties as well as Afgerond at its foot.
  *
  * Controlled, like `Collapsible`: whether a group is folded belongs to whoever lists the groups.
  * Folded, the rows are not rendered at all rather than hidden: the arrows of `List` walk every row
@@ -750,6 +801,11 @@ export function ListGroup({
   heading,
   count,
   quiet = false,
+  variant = 'label',
+  inset = false,
+  spacing = 'regular',
+  level = 2,
+  rowMark = false,
   icon,
   label,
   open,
@@ -757,21 +813,65 @@ export function ListGroup({
   children,
 }: ListGroupProps) {
   const nameId = useId()
+  const disclosure = variant === 'disclosure'
+  const Heading = level === 3 ? 'h3' : 'h2'
+  const rows = useRef<HTMLUListElement>(null)
+  // Set by a press that opens the group, so a group that starts open, or that its owner opens
+  // later of its own accord, scrolls nothing.
+  const opened = useRef(false)
+  // A disclosure group may stand at the foot of its column (Afgerond): opened there, its rows
+  // appear below the fold and nothing seems to happen. Its first row is brought into view instead.
+  // Every change of `open` clears the flag, whichever way it went.
+  useEffect(() => {
+    const asked = opened.current
+    opened.current = false
+    if (open && asked) rows.current?.firstElementChild?.scrollIntoView({ block: 'nearest' })
+  }, [open])
+  const chevron = (
+    <span
+      data-nt-list-group-chevron={disclosure ? '' : undefined}
+      className={`flex shrink-0 transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
+        open
+          ? disclosure
+            ? ''
+            : 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
+          : '-rotate-90'
+      }`}
+    >
+      <Icon name="chevron-down" size="xs" />
+    </span>
+  )
   return (
-    <li className="mt-6 first:mt-0">
+    <li className={spacing === 'column' ? 'mt-3.5 first:mt-0' : 'mt-6 first:mt-0'}>
       {/* biome-ignore lint/a11y/useSemanticElements: a fieldset is for forms; this is a named group in a list, and a named section would be a landmark. */}
       <section role="group" aria-labelledby={nameId}>
-        <h2 className="m-0">
+        <Heading className="m-0">
           <button
             type="button"
             data-nt-list-group-heading
+            data-nt-list-row={rowMark ? '' : undefined}
             aria-expanded={open}
             aria-label={label}
-            onClick={() => onOpenChange(!open)}
-            className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md px-2 text-left text-[12px] ${
+            onClick={() => {
+              opened.current = disclosure && !open
+              onOpenChange(!open)
+              // An owner that turns the press down changes nothing, so no effect clears the flag;
+              // it goes after this turn, when the owner's answer has been drawn.
+              if (opened.current) {
+                setTimeout(() => {
+                  opened.current = false
+                }, 0)
+              }
+            }}
+            className={`group/heading no-drag flex h-(--nt-control-md) w-full items-center gap-1.5 rounded-md ${
+              inset ? 'ps-3 pe-2' : 'px-2'
+            } text-left text-[12px] ${
               quiet ? 'font-normal' : 'font-medium'
-            } text-muted outline-focus hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
+            } text-muted outline-focus ${
+              disclosure ? 'hover:bg-surface-hover ' : ''
+            }hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2`}
           >
+            {disclosure ? chevron : null}
             {icon ? (
               <span data-nt-list-group-icon className="flex shrink-0">
                 <Icon name={icon} size="xs" />
@@ -783,27 +883,28 @@ export function ListGroup({
             {count === undefined ? null : (
               <span
                 data-nt-list-group-count
-                className={`shrink-0 font-normal tabular-nums ${
+                className={`shrink-0 font-normal tabular-nums${
+                  disclosure ? ' ms-auto font-mono text-[11px]' : ''
+                }${
                   quiet && open
-                    ? 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
+                    ? ' opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
                     : ''
                 }`}
               >
                 {count}
               </span>
             )}
-            <span
-              className={`flex shrink-0 transition-transform duration-(--nt-duration-fast) ease-out motion-reduce:transition-none ${
-                open
-                  ? 'opacity-0 group-hover/heading:opacity-100 group-focus-visible/heading:opacity-100'
-                  : '-rotate-90'
-              }`}
-            >
-              <Icon name="chevron-down" size="xs" />
-            </span>
+            {disclosure ? null : chevron}
           </button>
-        </h2>
-        {open ? <ul className="m-0 flex list-none flex-col gap-1 p-0">{children}</ul> : null}
+        </Heading>
+        {open ? (
+          <ul
+            ref={rows}
+            className={`m-0 flex list-none flex-col ${spacing === 'column' ? 'gap-px' : 'gap-1'} p-0`}
+          >
+            {children}
+          </ul>
+        ) : null}
       </section>
     </li>
   )
