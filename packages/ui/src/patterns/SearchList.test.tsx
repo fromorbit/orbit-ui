@@ -745,8 +745,38 @@ test('the active row carries a neutral fill and the full text colour, and no acc
   expect(quiet).not.toContain('bg-surface-active')
 })
 
+test('the active row carries a neutral stripe on its leading edge, never the accent; a quiet row none', () => {
+  // The non-text cue of the caret (WCAG 1.4.11): the fill alone is 1.4:1 against the panel and the
+  // step from muted to the active row's words 2.6:1 in dark. The stripe is muted, 3:1 and more on
+  // the active fill in both themes (`tokens.test.ts`), and never the accent or the focus colour:
+  // an open panel carries no accent.
+  render(
+    <SearchList
+      labels={nl.list}
+      items={PROJECTS}
+      selectedId="ds"
+      onSelect={() => {}}
+      label="Projecten"
+    />,
+  )
+  const active = activeOption()?.className.split(' ') ?? []
+  expect(active).toEqual(
+    expect.arrayContaining([
+      'relative',
+      'before:absolute',
+      'before:start-0',
+      'before:inset-y-1.5',
+      'before:w-0.5',
+      'before:rounded-full',
+      'before:bg-muted',
+    ]),
+  )
+  expect(active.filter((name) => /accent|focus/.test(name))).toEqual([])
+  expect(option('nt-agent').className.split(' ')).not.toContain('before:bg-muted')
+})
+
 test('a detail is muted on a quiet row and comes forward on the active one', () => {
-  // `--nt-text-muted` on `--nt-surface-active` is 3.71:1, under the 4.5:1 body text owes, so
+  // `--nt-text-muted` on `--nt-surface-active` is 4.2:1 on a dark menu, under the 4.5:1 body text owes, so
   // nothing inside the row the keyboard stands on may stay muted. The figure itself is measured
   // in the gallery, against the fill the browser really paints; this pins which row gets which.
   const items: SearchListItem[] = [
@@ -1002,7 +1032,7 @@ test('a trailing word stands on the right at 11px, muted except on the active ro
   const trailingOf = (name: string) =>
     option(new RegExp(name)).querySelector('[data-nt-searchlist-trailing]')
   // The first row is where the walk starts: it brightens with the rest of the row, since nothing
-  // on the active fill may be muted (3.71:1 there).
+  // on the active fill may be muted (4.2:1 there over a dark card, 4.8:1 on the canvas).
   expect(trailingOf('Klein')).toHaveTextContent('Noord')
   expect(trailingOf('Klein')?.className).toContain('text-[11px]')
   expect(trailingOf('Klein')?.className).not.toContain('text-muted')

@@ -78,8 +78,8 @@ const tail = cva('shrink-0', {
  * `title` carries the whole path until a `Tooltip` takes that over.
  *
  * **It has no colour of its own** by default, deliberately: it takes the one of the row it stands in. A path
- * is a detail *of* something, and a detail that stayed muted on a highlighted row would be 3.71:1
- * against that row's fill — under the 4.5:1 body text owes. Whoever places
+ * is a detail *of* something, and a detail that stayed muted on a highlighted row would be 4.2:1
+ * against that row's fill over a dark card (4.8:1 on the canvas) — under the 4.5:1 body text owes. Whoever places
  * one decides how loud it is; in a list that is `SearchList`, which mutes a detail on every row
  * except the one the keyboard stands on. The exception is a path that *is* the row's main text,
  * a file in the changes tab: there `emphasis` quiets the folder and brightens the name.

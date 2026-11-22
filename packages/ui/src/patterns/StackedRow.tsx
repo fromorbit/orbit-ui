@@ -22,8 +22,16 @@ const ROW = {
     'no-drag flex h-14 w-full min-w-0 flex-col rounded-md bg-row-active px-3 py-2.5 text-left outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
 } as const
 
-/** A quiet line of 11px on 16: the first and the third. */
-const SMALL_LINE = 'flex h-4 min-w-0 items-center gap-2 text-[11px] leading-4 text-muted'
+/**
+ * A quiet line of 11px on 16: the first and the third. Muted at rest; secondary on the current
+ * item, where muted on the soft card over the light frame (the sidebar of the app) is 4.4:1, under
+ * the 4.5:1 a word owes, as the open item of `AppRail` lifts its words. The hover (`row-hover`)
+ * keeps muted at AA.
+ */
+const SMALL_LINE = {
+  rest: 'flex h-4 min-w-0 items-center gap-2 text-[11px] leading-4 text-muted',
+  current: 'flex h-4 min-w-0 items-center gap-2 text-[11px] leading-4 text-secondary',
+} as const
 
 /**
  * The title: 14px on 20, bright at 500 while there is news or it is chosen, secondary at 400 once
@@ -124,7 +132,10 @@ export function StackedRow({
         }
         {...rest}
       >
-        <span data-nt-stacked-line="meta" className={SMALL_LINE}>
+        <span
+          data-nt-stacked-line="meta"
+          className={current ? SMALL_LINE.current : SMALL_LINE.rest}
+        >
           <span data-nt-stacked-start className="flex min-w-0 flex-1 items-center gap-1.5 truncate">
             {meta}
           </span>
@@ -159,7 +170,10 @@ export function StackedRow({
           </span>
         )}
         {third ? (
-          <span data-nt-stacked-line="detail" className={SMALL_LINE}>
+          <span
+            data-nt-stacked-line="detail"
+            className={current ? SMALL_LINE.current : SMALL_LINE.rest}
+          >
             <span
               data-nt-stacked-start
               className="flex min-w-0 flex-1 items-center gap-1.5 truncate"

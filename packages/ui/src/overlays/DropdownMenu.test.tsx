@@ -351,6 +351,45 @@ test('the keyboard caret is a bar of the focus colour as well as a tint', async 
   expect(classes).toContain('focus-visible:before:w-0.5')
 })
 
+test('the keyboard row lifts its quiet words to secondary: a count, a key and the value of a submenu', async () => {
+  // Muted on `surface-active` over the panel is 4.2:1 in dark, under the 4.5:1 a word owes, so the
+  // row the keyboard walked to brings them forward, as `SearchList` and `ChoiceRow` do. Under the
+  // pointer (`surface-hover`) muted keeps AA and stays.
+  render(
+    <DropdownMenu
+      trigger={<Button>Bereik</Button>}
+      label="Bereik"
+      items={[
+        { id: 'open', label: 'Open', count: 24, shortcut: '⌥⌘1', onSelect: () => {} },
+        {
+          id: 'agent',
+          label: 'Agent',
+          kind: 'submenu',
+          value: 'Relay',
+          items: [{ id: 'relay', label: 'Relay', onSelect: () => {} }],
+        },
+      ]}
+    />,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Bereik' }))
+  const row = await screen.findByRole('menuitem', { name: 'Open, 24' })
+  const submenu = screen.getByRole('menuitem', { name: 'Agent: Relay' })
+  for (const element of [row, submenu]) {
+    expect(element.className.split(' ')).toContain('group/item')
+  }
+  const classesOf = (element: Element | null) => element?.className.split(' ') ?? []
+  expect(classesOf(row.querySelector('[data-nt-menu-count]'))).toEqual(
+    expect.arrayContaining(['text-muted', 'group-focus-visible/item:text-secondary']),
+  )
+  // The key draws its own muted colour, so the lift reaches into it.
+  expect(classesOf(row.querySelector('[data-nt-menu-shortcut]'))).toContain(
+    'group-focus-visible/item:[&>[data-nt-kbd]]:text-secondary',
+  )
+  expect(classesOf(submenu.querySelector('[data-nt-menu-value]'))).toEqual(
+    expect.arrayContaining(['text-muted', 'group-focus-visible/item:text-secondary']),
+  )
+})
+
 test('the chevron of a submenu is muted, not faint: it is the only sign of the submenu', async () => {
   render(
     <DropdownMenu

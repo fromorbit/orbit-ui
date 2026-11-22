@@ -3,9 +3,10 @@ import { expect, test } from 'vitest'
 import { read, SRC, sources, stripComments, underSrc } from './guards/source'
 
 /**
- * `--nt-text-faint` (4.3:1) is below what body text owes, so it may colour an icon, a border or
- * decoration and never a word. These tests walk the source for
- * the ways it could become a text colour.
+ * `--nt-text-faint` falls below what body text owes on some planes (4.1:1 on a card in dark, 3.8:1
+ * on the frame in light), so it may colour an icon, a border or decoration and never a word; as a
+ * glyph it keeps 3:1, at rest and on a lit row (`src/tokens.test.ts`). These tests walk the source
+ * for the ways it could become a text colour.
  */
 
 test('the Tailwind class text-faint appears only in the tone of Icon', () => {

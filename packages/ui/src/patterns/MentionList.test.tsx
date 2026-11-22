@@ -81,4 +81,25 @@ describe('MentionList', () => {
     renderList({ items: [] })
     expect(screen.getByText('Geen bestanden')).toBeInTheDocument()
   })
+
+  test('the active row lifts its detail to secondary and carries the neutral caret stripe', () => {
+    // Muted on the caret row's tint over the composer's card is 4.2:1 in dark, under the 4.5:1 a
+    // word owes; a quiet row keeps it muted. The neutral stripe of `SearchList`'s caret row is the
+    // second cue, never the accent.
+    renderList({
+      items: [
+        { path: 'experts/review', kind: 'file', label: 'Review', detail: 'Leest de wijziging' },
+        { path: 'experts/tests', kind: 'file', label: 'Tests', detail: 'Schrijft de tests' },
+      ],
+    })
+    const [active, quiet] = screen.getAllByRole('option')
+    const detailOf = (row: HTMLElement | undefined) =>
+      row?.querySelector('[data-nt-mention-detail]')?.className.split(' ') ?? []
+    expect(detailOf(active)).toContain('text-secondary')
+    expect(detailOf(active)).not.toContain('text-muted')
+    expect(detailOf(quiet)).toContain('text-muted')
+    expect(active?.className.split(' ')).toContain('before:bg-muted')
+    expect(active?.className.split(' ').filter((name) => /accent|focus/.test(name))).toEqual([])
+    expect(quiet?.className.split(' ')).not.toContain('before:bg-muted')
+  })
 })

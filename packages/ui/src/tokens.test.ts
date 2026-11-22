@@ -276,8 +276,9 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
   )
 
   test('--nt-text-secondary, the meta of a lit row, reaches AA on it, on the canvas, the side panel, the frame and a card', () => {
-    // Muted stays 3:1 under the caret row's words, so a lit row lifts its meta to secondary; the
-    // open row of `SideNav` lies on the side panel, the open item of `AppRail` on the frame.
+    // Muted stays a clear step under the caret row's words, so a lit row lifts its meta to
+    // secondary; the open row of `SideNav` lies on the side panel, the open item of `AppRail` on the
+    // frame.
     for (const ground of [
       '--nt-canvas',
       '--nt-side-panel',
@@ -351,8 +352,8 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
 
   test('the muted words of a hovered or chosen ChoiceRow on a card step up to secondary, which reaches AA there', () => {
     // A question card lays its rows on a card; the plane of hover or choice (`surface-hover`) over
-    // it brings muted (slate) under AA for 12px text in dark, so `ChoiceRow` lifts its number, tag
-    // and description to secondary on that plane.
+    // it brought Slate, muted until 0.7.1, under AA for 12px text in dark, so `ChoiceRow` lifts its
+    // number, tag and description to secondary on that plane.
     const row = composite(
       palette.get('--nt-surface-hover') ?? '',
       hexIn(palette, '--nt-overlay-background'),
@@ -405,13 +406,18 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  // The opaque side panel, on an opaque window, is a ground for a status word (green 4.6:1 in
-  // light); the frame is not, a status there is a glyph (`docs/family-style.md`, "The shell"). The
-  // tinted side panel of a translucent window is not tested for status words.
+  // The opaque frame and side panel, on an opaque window, are grounds for a status word (the light
+  // frame is the darkest: green 5.0:1, red and ochre 4.9:1). The tinted layers of a translucent
+  // window are not tested for status words (`docs/family-style.md`, "The shell").
   test.each(['--nt-danger', '--nt-success', '--nt-attention'])(
-    '%s as words on the canvas, the side panel and a menu reaches AA (≥ 4.5)',
+    '%s as words on the canvas, the frame, the side panel and a menu reaches AA (≥ 4.5)',
     (tone) => {
-      for (const surface of ['--nt-canvas', '--nt-side-panel', '--nt-overlay-background']) {
+      for (const surface of [
+        '--nt-canvas',
+        '--nt-frame',
+        '--nt-side-panel',
+        '--nt-overlay-background',
+      ]) {
         expect(
           contrastRatio(hexIn(palette, tone), hexIn(palette, surface)),
           surface,
@@ -549,10 +555,119 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     }
   })
 
-  test('the caret row of a list stands 3:1 above the muted rows around it (WCAG 1.4.11)', () => {
+  test('the caret row of a list takes the extreme of the theme and stands clear of the muted rows around it', () => {
+    // White in dark and black in light: nothing stands further from muted. Muted owes 4.5:1 on the
+    // stacked planes below (WCAG 1.4.3, AA for every word), which leaves it 2.6:1 under white in
+    // dark; a 3:1 step between two states of an indicator is what 2.4.13 asks, at AAA. The fill
+    // says where, the brightness says this one, and the step may not shrink further.
+    expect(hexIn(palette, '--nt-text-strong')).toBe(theme === 'dark' ? '#ffffff' : '#000000')
     expect(
       contrastRatio(hexIn(palette, '--nt-text-strong'), hexIn(palette, '--nt-text-muted')),
-    ).toBeGreaterThanOrEqual(3)
+    ).toBeGreaterThanOrEqual(2.5)
+  })
+
+  /**
+   * A tint laid over a plane, as the eye sees the stack: a row under the pointer on a card, the
+   * caret row on the canvas. The plane is opaque, or a tint of its own over the canvas (the region
+   * of dark), composited first.
+   */
+  function stacked(tint: string, plane: string): string {
+    return composite(resolveVar(palette.get(tint) ?? '', palette), onCanvas(plane))
+  }
+
+  // The caret row of `SearchList` (and `MentionList`) carries a stripe of muted on its leading
+  // edge: the non-text cue of the caret (WCAG 1.4.11), since its fill and the step to its words
+  // stay under 3:1. Neutral, never the accent or the focus colour: an open panel carries no
+  // accent. The keyboard row of a menu keeps its stripe in the focus colour.
+  test.each(['--nt-canvas', '--nt-overlay-background', '--nt-side-panel', '--nt-frame'])(
+    'the neutral caret stripe of a list keeps 3:1 against the active fill over %s and is no accent',
+    (plane) => {
+      const stripe = hexIn(palette, '--nt-text-muted')
+      expect(contrastRatio(stripe, stacked('--nt-surface-active', plane))).toBeGreaterThanOrEqual(3)
+      for (const accent of ['--nt-accent', '--nt-accent-text', '--nt-focus-ring']) {
+        expect(stripe, accent).not.toBe(hexIn(palette, accent))
+      }
+    },
+  )
+
+  // The base pairs above hold on each plane alone; a row lights a plane that may lie on another
+  // (a region, a card), and its muted meta must hold on the stack as well (WCAG 1.4.3).
+  test.each([
+    ['--nt-surface-hover', '--nt-surface'],
+    ['--nt-surface-hover', '--nt-plane'],
+    ['--nt-surface-hover', '--nt-overlay-background'],
+    ['--nt-row-active', '--nt-overlay-background'],
+    ['--nt-accent-subtle', '--nt-canvas'],
+    ['--nt-surface-active', '--nt-canvas'],
+  ])('--nt-text-muted on %s over %s reaches AA (≥ 4.5)', (tint, plane) => {
+    expect(
+      contrastRatio(hexIn(palette, '--nt-text-muted'), stacked(tint, plane)),
+    ).toBeGreaterThanOrEqual(4.5)
+  })
+
+  // Muted stays under AA on one stack: the keyboard row of a menu (`surface-active` over a card,
+  // 4.2:1 in dark). That row lifts its quiet words to secondary instead (`menu-rows.tsx`,
+  // `MentionList`, `SearchList`), as a lit row over the light frame does (`StackedRow`, `ListRow`,
+  // `AppRail`): secondary holds AA on each of those stacks.
+  test.each([
+    ['--nt-surface-active', '--nt-overlay-background'],
+    ['--nt-surface-hover', '--nt-frame'],
+    ['--nt-row-active', '--nt-frame'],
+    ['--nt-surface-active', '--nt-frame'],
+  ])(
+    '--nt-text-secondary, the lifted meta of a lit row, on %s over %s reaches AA (≥ 4.5)',
+    (tint, plane) => {
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text-secondary'), stacked(tint, plane)),
+      ).toBeGreaterThanOrEqual(4.5)
+    },
+  )
+
+  test('--nt-success as words reaches AA on its own tint over a card (≥ 4.5)', () => {
+    // The banner on the canvas and the frame are tested above; a tag in a card is the stack a
+    // success word meets beyond them.
+    expect(
+      contrastRatio(
+        hexIn(palette, '--nt-success'),
+        stacked('--nt-success-subtle', '--nt-overlay-background'),
+      ),
+    ).toBeGreaterThanOrEqual(4.5)
+  })
+
+  // A status word on a lit row: a failed check on the caret row of a list (`surface-active` over
+  // the canvas), a count of errors on the keyboard row of a menu (the same tint over a card).
+  test.each([
+    ['--nt-danger', '--nt-canvas'],
+    ['--nt-danger', '--nt-overlay-background'],
+    ['--nt-success', '--nt-canvas'],
+    ['--nt-success', '--nt-overlay-background'],
+    ['--nt-attention', '--nt-canvas'],
+    ['--nt-attention', '--nt-overlay-background'],
+  ])('%s as words reaches AA on --nt-surface-active over %s (≥ 4.5)', (tone, plane) => {
+    expect(
+      contrastRatio(hexIn(palette, tone), stacked('--nt-surface-active', plane)),
+    ).toBeGreaterThanOrEqual(4.5)
+  })
+
+  // A faint icon is a glyph that carries meaning (the pin of a chat, the shield of an access
+  // level), so it keeps 3:1 at rest and on a lit row (WCAG 1.4.11). Not tested: the caret row on a
+  // card (`surface-active` over a menu), where a menu draws its glyphs in muted (`menu-rows.tsx`).
+  test.each([
+    [null, '--nt-canvas'],
+    [null, '--nt-side-panel'],
+    [null, '--nt-frame'],
+    [null, '--nt-overlay-background'],
+    ['--nt-row-active', '--nt-canvas'],
+    ['--nt-row-active', '--nt-side-panel'],
+    ['--nt-row-active', '--nt-frame'],
+    ['--nt-row-active', '--nt-overlay-background'],
+    ['--nt-surface-active', '--nt-canvas'],
+    ['--nt-surface-active', '--nt-side-panel'],
+    ['--nt-surface-active', '--nt-frame'],
+    ['--nt-accent-subtle', '--nt-canvas'],
+  ])('--nt-text-faint keeps the 3:1 of a glyph on %s over %s', (tint, plane) => {
+    const ground = tint === null ? onCanvas(plane) : stacked(tint, plane)
+    expect(contrastRatio(hexIn(palette, '--nt-text-faint'), ground)).toBeGreaterThanOrEqual(3)
   })
 
   test('--nt-danger on the canvas reaches the contrast for a glyph that carries a status (≥ 3)', () => {
@@ -572,7 +687,7 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  test.each(['attention', 'danger'])(
+  test.each(['attention', 'danger', 'success'])(
     'the words of a %s banner reach AA on its plane over the canvas (≥ 4.5)',
     (tone) => {
       const plane = composite(

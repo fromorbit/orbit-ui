@@ -14,9 +14,9 @@ import {
  * How the keys are drawn, which depends on what they are lying on.
  *
  * `quiet` is the everyday shortcut beside ordinary text. `strong` is for a shortcut on a filled
- * row — the action row a `SearchList` has walked to: `--nt-text-muted` composites to 3.40:1 on
- * `--nt-surface-active`, under the 4.5:1 body text owes, so on that fill the keys come forward
- * with the rest of the row. `keycap` sets every key in a cap of its own, for a hint that stands on
+ * row — the action row a `SearchList` has walked to: `--nt-text-muted` composites to 4.2:1 on
+ * `--nt-surface-active` over a dark card (4.8:1 on the canvas), under the 4.5:1 body text owes, so
+ * on that fill the keys come forward with the rest of the row. `keycap` sets every key in a cap of its own, for a hint that stands on
  * its own line (the hints under the composer). `on-accent` lays the keys on a dark
  * plane of 16% (black), for the key on a primary button ("Verstuur ⌘↵"), where muted would sink
  * into the accent. `hint` draws small, quiet caps in mono for the keys

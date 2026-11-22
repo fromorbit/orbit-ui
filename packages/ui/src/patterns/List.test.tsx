@@ -404,6 +404,63 @@ test('a second line stands under the title, hidden from the ear, its words in th
   expect(line?.className).toContain('ps-[22px]')
 })
 
+test('a current or pressed row lifts its meta and second line to secondary; a row at rest keeps them muted', () => {
+  // On the frame (the sidebar of the app) muted falls to 4.5:1 and under on the fill of a current
+  // row in light (4.47:1 on `surface-hover`); the lit row brings its quiet words forward, as the
+  // open item of `AppRail` does. The hover (`surface`) keeps muted at AA.
+  const subline = { content: <span>nt/eerste-chat</span>, label: 'nt/eerste-chat' }
+  render(
+    <List label="Chats">
+      <ListRow title="Eerste chat" meta="5 min" subline={subline} current />
+      <ListRow title="Tweede chat" meta="8 min" subline={subline} aria-pressed />
+      <ListRow title="Derde chat" meta="9 min" subline={subline} />
+    </List>,
+  )
+  const quietOf = (name: RegExp) => {
+    const row = screen.getByRole('button', { name })
+    return ['[data-nt-list-meta]', '[data-nt-list-subline]'].map(
+      (part) => row.querySelector(part)?.className.split(' ') ?? [],
+    )
+  }
+  for (const name of [/^Eerste chat/, /^Tweede chat/]) {
+    for (const classes of quietOf(name)) {
+      expect(classes).toContain('text-secondary')
+      expect(classes).not.toContain('text-muted')
+    }
+  }
+  for (const classes of quietOf(/^Derde chat/)) {
+    expect(classes).toContain('text-muted')
+  }
+})
+
+test('the lift follows an aria-current the caller passes through, as the fill does', () => {
+  // The caller's own props are spread after `current`, so `aria-current="page"` from them lights
+  // the row (`aria-[current=page]:bg-surface-hover`); its quiet words must come forward with it,
+  // and a `current` that the caller's `aria-current={false}` overrides lights nothing.
+  render(
+    <List label="Chats">
+      <ListRow title="Eerste chat" meta="5 min" aria-current="page" />
+      <ListRow title="Tweede chat" meta="8 min" current aria-current={false} />
+    </List>,
+  )
+  const metaOf = (name: RegExp) =>
+    screen
+      .getByRole('button', { name })
+      .querySelector('[data-nt-list-meta]')
+      ?.className.split(' ') ?? []
+  expect(screen.getByRole('button', { name: /^Eerste chat/ })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+  expect(metaOf(/^Eerste chat/)).toContain('text-secondary')
+  expect(metaOf(/^Eerste chat/)).not.toContain('text-muted')
+  expect(screen.getByRole('button', { name: /^Tweede chat/ })).toHaveAttribute(
+    'aria-current',
+    'false',
+  )
+  expect(metaOf(/^Tweede chat/)).toContain('text-muted')
+})
+
 test('a row without a second line keeps its single 36px line', () => {
   render(
     <List label="Chats">

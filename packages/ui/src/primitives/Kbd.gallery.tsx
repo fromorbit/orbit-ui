@@ -42,8 +42,9 @@ export default {
         ))}
       </div>
     ),
-    // On the fill of a row a list has walked to, where the quiet keys would be 3.40:1. The box
-    // below is that fill, so the pair can be judged side by side rather than described.
+    // On the fill of a row a list has walked to, where the quiet keys would be 4.2:1 over a dark
+    // card (4.8:1 on the canvas). The box below is that fill, so the pair can be judged side by
+    // side rather than described.
     'Op een gevulde rij': () => (
       <div className="flex w-64 flex-col gap-1 rounded-lg bg-overlay p-2">
         <div className="flex h-7 items-center gap-2 rounded-md bg-surface-active px-2 text-[13px] text-fg">

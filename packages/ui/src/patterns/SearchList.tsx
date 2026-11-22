@@ -404,19 +404,25 @@ export function highlightPieces(
  * variant rather than in the base, so exactly one background and one text colour is ever emitted —
  * this project has no class-merging tool (see the note in `ErrorState.tsx`).
  *
- * **The active row is where the keyboard stands, and it says so with two things at once.** A fill
- * the reader can see (`--nt-surface-active`, which composites to rgb(53,54,57) on a panel) *and*
- * the full foreground colour, while every row around it stays muted. Measured, because the pair is
- * the whole argument: the fill alone is 1.39:1 against the panel, where a non-text indicator wants
- * 3:1 (WCAG 1.4.11); the two text colours differ by 3.08:1, and the words of the active row sit at
- * 11.5:1 on their own fill. The fill says *where*, the brightness says *this one*.
+ * **The active row is where the keyboard stands, and it says so with three things at once.** A
+ * fill the reader can see (`--nt-surface-active`, which composites to rgb(50,58,84) on a dark
+ * menu), the strongest foreground colour while every row around it stays muted, and a neutral
+ * stripe on its leading edge. Measured, because the indicator is the whole argument: the fill alone
+ * is 1.39:1 against the menu and the two text colours differ by 2.6:1 in dark (3.5:1 in light),
+ * both under the 3:1 a non-text cue of a state owes (WCAG 1.4.11); the words of the active row sit
+ * at 11.2:1 on their own fill. So the stripe carries the 3:1: 2px of `--nt-text-muted` on the
+ * leading edge, inset 6px from top and bottom, 4.1:1 and more against the active fill in both
+ * themes (`tokens.test.ts`). The fill says *where*, the brightness and the stripe say *this one*.
  *
- * It used to be a fill of half that strength plus an accent outline while the focus was inside the
- * list, and the reader who opened a pill in the real app called the result an ugly opener: two cyan
- * frames at once, one around the search field and one around this row. An open panel now carries no
- * accent at all, and the indicator no longer flickers with Chromium's modality heuristic — a list
- * reached with the mouse looks exactly like one reached with ↹, which is what a reader expects of a
- * panel they just clicked open.
+ * The stripe is grey on purpose, never the accent or the focus colour. The row used to wear a fill
+ * of half this strength plus an accent outline while the focus was inside the list, and the reader
+ * who opened a pill in the real app called the result an ugly opener: two cyan frames at once, one
+ * around the search field and one around this row. An open panel still carries no accent colour;
+ * the stripe is a neutral mark, quieter than the words beside it. Unlike the keyboard row of a
+ * menu, whose stripe is the focus colour and shows only after a key, this one stands on the active
+ * row whether the walk came from the mouse or from ↹, so the indicator does not flicker with
+ * Chromium's modality heuristic — a list reached with the mouse looks exactly like one reached
+ * with ↹, which is what a reader expects of a panel they just clicked open.
  */
 /** The classes of a `<mark>` around what a query hit; see `Marked`. */
 export const searchListMark = 'rounded-sm bg-accent-subtle text-fg'
@@ -424,7 +430,7 @@ export const searchListMark = 'rounded-sm bg-accent-subtle text-fg'
 const row = cva('flex cursor-default gap-2 rounded-md px-2', {
   variants: {
     active: {
-      true: 'bg-surface-active text-[13px] text-fg-strong',
+      true: 'relative bg-surface-active text-[13px] text-fg-strong before:absolute before:inset-y-1.5 before:start-0 before:w-0.5 before:rounded-full before:bg-muted',
       false: 'text-[13px] text-muted hover:bg-surface hover:text-fg',
     },
     off: { true: 'pointer-events-none opacity-40', false: '' },
@@ -1018,9 +1024,9 @@ function Row({
 
               A whisper beside the name — the folder a project sits in — so it is muted, where a
               stacked detail is the reason its row exists and simply follows it. But never muted on
-              the active row: --nt-text-muted on --nt-surface-active is 3.71:1, under the 4.5:1 that
-              body text owes, so on that row it brightens with everything else. Two complete class
-              strings, because Tailwind reads source text. */}
+              the active row: --nt-text-muted on --nt-surface-active is 4.2:1 on a dark menu, under
+              the 4.5:1 that body text owes, so on that row it brightens with everything else. Two
+              complete class strings, because Tailwind reads source text. */}
           {item.detail ? (
             <span
               data-nt-searchlist-detail
@@ -1064,8 +1070,8 @@ function Row({
  *
  * `ml-auto` carries them to the edge when nothing else took the room; beside a `detail` (which
  * already does) it costs nothing. They keep their width while the label truncates, and are muted
- * on every row but the active one, where muted is 3.71:1. Two complete class strings, because
- * Tailwind reads source text.
+ * on every row but the active one, where muted is 4.2:1 on a dark menu. Two complete class strings,
+ * because Tailwind reads source text.
  */
 function Trailing({ text, active }: { text: string; active: boolean }): ReactElement {
   return (
@@ -1224,7 +1230,7 @@ function Action({
       {action.shortcut ? (
         <span className="ml-auto shrink-0">
           {/* The keys come forward with the row they are on: muted on `--nt-surface-active` is
-              3.40:1, and nothing on the active fill may be muted (see `row`). */}
+              4.2:1 on a dark menu, and nothing on the active fill may be muted (see `row`). */}
           <Kbd shortcut={action.shortcut} tone={active ? 'menu-strong' : 'menu'} />
         </span>
       ) : null}
