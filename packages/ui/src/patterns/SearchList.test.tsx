@@ -745,10 +745,11 @@ test('the active row carries a neutral fill and the full text colour, and no acc
   expect(quiet).not.toContain('bg-surface-active')
 })
 
-test('the active row carries a bar of the focus colour on its leading edge, a quiet row none', () => {
-  // The second cue, as on the keyboard row of a menu: the fill alone is 1.4:1 against the panel and
-  // the step from muted to the active row's words 2.6:1 in dark, both under the 3:1 of WCAG 1.4.11;
-  // the bar holds 3:1 and more in both themes.
+test('the active row carries a neutral stripe on its leading edge, never the accent; a quiet row none', () => {
+  // The non-text cue of the caret (WCAG 1.4.11): the fill alone is 1.4:1 against the panel and the
+  // step from muted to the active row's words 2.6:1 in dark. The stripe is muted, 3:1 and more on
+  // the active fill in both themes (`tokens.test.ts`), and never the accent or the focus colour:
+  // an open panel carries no accent.
   render(
     <SearchList
       labels={nl.list}
@@ -767,10 +768,11 @@ test('the active row carries a bar of the focus colour on its leading edge, a qu
       'before:inset-y-1.5',
       'before:w-0.5',
       'before:rounded-full',
-      'before:bg-focus',
+      'before:bg-muted',
     ]),
   )
-  expect(option('nt-agent').className.split(' ')).not.toContain('before:bg-focus')
+  expect(active.filter((name) => /accent|focus/.test(name))).toEqual([])
+  expect(option('nt-agent').className.split(' ')).not.toContain('before:bg-muted')
 })
 
 test('a detail is muted on a quiet row and comes forward on the active one', () => {

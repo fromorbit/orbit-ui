@@ -17,6 +17,7 @@ Components:
 
 - The keyboard row of a menu lifts its quiet words to `secondary`, since muted is 4.2:1 on it in dark: in `DropdownMenu` and `ContextMenu` the count, the key and a submenu's value (`group-focus-visible/item:`), in `MentionList` the detail of the active row.
 - A lit row over the frame lifts its muted words, since muted falls to 4.4:1 there in light: the current `StackedRow` sets its first and third lines in `secondary`, a current or pressed `ListRow` its meta and second line, and the key of `SearchFieldButton` follows its words to `secondary` under the pointer.
-- The active row of `SearchList` (and so of `MentionList`) carries the bar of a menu's keyboard row: 2px of the focus colour on its leading edge, 3:1 and more in both themes, so the caret no longer rests on its tint (1.4:1) and the step from muted to its words (2.6:1 in dark) alone.
+- The active row of `SearchList` (and so of `MentionList`) carries a neutral stripe on its leading edge: 2px of `--nt-text-muted` (`before:bg-muted`), 4.1:1 and more against the active fill in both themes, never the accent or the focus colour. It is the non-text cue of the caret (WCAG 1.4.11), which no longer rests on its tint (1.4:1) and the step from muted to its words (2.6:1 in dark) alone. The keyboard row of a menu keeps its stripe in the focus colour.
+- A current `ListRow` lifts its quiet words whether it is current through `current` or through an `aria-current="page"` passed with its other props.
 
 The caret row's words (`--nt-text-strong`) stay white in dark, the extreme of the theme; with the lighter muted they stand 2.6:1 above it instead of 3.1:1. `tokens.test.ts` now computes these stacks in both themes.

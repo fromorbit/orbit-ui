@@ -575,6 +575,21 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     return composite(resolveVar(palette.get(tint) ?? '', palette), onCanvas(plane))
   }
 
+  // The caret row of `SearchList` (and `MentionList`) carries a stripe of muted on its leading
+  // edge: the non-text cue of the caret (WCAG 1.4.11), since its fill and the step to its words
+  // stay under 3:1. Neutral, never the accent or the focus colour: an open panel carries no
+  // accent. The keyboard row of a menu keeps its stripe in the focus colour.
+  test.each(['--nt-canvas', '--nt-overlay-background', '--nt-side-panel', '--nt-frame'])(
+    'the neutral caret stripe of a list keeps 3:1 against the active fill over %s and is no accent',
+    (plane) => {
+      const stripe = hexIn(palette, '--nt-text-muted')
+      expect(contrastRatio(stripe, stacked('--nt-surface-active', plane))).toBeGreaterThanOrEqual(3)
+      for (const accent of ['--nt-accent', '--nt-accent-text', '--nt-focus-ring']) {
+        expect(stripe, accent).not.toBe(hexIn(palette, accent))
+      }
+    },
+  )
+
   // The base pairs above hold on each plane alone; a row lights a plane that may lie on another
   // (a region, a card), and its muted meta must hold on the stack as well (WCAG 1.4.3).
   test.each([
