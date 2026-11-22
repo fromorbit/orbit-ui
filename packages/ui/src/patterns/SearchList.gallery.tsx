@@ -207,7 +207,7 @@ function Searched({ query, items }: { query: string; items: SearchListItem[] }) 
  *
  * A query nothing matches leaves "Add folder…" as the only thing left to walk to, so it is active
  * from the first render — which is the state its shortcut chip has to survive: a muted chip on the
- * active fill is 3.40:1.
+ * active fill is 4.2:1 over a dark card (4.8:1 on the canvas).
  */
 function ActionWalked() {
   const box = useTypedQuery('kubernetes')

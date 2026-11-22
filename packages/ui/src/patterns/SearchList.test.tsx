@@ -1030,7 +1030,7 @@ test('a trailing word stands on the right at 11px, muted except on the active ro
   const trailingOf = (name: string) =>
     option(new RegExp(name)).querySelector('[data-nt-searchlist-trailing]')
   // The first row is where the walk starts: it brightens with the rest of the row, since nothing
-  // on the active fill may be muted (3.71:1 there).
+  // on the active fill may be muted (4.2:1 there over a dark card, 4.8:1 on the canvas).
   expect(trailingOf('Klein')).toHaveTextContent('Noord')
   expect(trailingOf('Klein')?.className).toContain('text-[11px]')
   expect(trailingOf('Klein')?.className).not.toContain('text-muted')

@@ -70,7 +70,8 @@ test('every key has the same height and the icons are extra small', () => {
 })
 
 test('quiet is the default, and strong brings the keys forward', () => {
-  // On a filled row muted is 3.40:1, under the 4.5:1 body text owes; see `KbdTone`.
+  // On a filled row muted is 4.2:1 over a dark card (4.8:1 on the canvas), under the 4.5:1 body
+  // text owes; see `KbdTone`.
   const { container, rerender } = render(<Kbd platform="mac">⌘K</Kbd>)
   const row = () => container.querySelector('[data-nt-kbd]')?.className ?? ''
   expect(row()).toContain('text-muted')

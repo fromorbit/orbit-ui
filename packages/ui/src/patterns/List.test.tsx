@@ -433,6 +433,34 @@ test('a current or pressed row lifts its meta and second line to secondary; a ro
   }
 })
 
+test('the lift follows an aria-current the caller passes through, as the fill does', () => {
+  // The caller's own props are spread after `current`, so `aria-current="page"` from them lights
+  // the row (`aria-[current=page]:bg-surface-hover`); its quiet words must come forward with it,
+  // and a `current` that the caller's `aria-current={false}` overrides lights nothing.
+  render(
+    <List label="Chats">
+      <ListRow title="Eerste chat" meta="5 min" aria-current="page" />
+      <ListRow title="Tweede chat" meta="8 min" current aria-current={false} />
+    </List>,
+  )
+  const metaOf = (name: RegExp) =>
+    screen
+      .getByRole('button', { name })
+      .querySelector('[data-nt-list-meta]')
+      ?.className.split(' ') ?? []
+  expect(screen.getByRole('button', { name: /^Eerste chat/ })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+  expect(metaOf(/^Eerste chat/)).toContain('text-secondary')
+  expect(metaOf(/^Eerste chat/)).not.toContain('text-muted')
+  expect(screen.getByRole('button', { name: /^Tweede chat/ })).toHaveAttribute(
+    'aria-current',
+    'false',
+  )
+  expect(metaOf(/^Tweede chat/)).toContain('text-muted')
+})
+
 test('a row without a second line keeps its single 36px line', () => {
   render(
     <List label="Chats">

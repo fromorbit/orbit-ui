@@ -519,9 +519,13 @@ export function ListRow({
   const columns = Boolean(subline) && ownMarker && !end
   // The meta and the second line are muted at rest and secondary on a lit row (current or
   // pressed): muted on its fill (`surface-hover`) over the light frame, the sidebar of the app, is
-  // 4.47:1, under the 4.5:1 a word owes. The hover (`surface`) keeps muted at AA.
+  // 4.47:1, under the 4.5:1 a word owes. The hover (`surface`) keeps muted at AA. It reads the
+  // attributes the button ends up with, as the fill does: an `aria-current` the caller passes
+  // through wins over `current`, since it is spread after it.
+  const currentPage =
+    ('aria-current' in rest ? rest['aria-current'] : current ? 'page' : undefined) === 'page'
   const pressed = rest['aria-pressed'] === true || rest['aria-pressed'] === 'true'
-  const quietTone = current || pressed ? 'text-secondary' : 'text-muted'
+  const quietTone = currentPage || pressed ? 'text-secondary' : 'text-muted'
   const titleSize = comfortable ? 'text-[13px]' : subline ? 'text-[12px]' : ''
   const line = (
     <>
