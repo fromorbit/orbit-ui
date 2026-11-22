@@ -53,7 +53,7 @@
      side need no line: their brightness is the edge. `bg` is an alias of the canvas until every
      use has moved over. */
   --nt-frame: #0c1229;
-  /* 10.2:1 for secondary and 5.7:1 for muted on it, between the frame and the canvas. */
+  /* 10.2:1 for secondary and 6.7:1 for muted on it, between the frame and the canvas. */
   --nt-side-panel: #0f1630;
   --nt-canvas: var(--nt-brand-midnight);
   --nt-bg: var(--nt-canvas);
@@ -78,9 +78,10 @@
   --nt-row-hover: rgb(231 233 242 / 0.05);
   --nt-row-active: rgb(231 233 242 / 0.08);
   /* The one chosen card among cards of one kind (the current plan): in dark the tint of a lit row
-     over the plane of a card lifts it a step, and its quiet words step up to secondary, as muted
-     falls under 4.5:1 on that tint. In light the card stays white like the cards beside it, with
-     a firmer hairline as its edge and its words as quiet as theirs: never a grey fill. */
+     over the plane of a card lifts it a step, and its quiet words step up to secondary with it
+     (Slate, muted until 0.7.1, fell under 4.5:1 on that tint). In light the card stays white like
+     the cards beside it, with a firmer hairline as its edge and its words as quiet as theirs:
+     never a grey fill. */
   --nt-lift: rgb(231 233 242 / 0.08);
   --nt-shadow-lift: 0 0 #0000;
   --nt-text-lift: var(--nt-text-secondary);
@@ -116,8 +117,8 @@
   --nt-chart-line: var(--nt-text);
   --nt-chart-wash: rgb(231 233 242 / 0.08);
   --nt-chart-skeleton: rgb(231 233 242 / 0.18);
-  /* A line to measure against (a plan, a limit): a step above the faint ink, a graphic and never
-     a word; 3.7:1 on a card, with room above the 3:1 of WCAG 1.4.11. */
+  /* A line to measure against (a plan, a limit): a graphic and never a word, a step quieter than
+     the faint ink; 3.7:1 on a card, with room above the 3:1 of WCAG 1.4.11. */
   --nt-chart-reference: #737a98;
   /* The plane of the composer, a step above the canvas it lies on: the plane of a card. */
   --nt-composer: #19223f;
@@ -132,16 +133,20 @@
   --nt-diff-bg: #0a0f24;
   /* Four levels of text, the figures against the canvas:
      `text` Paper 15.7:1 for content, titles, what is unread or chosen; `secondary` (Mist at 82%
-     over Midnight) 9.9:1 for navigation at rest, read titles and pills; `muted` Slate 5.6:1 (6.0:1
-     on the frame, 5.0:1 on a card) for meta; `faint` 3.4:1 — below what text owes, so **only
-     icons and decoration**, never a word. `tests/faint-text.test.ts` holds that. */
+     over Midnight) 9.9:1 for navigation at rest, read titles and pills; `muted` 6.5:1 (7.0:1 on
+     the frame, 5.9:1 on a card) for meta, a step lighter than Slate with its hue, so it keeps
+     4.5:1 on a lit row that lies on a region or a card as well (4.8:1 for the chosen row on a
+     card); `faint` 4.5:1, but 4.1:1 on a card — below what text owes on some planes, so **only
+     icons and decoration**, never a word. `tests/faint-text.test.ts` holds that; as a glyph it
+     keeps 3:1 at rest and on a lit row (3.3:1 on the caret row). `tokens.test.ts` computes the
+     stacks. */
   --nt-text: var(--nt-brand-paper);
   --nt-text-secondary: #c0c4d0;
-  --nt-text-muted: var(--nt-brand-slate);
-  --nt-text-faint: #666d8b;
+  --nt-text-muted: #979ebd;
+  --nt-text-faint: #7a81a0;
   /* The words of the row a list's keyboard caret stands on, among rows at rest in `muted`: the one
-     place text steps above `text`. White keeps the pair at 3.1:1 above Slate, what WCAG 1.4.11
-     asks of the indicator (the fill alone does not reach it). */
+     place text steps above `text`, white, the extreme of the theme. That stands 2.6:1 above muted;
+     the fill says where, the brightness says this one. */
   --nt-text-strong: #ffffff;
 
   /* Accent: a fill, the text on that fill, and the accent used as text. The fill is monochrome,
@@ -412,10 +417,9 @@
   color-scheme: light;
 
   /* The same three layers on Paper: the frame a step deeper than Paper (`#e9e8e2`: muted 4.9:1,
-     secondary 7.7:1 on it; green as a word only 4.3:1, so a status on the frame is a glyph, never
-     a word), the side panel between them, the canvas Paper. What floats on the canvas is white: a
-     card, a menu, the composer and a region of its own, parted by a hairline or a soft shadow,
-     never a grey fill. */
+     secondary 7.7:1 on it, green as a word 5.0:1), the side panel between them, the canvas Paper.
+     What floats on the canvas is white: a card, a menu, the composer and a region of its own,
+     parted by a hairline or a soft shadow, never a grey fill. */
   --nt-frame: #e9e8e2;
   --nt-side-panel: #efeee9;
   --nt-canvas: var(--nt-brand-paper);
@@ -459,12 +463,12 @@
      library's ground with it. */
   --nt-diff-bg: #ffffff;
   /* Four levels against the canvas: `text` Midnight 15.7:1, `secondary` (Midnight at 80% over
-     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (4.9:1 on the frame), `faint` 3.3:1 — again only
-     icons and decoration. */
+     Paper) 8.6:1, `muted` the darker Slate 5.5:1 (4.9:1 on the frame), `faint` 4.2:1 (3.8:1 on the
+     frame, 3.5:1 on the caret row) — again only icons and decoration. */
   --nt-text: var(--nt-brand-midnight);
   --nt-text-secondary: #3f455b;
   --nt-text-muted: var(--nt-brand-slate-deep);
-  --nt-text-faint: #7d84a3;
+  --nt-text-faint: #6c7395;
   /* The caret row: black, 3.5:1 above `muted`. */
   --nt-text-strong: #000000;
 
@@ -493,12 +497,13 @@
   --nt-avatar-5: #eed4e0;
   --nt-avatar-6: #dcd6f0;
 
-  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.6:1 and
-     4.7:1 there). The green of Orbit's site, deepened to 4.8:1 on Paper. */
+  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.6:1,
+     4.7:1 and 4.9:1 there). The green of Orbit's site, deepened to 5.5:1 on Paper, so its words
+     also hold on the frame (5.0:1) and on the caret row (4.6:1). */
   --nt-attention: #965a00;
   --nt-danger: #bf3030;
-  --nt-success: #1f7a4a;
-  --nt-success-subtle: rgb(31 122 74 / 0.09);
+  --nt-success: #1c7044;
+  --nt-success-subtle: rgb(28 112 68 / 0.09);
   --nt-attention-subtle: rgb(150 90 0 / 0.08);
   --nt-attention-border: rgb(150 90 0 / 0.3);
   /* A fill carries no words, so it needs no AA: a clear amber where the deep ochre of the words
@@ -625,10 +630,10 @@
    came through so strongly that the frame no longer matched the deep blue of the plane (owner's
    decision, 12 November 2026). The sidebar and the main panel, which carry the words, keep a floor
    of opacity so their text stays legible over any material (WCAG 1.4.3, 4.5:1). The floor is the lowest
-   opacity at which `text`, `secondary` and `muted` hold 4.5:1 with each layer counted alone over the
+   opacity at which `text`, `secondary` and `muted` held 4.5:1 with each layer counted alone over the
    worst material: white behind the dark tint, black behind the light one (`tokens.test.ts`). The
    sidebar on the frame 90%, the panel on the canvas 93%, the side panel of the shell between them
-   92% (muted 4.6:1; at 91% it is 4.49:1). */
+   92% (Slate, muted until 0.7.1, 4.6:1 there and 4.49:1 at 91%; the lighter muted holds 5.4:1). */
 :root[data-translucent="true"] {
   --nt-app-background: rgb(12 18 41 / 0.85);
   --nt-sidebar-background: rgb(12 18 41 / 0.9);
@@ -639,7 +644,8 @@
 /* The same floor over the light material, with the frame and the canvas of the light block. Muted
    stands at 4.9:1 on the opaque frame, so the light sidebar needs 96% and the panel 92%; the side
    panel 94% (muted 4.56:1; at 93% it is 4.44:1). A status word on the tinted side panel holds AA
-   only over a material lighter than black: at 94% over black green reaches 4.0:1. */
+   only over a material lighter than black: at 94% over black green reaches 4.6:1, but red 4.3:1
+   and ochre 4.2:1. */
 :root[data-translucent="true"][data-theme="light"] {
   --nt-app-background: rgb(233 232 226 / 0.85);
   --nt-sidebar-background: rgb(233 232 226 / 0.96);

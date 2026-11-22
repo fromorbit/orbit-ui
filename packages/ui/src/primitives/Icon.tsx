@@ -437,8 +437,9 @@ const tones = {
   default: '',
   danger: 'text-danger',
   // The quiet icon beside a word in `muted` or `secondary` (the branch glyph, the pin, the folder
-  // of the filter row). The only place `text-faint` may stand: at 4.3:1 it is too faint for a
-  // word, and `tests/faint-text.test.ts` holds that nothing else uses it.
+  // of the filter row). The only place `text-faint` may stand: under 4.5:1 on a card in dark and
+  // on the frame in light, it is too faint for a word, and `tests/faint-text.test.ts` holds that
+  // nothing else uses it.
   faint: 'text-faint',
 } satisfies Record<string, string>
 

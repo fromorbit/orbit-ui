@@ -405,11 +405,13 @@ export function highlightPieces(
  * this project has no class-merging tool (see the note in `ErrorState.tsx`).
  *
  * **The active row is where the keyboard stands, and it says so with two things at once.** A fill
- * the reader can see (`--nt-surface-active`, which composites to rgb(53,54,57) on a panel) *and*
- * the full foreground colour, while every row around it stays muted. Measured, because the pair is
- * the whole argument: the fill alone is 1.39:1 against the panel, where a non-text indicator wants
- * 3:1 (WCAG 1.4.11); the two text colours differ by 3.08:1, and the words of the active row sit at
- * 11.5:1 on their own fill. The fill says *where*, the brightness says *this one*.
+ * the reader can see (`--nt-surface-active`, which composites to rgb(50,58,84) on a dark menu)
+ * *and* the strongest foreground colour, while every row around it stays muted. Measured, because
+ * the pair is the whole argument: the fill alone is 1.39:1 against the menu, where a non-text
+ * indicator wants 3:1 (WCAG 1.4.11); the two text colours differ by 2.6:1 in dark and 3.5:1 in
+ * light (white and black, the extremes, against a muted that keeps AA on lit rows), and the words
+ * of the active row sit at 11.2:1 on their own fill. The fill says *where*, the brightness says
+ * *this one*.
  *
  * It used to be a fill of half that strength plus an accent outline while the focus was inside the
  * list, and the reader who opened a pill in the real app called the result an ugly opener: two cyan
@@ -1018,9 +1020,9 @@ function Row({
 
               A whisper beside the name — the folder a project sits in — so it is muted, where a
               stacked detail is the reason its row exists and simply follows it. But never muted on
-              the active row: --nt-text-muted on --nt-surface-active is 3.71:1, under the 4.5:1 that
-              body text owes, so on that row it brightens with everything else. Two complete class
-              strings, because Tailwind reads source text. */}
+              the active row: --nt-text-muted on --nt-surface-active is 4.2:1 on a dark menu, under
+              the 4.5:1 that body text owes, so on that row it brightens with everything else. Two
+              complete class strings, because Tailwind reads source text. */}
           {item.detail ? (
             <span
               data-nt-searchlist-detail
@@ -1224,7 +1226,7 @@ function Action({
       {action.shortcut ? (
         <span className="ml-auto shrink-0">
           {/* The keys come forward with the row they are on: muted on `--nt-surface-active` is
-              3.40:1, and nothing on the active fill may be muted (see `row`). */}
+              4.2:1 on a dark menu, and nothing on the active fill may be muted (see `row`). */}
           <Kbd shortcut={action.shortcut} tone={active ? 'menu-strong' : 'menu'} />
         </span>
       ) : null}
