@@ -231,8 +231,19 @@ export function MentionList({
                 ) : (
                   <span className="flex min-w-0 flex-1 items-baseline gap-2">
                     <span className="min-w-0 shrink-0 truncate text-fg">{item.label}</span>
+                    {/* Muted on a quiet row; on the active one secondary, as muted on the caret
+                        row's tint over the composer's card is 4.2:1 in dark. */}
                     {item.detail ? (
-                      <span className="min-w-0 truncate text-[12px] text-muted">{item.detail}</span>
+                      <span
+                        data-nt-mention-detail
+                        className={
+                          active
+                            ? 'min-w-0 truncate text-[12px] text-secondary'
+                            : 'min-w-0 truncate text-[12px] text-muted'
+                        }
+                      >
+                        {item.detail}
+                      </span>
                     ) : null}
                   </span>
                 )}

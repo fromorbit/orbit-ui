@@ -104,7 +104,10 @@ const item = cva(
   // lays `danger-subtle` once more over it). The tint alone measured 1.2:1 against the panel, so
   // the caret also carries a 2px bar of the focus colour on its leading edge, inset 6px from top
   // and bottom: 3:1 and more in both themes (WCAG 1.4.11), the second cue a pointer's hover lacks.
-  'relative flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none focus-visible:before:absolute focus-visible:before:inset-y-1.5 focus-visible:before:start-0 focus-visible:before:w-0.5 focus-visible:before:rounded-full focus-visible:before:bg-focus data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
+  // Muted on that tint over the panel is 4.2:1 in dark, under the 4.5:1 a word owes, so the quiet
+  // words of the row (a count, a key, a submenu's value) step up to secondary with it, through the
+  // `group/item` here; under the pointer (`surface-hover`) muted keeps AA and stays.
+  'group/item relative flex cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none focus-visible:before:absolute focus-visible:before:inset-y-1.5 focus-visible:before:start-0 focus-visible:before:w-0.5 focus-visible:before:rounded-full focus-visible:before:bg-focus data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
   {
     variants: {
       tone: {
@@ -431,7 +434,7 @@ function Submenu({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'en
           {row.value === undefined ? null : (
             <span
               data-nt-menu-value
-              className="ml-auto flex min-w-0 items-center gap-1.5 ps-4 text-muted"
+              className="ml-auto flex min-w-0 items-center gap-1.5 ps-4 text-muted group-focus-visible/item:text-secondary"
             >
               {row.valueGlyph}
               <span className="truncate">{row.value}</span>
@@ -541,7 +544,7 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
         // stand under each other (5, 24, 41) instead of trailing each label at its own length.
         <span
           data-nt-menu-count
-          className="ml-auto min-w-6 shrink-0 ps-4 text-end font-mono text-[11px] text-muted tabular-nums"
+          className="ml-auto min-w-6 shrink-0 ps-4 text-end font-mono text-[11px] text-muted tabular-nums group-focus-visible/item:text-secondary"
         >
           {row.count}
         </span>
@@ -550,10 +553,11 @@ function Choice({ row, checks }: { row: DropdownMenuItem; checks: 'start' | 'end
         // Plain quiet text, right-aligned as in a native menu, no cap around it: a cap per row put
         // three or four frames inside the frame of the panel. Gone under a coarse pointer, where
         // nobody has the keys (the row's accessible name never held them). After a count it
-        // follows it, rather than splitting the free room with it.
+        // follows it, rather than splitting the free room with it. The key draws its own muted
+        // colour, so the lift of the keyboard row reaches into it.
         <span
           data-nt-menu-shortcut
-          className={`${row.count === undefined ? 'ml-auto ' : ''}flex shrink-0 ps-4 tabular-nums pointer-coarse:hidden`}
+          className={`${row.count === undefined ? 'ml-auto ' : ''}flex shrink-0 ps-4 tabular-nums pointer-coarse:hidden group-focus-visible/item:[&>[data-nt-kbd]]:text-secondary`}
         >
           <Kbd tone="quiet" shortcut={row.shortcut} />
         </span>

@@ -214,6 +214,22 @@ test('under a head the danger icon keeps the tone of its row, and the rows lead 
   expect(screen.getByTestId('glyph').parentElement?.className).toContain('w-7.5')
 })
 
+test('the keyboard row lifts its count to secondary, as in a dropdown menu', async () => {
+  // The rows are the dropdown's own (`menu-rows.tsx`): muted on the keyboard row's tint over the
+  // panel is 4.2:1 in dark, so the row the keyboard walked to brings its count forward.
+  render(
+    <ContextMenu label="Bestandsacties" items={[{ id: 'open', label: 'Openen', count: 3 }]}>
+      <div data-testid="file">totaal.ts</div>
+    </ContextMenu>,
+  )
+  fireEvent.contextMenu(screen.getByTestId('file'))
+  const row = await screen.findByRole('menuitem', { name: 'Openen, 3' })
+  expect(row.className.split(' ')).toContain('group/item')
+  expect(row.querySelector('[data-nt-menu-count]')?.className.split(' ')).toContain(
+    'group-focus-visible/item:text-secondary',
+  )
+})
+
 test('every region of the story is reached with Tab, and offers its acts on a visible ⋯', async () => {
   const { default: story } = await import('./ContextMenu.gallery')
   for (const name of ['Met keuzes', 'Met een kop'] as const) {

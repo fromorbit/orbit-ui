@@ -517,6 +517,11 @@ export function ListRow({
   // Beside a mark of the caller's own the lines stand in a column of their own, so the second one
   // starts under the title whatever the width of the mark; the shape keeps the indent it always had.
   const columns = Boolean(subline) && ownMarker && !end
+  // The meta and the second line are muted at rest and secondary on a lit row (current or
+  // pressed): muted on its fill (`surface-hover`) over the light frame, the sidebar of the app, is
+  // 4.47:1, under the 4.5:1 a word owes. The hover (`surface`) keeps muted at AA.
+  const pressed = rest['aria-pressed'] === true || rest['aria-pressed'] === 'true'
+  const quietTone = current || pressed ? 'text-secondary' : 'text-muted'
   const titleSize = comfortable ? 'text-[13px]' : subline ? 'text-[12px]' : ''
   const line = (
     <>
@@ -535,7 +540,8 @@ export function ListRow({
       {status ? <span className="sr-only">, {status},</span> : null}
       {detail && !hoverMeta ? (
         <span
-          className={`shrink-0 text-[11px] text-muted ${
+          data-nt-list-meta
+          className={`shrink-0 text-[11px] ${quietTone} ${
             // Hidden with opacity, not removed or aria-hidden: the accessible name must keep
             // reading this even while the actions cover its spot.
             actions && !end ? 'group-hover/row:opacity-0 group-focus-within/row:opacity-0' : ''
@@ -546,7 +552,7 @@ export function ListRow({
       ) : null}
       {hoverMeta ? (
         // One grid cell for both details, so the one for the pointer takes the spot of the other.
-        <span className="grid shrink-0 text-[11px] text-muted">
+        <span data-nt-list-meta className={`grid shrink-0 text-[11px] ${quietTone}`}>
           {detail ? (
             <span className="col-start-1 row-start-1 justify-self-end group-hover/row:opacity-0 group-focus-within/row:opacity-0">
               {detail}
@@ -566,7 +572,7 @@ export function ListRow({
         data-nt-list-subline
         className={`flex h-4 w-full min-w-0 items-center gap-2 ${
           end || columns ? '' : 'ps-[22px] '
-        }text-[11px] text-muted tabular-nums${subline.mono ? ' font-mono' : ''}`}
+        }text-[11px] ${quietTone} tabular-nums${subline.mono ? ' font-mono' : ''}`}
       >
         {subline.content}
       </span>

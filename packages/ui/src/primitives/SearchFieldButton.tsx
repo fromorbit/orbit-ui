@@ -52,12 +52,17 @@ export function SearchFieldButton({
       type="button"
       aria-keyshortcuts={key === undefined ? undefined : shortcuts.aria(key)}
       {...rest}
-      className="no-drag inline-flex h-(--nt-control-sm) w-full min-w-0 items-center gap-2 rounded-md border border-border bg-surface ps-2.5 pe-1.5 text-[13px] text-muted outline-focus transition-colors duration-(--nt-duration-fast) ease-(--nt-ease) hover:bg-surface-hover hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="group/search no-drag inline-flex h-(--nt-control-sm) w-full min-w-0 items-center gap-2 rounded-md border border-border bg-surface ps-2.5 pe-1.5 text-[13px] text-muted outline-focus transition-colors duration-(--nt-duration-fast) ease-(--nt-ease) hover:bg-surface-hover hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <Icon name={icon} size="sm" />
       <span className="min-w-0 flex-1 truncate text-start">{placeholder}</span>
       {key === undefined ? null : (
-        <span aria-hidden="true" className="flex shrink-0">
+        // The key draws its own muted colour, 4.47:1 on `surface-hover` over the light frame (the
+        // top bar), so under the pointer it comes forward with the words.
+        <span
+          aria-hidden="true"
+          className="flex shrink-0 group-hover/search:[&>[data-nt-kbd]]:text-secondary"
+        >
           <Kbd shortcut={key} tone="menu" />
         </span>
       )}

@@ -81,4 +81,24 @@ describe('MentionList', () => {
     renderList({ items: [] })
     expect(screen.getByText('Geen bestanden')).toBeInTheDocument()
   })
+
+  test('the active row lifts its detail to secondary and carries the caret bar', () => {
+    // Muted on the caret row's tint over the composer's card is 4.2:1 in dark, under the 4.5:1 a
+    // word owes; a quiet row keeps it muted. The bar of the focus colour is the second cue, as on
+    // the keyboard row of a menu.
+    renderList({
+      items: [
+        { path: 'experts/review', kind: 'file', label: 'Review', detail: 'Leest de wijziging' },
+        { path: 'experts/tests', kind: 'file', label: 'Tests', detail: 'Schrijft de tests' },
+      ],
+    })
+    const [active, quiet] = screen.getAllByRole('option')
+    const detailOf = (row: HTMLElement | undefined) =>
+      row?.querySelector('[data-nt-mention-detail]')?.className.split(' ') ?? []
+    expect(detailOf(active)).toContain('text-secondary')
+    expect(detailOf(active)).not.toContain('text-muted')
+    expect(detailOf(quiet)).toContain('text-muted')
+    expect(active?.className.split(' ')).toContain('before:bg-focus')
+    expect(quiet?.className.split(' ')).not.toContain('before:bg-focus')
+  })
 })

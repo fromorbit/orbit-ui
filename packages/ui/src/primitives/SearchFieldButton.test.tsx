@@ -63,6 +63,20 @@ test('shows its key at the end in a cap, and announces it as aria-keyshortcuts',
   expect(button).toHaveAccessibleName('Zoek')
 })
 
+test('under the pointer its key comes forward to secondary with its words', () => {
+  // On the frame (the top bar) muted falls to 4.47:1 on `surface-hover` in light; the words step up
+  // to secondary already, and the key, which draws its own muted colour, follows them.
+  render(<SearchFieldButton placeholder="Zoek" shortcut="demo.open" />, {
+    wrapper: uiWrapper(),
+  })
+  const button = screen.getByRole('button', { name: 'Zoek' })
+  expect(button.className.split(' ')).toEqual(
+    expect.arrayContaining(['group/search', 'hover:text-secondary']),
+  )
+  const cap = button.querySelector('[data-nt-kbd]')?.parentElement
+  expect(cap?.className.split(' ')).toContain('group-hover/search:[&>[data-nt-kbd]]:text-secondary')
+})
+
 test('draws no key without a provider', () => {
   render(<SearchFieldButton placeholder="Zoek" shortcut="demo.open" />)
   const button = screen.getByRole('button', { name: 'Zoek' })

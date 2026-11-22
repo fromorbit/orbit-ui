@@ -745,8 +745,36 @@ test('the active row carries a neutral fill and the full text colour, and no acc
   expect(quiet).not.toContain('bg-surface-active')
 })
 
+test('the active row carries a bar of the focus colour on its leading edge, a quiet row none', () => {
+  // The second cue, as on the keyboard row of a menu: the fill alone is 1.4:1 against the panel and
+  // the step from muted to the active row's words 2.6:1 in dark, both under the 3:1 of WCAG 1.4.11;
+  // the bar holds 3:1 and more in both themes.
+  render(
+    <SearchList
+      labels={nl.list}
+      items={PROJECTS}
+      selectedId="ds"
+      onSelect={() => {}}
+      label="Projecten"
+    />,
+  )
+  const active = activeOption()?.className.split(' ') ?? []
+  expect(active).toEqual(
+    expect.arrayContaining([
+      'relative',
+      'before:absolute',
+      'before:start-0',
+      'before:inset-y-1.5',
+      'before:w-0.5',
+      'before:rounded-full',
+      'before:bg-focus',
+    ]),
+  )
+  expect(option('nt-agent').className.split(' ')).not.toContain('before:bg-focus')
+})
+
 test('a detail is muted on a quiet row and comes forward on the active one', () => {
-  // `--nt-text-muted` on `--nt-surface-active` is 3.71:1, under the 4.5:1 body text owes, so
+  // `--nt-text-muted` on `--nt-surface-active` is 4.2:1 on a dark menu, under the 4.5:1 body text owes, so
   // nothing inside the row the keyboard stands on may stay muted. The figure itself is measured
   // in the gallery, against the fill the browser really paints; this pins which row gets which.
   const items: SearchListItem[] = [

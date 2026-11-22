@@ -411,7 +411,9 @@ export function highlightPieces(
  * indicator wants 3:1 (WCAG 1.4.11); the two text colours differ by 2.6:1 in dark and 3.5:1 in
  * light (white and black, the extremes, against a muted that keeps AA on lit rows), and the words
  * of the active row sit at 11.2:1 on their own fill. The fill says *where*, the brightness says
- * *this one*.
+ * *this one*. Neither reaches 3:1 in dark, so the row also carries the bar of the keyboard row of a
+ * menu: 2px of the focus colour on its leading edge, inset 6px from top and bottom, 3:1 and more in
+ * both themes.
  *
  * It used to be a fill of half that strength plus an accent outline while the focus was inside the
  * list, and the reader who opened a pill in the real app called the result an ugly opener: two cyan
@@ -426,7 +428,7 @@ export const searchListMark = 'rounded-sm bg-accent-subtle text-fg'
 const row = cva('flex cursor-default gap-2 rounded-md px-2', {
   variants: {
     active: {
-      true: 'bg-surface-active text-[13px] text-fg-strong',
+      true: 'relative bg-surface-active text-[13px] text-fg-strong before:absolute before:inset-y-1.5 before:start-0 before:w-0.5 before:rounded-full before:bg-focus',
       false: 'text-[13px] text-muted hover:bg-surface hover:text-fg',
     },
     off: { true: 'pointer-events-none opacity-40', false: '' },
@@ -1066,8 +1068,8 @@ function Row({
  *
  * `ml-auto` carries them to the edge when nothing else took the room; beside a `detail` (which
  * already does) it costs nothing. They keep their width while the label truncates, and are muted
- * on every row but the active one, where muted is 3.71:1. Two complete class strings, because
- * Tailwind reads source text.
+ * on every row but the active one, where muted is 4.2:1 on a dark menu. Two complete class strings,
+ * because Tailwind reads source text.
  */
 function Trailing({ text, active }: { text: string; active: boolean }): ReactElement {
   return (

@@ -181,19 +181,21 @@
   --nt-avatar-5: #6e3a54;
   --nt-avatar-6: #4d4280;
 
-  /* The status colours of Orbit's site; its red lightened to 6.9:1 on Midnight. */
+  /* The status colours of Orbit's site, its red lightened to 6.9:1 on Midnight. Red and green
+     stand one step lighter than the site's (`#ff7b7b`, `#4cb782`), so a word keeps 4.5:1 on the
+     keyboard row of a menu (`surface-active` over a card) as well. */
   --nt-attention: #e5a445;
-  --nt-danger: #ff7b7b;
+  --nt-danger: #ff7c7c;
 
-  --nt-success: #4cb782;
+  --nt-success: #4db783;
   /* The plane of a tag that says something went well, a tint like attention's and danger's. */
-  --nt-success-subtle: rgb(76 183 130 / 0.1);
+  --nt-success-subtle: rgb(77 183 131 / 0.1);
   --nt-attention-subtle: rgb(229 164 69 / 0.08);
   --nt-attention-border: rgb(229 164 69 / 0.28);
   /* Attention as a fill (a share of a bar), not as words: the amber itself in dark. */
   --nt-attention-fill: var(--nt-attention);
-  --nt-danger-subtle: rgb(255 123 123 / 0.08);
-  --nt-danger-border: rgb(255 123 123 / 0.28);
+  --nt-danger-subtle: rgb(255 124 124 / 0.08);
+  --nt-danger-border: rgb(255 124 124 / 0.28);
   /* The soft underline under a commented passage of a markdown document: the
      tone of attention, half as strong, so a page full of comments still reads calmly. */
   --nt-comment-underline: rgb(229 164 69 / 0.6);
@@ -332,7 +334,7 @@
      them for a light ground. */
   --nt-terminal-ansi-0: #19223f; /* black — --nt-overlay-background */
   --nt-terminal-ansi-1: #eb5757; /* red — --nt-danger */
-  --nt-terminal-ansi-2: #4cb782; /* green — --nt-success */
+  --nt-terminal-ansi-2: #4db783; /* green — --nt-success */
   --nt-terminal-ansi-3: #e5a445; /* yellow — --nt-attention */
   --nt-terminal-ansi-4: #6ab0f3; /* blue */
   --nt-terminal-ansi-5: #c792ea; /* magenta */
@@ -497,21 +499,21 @@
   --nt-avatar-5: #eed4e0;
   --nt-avatar-6: #dcd6f0;
 
-  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.6:1,
-     4.7:1 and 4.9:1 there). The green of Orbit's site, deepened to 5.5:1 on Paper, so its words
-     also hold on the frame (5.0:1) and on the caret row (4.6:1). */
-  --nt-attention: #965a00;
-  --nt-danger: #bf3030;
+  /* Darker than a glyph needs: a banner sets its words in these on its own subtle plane (4.9:1
+     each there), and they hold 4.5:1 on the frame and on the caret row of a list
+     (`surface-active`) too. The green of Orbit's site, deepened to 5.5:1 on Paper. */
+  --nt-attention: #905600;
+  --nt-danger: #b92f2f;
   --nt-success: #1c7044;
   --nt-success-subtle: rgb(28 112 68 / 0.09);
-  --nt-attention-subtle: rgb(150 90 0 / 0.08);
-  --nt-attention-border: rgb(150 90 0 / 0.3);
+  --nt-attention-subtle: rgb(144 86 0 / 0.08);
+  --nt-attention-border: rgb(144 86 0 / 0.3);
   /* A fill carries no words, so it needs no AA: a clear amber where the deep ochre of the words
      would look muddy beside the red. */
   --nt-attention-fill: #d9952b;
-  --nt-danger-subtle: rgb(191 48 48 / 0.07);
-  --nt-danger-border: rgb(191 48 48 / 0.3);
-  --nt-comment-underline: rgb(150 90 0 / 0.55);
+  --nt-danger-subtle: rgb(185 47 47 / 0.07);
+  --nt-danger-border: rgb(185 47 47 / 0.3);
+  --nt-comment-underline: rgb(144 86 0 / 0.55);
 
   /* The marks on Paper keep the deep status colours (3:1 and more); the glow a whisper, where a
      full one smudges. */
@@ -644,8 +646,7 @@
 /* The same floor over the light material, with the frame and the canvas of the light block. Muted
    stands at 4.9:1 on the opaque frame, so the light sidebar needs 96% and the panel 92%; the side
    panel 94% (muted 4.56:1; at 93% it is 4.44:1). A status word on the tinted side panel holds AA
-   only over a material lighter than black: at 94% over black green reaches 4.6:1, but red 4.3:1
-   and ochre 4.2:1. */
+   over black as well, just: at 94% green reaches 4.6:1, red 4.53:1 and ochre 4.52:1. */
 :root[data-translucent="true"][data-theme="light"] {
   --nt-app-background: rgb(233 232 226 / 0.85);
   --nt-sidebar-background: rgb(233 232 226 / 0.96);

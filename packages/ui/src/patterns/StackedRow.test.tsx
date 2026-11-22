@@ -78,6 +78,27 @@ test('current is the soft card and aria-current="page"', () => {
   expect(button.closest('li')).toHaveAttribute('data-current')
 })
 
+test('the current row lifts its quiet lines to secondary; a row at rest keeps them muted', () => {
+  // On the frame (the sidebar of the app) muted falls to 4.4:1 on the soft card in light, under
+  // the 4.5:1 a word owes; the chosen row brings its project, time and branch forward, as the
+  // open item of `AppRail` does. The hover of a row (`row-hover`) keeps muted at AA.
+  const { rerender } = render(<List label="Chats">{row({ current: true })}</List>)
+  const linesOf = () =>
+    ['meta', 'detail'].map(
+      (line) =>
+        screen.getByRole('button').querySelector(`[data-nt-stacked-line="${line}"]`)?.className ??
+        '',
+    )
+  for (const classes of linesOf()) {
+    expect(classes.split(' ')).toContain('text-secondary')
+    expect(classes.split(' ')).not.toContain('text-muted')
+  }
+  rerender(<List label="Chats">{row()}</List>)
+  for (const classes of linesOf()) {
+    expect(classes.split(' ')).toContain('text-muted')
+  }
+})
+
 test('at rest there is no fill, only the hover of a row', () => {
   render(<List label="Chats">{row()}</List>)
   const button = screen.getByRole('button')

@@ -407,7 +407,7 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
   })
 
   // The opaque frame and side panel, on an opaque window, are grounds for a status word (the light
-  // frame is the darkest: green 5.0:1, red 4.6:1, ochre 4.55:1). The tinted layers of a translucent
+  // frame is the darkest: green 5.0:1, red and ochre 4.9:1). The tinted layers of a translucent
   // window are not tested for status words (`docs/family-style.md`, "The shell").
   test.each(['--nt-danger', '--nt-success', '--nt-attention'])(
     '%s as words on the canvas, the frame, the side panel and a menu reaches AA (≥ 4.5)',
@@ -590,15 +590,47 @@ describe.each(palettes)('the %s palette', (theme, palette) => {
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  test('--nt-success as words reaches AA on the caret row and on its own tint over a card (≥ 4.5)', () => {
-    // The banner on the canvas and the frame are tested above; a tag in a card and a passing check
-    // on the caret row of a list are the stacks a success word meets beyond them.
-    const success = hexIn(palette, '--nt-success')
+  // Muted stays under AA on one stack: the keyboard row of a menu (`surface-active` over a card,
+  // 4.2:1 in dark). That row lifts its quiet words to secondary instead (`menu-rows.tsx`,
+  // `MentionList`, `SearchList`), as a lit row over the light frame does (`StackedRow`, `ListRow`,
+  // `AppRail`): secondary holds AA on each of those stacks.
+  test.each([
+    ['--nt-surface-active', '--nt-overlay-background'],
+    ['--nt-surface-hover', '--nt-frame'],
+    ['--nt-row-active', '--nt-frame'],
+    ['--nt-surface-active', '--nt-frame'],
+  ])(
+    '--nt-text-secondary, the lifted meta of a lit row, on %s over %s reaches AA (≥ 4.5)',
+    (tint, plane) => {
+      expect(
+        contrastRatio(hexIn(palette, '--nt-text-secondary'), stacked(tint, plane)),
+      ).toBeGreaterThanOrEqual(4.5)
+    },
+  )
+
+  test('--nt-success as words reaches AA on its own tint over a card (≥ 4.5)', () => {
+    // The banner on the canvas and the frame are tested above; a tag in a card is the stack a
+    // success word meets beyond them.
     expect(
-      contrastRatio(success, stacked('--nt-surface-active', '--nt-canvas')),
+      contrastRatio(
+        hexIn(palette, '--nt-success'),
+        stacked('--nt-success-subtle', '--nt-overlay-background'),
+      ),
     ).toBeGreaterThanOrEqual(4.5)
+  })
+
+  // A status word on a lit row: a failed check on the caret row of a list (`surface-active` over
+  // the canvas), a count of errors on the keyboard row of a menu (the same tint over a card).
+  test.each([
+    ['--nt-danger', '--nt-canvas'],
+    ['--nt-danger', '--nt-overlay-background'],
+    ['--nt-success', '--nt-canvas'],
+    ['--nt-success', '--nt-overlay-background'],
+    ['--nt-attention', '--nt-canvas'],
+    ['--nt-attention', '--nt-overlay-background'],
+  ])('%s as words reaches AA on --nt-surface-active over %s (≥ 4.5)', (tone, plane) => {
     expect(
-      contrastRatio(success, stacked('--nt-success-subtle', '--nt-overlay-background')),
+      contrastRatio(hexIn(palette, tone), stacked('--nt-surface-active', plane)),
     ).toBeGreaterThanOrEqual(4.5)
   })
 
